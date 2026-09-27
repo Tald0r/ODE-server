@@ -217,7 +217,8 @@ void SiegeManager::putItem(PlayerCreature* pPC, MonsterCorpse* pCorpse, Item* pI
 
     GCSystemMessage gcSM;
     char buffer[256];
-    sprintf(buffer, "Attacking side %d has won. Moving to the resurrection point in 10 seconds.", side);
+    snprintf(buffer, sizeof(buffer), "Attacking side %d has won. Moving to the resurrection point in 10 seconds.",
+             side);
     gcSM.setMessage(buffer);
     pPC->getZone()->broadcastPacket(&gcSM);
 

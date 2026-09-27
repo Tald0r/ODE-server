@@ -58,7 +58,7 @@ public:
 
 private:
     ObjectID_t m_ObjectID;
-    bool m_bAllowCreature;
+    [[maybe_unused]] bool m_bAllowCreature;
 };
 
 #endif

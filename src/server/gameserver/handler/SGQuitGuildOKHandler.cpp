@@ -158,11 +158,11 @@ void SGQuitGuildOKHandler::execute(SGQuitGuildOK* pPacket)
 
         char msg[100];
         if (pGuild->getRace() == Guild::GUILD_RACE_SLAYER)
-            sprintf(msg, strings.c_str(STRID_QUIT_TEAM_2), memberName.c_str());
+            snprintf(msg, sizeof(msg), strings.c_str(STRID_QUIT_TEAM_2), memberName.c_str());
         else if (pGuild->getRace() == Guild::GUILD_RACE_VAMPIRE)
-            sprintf(msg, strings.c_str(STRID_QUIT_CLAN_2), memberName.c_str());
+            snprintf(msg, sizeof(msg), strings.c_str(STRID_QUIT_CLAN_2), memberName.c_str());
         else if (pGuild->getRace() == Guild::GUILD_RACE_OUSTERS)
-            sprintf(msg, strings.c_str(STRID_QUIT_CLAN_2), memberName.c_str());
+            snprintf(msg, sizeof(msg), strings.c_str(STRID_QUIT_CLAN_2), memberName.c_str());
 
         GCSystemMessage gcSystemMessage;
         gcSystemMessage.setMessage(msg);

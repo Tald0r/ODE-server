@@ -208,12 +208,12 @@ void GQuestManager::blooddrain() {
         char buffer[256];
 
         if (m_pOwner->isVampire()) {
-            sprintf(buffer, "Blood drained %u times.", pBloodDrainMission->getCurrent());
+            snprintf(buffer, sizeof(buffer), "Blood drained %u times.", pBloodDrainMission->getCurrent());
             GCSystemMessage gcSM;
             gcSM.setMessage(buffer);
             m_pOwner->getPlayer()->sendPacket(&gcSM);
         } else if (m_pOwner->isOusters()) {
-            sprintf(buffer, "Soul absorbed %u times.", pBloodDrainMission->getCurrent());
+            snprintf(buffer, sizeof(buffer), "Soul absorbed %u times.", pBloodDrainMission->getCurrent());
             GCSystemMessage gcSM;
             gcSM.setMessage(buffer);
             m_pOwner->getPlayer()->sendPacket(&gcSM);

@@ -815,10 +815,6 @@ void Zone::heartbeat()
         m_pLockedEffectManager->heartbeat(currentTime);
         __LEAVE_CRITICAL_SECTION(m_MutexEffect)
 
-        // Debug: count the zone's effects.
-        static time_t lastZoneLogTime = 0;
-        size_t zoneEffects = m_pEffectManager->getSize();
-
         m_pEffectManager->heartbeat(currentTime);
 
         endProfileEx("Z_EFFECT");
@@ -831,9 +827,6 @@ void Zone::heartbeat()
         beginProfileEx("Z_ITEM");
         // item heartbeaet
 
-        int i = 0;
-        size_t totalItemEffects = 0;
-
         for (unordered_map<ObjectID_t, Item*>::iterator itr = m_Items.begin(); itr != m_Items.end(); itr++) {
             Item* pItem = itr->second;
             Assert(pItem != NULL);
@@ -842,9 +835,7 @@ void Zone::heartbeat()
             m_LastItemClass = (int)pItem->getItemClass();
 
             EffectManager& rEffectManager = pItem->getEffectManager();
-            totalItemEffects += rEffectManager.getSize();
             rEffectManager.heartbeat(currentTime);
-            i++;
         }
 
         endProfileEx("Z_ITEM");
@@ -1245,13 +1236,14 @@ void Zone::remainPayPlayer()
 
                 StringPool& strings = de::gameContext().strings();
                 char msg[100];
-                sprintf(msg, strings.c_str(STRID_LEVEL_WAR_ZONE_FREE_CLOSE_1));
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_LEVEL_WAR_ZONE_FREE_CLOSE_1));
 
                 GCSystemMessage gcSystemMessage;
                 gcSystemMessage.setMessage(msg);
                 pPlayer->sendPacket(&gcSystemMessage);
 
-                sprintf(msg, strings.c_str(STRID_LEVEL_WAR_ZONE_FREE_CLOSE_2), pZoneInfo->getFullName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_LEVEL_WAR_ZONE_FREE_CLOSE_2),
+                         pZoneInfo->getFullName().c_str());
 
                 gcSystemMessage.setMessage(msg);
                 pPlayer->sendPacket(&gcSystemMessage);

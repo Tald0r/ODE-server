@@ -58,7 +58,7 @@ void EffectHasSlayerRelic::affect(Creature* pCreature)
     // Announce the location.
     char msg[100];
 
-    const char* race;
+    const char* race = nullptr;
     if (pCreature->isSlayer()) {
         race = strings.c_str(STRID_SLAYER);
     } else if (pCreature->isVampire()) {
@@ -67,10 +67,10 @@ void EffectHasSlayerRelic::affect(Creature* pCreature)
         race = strings.c_str(STRID_OUSTERS);
     }
 
-    sprintf(msg, strings.c_str(STRID_HAVING_SLAYER_RELIC), pCreature->getName().c_str(), race,
-            //                ( pCreature->isSlayer() ? g_pStringPool->c_str( STRID_SLAYER ) : g_pStringPool->c_str(
-            //                STRID_VAMPIRE ) ),
-            (int)pCreature->getX(), (int)pCreature->getY());
+    snprintf(msg, sizeof(msg), strings.c_str(STRID_HAVING_SLAYER_RELIC), pCreature->getName().c_str(), race,
+             //                ( pCreature->isSlayer() ? g_pStringPool->c_str( STRID_SLAYER ) : g_pStringPool->c_str(
+             //                STRID_VAMPIRE ) ),
+             (int)pCreature->getX(), (int)pCreature->getY());
 
     GCSystemMessage gcSystemMessage;
     gcSystemMessage.setMessage(msg);

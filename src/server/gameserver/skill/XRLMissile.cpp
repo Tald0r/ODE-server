@@ -85,10 +85,9 @@ void XRLMissile::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
             // Reduces mana.
             decreaseMana(pSlayer, RequiredMP, _GCSkillToObjectOK1);
 
-            Bullet_t RemainBullet = 0;
             decreaseBullet(pWeapon);
             // The weapon is not saved on every shot.
-            RemainBullet = getRemainBullet(pWeapon);
+            getRemainBullet(pWeapon); // Logs and throws on an invalid weapon class.
 
 
             if (!pTargetCreature->isSlayer()) {

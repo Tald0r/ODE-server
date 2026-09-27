@@ -61,7 +61,7 @@ void Item::waste(Storage storage) const
 
     char query[50];
 
-    sprintf(query, "Storage = %u", (uint)storage);
+    snprintf(query, sizeof(query), "Storage = %u", (uint)storage);
 
     tinysave(query);
 }

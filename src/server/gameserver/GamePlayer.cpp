@@ -517,12 +517,8 @@ void GamePlayer::processOutput() {
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    int i = 0;
-
     try {
         Player::processOutput();
-
-        i = 100000;
     } catch (InvalidProtocolException& It) {
         throw DisconnectException("Pipe broken; closing the connection");
     }
@@ -986,7 +982,7 @@ void GamePlayer::giveLotto() {
 
     if (Amount < PCRoomLottoMaxAmount) {
         char msg[100];
-        sprintf(msg, de::gameContext().strings().c_str(STRID_GIVE_LOTTO), Amount + 1);
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_GIVE_LOTTO), Amount + 1);
 
         GCSystemMessage gcMsg;
         gcMsg.setMessage(msg);
@@ -1008,7 +1004,7 @@ bool GamePlayer::startPacketLog(uint sec) {
     m_PacketLogEndTime.tv_sec += sec;
 
     char filename[100];
-    sprintf(filename, "log/%s.log", m_pCreature->getName().c_str());
+    snprintf(filename, sizeof(filename), "log/%s.log", m_pCreature->getName().c_str());
     m_PacketLogFileName = filename;
 
     return true;
@@ -1073,7 +1069,7 @@ void GamePlayer::logLoginoutDateTime() {
 
     // filename
     char filename[20];
-    sprintf(filename, "log/%s.txt", logoutDateTime.toStringforWeb().c_str());
+    snprintf(filename, sizeof(filename), "log/%s.txt", logoutDateTime.toStringforWeb().c_str());
 
     try {
         ofstream file(filename, ios::out | ios::app);

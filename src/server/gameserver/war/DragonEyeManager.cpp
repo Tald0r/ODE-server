@@ -80,7 +80,7 @@ void DragonEyeManager::createAllDragonEyes()
         Assert(pZone != NULL);
 
         char strZoneID[10];
-        sprintf(strZoneID, "%u", pZone->getZoneID());
+        snprintf(strZoneID, sizeof(strZoneID), "%u", pZone->getZoneID());
 
         pZone->registerObject(pWarItem);
         pWarItem->create(strZoneID, STORAGE_ZONE, pZone->getZoneID(), m_DefaultPositions[i].x, m_DefaultPositions[i].y);
@@ -174,9 +174,9 @@ void DragonEyeManager::warpToDefaultPosition(Creature* pCreature)
             // the holder, who may be logging out, so a war's return that
             // reads it goes to the group the eye is going to.
             char pField[80];
-            sprintf(pField, "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
-                    (unsigned)pTargetZone->getZoneID(), (int)m_DefaultPositions[index].x,
-                    (int)m_DefaultPositions[index].y);
+            snprintf(pField, sizeof(pField), "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
+                     (unsigned)pTargetZone->getZoneID(), (int)m_DefaultPositions[index].x,
+                     (int)m_DefaultPositions[index].y);
             pWarItem->tinysave(pField);
 
             pTargetZone->addItemDelayed(pItem, m_DefaultPositions[index].x, m_DefaultPositions[index].y);

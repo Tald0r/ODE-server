@@ -241,7 +241,7 @@ bool DynamicZoneGateOfAlter::openGateToAlter() {
     if (tx != -1) {
         GCAddEffectToTile gcAddEffectToTile;
         gcAddEffectToTile.setEffectID(Effect::EFFECT_CLASS_TILE_PORTAL);
-        gcAddEffectToTile.setDuration(999999);
+        gcAddEffectToTile.setDuration(static_cast<Duration_t>(999999));
         gcAddEffectToTile.setXY(tx, ty);
 
         m_pZone->broadcastPacket(&gcAddEffectToTile);

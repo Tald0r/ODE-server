@@ -69,8 +69,8 @@ void EffectRelicPosition::affect(Item* pItem)
 
         char msg[100];
 
-        sprintf(msg, de::gameContext().strings().c_str(STRID_RELIC_IN_ZONE), pRelicInfo->getName().c_str(),
-                pZoneInfo->getFullName().c_str(), (int)m_X, (int)m_Y);
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_RELIC_IN_ZONE),
+                 pRelicInfo->getName().c_str(), pZoneInfo->getFullName().c_str(), (int)m_X, (int)m_Y);
 
         GCSystemMessage gcSystemMessage;
         gcSystemMessage.setType(SYSTEM_MESSAGE_COMBAT);
@@ -104,8 +104,8 @@ void EffectRelicPosition::affect(Item* pItem)
         //			<< pZoneInfo->getFullName() << "(" << (int)m_X << ", " << (int)m_Y << ").";
 
         char msg[200];
-        sprintf(msg, de::gameContext().strings().c_str(STRID_BROADCAST_CASTLE_SYMBOL_POSITION_3),
-                pZoneInfo->getFullName().c_str(), (int)m_X, (int)m_Y);
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_BROADCAST_CASTLE_SYMBOL_POSITION_3),
+                 pZoneInfo->getFullName().c_str(), (int)m_X, (int)m_Y);
 
         GCSystemMessage gcSystemMessage;
         gcSystemMessage.setType(SYSTEM_MESSAGE_HOLY_LAND);

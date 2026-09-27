@@ -13,6 +13,73 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Compiler-warning cleanup (2026-09-27)
+
+Clearing the server's ~1,000 compiler warnings (Apple Clang 21 and the Zig
+build; `sprintf` alone was 490 of them) was done behaviour-preserving, so a
+warning that pointed at a bug had the bug kept and written down here. The
+exceptions are the undefined behaviour below, which has no behaviour to keep.
+
+- **Undefined behaviour removed.** `Zone::load` freed three `new char[]`
+  buffers with scalar `delete`; they use `SAFE_DELETE_ARRAY` now.
+  `PlayerCreature::setPetInfo` deleted a `Centauro`, `Stirge` or `Pixie`
+  through `Pet*` without a virtual destructor; `Pet` has one now (the
+  subclasses' destructors are empty). `SocketInputStream::fill_RAW` and
+  `SystemAPI::fork_ex` ran off the end of a non-void function on non-Linux
+  builds; they throw `UnsupportedError` there, as before the non-Linux branch
+  was deleted (neither is called on macOS today). Locals read uninitialised on
+  a path for a creature of no known race now start at zero or null
+  (`EffectHasSlayerRelic`/`EffectHasVampireRelic` race name,
+  `GQuestGiveEventQuestItemElement` base, `ActionStashSell` price,
+  `CGLotterySelectHandler` quest id).
+  > **Status:** fixed (fix/compiler-warnings)
+- **`sprintf` became `snprintf` with the destination's size.** Output is
+  identical whenever it fits; where it overflowed before (undefined behaviour)
+  it is now truncated. The login server's forced-port strings were 5-byte
+  arrays, which a base port of 9900 plus an `-i` of 100 or more overflows;
+  they are sized for any `int` now, so those values are no longer cut.
+  > **Status:** fixed (fix/compiler-warnings)
+- **Wolf form rejects every skill.** The four `isAbleToUse*Skill` guards test
+  `SkillType != A || SkillType != B ...`, true for any skill, so the early
+  return is now unconditional. The commented-out `&&` versions, removed with
+  the dead test, allowed Howl, Eat Corpse and Un-transform (self), Howl, Eat
+  Corpse and melee attack (object), and Howl and Eat Corpse (tile, inventory).
+  > **Status:** recorded, not fixed (fix/compiler-warnings)
+- **Checks that could never fire were removed with their tautologies**, each
+  of which evidently meant something else: `CGLearnSkillHandler` rejected a
+  skill type `>= SKILL_MAX && < SKILL_DOUBLE_IMPACT` (never true; `||` would
+  reject out-of-range types before `getSkillInfo`); `opset item_prob_ratio`
+  returned on `value < value`; `CGAddItemToItemHandler` asserted a
+  `CoordInven_t` (unsigned char, 255 when the pet item is missing) was not
+  `-1`, so the missing case reaches `makeGCCreateItem` with X = 255.
+  > **Status:** recorded, not fixed (fix/compiler-warnings)
+- **`getRandomMysteriousItem` tests `Item::ITEM_CLASS_VAMPIRE_COAT && sex ==
+  FEMALE`**, a constant that is always true, so female vampires get item type
+  1 for every item class; `itemClass ==` was evidently meant. Kept.
+  > **Status:** recorded, not fixed (fix/compiler-warnings)
+- **`Tile::deleteCreature(MoveMode)` calls the `ObjectID_t` overload of
+  `deleteObject`** (the sum `OBJECT_PRIORITY_WALKING_CREATURE + mode` is an
+  `int`), which looks for an object with ID 1..3 and asserts when none
+  matches; `getCreature(MoveMode)` wraps the same sum in `ObjectPriority`,
+  which was evidently meant.
+  > **Status:** recorded, not fixed (fix/compiler-warnings)
+- **Overrides that do not override.** `DummyQuestStatus::isSuccess()` lacks the
+  base's `const` (the class is never instantiated). `SharedServerClient`,
+  `GameServerPlayer` and mofus `MPlayer` declare `processCommand()` without the
+  base's `bool`; every call goes through the derived type, and each now also
+  forwards `processCommand(bool)` to `Player`'s, which is what a call through
+  `Player*` ran before.
+  > **Status:** recorded, not fixed (fix/compiler-warnings)
+- **Smaller findings, kept as they are:** `Resource::write` stores the file
+  name's length in a `BYTE`, so a name of 256 characters or more puts the
+  wrong length on the wire; `opGhost` sends a duration of 999999 through a
+  16-bit `Duration_t` (16959 arrives); `MotorcycleLoader::load` allocates a
+  `Motorcycle` per row and never attaches or frees it; `~PlayerCreature` never
+  deletes `m_pPet`; `EffectSatelliteBombAim` uses the skill slot from
+  `hasSkill` without a null check; `Guild`'s `ExpireDate` is built from
+  `tm_year`/`tm_mon` and is not a real date.
+  > **Status:** recorded, not fixed (fix/compiler-warnings)
+
 ## Native macOS build (2026-09-27)
 
 - **The 64-bit encrypted stream overloads did not compile on macOS.**

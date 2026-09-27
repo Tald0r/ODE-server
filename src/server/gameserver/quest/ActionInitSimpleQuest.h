@@ -28,7 +28,7 @@ public:
 
 public:
 private:
-    Race_t m_Race;
+    [[maybe_unused]] Race_t m_Race;
 };
 
 

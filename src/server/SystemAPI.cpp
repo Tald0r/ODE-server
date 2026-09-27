@@ -41,6 +41,8 @@ int SystemAPI::fork_ex() {
     }
 
     return fd;
+#else
+    throw UnsupportedError();
 #endif
     __END_CATCH
 }

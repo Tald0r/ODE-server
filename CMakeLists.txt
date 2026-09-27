@@ -59,10 +59,14 @@ add_compile_options(${WARNING_FLAGS})
 # project deliberately never defines NDEBUG (see below) — Debug is the only
 # configuration where the checks exist at all; every optimized build
 # compiles them away completely.
+#
+# Setting these flags is not enough on its own: `zig c++` defines NDEBUG
+# itself for every optimized mode (-O1 and up, -Os), so the optimized
+# configurations undefine it again with -UNDEBUG.
 set(CMAKE_CXX_FLAGS_DEBUG "-g -DDE_OWNERSHIP_CHECKS")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
-set(CMAKE_CXX_FLAGS_MINSIZEREL "-Os")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -UNDEBUG")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -UNDEBUG")
+set(CMAKE_CXX_FLAGS_MINSIZEREL "-Os -UNDEBUG")
 
 # ============================================================================
 # Dependencies

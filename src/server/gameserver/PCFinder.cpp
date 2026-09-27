@@ -60,7 +60,6 @@ void PCFinder::addCreature(Creature* pCreature)
     m_IDs[ID] = pCreature; // for BillingServer. by sigi. 2002.11.18
 
     if (pCreature->isPC()) {
-        PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
         //		m_GuildMap.insert( pair<GuildID_t, Creature*>( pPC->getGuildID(), pCreature ) );
     }
 

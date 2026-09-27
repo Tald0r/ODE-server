@@ -24,7 +24,7 @@ GCAddOusters::GCAddOusters(const PCOustersInfo3& info) : m_OustersInfo(info) {
     m_pNicknameInfo = NULL;
 }
 
-GCAddOusters::~GCAddOusters() noexcept
+GCAddOusters::~GCAddOusters()
 
 {
     try {

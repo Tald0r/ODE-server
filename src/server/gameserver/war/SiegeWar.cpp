@@ -140,7 +140,7 @@ void SiegeWar::executeEnd()
     // are told here, and post the change to their own castle group.
     if (m_bModifyCastleOwner) {
         char sCommand[100];
-        sprintf(sCommand, "*command setCastleOwnerGuild %u %u", m_CastleZoneID, m_WinnerGuildID);
+        snprintf(sCommand, sizeof(sCommand), "*command setCastleOwnerGuild %u %u", m_CastleZoneID, m_WinnerGuildID);
         GGCommand ggCommand;
         ggCommand.setCommand(sCommand);
 

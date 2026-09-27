@@ -160,7 +160,6 @@ void AcidStorm::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampire
             // Attach the effect to every creature within the effect's range.
             // When a Vampire uses the skill, other Vampires are
             // not affected.
-            bool bEffected = false;
             Creature* pTargetCreature;
 
 
@@ -207,7 +206,6 @@ void AcidStorm::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampire
                         if (pTargetCreature->isSlayer() || pTargetCreature->isOusters()) {
                             if (pEffect->affectCreature(pTargetCreature, false) == true) {
                                 Player* pTargetPlayer = pTargetCreature->getPlayer();
-                                bEffected = true;
 
                                 bool bCanSee = canSee(pTargetCreature, pVampire);
 
@@ -374,7 +372,6 @@ void AcidStorm::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
             // Attach the effect to every creature within the effect's range.
             // When a Vampire uses the skill, other Vampires are
             // not affected.
-            bool bEffected = false;
             Creature* pTargetCreature;
 
 
@@ -412,7 +409,6 @@ void AcidStorm::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
                         if (pTargetCreature->isPC()) {
                             if (pEffect->affectCreature(pTargetCreature, false) == true) {
                                 Player* pTargetPlayer = pTargetCreature->getPlayer();
-                                bEffected = true;
 
                                 bool bCanSee = canSee(pTargetCreature, pMonster);
 

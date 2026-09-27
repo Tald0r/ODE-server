@@ -22,16 +22,16 @@ public:
         m_CastleZoneID = zoneID;
     }
 
-    WarType_t getWarType() const {
+    WarType_t getWarType() const override {
         return WAR_GUILD;
     }
-    string getWarType2DBString() const {
+    string getWarType2DBString() const override {
         return "GUILD";
     }
     string getCastleWarKind2DBString() const override {
         return "GUILD";
     }
-    string getWarName() const;
+    string getWarName() const override;
 
     GuildID_t getChallangerGuildID() const {
         return m_ChallangerGuildID;
@@ -48,24 +48,24 @@ public:
     }
 
 public:
-    bool isModifyCastleOwner(PlayerCreature* pPC);
+    bool isModifyCastleOwner(PlayerCreature* pPC) override;
     GuildID_t getWinnerGuildID(PlayerCreature* pPC);
 
-    void sendWarEndMessage() const;
+    void sendWarEndMessage() const override;
 
-    bool endWar(PlayerCreature* pPC);
+    bool endWar(PlayerCreature* pPC) override;
 
 protected:
-    void executeStart();
-    void executeEnd();
+    void executeStart() override;
+    void executeEnd() override;
 
     void recordGuildWarStart();
     void recordGuildWarEnd();
 
 public:
-    void makeWarScheduleInfo(WarScheduleInfo* pWSI) const;
-    void makeWarInfo(WarInfo* pWarInfo) const;
-    virtual string toString() const;
+    void makeWarScheduleInfo(WarScheduleInfo* pWSI) const override;
+    void makeWarInfo(WarInfo* pWarInfo) const override;
+    virtual string toString() const override;
 
 private:
     ZoneID_t m_CastleZoneID;       // the ZoneID of the castle the war concerns

@@ -105,7 +105,7 @@ void CGSilverCoatingHandler::execute(CGSilverCoating* pPacket, Player* pPlayer)
     // Only silver has to be saved.
     // Item save optimization.
     char pField[80];
-    sprintf(pField, "Silver=%d", pItem->getSilver());
+    snprintf(pField, sizeof(pField), "Silver=%d", pItem->getSilver());
     pItem->tinysave(pField);
 
     // Save to the DB that the item was coated with silver.

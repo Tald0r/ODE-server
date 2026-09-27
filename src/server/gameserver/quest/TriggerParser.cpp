@@ -7,7 +7,6 @@
 
 const char Comment = '#';
 const char Separator = ':';
-const char EOL = '\n';
 const char* WhiteSpaces = " \t\n";
 const char* SpaceTab = " \t";
 

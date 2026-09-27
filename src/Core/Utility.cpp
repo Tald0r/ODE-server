@@ -25,7 +25,7 @@ string itos(int value) {
     char buf[100] = {
         0,
     };
-    sprintf(buf, "%d", value);
+    snprintf(buf, sizeof(buf), "%d", value);
     return string(buf);
 }
 

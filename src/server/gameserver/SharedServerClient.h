@@ -35,6 +35,9 @@ public:
 
     // parse packet and execute handler for the packet
     virtual void processCommand();
+    virtual void processCommand(bool Option) {
+        Player::processCommand(Option);
+    }
 
     // flush output buffer to socket's send buffer
     virtual void processOutput();

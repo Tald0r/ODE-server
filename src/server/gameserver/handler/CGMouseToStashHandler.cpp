@@ -89,10 +89,11 @@ void CGMouseToStashHandler::execute(CGMouseToStash* pPacket, Player* pPlayer)
 
                     // Save the changed information to the DB.
                     char pField[80];
-                    sprintf(pField, "Num=%d, Storage=%d, X=%d, Y=%d", MaxStack, STORAGE_STASH, rack, index);
+                    snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, X=%d, Y=%d", MaxStack, STORAGE_STASH, rack,
+                             index);
                     pStashItem->tinysave(pField);
 
-                    sprintf(pField, "Num=%d, Storage=%d", pMouseItem->getNum(), STORAGE_EXTRASLOT);
+                    snprintf(pField, sizeof(pField), "Num=%d, Storage=%d", pMouseItem->getNum(), STORAGE_EXTRASLOT);
                     pMouseItem->tinysave(pField);
 
 
@@ -102,7 +103,8 @@ void CGMouseToStashHandler::execute(CGMouseToStash* pPacket, Player* pPlayer)
 
                     pStashItem->setNum(pStashItem->getNum() + pMouseItem->getNum());
                     char pField[80];
-                    sprintf(pField, "Num=%d, Storage=%d, X=%d, Y=%d", pStashItem->getNum(), STORAGE_STASH, rack, index);
+                    snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, X=%d, Y=%d", pStashItem->getNum(),
+                             STORAGE_STASH, rack, index);
                     pStashItem->tinysave(pField);
 
 
@@ -126,10 +128,10 @@ void CGMouseToStashHandler::execute(CGMouseToStash* pPacket, Player* pPlayer)
 
 
                 char pField[80];
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pStashItem->tinysave(pField);
 
-                sprintf(pField, "Storage=%d, X=%d, Y=%d", STORAGE_STASH, rack, index);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d, Y=%d", STORAGE_STASH, rack, index);
                 pMouseItem->tinysave(pField);
 
 
@@ -141,7 +143,7 @@ void CGMouseToStashHandler::execute(CGMouseToStash* pPacket, Player* pPlayer)
             pStash->insert(rack, index, pMouseItem);
             pPC->deleteItemFromExtraInventorySlot();
             char pField[80];
-            sprintf(pField, "Storage=%d, X=%d, Y=%d", STORAGE_STASH, rack, index);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d, Y=%d", STORAGE_STASH, rack, index);
             pMouseItem->tinysave(pField);
 
 

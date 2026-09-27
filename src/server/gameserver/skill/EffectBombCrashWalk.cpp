@@ -92,9 +92,6 @@ void EffectBombCrashWalk::affect()
     if (m_bLarge)
         diff = 2;
 
-    Level_t maxEnemyLevel = 0;
-    uint EnemyNum = 0;
-
     // Collect the tiles the effect covers.
     // The center tile plus the splash tiles.
     for (int oX = -diff; oX <= diff; oX++)

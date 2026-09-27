@@ -83,11 +83,11 @@ void SGExpelGuildMemberOKHandler::execute(SGExpelGuildMemberOK* pPacket)
 
             char msg[100];
             if (pGuild->getRace() == Guild::GUILD_RACE_SLAYER)
-                sprintf(msg, strings.c_str(STRID_TEAM_JOIN_DENY), pGuild->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_TEAM_JOIN_DENY), pGuild->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_VAMPIRE)
-                sprintf(msg, strings.c_str(STRID_CLAN_JOIN_DENY), pGuild->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_CLAN_JOIN_DENY), pGuild->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_OUSTERS)
-                sprintf(msg, strings.c_str(STRID_CLAN_JOIN_DENY), pGuild->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_CLAN_JOIN_DENY), pGuild->getName().c_str());
             // Send the guild join cancellation message.
             GCSystemMessage gcSystemMessage;
             gcSystemMessage.setMessage(msg);
@@ -103,11 +103,11 @@ void SGExpelGuildMemberOKHandler::execute(SGExpelGuildMemberOK* pPacket)
 
             char msg[100];
             if (pGuild->getRace() == Guild::GUILD_RACE_SLAYER)
-                sprintf(msg, strings.c_str(STRID_TEAM_JOIN_DENY_2), pPacket->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_TEAM_JOIN_DENY_2), pPacket->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_VAMPIRE)
-                sprintf(msg, strings.c_str(STRID_CLAN_JOIN_DENY_2), pPacket->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_CLAN_JOIN_DENY_2), pPacket->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_OUSTERS)
-                sprintf(msg, strings.c_str(STRID_CLAN_JOIN_DENY_2), pPacket->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_CLAN_JOIN_DENY_2), pPacket->getName().c_str());
 
             GCSystemMessage gcSystemMessage;
             gcSystemMessage.setMessage(msg);
@@ -198,11 +198,11 @@ void SGExpelGuildMemberOKHandler::execute(SGExpelGuildMemberOK* pPacket)
 
             char msg[100];
             if (pGuild->getRace() == Guild::GUILD_RACE_SLAYER)
-                sprintf(msg, strings.c_str(STRID_EXPEL_TEAM_MEMBER_2), pPacket->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_EXPEL_TEAM_MEMBER_2), pPacket->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_VAMPIRE)
-                sprintf(msg, strings.c_str(STRID_EXPEL_CLAN_MEMBER_2), pPacket->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_EXPEL_CLAN_MEMBER_2), pPacket->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_OUSTERS)
-                sprintf(msg, strings.c_str(STRID_EXPEL_CLAN_MEMBER_2), pPacket->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_EXPEL_CLAN_MEMBER_2), pPacket->getName().c_str());
 
             GCSystemMessage gcSystemMessage;
             gcSystemMessage.setMessage(msg);

@@ -293,7 +293,6 @@ void RelicLoader::load(Zone* pZone)
         pRelic->setItemType(rows[r].itemType);
 
         Storage storage = (Storage)rows[r].storage;
-        StorageID_t storageID = rows[r].storageID;
         BYTE x = rows[r].x;
         BYTE y = rows[r].y;
 

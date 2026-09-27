@@ -195,12 +195,12 @@ void CGRequestRepairHandler::executeNormal(CGRequestRepair* pPacket, Player* pPl
 
         if (pItem->getItemClass() == Item::ITEM_CLASS_SLAYER_PORTAL_ITEM) {
             SlayerPortalItem* pSPItem = dynamic_cast<SlayerPortalItem*>(pItem);
-            sprintf(pField, "Charge=%d", pSPItem->getCharge());
+            snprintf(pField, sizeof(pField), "Charge=%d", pSPItem->getCharge());
         } else if (pItem->getItemClass() == Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM) {
             OustersSummonItem* pOSItem = dynamic_cast<OustersSummonItem*>(pItem);
-            sprintf(pField, "Charge=%d", pOSItem->getCharge());
+            snprintf(pField, sizeof(pField), "Charge=%d", pOSItem->getCharge());
         } else {
-            sprintf(pField, "Durability=%d", pItem->getDurability());
+            snprintf(pField, sizeof(pField), "Durability=%d", pItem->getDurability());
         }
 
         pItem->tinysave(pField);
@@ -295,7 +295,7 @@ void CGRequestRepairHandler::executeMotorcycle(CGRequestRepair* pPacket, Player*
 
                         // Save it.
                         char pField[80];
-                        sprintf(pField, "Durability=%d", pItemOnTile->getDurability());
+                        snprintf(pField, sizeof(pField), "Durability=%d", pItemOnTile->getDurability());
                         pItemOnTile->tinysave(pField);
 
 
@@ -379,7 +379,7 @@ void CGRequestRepairHandler::executeAll(CGRequestRepair* pPacket, Player* pPlaye
                     if (pItem->getDurability() != oldDurability) {
                         // To cut down DB queries,
                         // save only when the durability changed.
-                        sprintf(pField, "Durability=%d", pItem->getDurability());
+                        snprintf(pField, sizeof(pField), "Durability=%d", pItem->getDurability());
                         pItem->tinysave(pField);
                     }
 
@@ -435,7 +435,7 @@ void CGRequestRepairHandler::executeAll(CGRequestRepair* pPacket, Player* pPlaye
                     if (pItem->getDurability() != oldDurability) {
                         // To cut down DB queries,
                         // save only when the durability changed.
-                        sprintf(pField, "Durability=%d", pItem->getDurability());
+                        snprintf(pField, sizeof(pField), "Durability=%d", pItem->getDurability());
                         pItem->tinysave(pField);
                     }
 
@@ -490,7 +490,7 @@ void CGRequestRepairHandler::executeAll(CGRequestRepair* pPacket, Player* pPlaye
                     if (pItem->getDurability() != oldDurability) {
                         // To cut down DB queries,
                         // save only when the durability changed.
-                        sprintf(pField, "Durability=%d", pItem->getDurability());
+                        snprintf(pField, sizeof(pField), "Durability=%d", pItem->getDurability());
                         pItem->tinysave(pField);
                     }
 

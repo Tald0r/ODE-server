@@ -107,7 +107,7 @@ check_ratchet R6d "SkillFormula.cpp lines" 818 "$R6d"
 # the branch ladder left CGSayHandler.cpp for gm/, leaving the packet
 # handler itself.
 R6e=$(wc -l < src/server/gameserver/handler/CGSayHandler.cpp 2>/dev/null || echo missing)
-check_ratchet R6e "CGSayHandler.cpp lines" 114 "$R6e"
+check_ratchet R6e "CGSayHandler.cpp lines" 111 "$R6e"
 # R6f: the *command console, whose sub-command bodies are one function per
 # name in ConsoleCommands.cpp beside the console that dispatches them.
 R6f=$(wc -l < src/server/gameserver/gm/ConsoleCommands.cpp 2>/dev/null || echo missing)
@@ -119,7 +119,7 @@ check_ratchet R6f "ConsoleCommands.cpp lines" 1574 "$R6f"
 # What is left is the zone's own state: tiles, effects, creature lookup, the
 # NPC registry and the heartbeat. Under the 2,000-line phase exit criterion.
 R6g=$(wc -l < src/server/gameserver/Zone.cpp 2>/dev/null || echo missing)
-check_ratchet R6g "Zone.cpp lines" 1273 "$R6g"
+check_ratchet R6g "Zone.cpp lines" 1265 "$R6g"
 
 # R6h-j: the three race classes. Persistence, gold, item-shape, inventory,
 # free-play, skill-slot-table, exps, initial-rank, silver-damage and
@@ -131,11 +131,11 @@ check_ratchet R6g "Zone.cpp lines" 1273 "$R6g"
 # the client sends, so reconciling them is a protocol change rather than a
 # refactor.
 R6h=$(wc -l < src/server/gameserver/Slayer.cpp 2>/dev/null || echo missing)
-check_ratchet R6h "Slayer.cpp lines" 3043 "$R6h"
+check_ratchet R6h "Slayer.cpp lines" 3031 "$R6h"
 R6i=$(wc -l < src/server/gameserver/Vampire.cpp 2>/dev/null || echo missing)
-check_ratchet R6i "Vampire.cpp lines" 1958 "$R6i"
+check_ratchet R6i "Vampire.cpp lines" 1954 "$R6i"
 R6j=$(wc -l < src/server/gameserver/Ousters.cpp 2>/dev/null || echo missing)
-check_ratchet R6j "Ousters.cpp lines" 1880 "$R6j"
+check_ratchet R6j "Ousters.cpp lines" 1879 "$R6j"
 
 # --- R7: pre-C++17 dynamic exception specifications ------------------------
 # The migration also normalized real `throw(expr)` expressions to `throw expr`

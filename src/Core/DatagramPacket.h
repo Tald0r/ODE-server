@@ -31,6 +31,9 @@ public:
     // destructor
     virtual ~DatagramPacket() {}
 
+    using Packet::read;
+    using Packet::write;
+
     // Read data from the input stream (buffer) and initialise the packet.
     // A datagram packet arriving over a TCP socket counts as a protocol error.
     virtual void read(SocketInputStream& iStream) {

@@ -402,7 +402,7 @@ bool MonsterAI::moveNormal(ZoneCoord_t ex, ZoneCoord_t ey, ZoneCoord_t& nx, Zone
 
         // If both are blocked, choose according to the direction.
         if (leftWall && rightWall) {
-            if (ndir > curDir && ndir < curDir + 4 || curDir > 4 && (ndir > curDir || ndir < curDir - 4)) {
+            if ((ndir > curDir && ndir < curDir + 4) || (curDir > 4 && (ndir > curDir || ndir < curDir - 4))) {
                 setMoveRule(MOVE_RULE_RIGHTWALL);
                 // cout << "set RightWall : " << (int)curDir << " to " << (int)ndir << " - " << (int)m_BlockedDir << " -
                 // " << m_pBody->getName() << endl;
@@ -1765,8 +1765,8 @@ bool checkImInBadPosition(Monster* pMonster, Creature* pEnemy) {
     if (!pMonster->isFlag(Effect::EFFECT_CLASS_NO_DAMAGE)
 
         // not immune to acid while AcidSwamp lies on the ground.
-        && (!pMonster->isFlag(Effect::EFFECT_CLASS_IMMUNE_TO_ACID) &&
-                rTile.getEffect(Effect::EFFECT_CLASS_ACID_SWAMP) != NULL
+        && ((!pMonster->isFlag(Effect::EFFECT_CLASS_IMMUNE_TO_ACID) &&
+             rTile.getEffect(Effect::EFFECT_CLASS_ACID_SWAMP) != NULL)
 
             || rTile.getEffect(Effect::EFFECT_CLASS_BLOODY_WALL) != NULL ||
             rTile.getEffect(Effect::EFFECT_CLASS_GROUND_ATTACK) != NULL)) {

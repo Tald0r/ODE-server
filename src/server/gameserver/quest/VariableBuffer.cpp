@@ -61,7 +61,6 @@ void VariableBuffer::parse()
 
     bool bEnd = false;
 
-    int index = 0;
     size_t i = 0;
 
     do {
@@ -79,7 +78,6 @@ void VariableBuffer::parse()
 
         m_VariableInfos.push_back(pVariableInfo);
 
-        index++;
         i = j + 1;
     } while (!bEnd);
 

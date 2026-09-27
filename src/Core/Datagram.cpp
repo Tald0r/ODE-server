@@ -37,7 +37,7 @@ Datagram::Datagram() : m_Length(0), m_Capacity(0), m_InputOffset(0), m_OutputOff
 //////////////////////////////////////////////////////////////////////
 // destructor
 //////////////////////////////////////////////////////////////////////
-Datagram::~Datagram() noexcept {
+Datagram::~Datagram() {
     try {
         if (m_Data != NULL) {
             SAFE_DELETE_ARRAY(m_Data);

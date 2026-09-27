@@ -147,7 +147,8 @@ void GuildWar::executeEnd()
     if (m_bModifyCastleOwner) {
         if (de::isNetMarbleDeployment()) {
             char sCommand[100];
-            sprintf(sCommand, "*world *command setCastleOwnerGuild %u %u", m_CastleZoneID, m_WinnerGuildID);
+            snprintf(sCommand, sizeof(sCommand), "*world *command setCastleOwnerGuild %u %u", m_CastleZoneID,
+                     m_WinnerGuildID);
             de::gm::opworld(NULL, sCommand, 0, true);
         }
     } else {
@@ -191,9 +192,9 @@ void GuildWar::recordGuildWarEnd()
 
     // running a script -- who would have thought the system function would be used
     char cmd[100];
-    sprintf(cmd, "/home/darkeden/vs/bin/script/recordGuildWarHistory.py %d %d %d ", (int)getWarID(),
-            de::kernelContext().config().getPropertyInt("Dimension"),
-            de::kernelContext().config().getPropertyInt("WorldID"));
+    snprintf(cmd, sizeof(cmd), "/home/darkeden/vs/bin/script/recordGuildWarHistory.py %d %d %d ", (int)getWarID(),
+             de::kernelContext().config().getPropertyInt("Dimension"),
+             de::kernelContext().config().getPropertyInt("WorldID"));
 
     filelog("script.log", cmd);
     system(cmd);

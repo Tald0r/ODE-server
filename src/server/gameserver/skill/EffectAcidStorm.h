@@ -62,11 +62,11 @@ public:
     bool affectCreature(Creature* pCreature, bool bAffectByMove);
 
 private:
-    int m_Damage;               // EffectAcidStorm Damage;
-    Turn_t m_Tick;              // EffectAcidStorm turn;
-    int m_Level;                // EffectAcidStorm level;
-    Duration_t m_Duration;      // EffectAcidStorm Duration;
-    Duration_t m_StormDuration; // AcidStorm effect duration
+    int m_Damage;                                // EffectAcidStorm Damage;
+    Turn_t m_Tick;                               // EffectAcidStorm turn;
+    int m_Level;                                 // EffectAcidStorm level;
+    Duration_t m_Duration;                       // EffectAcidStorm Duration;
+    [[maybe_unused]] Duration_t m_StormDuration; // AcidStorm effect duration
     ObjectID_t m_UserObjectID;
     bool m_bVampire;
 };

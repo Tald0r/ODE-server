@@ -30,7 +30,7 @@ GCAddItemToZone::GCAddItemToZone()
 //--------------------------------------------------------------------
 // Destructor
 //--------------------------------------------------------------------
-GCAddItemToZone::~GCAddItemToZone() noexcept {
+GCAddItemToZone::~GCAddItemToZone() {
     try {
         // Delete every object it owns.
         while (!m_SubItemInfoList.empty()) {

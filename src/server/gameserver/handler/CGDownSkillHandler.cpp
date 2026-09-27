@@ -148,7 +148,7 @@ void CGDownSkillHandler::execute(CGDownSkill* pPacket, Player* pPlayer)
 
     pOusters->setSkillBonus(pOusters->getSkillBonus() + backPoint);
     char query[50];
-    sprintf(query, "SkillBonus=%d", pOusters->getSkillBonus());
+    snprintf(query, sizeof(query), "SkillBonus=%d", pOusters->getSkillBonus());
     pOusters->tinysave(query);
 
     GCDownSkillOK okpkt;

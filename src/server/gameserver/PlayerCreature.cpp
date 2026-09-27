@@ -81,8 +81,6 @@
 #include "skill/VampireCastleSkillSlot.h"
 #include "skill/VampireSkillSlot.h"
 
-const int MAX_GOODS_INVENTORY_SIZE = 10;
-
 //////////////////////////////////////////////////////////////////////////////
 // constructor
 //////////////////////////////////////////////////////////////////////////////
@@ -849,9 +847,9 @@ bool PlayerCreature::learnRankBonus(DWORD type)
 
         RankBonusInfo* pRankBonusInfo = de::gameContext().rankBonuses().getRankBonusInfo(type);
 
-        bool bValidRace = isSlayer() && pRankBonusInfo->getRace() == 0 ||
-                          isVampire() && pRankBonusInfo->getRace() == 1 ||
-                          isOusters() && pRankBonusInfo->getRace() == 2;
+        bool bValidRace = (isSlayer() && pRankBonusInfo->getRace() == 0) ||
+                          (isVampire() && pRankBonusInfo->getRace() == 1) ||
+                          (isOusters() && pRankBonusInfo->getRace() == 2);
 
         if (getRank() < pRankBonusInfo->getRank())
             return false;
@@ -948,7 +946,8 @@ void PlayerCreature::increaseRankExp(RankExp_t Point) {
 
     if (m_pRank->increaseExp(Point)) {
         char pField[80];
-        sprintf(pField, "`Rank`=%u, RankExp=%u, RankGoalExp=%u", getRank(), getRankExp(), getRankGoalExp());
+        snprintf(pField, sizeof(pField), "`Rank`=%u, RankExp=%u, RankGoalExp=%u", getRank(), getRankExp(),
+                 getRankGoalExp());
         tinysave(pField);
         setRankExpSaveCount(0);
 
@@ -967,7 +966,7 @@ void PlayerCreature::increaseRankExp(RankExp_t Point) {
         WORD rankExpSaveCount = getRankExpSaveCount();
         if (rankExpSaveCount > RANK_EXP_SAVE_PERIOD) {
             char pField[80];
-            sprintf(pField, "RankExp=%u, RankGoalExp=%u", getRankExp(), getRankGoalExp());
+            snprintf(pField, sizeof(pField), "RankExp=%u, RankGoalExp=%u", getRankExp(), getRankGoalExp());
             tinysave(pField);
 
             rankExpSaveCount = 0;
@@ -1267,7 +1266,7 @@ void PlayerCreature::setGoldEx(Gold_t gold) {
     setGold(gold);
 
     char pField[80];
-    sprintf(pField, "Gold=%u", m_Gold);
+    snprintf(pField, sizeof(pField), "Gold=%u", m_Gold);
     tinysave(pField);
 
     __END_CATCH
@@ -1335,7 +1334,7 @@ void PlayerCreature::setResurrectZoneIDEx(ZoneID_t id) {
     setResurrectZoneID(id);
 
     char pField[80];
-    sprintf(pField, "ResurrectZone=%d", id);
+    snprintf(pField, sizeof(pField), "ResurrectZone=%d", id);
     tinysave(pField);
 
     __END_CATCH
@@ -1347,7 +1346,7 @@ void PlayerCreature::saveAlignment(Alignment_t alignment) {
     setAlignment(alignment);
 
     char pField[80];
-    sprintf(pField, "Alignment=%d", alignment);
+    snprintf(pField, sizeof(pField), "Alignment=%d", alignment);
     tinysave(pField);
 
     __END_CATCH
@@ -1363,7 +1362,7 @@ void PlayerCreature::saveSilverDamage(Silver_t damage) {
     setSilverDamage(damage);
 
     char pField[80];
-    sprintf(pField, "SilverDamage=%d", m_SilverDamage);
+    snprintf(pField, sizeof(pField), "SilverDamage=%d", m_SilverDamage);
     tinysave(pField);
 
     __END_CATCH
@@ -1374,7 +1373,8 @@ void PlayerCreature::saveInitialRank() {
     m_pRank->SET_LEVEL(curRank);
 
     char pField[80];
-    sprintf(pField, "`Rank`=%d, RankExp=%u, RankGoalExp=%u", getRank(), getRankExp(), getRankGoalExp());
+    snprintf(pField, sizeof(pField), "`Rank`=%d, RankExp=%u, RankGoalExp=%u", getRank(), getRankExp(),
+             getRankGoalExp());
     tinysave(pField);
     setRankExpSaveCount(0);
 }

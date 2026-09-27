@@ -172,7 +172,7 @@ public:
     }
 
 private:
-    Grade_t m_Grade;
+    [[maybe_unused]] Grade_t m_Grade;
 };
 
 class WeaponGrade : public HasGrade {

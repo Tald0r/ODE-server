@@ -40,7 +40,7 @@ uint WaitForApart::waitPartner(PlayerCreature* pTargetPC) {
     GCSystemMessage gcSystemMessage;
 
     char msg[100];
-    sprintf(msg, de::gameContext().strings().c_str(STRID_REQUEST_APART), pWaitingPC->getName().c_str());
+    snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_REQUEST_APART), pWaitingPC->getName().c_str());
     gcSystemMessage.setMessage(msg);
 
     pTargetPC->getPlayer()->sendPacket(&gcSystemMessage);

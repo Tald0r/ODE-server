@@ -28,6 +28,7 @@ public:
         return SKILL_RESTORE;
     }
 
+    using SkillHandler::execute;
     void execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID);
     void execute(NPC* pNPC, Creature* pTargetCreature);
 

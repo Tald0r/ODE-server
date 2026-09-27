@@ -67,20 +67,22 @@ struct PlayerFixture {
     void persist() const {
         char sql[160];
         if (race == CHARACTER_RACE_SLAYER) {
-            sprintf(sql, "INSERT INTO Slayer (Name, Active, SwordLevel) VALUES ('%s', 'ACTIVE', %d)", name.c_str(),
-                    level);
+            snprintf(sql, sizeof(sql), "INSERT INTO Slayer (Name, Active, SwordLevel) VALUES ('%s', 'ACTIVE', %d)",
+                     name.c_str(), level);
             execSQL(sql);
-            sprintf(sql, "INSERT INTO Vampire (Name, Active) VALUES ('%s', 'ACTIVE')", name.c_str());
+            snprintf(sql, sizeof(sql), "INSERT INTO Vampire (Name, Active) VALUES ('%s', 'ACTIVE')", name.c_str());
             execSQL(sql);
         } else if (race == CHARACTER_RACE_VAMPIRE) {
-            sprintf(sql, "INSERT INTO Slayer (Name, Active) VALUES ('%s', 'ACTIVE')", name.c_str());
+            snprintf(sql, sizeof(sql), "INSERT INTO Slayer (Name, Active) VALUES ('%s', 'ACTIVE')", name.c_str());
             execSQL(sql);
-            sprintf(sql, "INSERT INTO Vampire (Name, Active, Level) VALUES ('%s', 'ACTIVE', %d)", name.c_str(), level);
+            snprintf(sql, sizeof(sql), "INSERT INTO Vampire (Name, Active, Level) VALUES ('%s', 'ACTIVE', %d)",
+                     name.c_str(), level);
             execSQL(sql);
         } else {
-            sprintf(sql, "INSERT INTO Slayer (Name, Active) VALUES ('%s', 'ACTIVE')", name.c_str());
+            snprintf(sql, sizeof(sql), "INSERT INTO Slayer (Name, Active) VALUES ('%s', 'ACTIVE')", name.c_str());
             execSQL(sql);
-            sprintf(sql, "INSERT INTO Ousters (Name, Active, Level) VALUES ('%s', 'ACTIVE', %d)", name.c_str(), level);
+            snprintf(sql, sizeof(sql), "INSERT INTO Ousters (Name, Active, Level) VALUES ('%s', 'ACTIVE', %d)",
+                     name.c_str(), level);
             execSQL(sql);
         }
     }

@@ -75,6 +75,7 @@ public:
     void deletePlayer_NOLOCKED(SOCKET fd);
 
     // Access a player object.
+    using PlayerManager::getPlayer;
     LoginPlayer* getPlayer(const string& PCName) const;
     LoginPlayer* getPlayer_NOLOCKED(const string& PCName) const;
 

@@ -172,7 +172,6 @@ void EnergyDrop::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlo
 
             // Attach the effect to every creature within the effect's range.
             // When a Slayer uses the skill, other Slayers are not affected.
-            bool bEffected = false;
             bool bHit = false;
 
             Creature* pTargetCreature;
@@ -211,7 +210,6 @@ void EnergyDrop::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlo
                         if (pTargetCreature->isVampire() || pTargetCreature->isOusters()) {
                             if (pTempEffect->affectCreature(pTargetCreature, false) == true) {
                                 Player* pTargetPlayer = pTargetCreature->getPlayer();
-                                bEffected = true;
 
                                 bHit = true;
 
@@ -405,7 +403,6 @@ void EnergyDrop::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
             // Attach the effect to every creature within the effect's range.
             // When a Slayer uses the skill, other Slayers are not affected.
-            bool bEffected = false;
             Creature* pTargetCreature;
 
 
@@ -442,7 +439,6 @@ void EnergyDrop::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
                         if (pTargetCreature->isPC()) {
                             if (pTempEffect->affectCreature(pTargetCreature, false) == true) {
                                 Player* pTargetPlayer = pTargetCreature->getPlayer();
-                                bEffected = true;
 
                                 bool bCanSee = canSee(pTargetCreature, pMonster);
 

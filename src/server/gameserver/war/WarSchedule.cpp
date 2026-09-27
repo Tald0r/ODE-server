@@ -169,7 +169,7 @@ void WarSchedule::run()
         Assert(pWar != NULL);
 
         char pState[20];
-        sprintf(pState, "Status='%s'", pWar->getState2DBString().c_str());
+        snprintf(pState, sizeof(pState), "Status='%s'", pWar->getState2DBString().c_str());
         tinysave(string(pState));
     }
 

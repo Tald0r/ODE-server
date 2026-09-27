@@ -61,7 +61,7 @@ void CGLotterySelectHandler::execute(CGLotterySelect* pPacket, Player* pPlayer)
     switch (pPacket->getType()) {
     case TYPE_SELECT_LOTTERY: {
         // Check quest status for lottery rewards
-        QuestID_t qID;
+        QuestID_t qID = 0;
         EventQuestAdvance::Status status =
             pPC->getQuestManager()->getEventQuestAdvanceManager()->getStatus(pPacket->getQuestLevel());
         int ownerQuestLevel = pPC->getQuestManager()->getEventQuestAdvanceManager()->getQuestLevel();
@@ -137,8 +137,8 @@ void CGLotterySelectHandler::execute(CGLotterySelect* pPacket, Player* pPlayer)
                                    .worldInfos()
                                    .getGameWorldInfo(de::kernelContext().config().getPropertyInt("WorldID"))
                                    ->getName();
-            sprintf(sCommand, "*allworld *command NotifyWin %s(%s) %u", pCreature->getName().c_str(), worldName.c_str(),
-                    pPC->getLottoRewardID());
+            snprintf(sCommand, sizeof(sCommand), "*allworld *command NotifyWin %s(%s) %u", pCreature->getName().c_str(),
+                     worldName.c_str(), pPC->getLottoRewardID());
             de::gm::opworld(NULL, sCommand, 0, false);
         } else {
             // Otherwise, hand out consolation rewards

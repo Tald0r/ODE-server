@@ -96,7 +96,6 @@
 #include "skill/SkillUtil.h"
 #include "types/ServerType.h"
 
-const Color_t UNIQUE_COLOR = 0xFFFF;
 const Color_t UNIQUE_OPTION = 0xFFFF;
 
 const Color_t QUEST_COLOR = 0xFFFE;
@@ -181,10 +180,11 @@ Slayer::~Slayer()
         getShapeInfo(flag, color);
 
         char pField[128];
-        sprintf(pField, "Shape=%u, HelmetColor=%d, JacketColor=%d, PantsColor=%d, WeaponColor=%d, ShieldColor=%d", flag,
-                color[PCSlayerInfo::SLAYER_COLOR_HELMET], color[PCSlayerInfo::SLAYER_COLOR_JACKET],
-                color[PCSlayerInfo::SLAYER_COLOR_PANTS], color[PCSlayerInfo::SLAYER_COLOR_WEAPON],
-                color[PCSlayerInfo::SLAYER_COLOR_SHIELD]);
+        snprintf(pField, sizeof(pField),
+                 "Shape=%u, HelmetColor=%d, JacketColor=%d, PantsColor=%d, WeaponColor=%d, ShieldColor=%d", flag,
+                 color[PCSlayerInfo::SLAYER_COLOR_HELMET], color[PCSlayerInfo::SLAYER_COLOR_JACKET],
+                 color[PCSlayerInfo::SLAYER_COLOR_PANTS], color[PCSlayerInfo::SLAYER_COLOR_WEAPON],
+                 color[PCSlayerInfo::SLAYER_COLOR_SHIELD]);
 
         // cout << "SAVE = " << pField << endl;
 
@@ -820,8 +820,8 @@ void Slayer::save() const
         //  by sigi. 2002.5.15
         char pField[80];
 
-        sprintf(pField, "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE, m_pZone->getZoneID(), m_X,
-                m_Y);
+        snprintf(pField, sizeof(pField), "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
+                 m_pZone->getZoneID(), m_X, m_Y);
         m_pMotorcycle->tinysave(pField);
     }
 
@@ -1055,13 +1055,13 @@ void Slayer::wearItem(WearPart Part, Item* pItem)
                 // by sigi. 2002.5.15
                 char pField[80];
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // and hang the previous item on the mouse cursor.
                 addItemToExtraInventorySlot(pLeft);
                 // pLeft->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
             }
             // A sword and a shield are held.
@@ -1087,13 +1087,13 @@ void Slayer::wearItem(WearPart Part, Item* pItem)
 
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Hang the previous item on the mouse cursor.
                 addItemToExtraInventorySlot(pRight);
                 // pRight->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pRight->tinysave(pField);
             }
             // The left hand holds an item.
@@ -1105,13 +1105,13 @@ void Slayer::wearItem(WearPart Part, Item* pItem)
 
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Hang the previous item on the mouse cursor.
                 addItemToExtraInventorySlot(pLeft);
                 // pLeft->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
             }
             // Neither hand holds an item.
@@ -1122,7 +1122,7 @@ void Slayer::wearItem(WearPart Part, Item* pItem)
 
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
             }
         }
@@ -1136,20 +1136,20 @@ void Slayer::wearItem(WearPart Part, Item* pItem)
 
             // by sigi. 2002.5.15
             // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
 
             // Hang the previous item on the mouse cursor.
             addItemToExtraInventorySlot(pPrevItem);
 
             // pPrevItem->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-            sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+            snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
             pPrevItem->tinysave(pField);
         } else {
             // Put the requested item into the gear slot.
             m_pWearItem[Part] = pItem;
             // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
         }
     }
@@ -1283,7 +1283,7 @@ void Slayer::wearItem(WearPart Part)
                 m_pWearItem[WEAR_LEFTHAND] = pItem;
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Remove the requested item from the mouse cursor.
@@ -1291,7 +1291,7 @@ void Slayer::wearItem(WearPart Part)
                 // Hang the previous item on the mouse cursor.
                 addItemToExtraInventorySlot(pLeft);
                 // pLeft->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
 
             }
@@ -1321,7 +1321,7 @@ void Slayer::wearItem(WearPart Part)
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
 
                 // by sigi. 2002.5.15
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Remove the requested item from the mouse cursor.
@@ -1329,7 +1329,7 @@ void Slayer::wearItem(WearPart Part)
                 // Hang the previous item on the mouse cursor.
                 addItemToExtraInventorySlot(pRight);
                 // pRight->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pRight->tinysave(pField);
 
             }
@@ -1345,7 +1345,7 @@ void Slayer::wearItem(WearPart Part)
 
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Remove the requested item from the mouse cursor.
@@ -1353,7 +1353,7 @@ void Slayer::wearItem(WearPart Part)
                 // Hang the previous item on the mouse cursor.
                 addItemToExtraInventorySlot(pLeft);
                 // pLeft->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
             }
             // Neither hand holds an item.
@@ -1379,7 +1379,7 @@ void Slayer::wearItem(WearPart Part)
             m_pWearItem[Part] = pItem;
             // by sigi. 2002.5.15
             // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
 
             // Remove the requested item from the mouse cursor.
@@ -1387,7 +1387,7 @@ void Slayer::wearItem(WearPart Part)
             // Hang the previous item on the mouse cursor.
             addItemToExtraInventorySlot(pPrevItem);
             // pPrevItem->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-            sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+            snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
             pPrevItem->tinysave(pField);
         } else {
             // Put the requested item into the gear slot.
@@ -1395,7 +1395,7 @@ void Slayer::wearItem(WearPart Part)
 
             // by sigi. 2002.5.15
             // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
             // Remove the requested item from the mouse cursor.
             deleteItemFromExtraInventorySlot();
@@ -1411,13 +1411,11 @@ void Slayer::wearItem(WearPart Part)
     sendModifyInfo(prev); // Send the attributes that changed.
 
     // bool bisWeapon = false;
-    bool bisChange = false;
-
     // ItemType_t IType = pItem->getItemType();
 
     Color_t color = getItemShapeColor(pItem, pOptionInfo);
 
-    bisChange = changeShape(pItem, color);
+    changeShape(pItem, color);
 
     // Change the outfit if the item can really be worn.
     if (m_pRealWearingCheck[Part])
@@ -1509,14 +1507,14 @@ void Slayer::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
         if (pItem->isSilverWeapon()) {
             if (pItem->isGun()) {
                 //				Gun* pGun = dynamic_cast<Gun*>(pItem);
-                sprintf(pField, "Storage=%d, Durability=%d, BulletCount=%d, Silver=%d", STORAGE_EXTRASLOT,
-                        pItem->getDurability(), pItem->getBulletCount(), pItem->getSilver());
+                snprintf(pField, sizeof(pField), "Storage=%d, Durability=%d, BulletCount=%d, Silver=%d",
+                         STORAGE_EXTRASLOT, pItem->getDurability(), pItem->getBulletCount(), pItem->getSilver());
             } else {
-                sprintf(pField, "Storage=%d, Durability=%d, Silver=%d", STORAGE_EXTRASLOT, pItem->getDurability(),
-                        pItem->getSilver());
+                snprintf(pField, sizeof(pField), "Storage=%d, Durability=%d, Silver=%d", STORAGE_EXTRASLOT,
+                         pItem->getDurability(), pItem->getSilver());
             }
         } else {
-            sprintf(pField, "Storage=%d, Durability=%d", STORAGE_EXTRASLOT, pItem->getDurability());
+            snprintf(pField, sizeof(pField), "Storage=%d, Durability=%d", STORAGE_EXTRASLOT, pItem->getDurability());
         }
 
         pItem->tinysave(pField);
@@ -1524,7 +1522,6 @@ void Slayer::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
 
     GCTakeOff _GCTakeOff;
 
-    bool bisWeapon = false;
     switch (IClass) {
     case Item::ITEM_CLASS_MACE:
     case Item::ITEM_CLASS_CROSS:
@@ -1533,7 +1530,6 @@ void Slayer::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
     case Item::ITEM_CLASS_SR:
     case Item::ITEM_CLASS_SMG:
     case Item::ITEM_CLASS_SG:
-        bisWeapon = true;
         m_SlayerInfo.setWeaponType(WEAPON_NONE);
         _GCTakeOff.setObjectID(getObjectID());
         _GCTakeOff.setSlotID((SlotID_t)ADDON_RIGHTHAND);
@@ -1552,7 +1548,6 @@ void Slayer::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
         m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, this);
         break;
     case Item::ITEM_CLASS_SWORD:
-        bisWeapon = true;
         m_SlayerInfo.setWeaponType(WEAPON_NONE);
         _GCTakeOff.setObjectID(getObjectID());
         _GCTakeOff.setSlotID((SlotID_t)ADDON_RIGHTHAND);
@@ -1731,7 +1726,7 @@ bool Slayer::isRealWearing(Item* pItem) const
     Attr_t CSUM = CSTR + CDEX + CINT;
 
     if (CSTR < ReqSTR || CDEX < ReqDEX || CINT < ReqINT || CSUM < ReqSum ||
-        m_Sex == MALE && ReqGender == GENDER_FEMALE || m_Sex == FEMALE && ReqGender == GENDER_MALE) {
+        (m_Sex == MALE && ReqGender == GENDER_FEMALE) || (m_Sex == FEMALE && ReqGender == GENDER_MALE)) {
         // cout << "Disable: " << pItem->getItemClassName().c_str() << endl;
         return false;
     }
@@ -1814,8 +1809,8 @@ void Slayer::getOffMotorcycle()
 
         // Optimized item save.
         char pField[80];
-        sprintf(pField, "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE, m_pZone->getZoneID(),
-                (int)pt.x, (int)pt.y);
+        snprintf(pField, sizeof(pField), "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
+                 m_pZone->getZoneID(), (int)pt.x, (int)pt.y);
         m_pMotorcycle->tinysave(pField);
 
         MotorcycleBox* pMotorcycleBox = de::gameContext().parking().getMotorcycleBox(m_pMotorcycle->getItemID());
@@ -2110,7 +2105,7 @@ void Slayer::setGoldEx(Gold_t gold)
     setGold(gold);
 
     char pField[80];
-    sprintf(pField, "Gold = %u", m_Gold);
+    snprintf(pField, sizeof(pField), "Gold = %u", m_Gold);
     tinysave(pField);
 
     __END_DEBUG
@@ -2360,21 +2355,22 @@ void Slayer::saveGears(void) const
 
                         if (pItem != NULL) {
                             // pItem->saveBullet();
-                            sprintf(pField, "Durability=%d, BulletCount=%d, Silver=%d", pItem->getDurability(),
-                                    pItem->getBulletCount(), pItem->getSilver());
+                            snprintf(pField, sizeof(pField), "Durability=%d, BulletCount=%d, Silver=%d",
+                                     pItem->getDurability(), pItem->getBulletCount(), pItem->getSilver());
                             pItem->tinysave(pField);
                         }
                     }
                     // All current weapons are silver-plated.
                     else // if (pItem->isSilverWeapon())
                     {
-                        sprintf(pField, "Durability=%d, Silver=%d", pItem->getDurability(), pItem->getSilver());
+                        snprintf(pField, sizeof(pField), "Durability=%d, Silver=%d", pItem->getDurability(),
+                                 pItem->getSilver());
                         pItem->tinysave(pField);
                     }
                 } else {
                     // pItem->save(m_Name, STORAGE_GEAR, 0, i, 0);
                     //  Optimized item save.
-                    sprintf(pField, "Durability=%d", pItem->getDurability());
+                    snprintf(pField, sizeof(pField), "Durability=%d", pItem->getDurability());
                     pItem->tinysave(pField);
                 }
             }
@@ -2655,12 +2651,10 @@ bool Slayer::changeShape(Item* pItem, Color_t color, bool bSendPacket) {
 }
 
 bool Slayer::addShape(Item::ItemClass IClass, ItemType_t IType, Color_t color) {
-    bool bisWeapon = false;
     bool bisChange = false;
 
     switch (IClass) {
     case Item::ITEM_CLASS_MACE:
-        bisWeapon = true;
         bisChange = true;
         // m_SlayerInfo.setWeaponType(WEAPON_MACE);
 
@@ -2668,42 +2662,36 @@ bool Slayer::addShape(Item::ItemClass IClass, ItemType_t IType, Color_t color) {
         m_SlayerInfo.setWeaponColor(color);
         break;
     case Item::ITEM_CLASS_CROSS:
-        bisWeapon = true;
         bisChange = true;
 
         m_SlayerInfo.setWeaponType(slayerWeaponShape(WEAPON_CROSS, IType));
         m_SlayerInfo.setWeaponColor(color);
         break;
     case Item::ITEM_CLASS_BLADE:
-        bisWeapon = true;
         bisChange = true;
 
         m_SlayerInfo.setWeaponType(slayerWeaponShape(WEAPON_BLADE, IType));
         m_SlayerInfo.setWeaponColor(color);
         break;
     case Item::ITEM_CLASS_AR:
-        bisWeapon = true;
         bisChange = true;
 
         m_SlayerInfo.setWeaponType(slayerWeaponShape(WEAPON_AR, IType));
         m_SlayerInfo.setWeaponColor(color);
         break;
     case Item::ITEM_CLASS_SR:
-        bisWeapon = true;
         bisChange = true;
 
         m_SlayerInfo.setWeaponType(slayerWeaponShape(WEAPON_SR, IType));
         m_SlayerInfo.setWeaponColor(color);
         break;
     case Item::ITEM_CLASS_SMG:
-        bisWeapon = true;
         bisChange = true;
 
         m_SlayerInfo.setWeaponType(slayerWeaponShape(WEAPON_SMG, IType));
         m_SlayerInfo.setWeaponColor(color);
         break;
     case Item::ITEM_CLASS_SG:
-        bisWeapon = true;
         bisChange = true;
 
         m_SlayerInfo.setWeaponType(slayerWeaponShape(WEAPON_SG, IType));
@@ -2722,7 +2710,6 @@ bool Slayer::addShape(Item::ItemClass IClass, ItemType_t IType, Color_t color) {
         m_SlayerInfo.setShieldColor(color);
         break;
     case Item::ITEM_CLASS_SWORD:
-        bisWeapon = true;
         bisChange = true;
 
         m_SlayerInfo.setWeaponType(slayerWeaponShape(WEAPON_SWORD, IType));
@@ -2953,8 +2940,8 @@ void Slayer::divideAttrExp(AttrKind kind, Damage_t damage, ModifyInfo& modifyInf
 
     if (++m_AttrExpSaveCount > ATTR_EXP_SAVE_PERIOD) {
         char pField[256];
-        sprintf(pField, "STRGoalExp=%u, DEXGoalExp=%u, INTGoalExp=%u", getSTRGoalExp(), getDEXGoalExp(),
-                getINTGoalExp());
+        snprintf(pField, sizeof(pField), "STRGoalExp=%u, DEXGoalExp=%u, INTGoalExp=%u", getSTRGoalExp(),
+                 getDEXGoalExp(), getINTGoalExp());
 
         tinysave(pField);
 
@@ -2968,11 +2955,12 @@ void Slayer::divideAttrExp(AttrKind kind, Damage_t damage, ModifyInfo& modifyInf
             checkNewbieTransportToGuild(this);
 
         char pField[256];
-        sprintf(pField, "STR=%d, DEX=%d, INTE=%d, STRGoalExp=%u, DEXGoalExp=%u, INTGoalExp=%u",
-                //							getSTR(ATTR_BASIC), getDEX(ATTR_BASIC), getINT(ATTR_BASIC), getSTRGoalExp(),
-                // getDEXGoalExp(), getINTGoalExp();
-                m_pAttrs[ATTR_KIND_STR]->getLevel(), m_pAttrs[ATTR_KIND_DEX]->getLevel(),
-                m_pAttrs[ATTR_KIND_INT]->getLevel(), getSTRGoalExp(), getDEXGoalExp(), getINTGoalExp());
+        snprintf(
+            pField, sizeof(pField), "STR=%d, DEX=%d, INTE=%d, STRGoalExp=%u, DEXGoalExp=%u, INTGoalExp=%u",
+            //							getSTR(ATTR_BASIC), getDEX(ATTR_BASIC), getINT(ATTR_BASIC), getSTRGoalExp(),
+            // getDEXGoalExp(), getINTGoalExp();
+            m_pAttrs[ATTR_KIND_STR]->getLevel(), m_pAttrs[ATTR_KIND_DEX]->getLevel(),
+            m_pAttrs[ATTR_KIND_INT]->getLevel(), getSTRGoalExp(), getDEXGoalExp(), getINTGoalExp());
 
         tinysave(pField);
     }

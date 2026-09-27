@@ -84,7 +84,7 @@ void ActionStartEventQuest::execute(Creature* pCreature1, Creature* pCreature2)
     QuestID_t qID = qList[0];
 
     pPC->getQuestManager()->adjustQuestStatus();
-    QuestMessage result = pQIM->startQuest(qID, pPC);
+    pQIM->startQuest(qID, pPC);
 
     pPC->sendCurrentQuestInfo();
 

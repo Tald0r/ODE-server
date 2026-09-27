@@ -92,7 +92,7 @@ void CastleSymbol::tinysave(const char* field) const
 
     char query[255];
 
-    sprintf(query, "UPDATE CastleSymbolObject SET %s WHERE ItemID=%u", field, m_ItemID);
+    snprintf(query, sizeof(query), "UPDATE CastleSymbolObject SET %s WHERE ItemID=%u", field, m_ItemID);
     defaultItemObjectRepository().tinysaveGear(GEAR_CASTLE_SYMBOL, field, m_ItemID);
     filelog("WarLog.txt", "%s", query);
 
@@ -293,7 +293,6 @@ void CastleSymbolLoader::load(Zone* pZone)
         pCastleSymbol->setItemType(rows[r].itemType);
 
         Storage storage = (Storage)rows[r].storage;
-        StorageID_t storageID = rows[r].storageID;
         BYTE x = rows[r].x;
         BYTE y = rows[r].y;
 

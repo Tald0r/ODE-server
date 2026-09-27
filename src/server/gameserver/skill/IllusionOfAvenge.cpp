@@ -40,7 +40,6 @@ void IllusionOfAvenge::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID
 
         SkillType_t SkillType = pSkillSlot->getSkillType();
         SkillInfo* pSkillInfo = de::gameContext().skillInfos().getSkillInfo(SkillType);
-        SkillDomainType_t DomainType = pSkillInfo->getDomainType();
 
         ZoneCoord_t X = pSlayer->getX();
         ZoneCoord_t Y = pSlayer->getY();

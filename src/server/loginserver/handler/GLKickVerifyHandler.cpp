@@ -39,7 +39,7 @@ void GLKickVerifyHandler::execute(GLKickVerify* pPacket)
     try {
         loginPlayers.lock();
 
-        // The base overload keyed by socket, which the derived getPlayer(name) hides.
+        // The PlayerManager overload, keyed by socket.
         Player* pPlayer = static_cast<PlayerManager&>(loginPlayers).getPlayer(pPacket->getID());
         LoginPlayer* pLoginPlayer = dynamic_cast<LoginPlayer*>(pPlayer);
 

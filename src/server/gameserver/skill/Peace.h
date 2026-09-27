@@ -27,6 +27,7 @@ public:
         return SKILL_PEACE;
     }
 
+    using SkillHandler::execute;
     void execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID);
     void execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID);
     void execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID);

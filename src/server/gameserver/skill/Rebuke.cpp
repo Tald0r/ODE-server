@@ -102,20 +102,14 @@ void Rebuke::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffect
                             continue;
 
                         if (HitRoll::isSuccessRebuke(pSlayer, pSkillSlot, pTargetCreature)) {
-                            HP_t RemainHP = 0;
-                            // Damages the target that was hit and reads its remaining HP.
+                            // Damages the target that was hit.
                             if (pTargetCreature->isVampire()) {
                                 GCModifyInformation gcMI;
                                 setDamage(pTargetCreature, output.Damage, pSlayer, SkillType, &gcMI);
 
                                 pTargetCreature->getPlayer()->sendPacket(&gcMI);
-
-                                Vampire* pVampire = dynamic_cast<Vampire*>(pTargetCreature);
-                                RemainHP = pVampire->getHP(ATTR_CURRENT);
                             } else if (pTargetCreature->isMonster()) {
                                 setDamage(pTargetCreature, output.Damage, pSlayer, SkillType);
-                                Monster* pMonster = dynamic_cast<Monster*>(pTargetCreature);
-                                RemainHP = pMonster->getHP(ATTR_CURRENT);
                             }
 
                             // Deletes the existing SLEEP effect if the target already has one.

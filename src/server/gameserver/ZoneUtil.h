@@ -27,7 +27,7 @@ class Monster;
 class Slayer;
 class Corpse;
 
-struct ZONE_COORD;
+class ZONE_COORD;
 struct SUMMON_INFO;
 
 // Summoning by kind.

@@ -35,7 +35,7 @@ CondVar::CondVar(CondVarAttr* attr)
 // destructor
 //
 //////////////////////////////////////////////////////////////////////
-CondVar::~CondVar() noexcept {
+CondVar::~CondVar() {
     // Best-effort cleanup; errors should not escape destructors.
     try {
         pthreadAPI::pthread_cond_destroy_ex(&m_Cond);

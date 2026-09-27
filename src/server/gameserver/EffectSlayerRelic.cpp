@@ -58,7 +58,8 @@ void EffectSlayerRelic::affect(Creature* pCreature)
     __BEGIN_TRY
 
     char msg[50];
-    sprintf(msg, de::gameContext().strings().c_str(STRID_TAKE_SLAYER_RELIC), pCreature->getName().c_str());
+    snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_TAKE_SLAYER_RELIC),
+             pCreature->getName().c_str());
 
     GCSystemMessage gcSystemMessage;
 

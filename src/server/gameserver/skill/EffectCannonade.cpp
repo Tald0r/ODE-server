@@ -57,8 +57,6 @@ void EffectCannonade::unaffect(Creature* pCastCreature)
 
     VSRect rect(0, 0, m_pZone->getWidth() - 1, m_pZone->getHeight() - 1); // Last valid tile coordinates
 
-    bool bHit = false;
-
     GCSkillToObjectOK2 gcSkillToObjectOK2;
     GCSkillToObjectOK4 gcSkillToObjectOK4;
 
@@ -120,15 +118,12 @@ void EffectCannonade::unaffect(Creature* pCastCreature)
                             gcSkillToObjectOK2.setSkillType(SKILL_ATTACK_MELEE);
                             gcSkillToObjectOK2.setDuration(0);
                             pCreature->getPlayer()->sendPacket(&gcSkillToObjectOK2);
-
-                            bHit = true;
                         } else if (pCreature->isMonster()) {
                             Monster* pMonster = dynamic_cast<Monster*>(pCreature);
 
                             ::setDamage(pMonster, FinalDamage, pCastCreature, SKILL_CANNONADE); // Global setDamage
 
                             pMonster->addEnemy(pCastCreature);
-                            bHit = true;
                         } else
                             continue;
 

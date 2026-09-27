@@ -71,11 +71,11 @@ public:
 
 private:
     ObjectID_t m_UserObjectID;
-    int m_Damage;               // EffectVigorDrop Damage;
-    Turn_t m_Tick;              // EffectVigorDrop turn;
-    int m_Level;                // EffectVigorDrop level;
-    Duration_t m_Duration;      // EffectVigorDrop Duration;
-    Duration_t m_StormDuration; // VigorDrop effect duration
+    int m_Damage;                                // EffectVigorDrop Damage;
+    Turn_t m_Tick;                               // EffectVigorDrop turn;
+    int m_Level;                                 // EffectVigorDrop level;
+    Duration_t m_Duration;                       // EffectVigorDrop Duration;
+    [[maybe_unused]] Duration_t m_StormDuration; // VigorDrop effect duration
 };
 
 class EffectVigorDropLoader : public EffectLoader {

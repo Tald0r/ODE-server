@@ -367,7 +367,7 @@ void EffectPassingHeal::unaffect()
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_PASSING_HEAL);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
-    Player* pPlayer = pCreature->getPlayer();
+    pCreature->getPlayer(); // Asserts that the creature has a player.
 
     __END_DEBUG
     __END_CATCH

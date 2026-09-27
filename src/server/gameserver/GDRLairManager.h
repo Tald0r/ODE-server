@@ -357,9 +357,9 @@ public:
         GDR_LAIR_MAX
     };
 
-    void init();
-    void run();
-    string getName() const {
+    void init() override;
+    void run() override;
+    string getName() const override {
         return "GDRLairManager";
     }
 

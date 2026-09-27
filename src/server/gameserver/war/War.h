@@ -12,7 +12,7 @@
 
 class Mutex;
 class PlayerCreature;
-class WarScheduleInfo;
+struct WarScheduleInfo;
 class WarInfo;
 
 class War : public Work {

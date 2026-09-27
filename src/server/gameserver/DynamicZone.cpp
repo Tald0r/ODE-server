@@ -41,9 +41,9 @@ void DynamicZone::makeDynamicZone() {
     pZoneInfo->setOpenLevel(pTemplateZoneInfo->getOpenLevel());
     pZoneInfo->setSMPFilename(pTemplateZoneInfo->getSMPFilename());
     pZoneInfo->setSSIFilename(pTemplateZoneInfo->getSSIFilename());
-    sprintf(temp, "%s%u", pTemplateZoneInfo->getFullName().c_str(), m_ZoneID);
+    snprintf(temp, sizeof(temp), "%s%u", pTemplateZoneInfo->getFullName().c_str(), m_ZoneID);
     pZoneInfo->setFullName(temp);
-    sprintf(temp, "%s%u", pTemplateZoneInfo->getShortName().c_str(), m_ZoneID);
+    snprintf(temp, sizeof(temp), "%s%u", pTemplateZoneInfo->getShortName().c_str(), m_ZoneID);
     pZoneInfo->setShortName(temp);
 
     // add zone info to the zone info table

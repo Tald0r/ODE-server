@@ -94,7 +94,7 @@ void runGuildSteps(const std::vector<SharedGuildStep>& steps, Guild* pGuild, con
             pGuild->setMaster(step.name);
 
             char field[30];
-            sprintf(field, "Master='%s'", step.name.c_str());
+            snprintf(field, sizeof(field), "Master='%s'", step.name.c_str());
             pGuild->tinysave(field);
             break;
         }

@@ -110,7 +110,7 @@ void CGAddMouseToInventoryHandler::execute(CGAddMouseToInventory* pPacket, Playe
             // When the item class is the same, raise the count and remove the one on the mouse.
             if (canStack(pItem, pPrevItem)) {
                 // Keep time-limited items from being put together
-                if (pItem->isTimeLimitItem() | pPrevItem->isTimeLimitItem()) {
+                if (pItem->isTimeLimitItem() || pPrevItem->isTimeLimitItem()) {
                     GCCannotAdd _GCCannotAdd;
                     _GCCannotAdd.setObjectID(pPacket->getObjectID());
                     pPlayer->sendPacket(&_GCCannotAdd);
@@ -153,10 +153,11 @@ void CGAddMouseToInventoryHandler::execute(CGAddMouseToInventory* pPacket, Playe
                         pInventory->increaseNum(MaxStack - CurrentNum);
                         pInventory->increaseWeight(pItem->getWeight() * (MaxStack - CurrentNum));
                         char pField[80];
-                        sprintf(pField, "Num=%d, Storage=%d, X=%d, Y=%d", MaxStack, STORAGE_INVENTORY, InvenX, InvenY);
+                        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, X=%d, Y=%d", MaxStack, STORAGE_INVENTORY,
+                                 InvenX, InvenY);
                         pPrevItem->tinysave(pField);
 
-                        sprintf(pField, "Num=%d, Storage=%d", NewNum, STORAGE_EXTRASLOT);
+                        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d", NewNum, STORAGE_EXTRASLOT);
                         pItem->tinysave(pField);
 
                         Success = true;
@@ -166,8 +167,8 @@ void CGAddMouseToInventoryHandler::execute(CGAddMouseToInventory* pPacket, Playe
                         pInventory->increaseNum(pItem->getNum());
                         pInventory->increaseWeight(pItem->getWeight() * pItem->getNum());
                         char pField[80];
-                        sprintf(pField, "Num=%d, Storage=%d, X=%d, Y=%d", pPrevItem->getNum(), STORAGE_INVENTORY,
-                                InvenX, InvenY);
+                        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, X=%d, Y=%d", pPrevItem->getNum(),
+                                 STORAGE_INVENTORY, InvenX, InvenY);
                         pPrevItem->tinysave(pField);
 
                         pItem->destroy();
@@ -221,10 +222,10 @@ void CGAddMouseToInventoryHandler::execute(CGAddMouseToInventory* pPacket, Playe
                     pInventory->addItem(InvenX, InvenY, pItem);
 
                     char pField[80];
-                    sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                    snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                     pPrevItem->tinysave(pField);
 
-                    sprintf(pField, "Storage=%d, X=%d, Y=%d", STORAGE_INVENTORY, InvenX, InvenY);
+                    snprintf(pField, sizeof(pField), "Storage=%d, X=%d, Y=%d", STORAGE_INVENTORY, InvenX, InvenY);
                     pItem->tinysave(pField);
 
 
@@ -241,10 +242,10 @@ void CGAddMouseToInventoryHandler::execute(CGAddMouseToInventory* pPacket, Playe
                 pInventory->addItem(InvenX, InvenY, pItem);
 
                 char pField[80];
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pPrevItem->tinysave(pField);
 
-                sprintf(pField, "Storage=%d, X=%d, Y=%d", STORAGE_INVENTORY, InvenX, InvenY);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d, Y=%d", STORAGE_INVENTORY, InvenX, InvenY);
                 pItem->tinysave(pField);
 
 
@@ -259,7 +260,7 @@ void CGAddMouseToInventoryHandler::execute(CGAddMouseToInventory* pPacket, Playe
             pPC->deleteItemFromExtraInventorySlot();
 
             char pField[80];
-            sprintf(pField, "Storage=%d, X=%d, Y=%d", STORAGE_INVENTORY, InvenX, InvenY);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d, Y=%d", STORAGE_INVENTORY, InvenX, InvenY);
             pItem->tinysave(pField);
 
 

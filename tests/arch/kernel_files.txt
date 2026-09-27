@@ -1138,7 +1138,6 @@ src/Core/Geometry.h
 src/Core/Geometry.cpp
 src/Core/Shape.h
 src/Core/Shape.cpp
-src/Core/HashMap.h
 src/Core/Player.h
 src/Core/Player.cpp
 src/Core/UpdateDef.h

@@ -601,7 +601,7 @@ void MonsterInfoManager::load()
                     ousters_filename = config.getProperty("HomePath") + "/data/" + pInfo->getEName() + ".ousters.bin";
                 } else {
                     char buffer[10];
-                    sprintf(buffer, "Class%d", pInfo->getMonsterClass());
+                    snprintf(buffer, sizeof(buffer), "Class%d", pInfo->getMonsterClass());
                     slayer_filename = config.getProperty("HomePath") + "/data/" + buffer + ".slayer.bin";
                     vampire_filename = config.getProperty("HomePath") + "/data/" + buffer + ".vampire.bin";
                     ousters_filename = config.getProperty("HomePath") + "/data/" + buffer + ".ousters.bin";
@@ -719,15 +719,6 @@ void MonsterInfoManager::reload(MonsterType_t monsterType)
             pMonsterInfo->setDefaultEffects(row.defaultEffects);
             pMonsterInfo->setNormalRegen(row.normalRegen != 0);
         }
-    }
-
-    int startType = 0;
-    int endType = m_MaxMonsterType;
-
-    // If not loading everything, set a specific MonsterType.
-    if (!bLoadAll) {
-        startType = monsterType;
-        endType = monsterType + 1;
     }
 
     __END_DEBUG

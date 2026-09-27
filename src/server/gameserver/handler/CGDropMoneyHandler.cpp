@@ -99,15 +99,15 @@ void CGDropMoneyHandler::execute(CGDropMoney* pPacket, Player* pPlayer)
         TPOINT pt = pZone->addItem(pItem, ZoneX, ZoneY);
         if (pt.x != -1) {
             char pField[80];
-            sprintf(pField, "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE, pZone->getZoneID(), pt.x,
-                    pt.y);
+            snprintf(pField, sizeof(pField), "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
+                     pZone->getZoneID(), pt.x, pt.y);
             pItem->tinysave(pField);
 
 
             // Leave a money log if the amount warrants one
             if (amount >= de::gameContext().variables().getMoneyTraceLogLimit()) {
                 char zoneName[15];
-                sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), ZoneX, ZoneY);
+                snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), ZoneX, ZoneY);
                 remainMoneyTraceLog(pPC->getName(), zoneName, ITEM_LOG_MOVE, DETAIL_DROP, amount);
             }
         } else {

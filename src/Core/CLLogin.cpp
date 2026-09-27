@@ -64,8 +64,8 @@ bool CLLogin::checkMacAddress(string lastMac) const {
     bool retValue = false;
 
     char tmpStr[13];
-    sprintf(tmpStr, "%02x%02x%02x%02x%02x%02x", m_cMacAddress[0], m_cMacAddress[1], m_cMacAddress[2], m_cMacAddress[3],
-            m_cMacAddress[4], m_cMacAddress[5]);
+    snprintf(tmpStr, sizeof(tmpStr), "%02x%02x%02x%02x%02x%02x", m_cMacAddress[0], m_cMacAddress[1], m_cMacAddress[2],
+             m_cMacAddress[3], m_cMacAddress[4], m_cMacAddress[5]);
     tmpStr[12] = '\0';
 
     if (tmpStr == lastMac)

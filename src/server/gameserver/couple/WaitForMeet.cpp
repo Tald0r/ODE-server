@@ -26,7 +26,6 @@
 #include "GCNPCResponse.h"
 #include "GCSystemMessage.h"
 
-const int CoupleRingOptionNum = 4;
 static const char* CoupleRingOptions[2][4] = {{"STR+4", "DEX+4", "DAM+3", "HP+4"},
                                               {"STR+4", "DEX+4", "DAM+3", "ASPD+4"}};
 
@@ -47,7 +46,7 @@ uint WaitForMeet::waitPartner(PlayerCreature* pTargetPC) {
     GCSystemMessage gcSystemMessage;
 
     char msg[100];
-    sprintf(msg, de::gameContext().strings().c_str(STRID_REQUEST_MEET), pWaitingPC->getName().c_str());
+    snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_REQUEST_MEET), pWaitingPC->getName().c_str());
     gcSystemMessage.setMessage(msg);
 
     pTargetPC->getPlayer()->sendPacket(&gcSystemMessage);

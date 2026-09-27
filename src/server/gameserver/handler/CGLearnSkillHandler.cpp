@@ -515,15 +515,6 @@ void CGLearnSkillHandler::executeSlayerSkill(CGLearnSkill* pPacket, Player* pPla
     if (actualDomainType == SKILL_DOMAIN_ETC)
         actualDomainType = pSlayer->getHighestSkillDomain();
 
-    if (targetSkillType >= SKILL_MAX && targetSkillType < SKILL_DOUBLE_IMPACT) {
-        GCLearnSkillFailed failpkt;
-        failpkt.setSkillType(targetSkillType);
-        ;
-        failpkt.setDesc(PARENT_SKILL_NEED);
-        pPlayer->sendPacket(&failpkt);
-        return;
-    }
-
     // The skill can be learned when the level needed for it is below the current domain level.
     SkillInfo* pSkillInfo = de::gameContext().skillInfos().getSkillInfo(targetSkillType);
 
@@ -740,7 +731,7 @@ void CGLearnSkillHandler::executeOustersSkill(CGLearnSkill* pPacket, Player* pPl
 
         pOusters->setSkillBonus(pOusters->getSkillBonus() - LevelUpPoint);
         char query[50];
-        sprintf(query, "SkillBonus = %u", pOusters->getSkillBonus());
+        snprintf(query, sizeof(query), "SkillBonus = %u", pOusters->getSkillBonus());
         pOusters->tinysave(query);
 
         GCModifyInformation gcMI;
@@ -793,7 +784,7 @@ void CGLearnSkillHandler::executeOustersSkill(CGLearnSkill* pPacket, Player* pPl
         pOusters->setSkillBonus(pOusters->getSkillBonus() - SkillPoint);
         char query[50];
 
-        sprintf(query, "SkillBonus = %u", pOusters->getSkillBonus());
+        snprintf(query, sizeof(query), "SkillBonus = %u", pOusters->getSkillBonus());
         pOusters->tinysave(query);
 
         GCModifyInformation gcMI;

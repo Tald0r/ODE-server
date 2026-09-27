@@ -63,6 +63,7 @@ public:
     void flushBroadcastPacket();
 
     // add player to zone player manager
+    using PlayerManager::addPlayer;
     void addPlayer(GamePlayer* pGamePlayer);
     void addPlayer_NOBLOCKED(GamePlayer* pGamePlayer);
 

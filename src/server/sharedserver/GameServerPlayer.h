@@ -35,6 +35,9 @@ public:
 
     // parse packet and execute handler for the packet
     virtual void processCommand() noexcept(false);
+    virtual void processCommand(bool Option) {
+        Player::processCommand(Option);
+    }
 
     // send packet to player's output buffer
     virtual void sendPacket(Packet* pPacket) noexcept(false);

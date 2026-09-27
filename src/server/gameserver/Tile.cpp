@@ -105,10 +105,10 @@ bool Tile::addCreature(Creature* pCreature, bool bCheckEffect, bool bCheckPortal
     addObject(pCreature);
 
     // Turn on the matching creature flag.
-    FLAG_SET(m_wFlags, TILE_WALKING_CREATURE + mode);
+    FLAG_SET(m_wFlags, TILE_WALKING_CREATURE + static_cast<int>(mode));
 
     // Turn on the matching blocking flag.
-    FLAG_SET(m_wFlags, TILE_GROUND_BLOCKED + mode);
+    FLAG_SET(m_wFlags, TILE_GROUND_BLOCKED + static_cast<int>(mode));
 
     Assert(isBlocked(mode));
     Assert(hasCreature(mode));
@@ -202,10 +202,10 @@ void Tile::deleteCreature(ObjectID_t creatureID) {
         deleteObject(creatureID);
 
         // Turn off the matching creature flag.
-        FLAG_CLEAR(m_wFlags, TILE_WALKING_CREATURE + pCreature->getMoveMode());
+        FLAG_CLEAR(m_wFlags, TILE_WALKING_CREATURE + static_cast<int>(pCreature->getMoveMode()));
 
         // Turn off the matching blocking flag.
-        FLAG_CLEAR(m_wFlags, TILE_GROUND_BLOCKED + pCreature->getMoveMode());
+        FLAG_CLEAR(m_wFlags, TILE_GROUND_BLOCKED + static_cast<int>(pCreature->getMoveMode()));
     } catch (Throwable& t) {
         // cerr << "Delete Creature" << endl;
         // cerr << t.toString() << endl;
@@ -238,13 +238,13 @@ void Tile::deleteCreature(Creature::MoveMode mode) {
     }
 
     // Delete the object.
-    deleteObject(OBJECT_PRIORITY_WALKING_CREATURE + mode);
+    deleteObject(OBJECT_PRIORITY_WALKING_CREATURE + static_cast<int>(mode));
 
     // Turn off the matching creature flag.
-    FLAG_CLEAR(m_wFlags, TILE_WALKING_CREATURE + mode);
+    FLAG_CLEAR(m_wFlags, TILE_WALKING_CREATURE + static_cast<int>(mode));
 
     // Turn off the matching blocking flag.
-    FLAG_CLEAR(m_wFlags, TILE_GROUND_BLOCKED + mode);
+    FLAG_CLEAR(m_wFlags, TILE_GROUND_BLOCKED + static_cast<int>(mode));
 
     __END_CATCH
 }
@@ -269,7 +269,7 @@ Creature* Tile::getCreature(Creature::MoveMode mode) {
     __BEGIN_TRY
 
     Assert(hasCreature(mode));
-    return (Creature*)getObject(ObjectPriority(OBJECT_PRIORITY_WALKING_CREATURE + mode));
+    return (Creature*)getObject(ObjectPriority(OBJECT_PRIORITY_WALKING_CREATURE + static_cast<int>(mode)));
 
     __END_CATCH
 }
@@ -771,7 +771,6 @@ void Tile::deleteObject(ObjectID_t objectID) {
     forward_list<Object*>::iterator before = m_Objects.end();
     forward_list<Object*>::iterator current = m_Objects.begin();
 
-    int i = 0;
     for (; current != m_Objects.end(); before = current++) {
         if (objectID == (*current)->getObjectID()) {
             // An object with that id was found.
@@ -785,7 +784,6 @@ void Tile::deleteObject(ObjectID_t objectID) {
 
             return;
         }
-        i++;
     }
 
     Assert(false);

@@ -107,11 +107,11 @@ void CGAddMouseToQuickSlotHandler::execute(CGAddMouseToQuickSlot* pPacket, Playe
                         pBeltInventory->increaseNum(MaxStack - CurrentNum);
                         pBeltInventory->increaseWeight(pItem->getWeight() * (MaxStack - CurrentNum));
                         char pField[80];
-                        sprintf(pField, "Num=%d, Storage=%d, StorageID=%u, X=%d", MaxStack, STORAGE_BELT,
-                                pBelt->getItemID(), SlotID);
+                        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, StorageID=%u, X=%d", MaxStack,
+                                 STORAGE_BELT, pBelt->getItemID(), SlotID);
                         pPrevItem->tinysave(pField);
 
-                        sprintf(pField, "Num=%d, Storage=%d", NewNum, STORAGE_EXTRASLOT);
+                        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d", NewNum, STORAGE_EXTRASLOT);
                         pItem->tinysave(pField);
 
 
@@ -123,8 +123,8 @@ void CGAddMouseToQuickSlotHandler::execute(CGAddMouseToQuickSlot* pPacket, Playe
                         pBeltInventory->increaseNum(pItem->getNum());
                         pBeltInventory->increaseWeight(pItem->getWeight() * pItem->getNum());
                         char pField[80];
-                        sprintf(pField, "Num=%d, Storage=%d, StorageID=%u, X=%d", pPrevItem->getNum(), STORAGE_BELT,
-                                pBelt->getItemID(), SlotID);
+                        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, StorageID=%u, X=%d", pPrevItem->getNum(),
+                                 STORAGE_BELT, pBelt->getItemID(), SlotID);
                         pPrevItem->tinysave(pField);
 
                         pItem->destroy();
@@ -143,10 +143,11 @@ void CGAddMouseToQuickSlotHandler::execute(CGAddMouseToQuickSlot* pPacket, Playe
 
                     // Save to the DB.
                     char pField[80];
-                    sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                    snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                     pPrevItem->tinysave(pField);
 
-                    sprintf(pField, "Storage=%d, StorageID=%u, X=%d", STORAGE_BELT, pBelt->getItemID(), SlotID);
+                    snprintf(pField, sizeof(pField), "Storage=%d, StorageID=%u, X=%d", STORAGE_BELT, pBelt->getItemID(),
+                             SlotID);
                     pItem->tinysave(pField);
 
 
@@ -160,7 +161,8 @@ void CGAddMouseToQuickSlotHandler::execute(CGAddMouseToQuickSlot* pPacket, Playe
                 // On a successful add, remove the item hanging on the mouse.
                 pSlayer->deleteItemFromExtraInventorySlot();
                 char pField[80];
-                sprintf(pField, "Storage=%d, StorageID=%u, X=%d", STORAGE_BELT, pBelt->getItemID(), SlotID);
+                snprintf(pField, sizeof(pField), "Storage=%d, StorageID=%u, X=%d", STORAGE_BELT, pBelt->getItemID(),
+                         SlotID);
                 pItem->tinysave(pField);
 
                 Success = true;
@@ -242,11 +244,11 @@ void CGAddMouseToQuickSlotHandler::execute(CGAddMouseToQuickSlot* pPacket, Playe
                         pArmsbandInventory->increaseNum(MaxStack - CurrentNum);
                         pArmsbandInventory->increaseWeight(pItem->getWeight() * (MaxStack - CurrentNum));
                         char pField[80];
-                        sprintf(pField, "Num=%d, Storage=%d, StorageID=%u, X=%d", MaxStack, STORAGE_BELT,
-                                pArmsband->getItemID(), SlotID);
+                        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, StorageID=%u, X=%d", MaxStack,
+                                 STORAGE_BELT, pArmsband->getItemID(), SlotID);
                         pPrevItem->tinysave(pField);
 
-                        sprintf(pField, "Num=%d, Storage=%d", NewNum, STORAGE_EXTRASLOT);
+                        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d", NewNum, STORAGE_EXTRASLOT);
                         pItem->tinysave(pField);
 
 
@@ -258,8 +260,8 @@ void CGAddMouseToQuickSlotHandler::execute(CGAddMouseToQuickSlot* pPacket, Playe
                         pArmsbandInventory->increaseNum(pItem->getNum());
                         pArmsbandInventory->increaseWeight(pItem->getWeight() * pItem->getNum());
                         char pField[80];
-                        sprintf(pField, "Num=%d, Storage=%d, StorageID=%u, X=%d", pPrevItem->getNum(), STORAGE_BELT,
-                                pArmsband->getItemID(), SlotID);
+                        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, StorageID=%u, X=%d", pPrevItem->getNum(),
+                                 STORAGE_BELT, pArmsband->getItemID(), SlotID);
                         pPrevItem->tinysave(pField);
 
                         pItem->destroy();
@@ -278,10 +280,11 @@ void CGAddMouseToQuickSlotHandler::execute(CGAddMouseToQuickSlot* pPacket, Playe
 
                     // Save to the DB.
                     char pField[80];
-                    sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                    snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                     pPrevItem->tinysave(pField);
 
-                    sprintf(pField, "Storage=%d, StorageID=%u, X=%d", STORAGE_BELT, pArmsband->getItemID(), SlotID);
+                    snprintf(pField, sizeof(pField), "Storage=%d, StorageID=%u, X=%d", STORAGE_BELT,
+                             pArmsband->getItemID(), SlotID);
                     pItem->tinysave(pField);
 
 
@@ -295,7 +298,8 @@ void CGAddMouseToQuickSlotHandler::execute(CGAddMouseToQuickSlot* pPacket, Playe
                 // On a successful add, remove the item hanging on the mouse.
                 pOusters->deleteItemFromExtraInventorySlot();
                 char pField[80];
-                sprintf(pField, "Storage=%d, StorageID=%u, X=%d", STORAGE_BELT, pArmsband->getItemID(), SlotID);
+                snprintf(pField, sizeof(pField), "Storage=%d, StorageID=%u, X=%d", STORAGE_BELT, pArmsband->getItemID(),
+                         SlotID);
                 pItem->tinysave(pField);
 
                 Success = true;

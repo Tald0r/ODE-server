@@ -178,8 +178,8 @@ void CGPickupMoneyHandler::execute(CGPickupMoney* pPacket, Player* pPlayer)
                 TPOINT pt = pZone->addItem(pItem, ZoneX, ZoneY);
                 if (pt.x != -1) {
                     char pField[80];
-                    sprintf(pField, "Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE, pZone->getZoneID(), pt.x,
-                            pt.y);
+                    snprintf(pField, sizeof(pField), "Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
+                             pZone->getZoneID(), pt.x, pt.y);
                     pItem->tinysave(pField);
                 } else {
                     // If the money could not be dropped, just delete it.
@@ -194,7 +194,7 @@ void CGPickupMoneyHandler::execute(CGPickupMoney* pPacket, Player* pPlayer)
             // Leave a money log if the amount warrants one
             if ((itemGold - marginGold) >= de::gameContext().variables().getMoneyTraceLogLimit()) {
                 char zoneName[15];
-                sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), ZoneX, ZoneY);
+                snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), ZoneX, ZoneY);
                 remainMoneyTraceLog(zoneName, pCreature->getName(), ITEM_LOG_MOVE, DETAIL_PICKUP,
                                     itemGold - marginGold);
             }

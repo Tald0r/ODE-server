@@ -13,6 +13,7 @@ public:
     Pet(PlayerCreature* pOwner, PetInfo* pPetInfo) : m_pOwner(pOwner), m_pPetInfo(pPetInfo) {
         getCurrentTime(m_SkillDelay);
     }
+    virtual ~Pet() {}
 
     virtual void heartbeat(const Timeval& currentTime);
 

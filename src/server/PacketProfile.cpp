@@ -66,14 +66,15 @@ void PacketProfileManager::outputResultToFile(const string& filename) {
         char buf[256] = {
             0,
         };
-        sprintf(buf, "%ld.%06lds", pProfile->AccuTime.tv_sec, pProfile->AccuTime.tv_usec);
+        snprintf(buf, sizeof(buf), "%ld.%06lds", pProfile->AccuTime.tv_sec,
+                 static_cast<long>(pProfile->AccuTime.tv_usec));
 
         char buf2[256] = {
             0,
         };
         double accu_time =
             (pProfile->AccuTime.tv_sec + (double)pProfile->AccuTime.tv_usec / 1000000) / pProfile->CallCount;
-        sprintf(buf2, "%5.9fs", accu_time);
+        snprintf(buf2, sizeof(buf2), "%5.9fs", accu_time);
 
         file << setiosflags(ios::left) << setw(20) << string(buf2) << setw(20) << string(buf) << setw(10)
              << pProfile->CallCount << setw(30) << pProfile->PacketName << endl;

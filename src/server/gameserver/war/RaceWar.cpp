@@ -234,9 +234,9 @@ void RaceWar::recordRaceWarEnd()
 
     // running a script -- who would have thought the system function would be used
     char cmd[100];
-    sprintf(cmd, "/home/darkeden/vs/bin/script/recordRaceWarHistory.py %s %d %d ",
-            getWarStartTime().toStringforWeb().c_str(), de::kernelContext().config().getPropertyInt("Dimension"),
-            de::kernelContext().config().getPropertyInt("WorldID"));
+    snprintf(cmd, sizeof(cmd), "/home/darkeden/vs/bin/script/recordRaceWarHistory.py %s %d %d ",
+             getWarStartTime().toStringforWeb().c_str(), de::kernelContext().config().getPropertyInt("Dimension"),
+             de::kernelContext().config().getPropertyInt("WorldID"));
 
     filelog("script.log", cmd);
     system(cmd);

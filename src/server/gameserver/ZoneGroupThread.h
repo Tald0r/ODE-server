@@ -44,10 +44,10 @@ public:
     void run() override;
 
     // get debug string
-    string toString() const;
+    string toString() const override;
 
     // get thread's name
-    string getName() const {
+    string getName() const override {
         return "ZoneGroupThread";
     }
 

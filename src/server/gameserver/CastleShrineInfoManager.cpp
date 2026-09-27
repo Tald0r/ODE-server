@@ -203,7 +203,7 @@ Item* CastleShrineInfoManager::addShrineToZone(ShrineInfo& shrineInfo, ItemType_
             Assert(pItem != NULL);
 
             char strZoneID[10];
-            sprintf(strZoneID, "%d", (int)pZone->getZoneID());
+            snprintf(strZoneID, sizeof(strZoneID), "%d", (int)pZone->getZoneID());
 
             pZone->registerObject(pItem);
             pItem->create(strZoneID, STORAGE_CORPSE, pShrine->getObjectID(), 0, 0);
@@ -502,8 +502,8 @@ bool CastleShrineInfoManager::returnCastleSymbol(Zone* pZone, CastleSymbol* pCas
     // shrine (" << GuardShrine.getName() << ").";
 
     char msg[200];
-    sprintf(msg, de::gameContext().strings().c_str(STRID_RETURN_TO_GUARD_SHRINE_CASTLE_SYMBOL),
-            GuardShrine.getName().c_str(), GuardShrine.getName().c_str());
+    snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_RETURN_TO_GUARD_SHRINE_CASTLE_SYMBOL),
+             GuardShrine.getName().c_str(), GuardShrine.getName().c_str());
 
     GCSystemMessage msgPkt;
     msgPkt.setMessage(msg);

@@ -59,7 +59,7 @@ void EffectEventQuestReset::affect(Creature* pCreature)
     int lastMins = (lastSec % 3600) / 60;
 
     char buffer[256];
-    sprintf(buffer, "%d hours %d minutes remain before the quest time limit.", lastHours, lastMins);
+    snprintf(buffer, sizeof(buffer), "%d hours %d minutes remain before the quest time limit.", lastHours, lastMins);
     GCSystemMessage gcSM;
     gcSM.setMessage(buffer);
     pPC->getPlayer()->sendPacket(&gcSM);

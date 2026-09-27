@@ -376,8 +376,8 @@ TPOINT Zone::addItem(Item* pItem, ZoneCoord_t cx, ZoneCoord_t cy, bool bAllowCre
 
                     // Optimized item save.
                     char pField[80];
-                    sprintf(pField, "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE, getZoneID(),
-                            (int)pt.x, (int)pt.y);
+                    snprintf(pField, sizeof(pField), "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
+                             getZoneID(), (int)pt.x, (int)pt.y);
 
                     pMotorcycle->tinysave(pField);
 
@@ -391,8 +391,8 @@ TPOINT Zone::addItem(Item* pItem, ZoneCoord_t cx, ZoneCoord_t cy, bool bAllowCre
                 // A relic does not disappear.
                 addEffectRelicPosition(pItem, getZoneID(), pt);
                 char pField[80];
-                sprintf(pField, "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE, getZoneID(), pt.x,
-                        pt.y);
+                snprintf(pField, sizeof(pField), "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
+                         getZoneID(), pt.x, pt.y);
                 pItem->tinysave(pField);
             } else {
                 // Items are removed after 3 minutes instead of 10.
@@ -415,8 +415,8 @@ TPOINT Zone::addItem(Item* pItem, ZoneCoord_t cx, ZoneCoord_t cy, bool bAllowCre
                     addEffect(pEffectDecayItem);
                 } else {
                     char pField[80];
-                    sprintf(pField, "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE, getZoneID(), pt.x,
-                            pt.y);
+                    snprintf(pField, sizeof(pField), "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
+                             getZoneID(), pt.x, pt.y);
                     pItem->tinysave(pField);
                 }
             }

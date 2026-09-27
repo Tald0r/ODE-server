@@ -39,7 +39,7 @@ void ActionStashSell::execute(Creature* pCreature1, Creature* pCreature2)
     Assert(pCreature1->isNPC());
     Assert(pCreature2->isPC());
 
-    Price_t price;
+    Price_t price = 0;
     BYTE curStashNum;
     GCStashSell pkt;
 

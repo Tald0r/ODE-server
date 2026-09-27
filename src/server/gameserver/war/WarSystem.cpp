@@ -773,8 +773,8 @@ void WarSystem::broadcastWarList(GamePlayer* pGamePlayer) const
 
 
         char msg[100];
-        sprintf(msg, strings.c_str(STRID_WAR_STATUS), pWar->getWarName().c_str(),
-                (pSchedule->getScheduledTime()).toString().c_str());
+        snprintf(msg, sizeof(msg), strings.c_str(STRID_WAR_STATUS), pWar->getWarName().c_str(),
+                 (pSchedule->getScheduledTime()).toString().c_str());
         gcSystemMessage.setMessage(msg);
         pGamePlayer->sendPacket(&gcSystemMessage);
     }

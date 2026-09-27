@@ -100,7 +100,6 @@ void ActionTradeLairItem::execute(Creature* pCreature1, Creature* pCreature2)
 
     ItemMineInfoManager& itemMineInfos = context().itemMineInfos();
     Item* pItem1 = NULL;
-    bool bUpgrade = false;
 
     // A different item is checked depending on the option.
     // Conan: takes Bathory's bijou/pendant, falling back to Tepes' and then
@@ -108,7 +107,6 @@ void ActionTradeLairItem::execute(Creature* pCreature1, Creature* pCreature2)
     // Vrykolakas: takes only Tepes' bijou/pendant.
     // Caim: takes only Bathory's bijou/pendant.
     // Gilles de Rais: takes only its own bijou/pendant.
-    // bUpgrade records which fallback was taken and nothing reads it.
 
     if (m_Type == 0) // Conan, bijou
     {
@@ -121,7 +119,6 @@ void ActionTradeLairItem::execute(Creature* pCreature1, Creature* pCreature2)
             if (pMasterItem == NULL) {
                 pMasterItem = pInventory->findItem(Item::ITEM_CLASS_QUEST_ITEM, 8); // Gilles de Rais bijou
                 MonsterType = GDR_TYPE;
-                bUpgrade = true;
             }
         }
     } else if (m_Type == 1) // Conan, pendant
@@ -135,7 +132,6 @@ void ActionTradeLairItem::execute(Creature* pCreature1, Creature* pCreature2)
             if (pMasterItem == NULL) {
                 pMasterItem = pInventory->findItem(Item::ITEM_CLASS_QUEST_ITEM, 9); // Gilles de Rais pendant
                 MonsterType = GDR_TYPE;
-                bUpgrade = true;
             }
         }
     } else if (m_Type == 2) // Vrykolakas, bijou
@@ -161,12 +157,10 @@ void ActionTradeLairItem::execute(Creature* pCreature1, Creature* pCreature2)
     } else if (m_Type == 10) // Gilles de Rais, bijou
     {
         pMasterItem = pInventory->findItem(Item::ITEM_CLASS_QUEST_ITEM, 8);
-        bUpgrade = true;
         MonsterType = GDR_TYPE;
     } else if (m_Type == 11) // Gilles de Rais, pendant
     {
         pMasterItem = pInventory->findItem(Item::ITEM_CLASS_QUEST_ITEM, 9);
-        bUpgrade = true;
         MonsterType = GDR_TYPE;
     } else if (m_Type == 6) // Gemstone
     {

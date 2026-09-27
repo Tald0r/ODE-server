@@ -239,7 +239,7 @@ void CGUseItemFromInventoryHandler::execute(CGUseItemFromInventory* pPacket, Pla
         pGamePlayer->sendPacket(&gcVerify);
 
         char buffer[100];
-        sprintf(buffer, "SMSCharge=%u", pPC->getSMSCharge());
+        snprintf(buffer, sizeof(buffer), "SMSCharge=%u", pPC->getSMSCharge());
         pPC->tinysave(buffer);
 
         // A non-stacking item is deleted right away.
@@ -300,7 +300,7 @@ void CGUseItemFromInventoryHandler::executePotion(CGUseItemFromInventory* pPacke
     // It cannot be used in the coma state.
     if (pSlayer->isFlag(Effect::EFFECT_CLASS_COMA)
         // Songpyeon can only be used by a paying user.
-        || pItem->getItemType() == 11 && !pGamePlayer->isPayPlaying() && !pGamePlayer->isPremiumPlay()) {
+        || (pItem->getItemType() == 11 && !pGamePlayer->isPayPlaying() && !pGamePlayer->isPremiumPlay())) {
         GCCannotUse _GCCannotUse;
         _GCCannotUse.setObjectID(pPacket->getObjectID());
         pGamePlayer->sendPacket(&_GCCannotUse);
@@ -670,7 +670,7 @@ void CGUseItemFromInventoryHandler::executeSerum(CGUseItemFromInventory* pPacket
     // It cannot be used in the coma state.
     if (pVampire->isFlag(Effect::EFFECT_CLASS_COMA)
         // Songpyeon can only be used by a paying user.
-        || pItem->getItemType() == 5 && !pGamePlayer->isPayPlaying() && !pGamePlayer->isPremiumPlay()) {
+        || (pItem->getItemType() == 5 && !pGamePlayer->isPayPlaying() && !pGamePlayer->isPremiumPlay())) {
         GCCannotUse _GCCannotUse;
         _GCCannotUse.setObjectID(pPacket->getObjectID());
         pGamePlayer->sendPacket(&_GCCannotUse);
@@ -858,7 +858,7 @@ void CGUseItemFromInventoryHandler::executeSlayerPortalItem(CGUseItemFromInvento
         // pPortalItem->save(pSlayer->getName(), STORAGE_INVENTORY, 0, InvenX, InvenY); // save the item information.
         //  Item save optimization.
         char pField[80];
-        sprintf(pField, "Charge=%d", pPortalItem->getCharge());
+        snprintf(pField, sizeof(pField), "Charge=%d", pPortalItem->getCharge());
         pPortalItem->tinysave(pField);
 
         pSlayer->setFlag(Effect::EFFECT_CLASS_SLAYER_PORTAL);
@@ -957,7 +957,7 @@ void CGUseItemFromInventoryHandler::executeOustersSummonItem(CGUseItemFromInvent
         // pSummonItem->save(pOusters->getName(), STORAGE_INVENTORY, 0, InvenX, InvenY); // save the item information.
         //  Item save optimization.
         char pField[80];
-        sprintf(pField, "Charge=%d", pSummonItem->getCharge());
+        snprintf(pField, sizeof(pField), "Charge=%d", pSummonItem->getCharge());
         pSummonItem->tinysave(pField);
 
         // Build the effect class and attach it.
@@ -1579,7 +1579,7 @@ bool changeHairColorEx(PlayerCreature* pPC, Color_t color) {
         pSlayer->setHairColor(color);
 
         char query[25];
-        sprintf(query, "HairColor=%u", color);
+        snprintf(query, sizeof(query), "HairColor=%u", color);
 
         pSlayer->tinysave(query);
 
@@ -1594,7 +1594,7 @@ bool changeHairColorEx(PlayerCreature* pPC, Color_t color) {
         pOusters->setHairColor(color);
 
         char query[25];
-        sprintf(query, "HairColor=%u", color);
+        snprintf(query, sizeof(query), "HairColor=%u", color);
 
         pOusters->tinysave(query);
 
@@ -1617,7 +1617,7 @@ bool changeBatColorEx(PlayerCreature* pPC, Color_t color) {
         pVampire->setBatColor(color);
 
         char query[25];
-        sprintf(query, "BatColor=%u", color);
+        snprintf(query, sizeof(query), "BatColor=%u", color);
 
         pVampire->tinysave(query);
 
@@ -1638,7 +1638,7 @@ bool changeMasterEffectColorEx(PlayerCreature* pPC, BYTE color) {
         pPC->setMasterEffectColor(color);
 
         char query[25];
-        sprintf(query, "MasterEffectColor=%u", color);
+        snprintf(query, sizeof(query), "MasterEffectColor=%u", color);
 
         pPC->tinysave(query);
 
@@ -1660,7 +1660,7 @@ bool changeSkinColorEx(PlayerCreature* pPC, Color_t color) {
         pSlayer->setSkinColor(color);
 
         char query[25];
-        sprintf(query, "SkinColor=%u", color);
+        snprintf(query, sizeof(query), "SkinColor=%u", color);
 
         pSlayer->tinysave(query);
 
@@ -1675,7 +1675,7 @@ bool changeSkinColorEx(PlayerCreature* pPC, Color_t color) {
         pVampire->setSkinColor(color);
 
         char query[25];
-        sprintf(query, "SkinColor=%u", color);
+        snprintf(query, sizeof(query), "SkinColor=%u", color);
 
         pVampire->tinysave(query);
 
@@ -2106,7 +2106,7 @@ void CGUseItemFromInventoryHandler::executePetFood(CGUseItemFromInventory* pPack
             pGamePlayer->sendPacket(&gcUseOK);
 
             char query[100];
-            sprintf(query, "PetHP=%u, FoodType=%u", pPetInfo->getPetHP(), pPetInfo->getFoodType());
+            snprintf(query, sizeof(query), "PetHP=%u, FoodType=%u", pPetInfo->getPetHP(), pPetInfo->getFoodType());
 
             Item* pItem = pPetInfo->getPetItem();
             if (pItem != NULL)
@@ -2313,24 +2313,16 @@ void CGUseItemFromInventoryHandler::executeEventGiftBox(CGUseItemFromInventory* 
         pResultItem->setNum(MaxStack);
     }
 
-    bool isChargingItem = false;
-    int chargeNum = 0;
     // A Charging item is filled up too
     if (pResultItem->getItemClass() == Item::ITEM_CLASS_SLAYER_PORTAL_ITEM) {
         SlayerPortalItem* pSlayerPortalItem = dynamic_cast<SlayerPortalItem*>(pResultItem);
         pSlayerPortalItem->setCharge(pSlayerPortalItem->getMaxCharge());
-        isChargingItem = true;
-        chargeNum = pSlayerPortalItem->getMaxCharge();
     } else if (pResultItem->getItemClass() == Item::ITEM_CLASS_VAMPIRE_PORTAL_ITEM) {
         VampirePortalItem* pVampirePortalItem = dynamic_cast<VampirePortalItem*>(pResultItem);
         pVampirePortalItem->setCharge(pVampirePortalItem->getMaxCharge());
-        isChargingItem = true;
-        chargeNum = pVampirePortalItem->getMaxCharge();
     } else if (pResultItem->getItemClass() == Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM) {
         OustersSummonItem* pOustersSummonItem = dynamic_cast<OustersSummonItem*>(pResultItem);
         pOustersSummonItem->setCharge(pOustersSummonItem->getMaxCharge());
-        isChargingItem = true;
-        chargeNum = pOustersSummonItem->getMaxCharge();
     }
 
     pZone->registerObject(pResultItem);

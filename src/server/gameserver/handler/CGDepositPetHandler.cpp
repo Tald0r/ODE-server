@@ -60,7 +60,7 @@ void CGDepositPetHandler::execute(CGDepositPet* pPacket, Player* pPlayer) {
     pGamePlayer->sendPacket(&gcPetStashVerify);
 
     char pField[80];
-    sprintf(pField, "Storage=%d, StorageID=%d ", STORAGE_PET_STASH, pPacket->getIndex());
+    snprintf(pField, sizeof(pField), "Storage=%d, StorageID=%d ", STORAGE_PET_STASH, pPacket->getIndex());
     pPetItem->tinysave(pField);
 
     pPetItem->getPetInfo()->setFeedTurn(2);

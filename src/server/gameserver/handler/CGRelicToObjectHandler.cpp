@@ -308,8 +308,8 @@ void CGRelicToObjectHandler::executeRelic(CGRelicToObject* pPacket, Player* pPla
 
 
         char msg[100];
-        sprintf(msg, strings.c_str(STRID_PUT_RELIC_TO_RELIC_TABLE), pPlayerCreature->getName().c_str(),
-                pRelicInfo->getName().c_str());
+        snprintf(msg, sizeof(msg), strings.c_str(STRID_PUT_RELIC_TO_RELIC_TABLE), pPlayerCreature->getName().c_str(),
+                 pRelicInfo->getName().c_str());
 
         GCSystemMessage gcSystemMessage;
         gcSystemMessage.setMessage(msg);
@@ -700,19 +700,19 @@ void CGRelicToObjectHandler::executeSweeper(CGRelicToObject* pPacket, Player* pP
         // Broadcast a system message to the zone when it is planted
         char race[15];
         if (pCreature->isSlayer()) {
-            sprintf(race, strings.c_str(STRID_SLAYER));
+            snprintf(race, sizeof(race), strings.c_str(STRID_SLAYER));
         } else if (pCreature->isVampire()) {
-            sprintf(race, strings.c_str(STRID_VAMPIRE));
+            snprintf(race, sizeof(race), strings.c_str(STRID_VAMPIRE));
         } else if (pCreature->isOusters()) {
-            sprintf(race, strings.c_str(STRID_OUSTERS));
+            snprintf(race, sizeof(race), strings.c_str(STRID_OUSTERS));
         } else {
             Assert(false);
         }
 
         char msg[100];
 
-        sprintf(msg, strings.c_str(STRID_PUT_SWEEPER), pCreature->getName().c_str(), race,
-                pSweeperInfo->getName().c_str());
+        snprintf(msg, sizeof(msg), strings.c_str(STRID_PUT_SWEEPER), pCreature->getName().c_str(), race,
+                 pSweeperInfo->getName().c_str());
         GCSystemMessage gcSystemMessage;
         gcSystemMessage.setMessage(msg);
         pZone->broadcastPacket(&gcSystemMessage);

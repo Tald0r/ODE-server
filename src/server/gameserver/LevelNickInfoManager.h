@@ -21,7 +21,7 @@ public:
 
 private:
     Race_t m_Race;
-    Level_t m_Level10;
+    [[maybe_unused]] Level_t m_Level10;
     DWORD m_NickIndex;
 };
 

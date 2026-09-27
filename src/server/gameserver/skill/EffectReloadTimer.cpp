@@ -123,7 +123,8 @@ void EffectReloadTimer::unaffect(Creature* pCreature)
                     // Item save optimization
                     // by sigi. 2002.5.16
                     char pField[80];
-                    sprintf(pField, "BulletCount=%d, Silver=%d", pArmsItem->getBulletCount(), pArmsItem->getSilver());
+                    snprintf(pField, sizeof(pField), "BulletCount=%d, Silver=%d", pArmsItem->getBulletCount(),
+                             pArmsItem->getSilver());
                     pArmsItem->tinysave(pField);
 
                     // If there are two or more magazines...
@@ -136,10 +137,10 @@ void EffectReloadTimer::unaffect(Creature* pCreature)
 
                         // Save the reduced item count.
                         if (m_bFromInventory) {
-                            sprintf(pField, "Num=%d", pItem->getNum());
+                            snprintf(pField, sizeof(pField), "Num=%d", pItem->getNum());
                             pItem->tinysave(pField);
                         } else {
-                            sprintf(pField, "Num=%d", pItem->getNum());
+                            snprintf(pField, sizeof(pField), "Num=%d", pItem->getNum());
                             pItem->tinysave(pField);
                         }
                     }

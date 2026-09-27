@@ -98,7 +98,7 @@ void CGAddInventoryToMouseHandler::execute(CGAddInventoryToMouse* pPacket, Playe
         pInventory->deleteItem(pItem->getObjectID());
         pPC->addItemToExtraInventorySlot(pItem);
         char pField[80];
-        sprintf(pField, "Storage=%d, StorageID=0", STORAGE_EXTRASLOT);
+        snprintf(pField, sizeof(pField), "Storage=%d, StorageID=0", STORAGE_EXTRASLOT);
         pItem->tinysave(pField);
 
         TradeManager* pTradeManager = pZone->getTradeManager();
@@ -153,11 +153,11 @@ void CGAddInventoryToMouseHandler::execute(CGAddInventoryToMouse* pPacket, Playe
 
         // Save the changed position information.
         char pField[80];
-        sprintf(pField, "Num=%d, Storage=%d, StorageID=0", 1, STORAGE_EXTRASLOT);
+        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, StorageID=0", 1, STORAGE_EXTRASLOT);
         pItem->tinysave(pField);
 
         pNewItem->create(pPC->getName(), STORAGE_INVENTORY, 0, InvenX, InvenY);
-        sprintf(pField, "Num=%d, Storage=%d, StorageID=0", NewNum, STORAGE_INVENTORY);
+        snprintf(pField, sizeof(pField), "Num=%d, Storage=%d, StorageID=0", NewNum, STORAGE_INVENTORY);
         pNewItem->tinysave(pField);
 
 

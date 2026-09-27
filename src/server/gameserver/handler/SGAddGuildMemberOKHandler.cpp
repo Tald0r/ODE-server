@@ -173,18 +173,18 @@ void SGAddGuildMemberOKHandler::execute(SGAddGuildMemberOK* pPacket)
 
         if (pGuildMember->getRank() == GuildMember::GUILDMEMBER_RANK_SUBMASTER) {
             if (pGuild->getRace() == Guild::GUILD_RACE_SLAYER)
-                sprintf(msg, strings.c_str(STRID_TEAM_JOIN_ACCEPTED_2), pGuildMember->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_TEAM_JOIN_ACCEPTED_2), pGuildMember->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_VAMPIRE)
-                sprintf(msg, strings.c_str(STRID_CLAN_JOIN_ACCEPTED_2), pGuildMember->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_CLAN_JOIN_ACCEPTED_2), pGuildMember->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_OUSTERS)
-                sprintf(msg, strings.c_str(STRID_CLAN_JOIN_ACCEPTED_2), pGuildMember->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_CLAN_JOIN_ACCEPTED_2), pGuildMember->getName().c_str());
         } else if (pGuildMember->getRank() == GuildMember::GUILDMEMBER_RANK_WAIT) {
             if (pGuild->getRace() == Guild::GUILD_RACE_SLAYER)
-                sprintf(msg, strings.c_str(STRID_TEAM_JOIN_TRY_2), pGuildMember->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_TEAM_JOIN_TRY_2), pGuildMember->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_VAMPIRE)
-                sprintf(msg, strings.c_str(STRID_CLAN_JOIN_TRY_2), pGuildMember->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_CLAN_JOIN_TRY_2), pGuildMember->getName().c_str());
             else if (pGuild->getRace() == Guild::GUILD_RACE_OUSTERS)
-                sprintf(msg, strings.c_str(STRID_CLAN_JOIN_TRY_2), pGuildMember->getName().c_str());
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_CLAN_JOIN_TRY_2), pGuildMember->getName().c_str());
         }
 
         GCSystemMessage gcSystemMessage;

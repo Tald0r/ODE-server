@@ -222,7 +222,7 @@ private:
     // Tick Time
     Timeval m_TickTime;
 
-    DWORD m_LoadValue;
+    [[maybe_unused]] DWORD m_LoadValue;
 
     mutable Mutex m_Mutex;
 

@@ -56,7 +56,8 @@ void EventTransport::sendMessage()
     //	msg << (int)RemainTime << " seconds until the move to " << m_ZoneName << ".";
 
     char msg[50];
-    sprintf(msg, de::gameContext().strings().c_str(STRID_TRANSPORT_CREATURE), (int)RemainTime, m_ZoneName.c_str());
+    snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_TRANSPORT_CREATURE), (int)RemainTime,
+             m_ZoneName.c_str());
 
     string sMsg(msg);
 

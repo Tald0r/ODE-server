@@ -100,7 +100,7 @@ void GuildMember::expire() noexcept(false) {
     tm Timec;
     localtime_r(&daytime, &Timec);
     char ExpireDate[8];
-    sprintf(ExpireDate, "%03d%02d%02d", Timec.tm_year, Timec.tm_mon, Timec.tm_mday);
+    snprintf(ExpireDate, sizeof(ExpireDate), "%03d%02d%02d", Timec.tm_year, Timec.tm_mon, Timec.tm_mday);
 
     defaultSharedGuildRepository().setMemberRankAndExpireDate(GUILDMEMBER_RANK_DENY, ExpireDate, m_Name);
 
@@ -115,7 +115,7 @@ void GuildMember::leave() noexcept(false) {
     tm Timec;
     localtime_r(&daytime, &Timec);
     char ExpireDate[8];
-    sprintf(ExpireDate, "%03d%02d%02d", Timec.tm_year, Timec.tm_mon, Timec.tm_mday);
+    snprintf(ExpireDate, sizeof(ExpireDate), "%03d%02d%02d", Timec.tm_year, Timec.tm_mon, Timec.tm_mday);
 
     defaultSharedGuildRepository().setMemberRankAndExpireDate(GUILDMEMBER_RANK_LEAVE, ExpireDate, m_Name);
 
@@ -167,9 +167,9 @@ string GuildMember::getRequestDateTime() const noexcept(false) {
 
     char buf[20];
 
-    sprintf(buf, "%4d-%02d-%02d %02d:%02d:%02d", m_RequestDateTime.date().year(), m_RequestDateTime.date().month(),
-            m_RequestDateTime.date().day(), m_RequestDateTime.time().hour(), m_RequestDateTime.time().minute(),
-            m_RequestDateTime.time().second());
+    snprintf(buf, sizeof(buf), "%4d-%02d-%02d %02d:%02d:%02d", m_RequestDateTime.date().year(),
+             m_RequestDateTime.date().month(), m_RequestDateTime.date().day(), m_RequestDateTime.time().hour(),
+             m_RequestDateTime.time().minute(), m_RequestDateTime.time().second());
 
     cout << buf << endl;
 

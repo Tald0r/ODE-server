@@ -667,14 +667,16 @@ void Zone::load(bool bOutput)
 
                             pTrigger->setTriggerType("QUEST");
 
-                            sprintf(str, "ConditionType : EnterMasterLair\n\t TargetZoneID : %d\n\t",
-                                    (int)pTargetZoneInfo->getZoneID());
+                            snprintf(str, sizeof(str), "ConditionType : EnterMasterLair\n\t TargetZoneID : %d\n\t",
+                                     (int)pTargetZoneInfo->getZoneID());
                             pTrigger->setConditions(str);
-                            sprintf(str, "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
-                                    targetZoneID, targetX, targetY);
+                            snprintf(str, sizeof(str),
+                                     "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
+                                     targetZoneID, targetX, targetY);
                             pTrigger->setActions(str);
 
-                            sprintf(str2, "ActionType : SystemMessage\n\t Content : %d", STRID_CANNOT_ENTER);
+                            snprintf(str2, sizeof(str2), "ActionType : SystemMessage\n\t Content : %d",
+                                     STRID_CANNOT_ENTER);
 
                             pTrigger->setCounterActions(str2);
 
@@ -703,15 +705,16 @@ void Zone::load(bool bOutput)
 
                             pTrigger->setTriggerType("QUEST");
 
-                            sprintf(str, "ConditionType : EnterHolyLand\n\t TargetZoneID : %d\n\t",
-                                    (int)pTargetZoneInfo->getZoneID());
+                            snprintf(str, sizeof(str), "ConditionType : EnterHolyLand\n\t TargetZoneID : %d\n\t",
+                                     (int)pTargetZoneInfo->getZoneID());
                             pTrigger->setConditions(str);
-                            sprintf(str, "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
-                                    targetZoneID, targetX, targetY);
+                            snprintf(str, sizeof(str),
+                                     "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
+                                     targetZoneID, targetX, targetY);
                             pTrigger->setActions(str);
 
-                            sprintf(str2, "ActionType : SystemMessage\n\t Content : %d",
-                                    STRID_CANNOT_ENTER_DURING_RACE_WAR);
+                            snprintf(str2, sizeof(str2), "ActionType : SystemMessage\n\t Content : %d",
+                                     STRID_CANNOT_ENTER_DURING_RACE_WAR);
 
 
                             pTrigger->setCounterActions(str2);
@@ -744,14 +747,16 @@ void Zone::load(bool bOutput)
 
                             pTrigger->setTriggerType("QUEST");
 
-                            sprintf(str, "ConditionType : EnterCastle\n\t TargetZoneID : %d\n\t",
-                                    (int)pTargetZoneInfo->getZoneID());
+                            snprintf(str, sizeof(str), "ConditionType : EnterCastle\n\t TargetZoneID : %d\n\t",
+                                     (int)pTargetZoneInfo->getZoneID());
                             pTrigger->setConditions(str);
-                            sprintf(str, "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
-                                    targetZoneID, targetX, targetY);
+                            snprintf(str, sizeof(str),
+                                     "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
+                                     targetZoneID, targetX, targetY);
                             pTrigger->setActions(str);
 
-                            sprintf(str2, "ActionType : SystemMessage\n\t Content : %d", STRID_CANNOT_ENTER);
+                            snprintf(str2, sizeof(str2), "ActionType : SystemMessage\n\t Content : %d",
+                                     STRID_CANNOT_ENTER);
 
                             pTrigger->setCounterActions(str2);
 
@@ -780,14 +785,16 @@ void Zone::load(bool bOutput)
                             pTrigger->setTriggerID(0); // Not meaningful.
                             pTrigger->setTriggerType("QUEST");
 
-                            sprintf(str, "ConditionType : EnterCastleDungeon\n\t CastleZoneID : %d\n\t", m_ZoneID);
+                            snprintf(str, sizeof(str), "ConditionType : EnterCastleDungeon\n\t CastleZoneID : %d\n\t",
+                                     m_ZoneID);
                             pTrigger->setConditions(str);
-                            sprintf(str, "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
-                                    targetZoneID, targetX, targetY);
+                            snprintf(str, sizeof(str),
+                                     "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
+                                     targetZoneID, targetX, targetY);
                             pTrigger->setActions(str);
 
-                            sprintf(str2, "ActionType : SystemMessage\n\t Content : %d",
-                                    STRID_CANNOT_ENTER_NOT_OWNER_GUILD);
+                            snprintf(str2, sizeof(str2), "ActionType : SystemMessage\n\t Content : %d",
+                                     STRID_CANNOT_ENTER_NOT_OWNER_GUILD);
 
                             pTrigger->setCounterActions(str2);
 
@@ -813,8 +820,9 @@ void Zone::load(bool bOutput)
 
                             pTrigger->setTriggerType("QUEST");
                             pTrigger->setConditions("ConditionType : CanEnterPayZone\n\t");
-                            sprintf(str, "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
-                                    targetZoneID, targetX, targetY);
+                            snprintf(str, sizeof(str),
+                                     "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
+                                     targetZoneID, targetX, targetY);
                             pTrigger->setActions(str);
 
                             // A player the pay-zone condition turns away is
@@ -824,13 +832,14 @@ void Zone::load(bool bOutput)
                             // pay zone to name, so it refuses in general
                             // terms.
                             if (!de::isNetMarbleDeployment()) {
-                                sprintf(str2, "ActionType : SystemMessage\n\t Content : %d",
-                                        STRID_CANNOT_ENTER_PAY_ZONE);
+                                snprintf(str2, sizeof(str2), "ActionType : SystemMessage\n\t Content : %d",
+                                         STRID_CANNOT_ENTER_PAY_ZONE);
 
                                 pTrigger->setCounterActions(str2);
 
                             } else {
-                                sprintf(str2, "ActionType : SystemMessage\n\t Content : %d", STRID_CANNOT_ENTER);
+                                snprintf(str2, sizeof(str2), "ActionType : SystemMessage\n\t Content : %d",
+                                         STRID_CANNOT_ENTER);
 
                                 pTrigger->setCounterActions(str2);
                             }
@@ -973,9 +982,9 @@ void Zone::load(bool bOutput)
         // Initialize the sprite counts.
         initSpriteCount();
 
-        SAFE_DELETE(version);
-        SAFE_DELETE(zonename);
-        SAFE_DELETE(lwrFilename);
+        SAFE_DELETE_ARRAY(version);
+        SAFE_DELETE_ARRAY(zonename);
+        SAFE_DELETE_ARRAY(lwrFilename);
 
 
     } catch (Throwable& t) {
@@ -1380,14 +1389,16 @@ void Zone::reload(bool bOutput)
 
                             pTrigger->setTriggerType("QUEST");
 
-                            sprintf(str, "ConditionType : EnterMasterLair\n\t TargetZoneID : %d\n\t",
-                                    (int)pTargetZoneInfo->getZoneID());
+                            snprintf(str, sizeof(str), "ConditionType : EnterMasterLair\n\t TargetZoneID : %d\n\t",
+                                     (int)pTargetZoneInfo->getZoneID());
                             pTrigger->setConditions(str);
-                            sprintf(str, "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
-                                    targetZoneID, targetX, targetY);
+                            snprintf(str, sizeof(str),
+                                     "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
+                                     targetZoneID, targetX, targetY);
                             pTrigger->setActions(str);
 
-                            sprintf(str2, "ActionType : SystemMessage\n\t Content : %d", STRID_CANNOT_ENTER);
+                            snprintf(str2, sizeof(str2), "ActionType : SystemMessage\n\t Content : %d",
+                                     STRID_CANNOT_ENTER);
                             pTrigger->setCounterActions(str2);
 
 
@@ -1415,11 +1426,13 @@ void Zone::reload(bool bOutput)
 
                             pTrigger->setTriggerType("QUEST");
                             pTrigger->setConditions("ConditionType : PayPlay\n\t");
-                            sprintf(str, "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
-                                    targetZoneID, targetX, targetY);
+                            snprintf(str, sizeof(str),
+                                     "ActionType : ActivatePortal\n\t ZoneID : %d\n\t X : %d\n\t Y : %d\n\t",
+                                     targetZoneID, targetX, targetY);
                             pTrigger->setActions(str);
 
-                            sprintf(str2, "ActionType : SystemMessage\n\t Content : %d", STRID_CANNOT_ENTER_PAY_ZONE);
+                            snprintf(str2, sizeof(str2), "ActionType : SystemMessage\n\t Content : %d",
+                                     STRID_CANNOT_ENTER_PAY_ZONE);
                             pTrigger->setCounterActions(str2);
 
 

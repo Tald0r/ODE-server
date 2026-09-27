@@ -12,7 +12,7 @@
 #include "Work.h"
 
 struct WarScheduleInfo;
-struct WarInfo;
+class WarInfo;
 
 class WarSchedule : public Schedule {
 public:

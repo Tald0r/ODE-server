@@ -22,7 +22,7 @@ GCAddNewItemToZone::GCAddNewItemToZone()
 //--------------------------------------------------------------------
 // Destructor
 //--------------------------------------------------------------------
-GCAddNewItemToZone::~GCAddNewItemToZone() noexcept {
+GCAddNewItemToZone::~GCAddNewItemToZone() {
     // nothing to do
 }
 

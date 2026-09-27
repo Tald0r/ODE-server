@@ -214,7 +214,7 @@ void Restore::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSk
                             // Write an ItemTraceLog entry
                             if (pItem != NULL && pItem->isTraceItem()) {
                                 char zoneName[15];
-                                sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                                snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
                                 remainTraceLog(pItem, pFromCreature->getName(), zoneName, ITEM_LOG_MOVE, DETAIL_DROP);
                             }
                         } else {
@@ -258,7 +258,7 @@ void Restore::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSk
                         // Write an ItemTraceLog entry
                         if (pItem != NULL && pItem->isTraceItem()) {
                             char zoneName[15];
-                            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
                             remainTraceLog(pItem, pFromCreature->getName(), zoneName, ITEM_LOG_MOVE, DETAIL_DROP);
                         }
                     } else {
@@ -498,7 +498,7 @@ void Restore::execute(NPC* pNPC, Creature* pFromCreature)
                             // Write an ItemTraceLog entry
                             if (pItem != NULL && pItem->isTraceItem()) {
                                 char zoneName[15];
-                                sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                                snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
                                 remainTraceLog(pItem, pFromCreature->getName(), zoneName, ITEM_LOG_MOVE, DETAIL_DROP);
                             }
                         } else {
@@ -542,7 +542,7 @@ void Restore::execute(NPC* pNPC, Creature* pFromCreature)
                         // Write an ItemTraceLog entry
                         if (pItem != NULL && pItem->isTraceItem()) {
                             char zoneName[15];
-                            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
                             remainTraceLog(pItem, pFromCreature->getName(), zoneName, ITEM_LOG_MOVE, DETAIL_DROP);
                         }
                     } else {

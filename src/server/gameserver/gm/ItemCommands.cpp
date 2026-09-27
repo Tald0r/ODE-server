@@ -77,7 +77,7 @@ void opcreate(GamePlayer* pGamePlayer, string msg, int i) {
 
     if (ItemClass == Item::ITEM_CLASS_CORPSE
         //		|| ItemClass == Item::ITEM_CLASS_KEY
-        || ItemClass == Item::ITEM_CLASS_MOTORCYCLE || isRelicItem(ItemClass) && optional != "force") {
+        || ItemClass == Item::ITEM_CLASS_MOTORCYCLE || (isRelicItem(ItemClass) && optional != "force")) {
         // Creating an item is blocked
         GCSystemMessage gcSystemMessage;
         gcSystemMessage.setMessage(de::gameContext().strings().getString(STRID_CANNOT_CREATE_ITEM));

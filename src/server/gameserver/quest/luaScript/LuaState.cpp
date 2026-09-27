@@ -63,7 +63,7 @@ int LuaState::dofile(const string& filename) {
 void LuaState::randomseed() {
     char str[80];
     srand((unsigned int)time(NULL));
-    sprintf(str, "randomseed(%d)", rand() % 10000);
+    snprintf(str, sizeof(str), "randomseed(%d)", rand() % 10000);
     luaL_dostring(m_pState, str);
 }
 

@@ -56,7 +56,7 @@ void CGGuildChatHandler::execute(CGGuildChat* pPacket, Player* pPlayer)
     HashMapGameServerInfo** pGameServerInfos = de::serverContext().serverInfos().getGameServerInfos();
 
     static int myWorldID = de::kernelContext().config().getPropertyInt("WorldID");
-    static int myServerID = de::kernelContext().config().getPropertyInt("ServerID");
+    [[maybe_unused]] static int myServerID = de::kernelContext().config().getPropertyInt("ServerID");
 
     int maxServerGroupID = de::serverContext().serverInfos().getMaxServerGroupID();
 

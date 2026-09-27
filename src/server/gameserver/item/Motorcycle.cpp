@@ -264,11 +264,6 @@ void MotorcycleLoader::load(Creature* pCreature)
             pMotorcycle->setObjectID(rows[r].objectID);
             pMotorcycle->setItemType(rows[r].itemType);
 
-            Storage storage = (Storage)rows[r].storage;
-            StorageID_t storageID = rows[r].storageID;
-            BYTE x = rows[r].x;
-            BYTE y = rows[r].y;
-
             string optionField = rows[r].optionField;
             list<OptionType_t> optionTypes;
             setOptionTypeFromField(optionTypes, optionField);
@@ -310,7 +305,6 @@ void MotorcycleLoader::load(Zone* pZone)
         pMotorcycle->setItemType(rows[r].itemType);
 
         Storage storage = (Storage)rows[r].storage;
-        StorageID_t storageID = rows[r].storageID;
         BYTE x = rows[r].x;
         BYTE y = rows[r].y;
 

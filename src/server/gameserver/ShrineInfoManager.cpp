@@ -121,7 +121,7 @@ Item* ShrineSet::createBloodBibleInGuardShrine()
     Assert(pItem != NULL);
 
     char strZoneID[10];
-    sprintf(strZoneID, "%d", (int)pZone->getZoneID());
+    snprintf(strZoneID, sizeof(strZoneID), "%d", (int)pZone->getZoneID());
 
     pZone->registerObject(pItem);
     pItem->create(strZoneID, STORAGE_CORPSE, pShrine->getObjectID(), 0, 0);
@@ -708,10 +708,11 @@ bool ShrineInfoManager::returnBloodBible(Zone* pZone, BloodBible* pBloodBible) c
         race = strings.c_str(STRID_OUSTERS);
     }
 
-    sprintf(msg, strings.c_str(STRID_RETURN_TO_GUARD_SHRINE_BLOOD_BIBLE), GuardShrine.getName().c_str(), race,
-            //					(pShrineSet->getOwnerRace()==RACE_SLAYER? g_pStringPool->c_str( STRID_SLAYER ) :
-            // g_pStringPool->c_str( STRID_VAMPIRE ) ),
-            GuardShrine.getName().c_str());
+    snprintf(msg, sizeof(msg), strings.c_str(STRID_RETURN_TO_GUARD_SHRINE_BLOOD_BIBLE), GuardShrine.getName().c_str(),
+             race,
+             //					(pShrineSet->getOwnerRace()==RACE_SLAYER? g_pStringPool->c_str( STRID_SLAYER ) :
+             // g_pStringPool->c_str( STRID_VAMPIRE ) ),
+             GuardShrine.getName().c_str());
     GCSystemMessage msgPkt;
     msgPkt.setMessage(msg);
 

@@ -188,7 +188,6 @@ void EffectProminenceLoader::load(Zone* pZone)
         ZoneCoord_t top = rows[r].top;
         ZoneCoord_t right = rows[r].right;
         ZoneCoord_t bottom = rows[r].bottom;
-        int value1 = rows[r].value1;
         int value2 = rows[r].value2;
         int value3 = rows[r].value3;
 

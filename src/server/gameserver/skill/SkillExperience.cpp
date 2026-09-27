@@ -101,7 +101,7 @@ typedef struct DomainStruct {
 
 class isBig {
 public:
-    isBig(){};
+    isBig() {};
 
     bool operator()(const DomainStruct& t, const DomainStruct& b) {
         if (t.DomainLevel > b.DomainLevel)
@@ -729,7 +729,7 @@ void computeAlignmentChange(Creature* pTargetCreature, Damage_t Damage, Creature
                     WORD AlignmentSaveCount = pSlayer->getAlignmentSaveCount();
                     if (AlignmentSaveCount > ALIGNMENT_SAVE_PERIOD) {
                         char pField[80];
-                        sprintf(pField, "ALIGNMENT=%d", ResultAlignment);
+                        snprintf(pField, sizeof(pField), "ALIGNMENT=%d", ResultAlignment);
                         pSlayer->tinysave(pField);
 
                         AlignmentSaveCount = 0;
@@ -746,7 +746,7 @@ void computeAlignmentChange(Creature* pTargetCreature, Damage_t Damage, Creature
                     WORD AlignmentSaveCount = pVampire->getAlignmentSaveCount();
                     if (AlignmentSaveCount > ALIGNMENT_SAVE_PERIOD) {
                         char pField[80];
-                        sprintf(pField, "ALIGNMENT=%d", ResultAlignment);
+                        snprintf(pField, sizeof(pField), "ALIGNMENT=%d", ResultAlignment);
                         pVampire->tinysave(pField);
 
                         AlignmentSaveCount = 0;
@@ -763,7 +763,7 @@ void computeAlignmentChange(Creature* pTargetCreature, Damage_t Damage, Creature
                     WORD AlignmentSaveCount = pOusters->getAlignmentSaveCount();
                     if (AlignmentSaveCount > ALIGNMENT_SAVE_PERIOD) {
                         char pField[80];
-                        sprintf(pField, "ALIGNMENT=%d", ResultAlignment);
+                        snprintf(pField, sizeof(pField), "ALIGNMENT=%d", ResultAlignment);
                         pOusters->tinysave(pField);
 
                         AlignmentSaveCount = 0;

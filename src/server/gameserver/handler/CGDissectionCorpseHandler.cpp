@@ -485,8 +485,8 @@ void CGDissectionCorpseHandler::execute(CGDissectionCorpse* pPacket, Player* pPl
                 pInventory->addItem(pTreasure, tp);
 
                 char pField[80];
-                sprintf(pField, "OwnerID='%s', Storage=%d, StorageID=0, X=%d, Y=%d", pPC->getName().c_str(),
-                        STORAGE_INVENTORY, tp.x, tp.y);
+                snprintf(pField, sizeof(pField), "OwnerID='%s', Storage=%d, StorageID=0, X=%d, Y=%d",
+                         pPC->getName().c_str(), STORAGE_INVENTORY, tp.x, tp.y);
                 pTreasure->tinysave(pField);
                 addSimpleCreatureEffect(pPC, Effect::EFFECT_CLASS_HAS_FLAG);
 
@@ -525,24 +525,24 @@ void CGDissectionCorpseHandler::execute(CGDissectionCorpse* pPacket, Player* pPl
                             // Broadcast to the zone once it is pulled out.
                             char safeRace[15];
                             if (pZone->getLevelWarManager()->getSafeIndex(pMonsterCorpse) == 0) {
-                                sprintf(safeRace, strings.c_str(STRID_SLAYER));
+                                snprintf(safeRace, sizeof(safeRace), strings.c_str(STRID_SLAYER));
                             } else if (pZone->getLevelWarManager()->getSafeIndex(pMonsterCorpse) == 1) {
-                                sprintf(safeRace, strings.c_str(STRID_VAMPIRE));
+                                snprintf(safeRace, sizeof(safeRace), strings.c_str(STRID_VAMPIRE));
                             } else if (pZone->getLevelWarManager()->getSafeIndex(pMonsterCorpse) == 2) {
-                                sprintf(safeRace, strings.c_str(STRID_OUSTERS));
+                                snprintf(safeRace, sizeof(safeRace), strings.c_str(STRID_OUSTERS));
                             } else if (pZone->getLevelWarManager()->getSafeIndex(pMonsterCorpse) == 3) {
-                                sprintf(safeRace, strings.c_str(STRID_CENTER));
+                                snprintf(safeRace, sizeof(safeRace), strings.c_str(STRID_CENTER));
                             } else {
                                 Assert(false);
                             }
 
                             char race[15];
                             if (pCreature->isSlayer()) {
-                                sprintf(race, strings.c_str(STRID_SLAYER));
+                                snprintf(race, sizeof(race), strings.c_str(STRID_SLAYER));
                             } else if (pCreature->isVampire()) {
-                                sprintf(race, strings.c_str(STRID_VAMPIRE));
+                                snprintf(race, sizeof(race), strings.c_str(STRID_VAMPIRE));
                             } else if (pCreature->isOusters()) {
-                                sprintf(race, strings.c_str(STRID_OUSTERS));
+                                snprintf(race, sizeof(race), strings.c_str(STRID_OUSTERS));
                             } else {
                                 Assert(false);
                             }
@@ -552,8 +552,8 @@ void CGDissectionCorpseHandler::execute(CGDissectionCorpse* pPacket, Player* pPl
                                     Item::ITEM_CLASS_SWEEPER, pTreasure->getItemType()));
 
                             char msg[100];
-                            sprintf(msg, strings.c_str(STRID_PULL_OUT_SWEEPER), safeRace,
-                                    pSweeperInfo->getName().c_str(), pCreature->getName().c_str(), race);
+                            snprintf(msg, sizeof(msg), strings.c_str(STRID_PULL_OUT_SWEEPER), safeRace,
+                                     pSweeperInfo->getName().c_str(), pCreature->getName().c_str(), race);
                             GCSystemMessage gcSystemMessage;
                             gcSystemMessage.setMessage(msg);
                             pZone->broadcastPacket(&gcSystemMessage);
