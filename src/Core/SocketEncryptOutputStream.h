@@ -73,9 +73,10 @@ public:
     // No signed 64-bit overload: see the note in
     // SocketEncryptInputStream.h. It was dead code that nonetheless
     // instantiated SocketOutputStream::write<long>, which
-    // de::WireScalar rejects.
-    uint writeEncrypt(ulong buf) {
-        buf = m_Encrypter.convert(buf);
+    // de::WireScalar rejects. The 64-bit overload is spelled
+    // std::uint64_t for the reason given there.
+    uint writeEncrypt(std::uint64_t buf) {
+        buf = m_Encrypter.convert(static_cast<ulong>(buf));
         return write(buf);
     }
 

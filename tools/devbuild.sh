@@ -207,7 +207,11 @@ fi
 # a nested rw mount over the ro one. Without it a --record run's rsync back
 # fails on the read-only filesystem — and silently, since exit $rc reports
 # ctest's status, not the copy's.
-exec docker run --rm "${tty_args[@]}" "${cpu_args[@]}" \
+#
+# The ${a[@]+"${a[@]}"} spelling expands an empty array to nothing: macOS
+# ships bash 3.2, where a bare "${a[@]}" of an empty array is an unbound
+# variable under set -u.
+exec docker run --rm ${tty_args[@]+"${tty_args[@]}"} ${cpu_args[@]+"${cpu_args[@]}"} \
     -v "$repo_mount:/repo:ro" \
     -v "$repo_mount/tests:/repo/tests" \
     -v "$WORK_VOLUME:/work" \

@@ -13,6 +13,53 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Native macOS build (2026-09-27)
+
+- **The 64-bit encrypted stream overloads did not compile on macOS.**
+  `SocketEncryptInputStream::readEncrypt(ulong&)` and
+  `SocketEncryptOutputStream::writeEncrypt(ulong)` assumed `ulong` is
+  `std::uint64_t`. It is on LP64 Linux; on macOS `std::uint64_t` is
+  `unsigned long long`, so the in-class overloads instantiated
+  `read<unsigned long>` / `write<unsigned long>`, which `de::WireScalar`
+  rejects, and every file including either header failed to compile. Both
+  are spelled `std::uint64_t` now, the same type as before on Linux; the
+  goldens pass on both platforms.
+  > **Status:** fixed (fix/macos-native-build)
+- **CMake did not find Homebrew's keg-only `mysql-client`, nor the root
+  `LuaState.h` includes LuaJIT from.** The MySQL search named only
+  `Cellar/mysql-client/*`, which misses `mysql-client@8.4`; and
+  `<luajit-2.1/lua.h>` needs the directory above the one found for the
+  headers, which Linux supplies as `/usr/include` and Apple Clang does not.
+  The search now names Homebrew's `opt/` prefixes, and the luajit keg's
+  `include/` is added on macOS.
+  > **Status:** fixed (fix/macos-native-build)
+- **`tools/devbuild.sh` stopped before starting its container on macOS.**
+  macOS ships bash 3.2, where expanding an empty array under `set -u` is an
+  unbound-variable error, and the `docker run` line expands two arrays that
+  are empty outside a terminal or without `DEVBUILD_JOBS`.
+  > **Status:** fixed (fix/macos-native-build)
+- **`src/Core/Assert.h` answers `#include <assert.h>` on a case-insensitive
+  file system.** `src/Core` is on every target's include path, so on macOS
+  the C header resolves to the project's own and googletest's `gtest.cc`
+  loses `assert`. The servers build regardless; the test suite needs the
+  forced include the README gives. Keeping the project's include path off
+  the googletest targets would end it.
+  > **Status:** recorded, not fixed (fix/macos-native-build)
+- **`tests/ratchet/ratchets.sh` rejects BSD `wc -l` output.** macOS's `wc`
+  pads its count with spaces, and `check_ratchet` refuses `'       0'` as
+  not a number, so every count piped through `wc -l` fails natively on
+  macOS. The container run is unaffected.
+  > **Status:** recorded, not fixed (fix/macos-native-build)
+- **`proxy_acceptor_tests` assumes loopback delivery is immediate.** Two or
+  three of its nine tests fail natively on macOS, varying run to run: they
+  send on a loopback socket and poll at once, before the bytes have always
+  arrived there.
+  > **Status:** recorded, not fixed (fix/macos-native-build)
+- **`shutdown_supervisor` times out natively on macOS** (90 s); not
+  diagnosed. It drives `docker/start.sh`, which is written for the Linux
+  container.
+  > **Status:** recorded, not fixed (fix/macos-native-build)
+
 ## Connection admission: gateway header and socket ownership (2026-09-25)
 
 - **`ProxyAcceptor` accepted a PROXY header whose client address held a

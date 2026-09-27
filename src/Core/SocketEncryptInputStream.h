@@ -81,12 +81,14 @@ public:
     // field, and `long` is 8 bytes here but 4 on the Win32 client, so
     // de::WireScalar rejects it (WireTypes.h). This overload was dead
     // -- nothing ever called it -- but being defined in-class it still
-    // instantiated SocketInputStream::read<long>. The ulong overload
-    // below stays: on this platform ulong IS std::uint64_t, the width
-    // the Exchange listing id uses.
-    uint readEncrypt(ulong& buf) {
+    // instantiated SocketInputStream::read<long>. The 64-bit overload
+    // below stays, spelled std::uint64_t, the width the Exchange listing
+    // id uses: that is `ulong` on LP64 Linux but `unsigned long long` on
+    // macOS, where de::WireScalar rejects `unsigned long`. The convert()
+    // goes through ulong, which is 64 bits on both.
+    uint readEncrypt(std::uint64_t& buf) {
         uint n = read(buf);
-        buf = m_Encrypter.convert(buf);
+        buf = m_Encrypter.convert(static_cast<ulong>(buf));
         return n;
     }
 
