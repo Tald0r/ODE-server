@@ -101,7 +101,7 @@ typedef struct DomainStruct {
 
 class isBig {
 public:
-    isBig() {};
+    isBig(){};
 
     bool operator()(const DomainStruct& t, const DomainStruct& b) {
         if (t.DomainLevel > b.DomainLevel)
