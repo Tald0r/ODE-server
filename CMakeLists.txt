@@ -94,9 +94,14 @@ endif()
 
 # MySQL
 if(APPLE)
+    # Homebrew's mysql-client formulae are keg-only: nothing is linked into
+    # /opt/homebrew/include or /opt/homebrew/lib, so name their opt/ prefixes.
     find_path(MYSQL_INCLUDE_DIR mysql/mysql.h
         PATHS
         /opt/homebrew/include
+        /opt/homebrew/opt/mysql-client/include
+        /opt/homebrew/opt/mysql-client@8.4/include
+        /opt/homebrew/opt/mysql-client@8.0/include
         /opt/homebrew/Cellar/mysql-client/*/include
         /opt/homebrew/Cellar/mariadb-connector-c/*/include
         /usr/local/include
@@ -105,6 +110,9 @@ if(APPLE)
     find_library(MYSQL_LIBRARY mysqlclient
         PATHS
         /opt/homebrew/lib
+        /opt/homebrew/opt/mysql-client/lib
+        /opt/homebrew/opt/mysql-client@8.4/lib
+        /opt/homebrew/opt/mysql-client@8.0/lib
         /opt/homebrew/Cellar/mysql-client/*/lib
         /opt/homebrew/Cellar/mariadb-connector-c/*/lib
         /opt/homebrew/Cellar/mariadb-connector-c/*/lib/mariadb
@@ -129,6 +137,7 @@ if(NOT LUA51_FOUND)
     if(APPLE)
         find_path(LUA51_INCLUDE_DIRS lua.h
             PATHS
+            /opt/homebrew/opt/luajit/include/luajit-2.1
             /opt/homebrew/include/luajit-2.1
             /opt/homebrew/include/lua5.1
             /usr/local/include/lua5.1
@@ -194,6 +203,16 @@ set(DARKEDEN_PROJECT_INCLUDE_DIRS
 if(MYSQL_INCLUDE_DIR AND
    (NOT DARKEDEN_ZIG_TARGET OR NOT MYSQL_INCLUDE_DIR STREQUAL "/usr/include"))
     list(APPEND DARKEDEN_PROJECT_INCLUDE_DIRS ${MYSQL_INCLUDE_DIR})
+endif()
+
+# LuaState.h spells the macOS headers <luajit-2.1/lua.h>, so the include root
+# is the directory above the one found for them, which Apple Clang does not
+# search by default the way Linux searches /usr/include. The luajit keg's own
+# include/ comes first in the search above, so the root holds nothing but Lua
+# and cannot shadow a system header the way Homebrew's shared include/ could.
+if(APPLE AND LUA51_INCLUDE_DIRS)
+    get_filename_component(DARKEDEN_LUA_INCLUDE_ROOT "${LUA51_INCLUDE_DIRS}" DIRECTORY)
+    list(APPEND DARKEDEN_PROJECT_INCLUDE_DIRS ${DARKEDEN_LUA_INCLUDE_ROOT})
 endif()
 
 include_directories(${DARKEDEN_PROJECT_INCLUDE_DIRS})

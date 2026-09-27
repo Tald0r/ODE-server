@@ -47,6 +47,14 @@ docker compose down
 
 Add `-v` to `docker compose down` to wipe the database as well.
 
+**macOS:** the same commands work under OrbStack (what this was verified
+with) and should under Docker Desktop. On Apple Silicon the server images
+build natively for arm64, but
+`mysql/mysql-server:5.7` is published for amd64 only, so Docker runs it under
+emulation and warns that `The requested image's platform (linux/amd64) does
+not match the detected host platform`. That warning is expected, and the
+stack comes up as it does on Linux.
+
 **NOTE:** the compose setup assumes server and client run on the same machine.
 To run the client on another machine, set the server IP in the
 `DARKEDEN.GameServerInfo` table (or in `docker/initdb-docker.sql` before the
@@ -100,6 +108,62 @@ make dev-build
 
 make dev-shell
 ```
+
+The same commands work on macOS under OrbStack (verified) and should under
+Docker Desktop; on Apple Silicon the image is arm64 and the build is native
+to it.
+
+## Build natively on macOS
+
+The servers also build as native macOS executables with Apple Clang. This is
+verified on Apple Silicon (macOS 27.0, Apple Clang 21, CMake 4.4). The
+dependencies come from Homebrew:
+
+```bash
+xcode-select --install
+brew install cmake ninja mysql-client luajit
+```
+
+`mysql-client` is keg-only. CMake looks for it under Homebrew's `opt/`
+prefixes (`mysql-client`, `mysql-client@8.4`, `mysql-client@8.0`), so no
+extra flags are needed. From the repository root:
+
+```bash
+make debug      # or: make release
+```
+
+That writes `bin/loginserver`, `bin/sharedserver`, `bin/gameserver` and
+`bin/hashpw`. `bin/hashpw` works as it does in the container:
+
+```bash
+./bin/hashpw <<< 'new-password'
+```
+
+The Docker stack is still the way to run the servers. Running the native
+binaries needs a MySQL they can reach (the compose file publishes no MySQL
+port) and a copy of `conf/` with `HomePath`, `DB_HOST`, `UI_DB_HOST` and
+`LoginServerIP` set for this machine. That has not been tried on macOS yet.
+
+### Tests on macOS
+
+`make dev-test` is the reference run. The suite also builds natively, with
+one workaround: the macOS file system ignores letter case, so
+`#include <assert.h>` finds the project's own `src/Core/Assert.h` and
+googletest does not compile. Forcing the system header in first works. The
+tree gets its own output root so that it leaves `make debug`'s `bin/` and
+`lib/` alone:
+
+```bash
+cmake -B build-tests -DCMAKE_BUILD_TYPE=Debug -DDARKEDEN_BUILD_TESTS=ON \
+    -DDARKEDEN_OUTPUT_ROOT="$PWD/build-tests" \
+    -DCMAKE_CXX_FLAGS="-include $(xcrun --show-sdk-path)/usr/include/assert.h"
+cmake --build build-tests --target wire_tests -j"$(sysctl -n hw.ncpu)"
+(cd build-tests && ctest --output-on-failure)
+```
+
+49 of the 52 tests pass, the wire goldens among them. `ratchets`,
+`proxy_acceptor_tests` and `shutdown_supervisor` fail because of the
+platform rather than the code; `docs/FIXES.md` records each one.
 
 ## Howto
 
