@@ -63,7 +63,7 @@ private:
     ObjectID_t m_ObjectID = 0;
 
     // Object id of the sub inventory item. 0 means it is taken from the main inventory
-    ObjectID_t m_InventoryItemObjectID = 0;
+    [[maybe_unused]] ObjectID_t m_InventoryItemObjectID = 0;
 
     CoordInven_t m_InvenX = 0;
     CoordInven_t m_InvenY = 0;

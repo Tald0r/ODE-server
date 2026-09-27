@@ -191,7 +191,6 @@ void EffectSatelliteBombAim::unaffect(Creature* pCastCreature)
             SkillSlot* pSkillSlot = pSlayer->hasSkill(SKILL_SATELLITE_BOMB);
             SkillInfo* pSkillInfo = de::gameContext().skillInfos().getSkillInfo(SKILL_SATELLITE_BOMB);
             SkillDomainType_t DomainType = pSkillInfo->getDomainType();
-            SkillLevel_t SkillLevel = pSkillSlot->getExpLevel();
 
             GCModifyInformation gcMI;
             shareAttrExp(pSlayer, maxDamage, 1, 8, 1, gcMI);

@@ -190,12 +190,12 @@ void CGAddZoneToInventoryHandler::execute(CGAddZoneToInventory* pPacket, Player*
                         pItem->setNum(AddNum + CurrentNum - MaxStack);
 
                         char pField[80];
-                        sprintf(pField, "OwnerID='%s', Num=%d, Storage=%d, X=%d, Y=%d", pPC->getName().c_str(),
-                                MaxStack, STORAGE_INVENTORY, InvenX, InvenY);
+                        snprintf(pField, sizeof(pField), "OwnerID='%s', Num=%d, Storage=%d, X=%d, Y=%d",
+                                 pPC->getName().c_str(), MaxStack, STORAGE_INVENTORY, InvenX, InvenY);
                         pPrevItem->tinysave(pField);
 
-                        sprintf(pField, "OwnerID='%s', Num=%d, Storage=%d", pPC->getName().c_str(), pItem->getNum(),
-                                STORAGE_EXTRASLOT);
+                        snprintf(pField, sizeof(pField), "OwnerID='%s', Num=%d, Storage=%d", pPC->getName().c_str(),
+                                 pItem->getNum(), STORAGE_EXTRASLOT);
                         pItem->tinysave(pField);
                     } else {
                         pPrevItem->setNum(pPrevItem->getNum() + pItem->getNum());
@@ -204,8 +204,8 @@ void CGAddZoneToInventoryHandler::execute(CGAddZoneToInventory* pPacket, Player*
                         pInventory->increaseWeight(pItem->getWeight() * pItem->getNum());
 
                         char pField[80];
-                        sprintf(pField, "OwnerID='%s', Num=%d, Storage=%d, X=%d, Y=%d", pPC->getName().c_str(),
-                                pPrevItem->getNum(), STORAGE_INVENTORY, InvenX, InvenY);
+                        snprintf(pField, sizeof(pField), "OwnerID='%s', Num=%d, Storage=%d, X=%d, Y=%d",
+                                 pPC->getName().c_str(), pPrevItem->getNum(), STORAGE_INVENTORY, InvenX, InvenY);
                         pPrevItem->tinysave(pField);
 
                         pItem->destroy();
@@ -254,13 +254,13 @@ void CGAddZoneToInventoryHandler::execute(CGAddZoneToInventory* pPacket, Player*
         } else {
             pInventory->addItem(InvenX, InvenY, pItem);
             char pField[80];
-            sprintf(pField, "OwnerID='%s', Storage=%d, X=%d, Y=%d", pPC->getName().c_str(), STORAGE_INVENTORY, InvenX,
-                    InvenY);
+            snprintf(pField, sizeof(pField), "OwnerID='%s', Storage=%d, X=%d, Y=%d", pPC->getName().c_str(),
+                     STORAGE_INVENTORY, InvenX, InvenY);
             pItem->tinysave(pField);
 
             // Belt slot items also need their owner updated. 2003.3.22 by Sequoia
             if (pItem->getItemClass() == Item::ITEM_CLASS_BELT) {
-                sprintf(pField, "OwnerID='%s'", pPC->getName().c_str());
+                snprintf(pField, sizeof(pField), "OwnerID='%s'", pPC->getName().c_str());
 
                 Belt* pBelt = dynamic_cast<Belt*>(pItem);
                 Assert(pBelt != NULL);
@@ -277,7 +277,7 @@ void CGAddZoneToInventoryHandler::execute(CGAddZoneToInventory* pPacket, Player*
             }
             // Ousters armband contents also need their owner updated. 2003.3.22 by Sequoia
             if (pItem->getItemClass() == Item::ITEM_CLASS_OUSTERS_ARMSBAND) {
-                sprintf(pField, "OwnerID='%s'", pPC->getName().c_str());
+                snprintf(pField, sizeof(pField), "OwnerID='%s'", pPC->getName().c_str());
 
                 OustersArmsband* pOustersArmsband = dynamic_cast<OustersArmsband*>(pItem);
                 Assert(pOustersArmsband != NULL);
@@ -338,11 +338,11 @@ void CGAddZoneToInventoryHandler::execute(CGAddZoneToInventory* pPacket, Player*
                 // Broadcast a system message about the sweeper pickup
                 char race[15];
                 if (pCreature->isSlayer()) {
-                    sprintf(race, strings.c_str(STRID_SLAYER));
+                    snprintf(race, sizeof(race), strings.c_str(STRID_SLAYER));
                 } else if (pCreature->isVampire()) {
-                    sprintf(race, strings.c_str(STRID_VAMPIRE));
+                    snprintf(race, sizeof(race), strings.c_str(STRID_VAMPIRE));
                 } else if (pCreature->isOusters()) {
-                    sprintf(race, strings.c_str(STRID_OUSTERS));
+                    snprintf(race, sizeof(race), strings.c_str(STRID_OUSTERS));
                 } else {
                     Assert(false);
                 }
@@ -351,8 +351,8 @@ void CGAddZoneToInventoryHandler::execute(CGAddZoneToInventory* pPacket, Player*
                     de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SWEEPER, pItem->getItemType()));
 
                 char msg[100];
-                sprintf(msg, strings.c_str(STRID_PICK_UP_SWEEPER), pSweeperInfo->getName().c_str(),
-                        pCreature->getName().c_str(), race);
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_PICK_UP_SWEEPER), pSweeperInfo->getName().c_str(),
+                         pCreature->getName().c_str(), race);
                 GCSystemMessage gcSystemMessage;
                 gcSystemMessage.setMessage(msg);
                 pZone->broadcastPacket(&gcSystemMessage);
@@ -377,7 +377,7 @@ void CGAddZoneToInventoryHandler::execute(CGAddZoneToInventory* pPacket, Player*
 
         if (pItem != NULL && pItem->isTraceItem()) {
             char zoneName[15];
-            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), ZoneX, ZoneY);
+            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), ZoneX, ZoneY);
             remainTraceLog(pItem, zoneName, pCreature->getName(), ITEM_LOG_MOVE, DETAIL_PICKUP);
         }
     } catch (Throwable& t) {

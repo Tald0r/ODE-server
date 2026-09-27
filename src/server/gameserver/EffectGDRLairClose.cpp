@@ -11,7 +11,7 @@ void EffectGDRLairClose::affect() {
     setNextTime(600);
 
     char msg[200];
-    sprintf(msg, "The Gilles de Rais Lair entrance closes in %d minutes.", m_MinutesCount);
+    snprintf(msg, sizeof(msg), "The Gilles de Rais Lair entrance closes in %d minutes.", m_MinutesCount);
     GCSystemMessage gcSM;
     gcSM.setMessage(msg);
     de::gameContext().zoneGroups().broadcast(&gcSM);

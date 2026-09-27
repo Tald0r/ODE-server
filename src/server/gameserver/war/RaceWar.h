@@ -15,33 +15,33 @@ public:
     RaceWar(WarState warState, WarID_t warID = 0);
     virtual ~RaceWar();
 
-    WarType_t getWarType() const {
+    WarType_t getWarType() const override {
         return WAR_RACE;
     }
-    string getWarType2DBString() const {
+    string getWarType2DBString() const override {
         return "RACE";
     }
-    string getWarName() const;
+    string getWarName() const override;
 
 public:
     // The race war is the war the shrines of Adam's holy land are fought over,
     // so it is the one war that lets a player take a shrine set for its race.
     bool mayModifyShrineOwner(PlayerCreature* pPC) override;
 
-    void sendWarEndMessage() const;
+    void sendWarEndMessage() const override;
 
 protected:
-    void executeStart();
-    void executeEnd();
+    void executeStart() override;
+    void executeEnd() override;
 
     void recordRaceWarStart();
     void recordRaceWarEnd();
 
 public:
-    void makeWarScheduleInfo(WarScheduleInfo* pWSI) const;
-    void makeWarInfo(WarInfo* pWarInfo) const;
+    void makeWarScheduleInfo(WarScheduleInfo* pWSI) const override;
+    void makeWarInfo(WarInfo* pWarInfo) const override;
 
-    virtual string toString() const;
+    virtual string toString() const override;
 
 private:
 };

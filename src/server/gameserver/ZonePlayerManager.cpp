@@ -249,7 +249,7 @@ void ZonePlayerManager::processInputs() {
     for (int i = walk.first; i <= walk.last; i++) {
         // The ZPM holds only players, so there is nothing further to compare.
         if (m_PollSet.isReadable(i)) {
-            if (m_pPlayers[i] != NULL && m_pPlayers[i] == m_pPlayers[i]) {
+            if (m_pPlayers[i] != NULL) {
                 GamePlayer* pTempPlayer = dynamic_cast<GamePlayer*>(m_pPlayers[i]);
                 Assert(pTempPlayer != NULL);
                 Assert(m_pPlayers[i] != NULL);
@@ -550,7 +550,7 @@ void ZonePlayerManager::processExceptions() {
     const de::DescriptorRange walk = de::descriptorRange((int)m_MinFD, (int)m_MaxFD, (int)nMaxPlayers);
     for (int i = walk.first; i <= walk.last; i++) {
         if (m_PollSet.isUrgent(i)) {
-            if (m_pPlayers[i] != NULL && m_pPlayers[i] == m_pPlayers[i]) {
+            if (m_pPlayers[i] != NULL) {
                 GamePlayer* pTempPlayer = dynamic_cast<GamePlayer*>(m_pPlayers[i]);
                 Assert(pTempPlayer != NULL);
                 Assert(m_pPlayers[i] != NULL);

@@ -46,9 +46,6 @@ void WeatherManager::init()
     // Set today's weather.
     //--------------------------------------------------------------------------------
 
-    // Fetch the GameTime object to find out which month it is.
-    GameTime gametime = de::gameContext().worldTime().getGameTime();
-
     // Fetch this month's weather information.
     // const WeatherInfo & weatherInfo = de::gameContext().weatherInfos().getWeatherInfo(gametime.getMonth());
 

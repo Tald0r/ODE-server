@@ -114,7 +114,8 @@ void CGLogoutHandler::execute(CGLogout* pPacket, Player* pPlayer)
                     ZoneY = ResurrectCoord.y;
 
                     char pField[80];
-                    sprintf(pField, "ZoneID=%d, XCoord=%d, YCoord=%d, CurrentHP=HP", ZoneID, ZoneX, ZoneY);
+                    snprintf(pField, sizeof(pField), "ZoneID=%d, XCoord=%d, YCoord=%d, CurrentHP=HP", ZoneID, ZoneX,
+                             ZoneY);
 
                     if (pPC->isSlayer()) {
                         Slayer* pSlayer = dynamic_cast<Slayer*>(pPC);

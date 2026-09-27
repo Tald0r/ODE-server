@@ -2972,10 +2972,10 @@ protected:
 
     static void seed(const std::string& id, int world, const std::string& name, int num, const std::string& status) {
         char sql[240];
-        sprintf(sql,
-                "INSERT INTO GoodsListObject (BuyID, ID, World, PlayerID, Name, GoodsID, Num, Status) "
-                "VALUES ('itbuy', %s, %d, 'itaccount', '%s', 5000, %d, '%s')",
-                id.c_str(), world, name.c_str(), num, status.c_str());
+        snprintf(sql, sizeof(sql),
+                 "INSERT INTO GoodsListObject (BuyID, ID, World, PlayerID, Name, GoodsID, Num, Status) "
+                 "VALUES ('itbuy', %s, %d, 'itaccount', '%s', 5000, %d, '%s')",
+                 id.c_str(), world, name.c_str(), num, status.c_str());
         execSQL(sql);
     }
 };

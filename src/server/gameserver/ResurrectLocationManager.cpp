@@ -269,7 +269,7 @@ bool ResurrectLocationManager::getPosition(PlayerCreature* pPC, ZONE_COORD& zone
             }
 
             // Entering Adam's holy land without having applied for the war
-            if ((pResZoneInfo != NULL && pResZoneInfo->isHolyLand() || pPC->getZone()->isHolyLand()) &&
+            if (((pResZoneInfo != NULL && pResZoneInfo->isHolyLand()) || pPC->getZone()->isHolyLand()) &&
                 !pPC->isFlag(Effect::EFFECT_CLASS_RACE_WAR_JOIN_TICKET)) {
                 // Send them to the default resurrection position of their race.
                 if (getRaceDefaultPosition(pPC->getRace(), zoneCoord)) {

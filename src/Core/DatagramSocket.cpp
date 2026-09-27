@@ -61,7 +61,7 @@ DatagramSocket::DatagramSocket(uint port) : m_SocketID(INVALID_SOCKET) {
 //////////////////////////////////////////////////////////////////////
 // destructor
 //////////////////////////////////////////////////////////////////////
-DatagramSocket::~DatagramSocket() noexcept {
+DatagramSocket::~DatagramSocket() {
     try {
         if (m_SocketID != INVALID_SOCKET)
             FileAPI::close_ex(m_SocketID);

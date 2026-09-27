@@ -85,7 +85,7 @@ void ActionRedistributeAttr::execute(Creature* pCreature1, Creature* pCreature2)
 
 
         char msg[100];
-        sprintf(msg, strings.c_str(STRID_NOT_ENOUGH_MONEY), pVampire->getName().c_str());
+        snprintf(msg, sizeof(msg), strings.c_str(STRID_NOT_ENOUGH_MONEY), pVampire->getName().c_str());
 
         GCSystemMessage gcSM;
         gcSM.setMessage(msg);

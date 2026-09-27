@@ -85,7 +85,7 @@ void EffectShutDown::affect(Creature* pCreature)
     Turn_t RemainTime = deadLine.tv_sec - nextTime.tv_sec;
 
     char msg[80];
-    sprintf(msg, de::gameContext().strings().c_str(STRID_SERVER_SHUT_DOWN_COUNT_DOWN), (int)RemainTime);
+    snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_SERVER_SHUT_DOWN_COUNT_DOWN), (int)RemainTime);
 
     GCSystemMessage gcSystemMessage;
     gcSystemMessage.setMessage(msg);

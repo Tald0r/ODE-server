@@ -22,6 +22,7 @@ public:
         return EFFECT_CLASS_AUTO_TURRET;
     }
 
+    using Effect::affect;
     void affect();
     void affect(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y);
 

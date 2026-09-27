@@ -277,13 +277,13 @@ void CGMixItemHandler::executeMix(CGMixItem* pPacket, Player* pPlayer, Item* pIt
     setOptionTypeToField(pTargetItem1->getOptionTypeList(), optionfield);
     char query[100];
     if (TargetGrade == -1)
-        sprintf(query, "OptionType='%s'", optionfield.c_str());
+        snprintf(query, sizeof(query), "OptionType='%s'", optionfield.c_str());
     else
-        sprintf(query, "OptionType='%s', Grade=%d", optionfield.c_str(), pTargetItem1->getGrade());
+        snprintf(query, sizeof(query), "OptionType='%s', Grade=%d", optionfield.c_str(), pTargetItem1->getGrade());
 
     pTargetItem1->tinysave(query);
 
-    sprintf(query, "%u", pTargetItem1->getItemID());
+    snprintf(query, sizeof(query), "%u", pTargetItem1->getItemID());
 
     pInventory->deleteItem(pTargetItem2->getObjectID());
     if (pTargetItem2->isTraceItem()) {
@@ -455,7 +455,7 @@ void CGMixItemHandler::executeDetach(CGMixItem* pPacket, Player* pPlayer, Item* 
     string optionfield = "";
     setOptionTypeToField(pTargetItem->getOptionTypeList(), optionfield);
     char query[100];
-    sprintf(query, "OptionType='%s'", optionfield.c_str());
+    snprintf(query, sizeof(query), "OptionType='%s'", optionfield.c_str());
     pTargetItem->tinysave(query);
 
     pTargetItem->setTraceItem(bTraceLog(pTargetItem));

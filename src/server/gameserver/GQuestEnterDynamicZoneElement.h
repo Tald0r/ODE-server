@@ -41,7 +41,7 @@ public:
     GQuestEnterDynamicZoneElement* makeElement(XMLTree* pTree);
 
 private:
-    bool m_bAutoEnter;
+    [[maybe_unused]] bool m_bAutoEnter;
     ZoneID_t m_TargetZoneID;
 };
 

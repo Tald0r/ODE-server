@@ -202,7 +202,7 @@ void PCManager::processCreatures()
             if (pCreature->isDead()
                 // Added for transfusion: isDead() checks whether HP is 0, but HP may
                 // still be refilling.
-                || pCreature->isFlag(Effect::EFFECT_CLASS_COMA) && pCreature->isVampire()) {
+                || (pCreature->isFlag(Effect::EFFECT_CLASS_COMA) && pCreature->isVampire())) {
                 if (!pCreature->isFlag(Effect::EFFECT_CLASS_COMA)) {
                     ///////////////////////////////////////////////////////////////////
                     // Drop any relic item held on death to the ground.
@@ -280,7 +280,8 @@ void PCManager::processCreatures()
                                         // Write an ItemTraceLog entry.
                                         if (pItem != NULL && pItem->isTraceItem()) {
                                             char zoneName[15];
-                                            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                                            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x,
+                                                     pt.y);
                                             remainTraceLog(pItem, pCreature->getName(), zoneName, ITEM_LOG_MOVE,
                                                            DETAIL_DROP);
                                             remainTraceLogNew(pItem, pCreature->getName(), ITL_DROP, ITLD_MOVE,
@@ -335,7 +336,8 @@ void PCManager::processCreatures()
                                         // Write an ItemTraceLog entry.
                                         if (pItem != NULL && pItem->isTraceItem()) {
                                             char zoneName[15];
-                                            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                                            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x,
+                                                     pt.y);
                                             remainTraceLog(pItem, pCreature->getName(), zoneName, ITEM_LOG_MOVE,
                                                            DETAIL_DROP);
                                             remainTraceLogNew(pItem, pCreature->getName(), ITL_DROP, ITLD_MOVE,
@@ -412,7 +414,8 @@ void PCManager::processCreatures()
                                         // Write an ItemTraceLog entry.
                                         if (pItem != NULL && pItem->isTraceItem()) {
                                             char zoneName[15];
-                                            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                                            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x,
+                                                     pt.y);
                                             remainTraceLog(pItem, pCreature->getName(), zoneName, ITEM_LOG_MOVE,
                                                            DETAIL_DROP);
                                             remainTraceLogNew(pItem, pCreature->getName(), ITL_DROP, ITLD_MOVE,
@@ -465,7 +468,8 @@ void PCManager::processCreatures()
                                         // Write an ItemTraceLog entry.
                                         if (pItem != NULL && pItem->isTraceItem()) {
                                             char zoneName[15];
-                                            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                                            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x,
+                                                     pt.y);
                                             remainTraceLog(pItem, pCreature->getName(), zoneName, ITEM_LOG_MOVE,
                                                            DETAIL_DROP);
                                             remainTraceLogNew(pItem, pCreature->getName(), ITL_DROP, ITLD_MOVE,
@@ -527,7 +531,8 @@ void PCManager::processCreatures()
                                         // Write an ItemTraceLog entry.
                                         if (pItem != NULL && pItem->isTraceItem()) {
                                             char zoneName[15];
-                                            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                                            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x,
+                                                     pt.y);
                                             remainTraceLog(pItem, pCreature->getName(), zoneName, ITEM_LOG_MOVE,
                                                            DETAIL_DROP);
                                             remainTraceLogNew(pItem, pCreature->getName(), ITL_DROP, ITLD_MOVE,
@@ -579,7 +584,8 @@ void PCManager::processCreatures()
                                         // Write an ItemTraceLog entry.
                                         if (pItem != NULL && pItem->isTraceItem()) {
                                             char zoneName[15];
-                                            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                                            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x,
+                                                     pt.y);
                                             remainTraceLog(pItem, pCreature->getName(), zoneName, ITEM_LOG_MOVE,
                                                            DETAIL_DROP);
                                             remainTraceLogNew(pItem, pCreature->getName(), ITL_DROP, ITLD_MOVE,

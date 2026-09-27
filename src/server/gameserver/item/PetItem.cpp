@@ -349,21 +349,12 @@ void PetItemLoader::load(Creature* pCreature)
             Slayer* pSlayer = NULL;
             Vampire* pVampire = NULL;
             Ousters* pOusters = NULL;
-            Motorcycle* pMotorcycle = NULL;
-            Inventory* pMotorInventory = NULL;
-            Item* pItem = NULL;
             Stash* pStash = NULL;
-            Belt* pBelt = NULL;
-            Inventory* pBeltInventory = NULL;
 
             if (pCreature->isSlayer()) {
                 pSlayer = dynamic_cast<Slayer*>(pCreature);
                 pInventory = pSlayer->getInventory();
                 pStash = pSlayer->getStash();
-                pMotorcycle = pSlayer->getMotorcycle();
-
-                if (pMotorcycle)
-                    pMotorInventory = pMotorcycle->getInventory();
             } else if (pCreature->isVampire()) {
                 pVampire = dynamic_cast<Vampire*>(pCreature);
                 pInventory = pVampire->getInventory();
@@ -467,7 +458,6 @@ void PetItemLoader::load(Zone* pZone)
         pPetItem->setItemType(rows[r].itemType);
 
         Storage storage = (Storage)rows[r].storage;
-        StorageID_t storageID = rows[r].storageID;
         BYTE x = rows[r].x;
         BYTE y = rows[r].y;
 

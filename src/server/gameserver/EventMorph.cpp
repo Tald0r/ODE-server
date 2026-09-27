@@ -229,7 +229,7 @@ void EventMorph::activate()
                     // Leave an ItemTraceLog.
                     if (pItem != NULL && pItem->isTraceItem()) {
                         char zoneName[15];
-                        sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                        snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
                         remainTraceLog(pItem, pFromCreature->getName(), zoneName, ITEM_LOG_MOVE, DETAIL_DROP);
                         remainTraceLogNew(pItem, pFromCreature->getName(), ITL_DROP, ITLD_MOVE, pZone->getZoneID(),
                                           pt.x, pt.y);
@@ -272,7 +272,7 @@ void EventMorph::activate()
                 // Leave an ItemTraceLog.
                 if (pItem != NULL && pItem->isTraceItem()) {
                     char zoneName[15];
-                    sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
+                    snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), pt.x, pt.y);
                     remainTraceLog(pItem, pFromCreature->getName(), zoneName, ITEM_LOG_MOVE, DETAIL_DROP);
                     remainTraceLogNew(pItem, pFromCreature->getName(), ITL_DROP, ITLD_MOVE, pZone->getZoneID(), pt.x,
                                       pt.y);

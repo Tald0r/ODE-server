@@ -24,9 +24,9 @@
 
 void itoa(int value, char* buf, int r) {
     if (r == 10) {
-        sprintf(buf, "%d", value);
+        snprintf(buf, 20, "%d", value);
     } else {
-        sprintf(buf, "%x", value);
+        snprintf(buf, 20, "%x", value);
     }
 }
 
@@ -179,7 +179,7 @@ void XMLUtil::filelog(const char* fmt, ...) {
         char time_buffer[256] = {
             0,
         };
-        sprintf(time_buffer, "%s : ", ctime(&now));
+        snprintf(time_buffer, sizeof(time_buffer), "%s : ", ctime(&now));
 
         file.write(time_buffer, (streamsize)strlen(time_buffer));
         file.write(message_buffer, (streamsize)strlen(message_buffer));
@@ -330,13 +330,13 @@ void XMLTree::AddAttribute(const string& name, const unsigned long& value, const
 
 void XMLTree::AddAttribute(const string& name, const float& value) {
     char szTemp[512];
-    sprintf(szTemp, "%f", value);
+    snprintf(szTemp, sizeof(szTemp), "%f", value);
     AddAttribute(name, string(szTemp));
 }
 
 void XMLTree::AddAttribute(const string& name, const double& value) {
     char szTemp[512];
-    sprintf(szTemp, "%f", value);
+    snprintf(szTemp, sizeof(szTemp), "%f", value);
     AddAttribute(name, string(szTemp));
 }
 

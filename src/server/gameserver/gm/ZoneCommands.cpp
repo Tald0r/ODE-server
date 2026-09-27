@@ -78,9 +78,7 @@ void opwarp(GamePlayer* pGamePlayer, string msg, int i) {
         // Check that such a zone really exists.
         // Return if there is none.
         try {
-            Zone* pZone = getZoneByZoneID(ZoneID);
-            // evade warning
-            pZone = NULL;
+            getZoneByZoneID(ZoneID);
         } catch (Error) {
             return;
         }

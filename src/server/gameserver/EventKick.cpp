@@ -45,7 +45,7 @@ void EventKick::sendMessage()
     Turn_t RemainTime = max(0, (int)(m_Deadline.tv_sec - currentTime.tv_sec));
 
     char msg[50];
-    sprintf(msg, de::gameContext().strings().c_str(STRID_DISCONNECT_COUNT_DOWN), (int)RemainTime);
+    snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_DISCONNECT_COUNT_DOWN), (int)RemainTime);
 
     string sMsg(msg);
 

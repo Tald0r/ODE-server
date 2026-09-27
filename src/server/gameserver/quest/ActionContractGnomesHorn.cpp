@@ -43,7 +43,6 @@ void ActionContractGnomesHorn::execute(Creature* pCreature1, Creature* pCreature
     Assert(pCreature1->isNPC());
     Assert(pCreature2->isPC());
 
-    NPC* pNPC = dynamic_cast<NPC*>(pCreature1);
     Player* pPlayer = pCreature2->getPlayer();
     Assert(pPlayer != NULL);
 

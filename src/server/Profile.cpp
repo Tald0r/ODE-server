@@ -51,7 +51,7 @@ string ProfileSample::getAverageTime(void) const {
 
     double accu_time = (m_AccuTime.tv_sec + (double)m_AccuTime.tv_usec / 1000000) / m_CallCount;
 
-    sprintf(avg_buf, "%5.9lfs", accu_time);
+    snprintf(avg_buf, sizeof(avg_buf), "%5.9lfs", accu_time);
 
     return string(avg_buf);
 }
@@ -60,7 +60,7 @@ string ProfileSample::getAccumulatedTime(void) const {
     char accu_buf[256] = {
         0,
     };
-    sprintf(accu_buf, "%ld.%06lds", m_AccuTime.tv_sec, m_AccuTime.tv_usec);
+    snprintf(accu_buf, sizeof(accu_buf), "%ld.%06lds", m_AccuTime.tv_sec, static_cast<long>(m_AccuTime.tv_usec));
 
     return string(accu_buf);
 }
@@ -69,7 +69,7 @@ string ProfileSample::getChildrenTime(void) const {
     char child_buf[256] = {
         0,
     };
-    sprintf(child_buf, "%ld.%06lds", m_ChildTime.tv_sec, m_ChildTime.tv_usec);
+    snprintf(child_buf, sizeof(child_buf), "%ld.%06lds", m_ChildTime.tv_sec, static_cast<long>(m_ChildTime.tv_usec));
 
     return string(child_buf);
 }

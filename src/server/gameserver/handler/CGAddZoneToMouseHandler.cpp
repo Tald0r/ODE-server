@@ -164,11 +164,11 @@ void CGAddZoneToMouseHandler::execute(CGAddZoneToMouse* pPacket, Player* pPlayer
                 // Once picked up, broadcast a system message to the zone
                 char race[15];
                 if (pCreature->isSlayer()) {
-                    sprintf(race, strings.c_str(STRID_SLAYER));
+                    snprintf(race, sizeof(race), strings.c_str(STRID_SLAYER));
                 } else if (pCreature->isVampire()) {
-                    sprintf(race, strings.c_str(STRID_VAMPIRE));
+                    snprintf(race, sizeof(race), strings.c_str(STRID_VAMPIRE));
                 } else if (pCreature->isOusters()) {
-                    sprintf(race, strings.c_str(STRID_OUSTERS));
+                    snprintf(race, sizeof(race), strings.c_str(STRID_OUSTERS));
                 } else {
                     Assert(false);
                 }
@@ -177,8 +177,8 @@ void CGAddZoneToMouseHandler::execute(CGAddZoneToMouse* pPacket, Player* pPlayer
                     de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SWEEPER, pItem->getItemType()));
 
                 char msg[100];
-                sprintf(msg, strings.c_str(STRID_PICK_UP_SWEEPER), pSweeperInfo->getName().c_str(),
-                        pCreature->getName().c_str(), race);
+                snprintf(msg, sizeof(msg), strings.c_str(STRID_PICK_UP_SWEEPER), pSweeperInfo->getName().c_str(),
+                         pCreature->getName().c_str(), race);
                 GCSystemMessage gcSystemMessage;
                 gcSystemMessage.setMessage(msg);
                 pZone->broadcastPacket(&gcSystemMessage);
@@ -201,12 +201,12 @@ void CGAddZoneToMouseHandler::execute(CGAddZoneToMouse* pPacket, Player* pPlayer
 
             // Save the item.
             char pField[80];
-            sprintf(pField, "OwnerID='%s', Storage=%d", pPC->getName().c_str(), STORAGE_EXTRASLOT);
+            snprintf(pField, sizeof(pField), "OwnerID='%s', Storage=%d", pPC->getName().c_str(), STORAGE_EXTRASLOT);
             pItem->tinysave(pField);
 
             // For a belt, ownership of the items inside it must transfer too.
             if (pItem->getItemClass() == Item::ITEM_CLASS_BELT) {
-                sprintf(pField, "OwnerID='%s'", pPC->getName().c_str());
+                snprintf(pField, sizeof(pField), "OwnerID='%s'", pPC->getName().c_str());
 
                 Belt* pBelt = dynamic_cast<Belt*>(pItem);
                 Assert(pBelt != NULL);
@@ -223,7 +223,7 @@ void CGAddZoneToMouseHandler::execute(CGAddZoneToMouse* pPacket, Player* pPlayer
             }
             // For an armsband, ownership of the items inside it must transfer too.
             if (pItem->getItemClass() == Item::ITEM_CLASS_OUSTERS_ARMSBAND) {
-                sprintf(pField, "OwnerID='%s'", pPC->getName().c_str());
+                snprintf(pField, sizeof(pField), "OwnerID='%s'", pPC->getName().c_str());
 
                 OustersArmsband* pOustersArmsband = dynamic_cast<OustersArmsband*>(pItem);
                 Assert(pOustersArmsband != NULL);
@@ -253,7 +253,7 @@ void CGAddZoneToMouseHandler::execute(CGAddZoneToMouse* pPacket, Player* pPlayer
 
         if (pItem != NULL && pItem->isTraceItem()) {
             char zoneName[15];
-            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), ZoneX, ZoneY);
+            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), ZoneX, ZoneY);
             remainTraceLog(pItem, zoneName, pCreature->getName(), ITEM_LOG_MOVE, DETAIL_PICKUP);
         }
     } catch (Throwable& t) {

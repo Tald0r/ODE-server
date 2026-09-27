@@ -304,7 +304,7 @@ void CGShopRequestBuyHandler::executeNormal(CGShopRequestBuy* pPacket, Player* p
         // has to be deleted.
         SAFE_DELETE(pItem);
         char pField[80];
-        sprintf(pField, "Num=%d", pReturnItem->getNum());
+        snprintf(pField, sizeof(pField), "Num=%d", pReturnItem->getNum());
         pReturnItem->tinysave(pField);
 
 
@@ -719,7 +719,7 @@ void CGShopRequestBuyHandler::executeEvent(CGShopRequestBuy* pPacket, Player* pP
         // has to be deleted.
         SAFE_DELETE(pItem);
         char pField[80];
-        sprintf(pField, "Num=%d", pReturnItem->getNum());
+        snprintf(pField, sizeof(pField), "Num=%d", pReturnItem->getNum());
         pReturnItem->tinysave(pField);
 
 

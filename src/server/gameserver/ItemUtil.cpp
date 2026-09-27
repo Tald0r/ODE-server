@@ -818,7 +818,7 @@ ItemNum_t decreaseItemNum(Item* pItem, Inventory* pInventory, const string& Owne
         // pItem->save(OwnerID, storage, storageID, x, y); // Save the item information.
         //  Item save optimization.
         char pField[80];
-        sprintf(pField, "Num=%d", pItem->getNum());
+        snprintf(pField, sizeof(pField), "Num=%d", pItem->getNum());
         pItem->tinysave(pField);
 
 
@@ -900,7 +900,6 @@ void setOptionTypeFromField(list<OptionType_t>& optionTypes, const string& optio
     if (optionField.empty())
         return;
 
-    const char* pOptionField = optionField.c_str();
     const char* sep = " ";
     char* s = new char[optionField.size() + 1];
     strcpy(s, optionField.c_str());
@@ -927,7 +926,7 @@ void setOptionTypeToField(const list<OptionType_t>& optionTypes, string& optionF
             optionField += " ";
         }
         ch = *itr;
-        sprintf(string, "%d", ch);
+        snprintf(string, sizeof(string), "%d", ch);
         optionField += string;
     }
 }
@@ -947,7 +946,7 @@ string getOptionTypeToString(const list<OptionType_t>& optionTypes) {
             optionField += " ";
         }
         ch = *itr;
-        sprintf(str, "%d", (int)ch);
+        snprintf(str, sizeof(str), "%d", (int)ch);
         optionField += str;
     }
 
@@ -1095,8 +1094,8 @@ Item* getRandomMysteriousItem(Creature* pCreature, Item::ItemClass itemClass, in
             ReqGender = pItemInfo->getReqGender();
 
             if (CSTR >= ReqSTR && CDEX >= ReqDEX && CINT >= ReqINT && CSUM >= ReqSum &&
-                (ReqGender == GENDER_BOTH || pSlayer->getSex() == MALE && ReqGender == GENDER_MALE ||
-                 pSlayer->getSex() == FEMALE && ReqGender == GENDER_FEMALE)) {
+                (ReqGender == GENDER_BOTH || (pSlayer->getSex() == MALE && ReqGender == GENDER_MALE) ||
+                 (pSlayer->getSex() == FEMALE && ReqGender == GENDER_FEMALE))) {
                 // Settle on this item type.
                 break;
             }
@@ -1227,8 +1226,8 @@ Item* getRandomMysteriousItem(Creature* pCreature, Item::ItemClass itemClass, in
             // The level limit must be absent or the level high enough, and
             // the gender must match.
             if ((ReqLevel <= 0 || CLevel >= ReqLevel) &&
-                (ReqGender == GENDER_BOTH || pVampire->getSex() == MALE && ReqGender == GENDER_MALE ||
-                 pVampire->getSex() == FEMALE && ReqGender == GENDER_FEMALE)) {
+                (ReqGender == GENDER_BOTH || (pVampire->getSex() == MALE && ReqGender == GENDER_MALE) ||
+                 (pVampire->getSex() == FEMALE && ReqGender == GENDER_FEMALE))) {
                 break;
             }
 
@@ -1236,7 +1235,7 @@ Item* getRandomMysteriousItem(Creature* pCreature, Item::ItemClass itemClass, in
 
         if (i == 0) {
             // For females the default item type differs.
-            if (Item::ITEM_CLASS_VAMPIRE_COAT && pVampire->getSex() == FEMALE) {
+            if (pVampire->getSex() == FEMALE) {
                 itemType = 1;
             } else {
                 itemType = 0;
@@ -1957,8 +1956,8 @@ void saveDissectionItem(Creature* pCreature, Item* pTreasure, int x, int y)
     case Item::ITEM_CLASS_SWEEPER: {
         char query[128];
 
-        sprintf(query, "ObjectID = %u, Storage=%u, StorageID=%u, X=%u, Y=%u", pTreasure->getObjectID(), STORAGE_ZONE,
-                pCreature->getZone()->getZoneID(), x, y);
+        snprintf(query, sizeof(query), "ObjectID = %u, Storage=%u, StorageID=%u, X=%u, Y=%u", pTreasure->getObjectID(),
+                 STORAGE_ZONE, pCreature->getZone()->getZoneID(), x, y);
         pTreasure->tinysave(query);
     } break;
 

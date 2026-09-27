@@ -158,10 +158,10 @@ bool FlagManager::endFlagWar() {
 
         // running a script -- who would have thought the system function would be used
         char cmd[100];
-        sprintf(cmd, "/home/darkeden/vs/bin/script/recordFlagWarHistory.py %s %d %d %d %d %d %d %d ",
-                m_EndTime.toStringforWeb().c_str(), (int)winner, m_Context.config().getPropertyInt("Dimension"),
-                m_Context.config().getPropertyInt("WorldID"), m_Context.config().getPropertyInt("ServerID"), slayers,
-                vampires, ousters);
+        snprintf(cmd, sizeof(cmd), "/home/darkeden/vs/bin/script/recordFlagWarHistory.py %s %d %d %d %d %d %d %d ",
+                 m_EndTime.toStringforWeb().c_str(), (int)winner, m_Context.config().getPropertyInt("Dimension"),
+                 m_Context.config().getPropertyInt("WorldID"), m_Context.config().getPropertyInt("ServerID"), slayers,
+                 vampires, ousters);
 
         filelog("script.log", cmd);
         system(cmd);

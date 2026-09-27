@@ -48,10 +48,8 @@ void CGModifyTaxRatioHandler::execute(CGModifyTaxRatio* pPacket, Player* pPlayer
 
     bool bOwner = false;
     list<CastleInfo*>::iterator itr = pCastleInfoList.begin();
-    CastleInfo* pCastleInfo = NULL;
     for (; itr != pCastleInfoList.end(); itr++) {
         if ((*itr)->getZoneID() == pPC->getZoneID()) {
-            pCastleInfo = (*itr);
             bOwner = true;
             break;
         }

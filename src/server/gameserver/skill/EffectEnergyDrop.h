@@ -71,11 +71,11 @@ public:
 
 private:
     ObjectID_t m_UserObjectID;
-    int m_Damage;               // EffectEnergyDrop Damage;
-    Turn_t m_Tick;              // EffectEnergyDrop turn;
-    int m_Level;                // EffectEnergyDrop level;
-    Duration_t m_Duration;      // EffectEnergyDrop Duration;
-    Duration_t m_StormDuration; // EnergyDrop effect duration
+    int m_Damage;                                // EffectEnergyDrop Damage;
+    Turn_t m_Tick;                               // EffectEnergyDrop turn;
+    int m_Level;                                 // EffectEnergyDrop level;
+    Duration_t m_Duration;                       // EffectEnergyDrop Duration;
+    [[maybe_unused]] Duration_t m_StormDuration; // EnergyDrop effect duration
 };
 
 class EffectEnergyDropLoader : public EffectLoader {

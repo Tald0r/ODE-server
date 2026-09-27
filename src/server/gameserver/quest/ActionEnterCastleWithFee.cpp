@@ -81,7 +81,7 @@ void ActionEnterCastleWithFee::execute(Creature* pNPC, Creature* pCreature)
 
             if (remain < fee) {
                 static char buf[200];
-                sprintf(buf, context().strings().c_str(STRID_NOT_ENOUGH_ENTRANCE_FEE), (int)fee);
+                snprintf(buf, sizeof(buf), context().strings().c_str(STRID_NOT_ENOUGH_ENTRANCE_FEE), (int)fee);
                 // Not enough gold.
                 GCSystemMessage message;
                 message.setType(SYSTEM_MESSAGE_HOLY_LAND);

@@ -78,7 +78,7 @@ void WarItem::tinysave(const char* field) const
 
     char query[255];
 
-    sprintf(query, "UPDATE WarItemObject SET %s WHERE ItemID=%u", field, m_ItemID);
+    snprintf(query, sizeof(query), "UPDATE WarItemObject SET %s WHERE ItemID=%u", field, m_ItemID);
     defaultItemObjectRepository().tinysaveGear(GEAR_WAR_ITEM, field, m_ItemID);
     filelog("WarLog.txt", "%s", query);
 

@@ -111,7 +111,6 @@ void BloodDrain::execute(Vampire* pVampire, ObjectID_t TargetObjectID)
             } else if (pTargetCreature->isMonster()) {
                 Monster* pMonster = dynamic_cast<Monster*>(pTargetCreature);
 
-                Timeval NextTurn = pMonster->getNextTurn();
                 Timeval DelayTurn;
                 DelayTurn.tv_sec = 4;
                 DelayTurn.tv_usec = 500000;
@@ -270,7 +269,6 @@ void BloodDrain::execute(Monster* pMonster, Creature* pEnemy)
     }
 
     // Apply the delay to the monster whether it succeeded or failed.
-    Timeval NextTurn = pMonster->getNextTurn();
     Timeval DelayTurn;
     DelayTurn.tv_sec = (bSuccess ? 4 : 1); // Success and failure use different delays.
     DelayTurn.tv_usec = 500000;
@@ -291,7 +289,7 @@ bool BloodDrain::executeMonster(Monster* pMonster, Creature* pEnemy)
     // A master drains anyone.
     // A dead target cannot be drained.
     if (pMonster->isDead() || pMonster->isFlag(Effect::EFFECT_CLASS_COMA) ||
-        !pMonster->isEnemyToAttack(pEnemy) && !isMaster || pEnemy->isDead() ||
+        (!pMonster->isEnemyToAttack(pEnemy) && !isMaster) || pEnemy->isDead() ||
         pEnemy->isFlag(Effect::EFFECT_CLASS_COMA)) {
         return false;
     }

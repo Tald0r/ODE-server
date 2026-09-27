@@ -110,19 +110,19 @@ void ActionAskVariable::execute(Creature* pCreature1, Creature* pCreature2)
             // Free for everyone during a race war.
             // During a guild war only the race allowed into the castle enters free.
             if (context().warSystem().hasActiveRaceWar() || context().warSystem().hasCastleActiveWar(zoneID)) {
-                sprintf(strValue, "%s", strings.getString(STRID_FREE).c_str());
+                snprintf(strValue, sizeof(strValue), "%s", strings.getString(STRID_FREE).c_str());
             } else if (race == RACE_SLAYER) {
                 char gold[15];
-                sprintf(gold, "%u", value);
+                snprintf(gold, sizeof(gold), "%u", value);
                 string sGold(gold);
                 convertCommaString(sGold);
-                sprintf(strValue, "%s", (sGold + " " + strings.getString(STRID_REI)).c_str());
+                snprintf(strValue, sizeof(strValue), "%s", (sGold + " " + strings.getString(STRID_REI)).c_str());
             } else {
                 char gold[15];
-                sprintf(gold, "%u", value);
+                snprintf(gold, sizeof(gold), "%u", value);
                 string sGold(gold);
                 convertCommaString(sGold);
-                sprintf(strValue, "%s", (sGold + " " + strings.getString(STRID_GELD)).c_str());
+                snprintf(strValue, sizeof(strValue), "%s", (sGold + " " + strings.getString(STRID_GELD)).c_str());
             }
 
             if (castleInfos.isPossibleEnter(zoneID, pPC))
@@ -215,7 +215,7 @@ void ActionAskVariable::execute(Creature* pCreature1, Creature* pCreature2)
             Gold_t price = context().variables().getVariable(VAMPIRE_REDISTRIBUTE_ATTR_PRICE);
 
             char gold[15];
-            sprintf(gold, "%u", price);
+            snprintf(gold, sizeof(gold), "%u", price);
 
             string sGold(gold);
             convertCommaString(sGold);
@@ -234,18 +234,18 @@ void ActionAskVariable::execute(Creature* pCreature1, Creature* pCreature2)
                     value = 0;
 
                 char gold[15];
-                sprintf(gold, "%u", value);
+                snprintf(gold, sizeof(gold), "%u", value);
                 string sGold(gold);
                 convertCommaString(sGold);
 
                 char strValue[20];
 
                 if (pCastleInfo->getRace() == RACE_SLAYER) {
-                    sprintf(strValue, "%s", (sGold + " " + strings.getString(STRID_REI)).c_str());
+                    snprintf(strValue, sizeof(strValue), "%s", (sGold + " " + strings.getString(STRID_REI)).c_str());
                 } else if (pCastleInfo->getRace() == RACE_VAMPIRE) {
-                    sprintf(strValue, "%s", (sGold + " " + strings.getString(STRID_GELD)).c_str());
+                    snprintf(strValue, sizeof(strValue), "%s", (sGold + " " + strings.getString(STRID_GELD)).c_str());
                 } else {
-                    sprintf(strValue, "%s", (sGold + " " + strings.getString(STRID_ZARD)).c_str());
+                    snprintf(strValue, sizeof(strValue), "%s", (sGold + " " + strings.getString(STRID_ZARD)).c_str());
                 }
 
                 pParam->setValue(strValue);

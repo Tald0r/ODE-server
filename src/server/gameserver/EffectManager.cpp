@@ -110,16 +110,12 @@ void EffectManager::deleteEffect(ObjectID_t effectID)
 
     list<Effect*>::iterator current = m_Effects.begin();
 
-    int i = 0;
-
     if (effectID == 0) {
         for (current = m_Effects.begin(); current != m_Effects.end(); current++) {
             Effect* pEffect = *current;
 
             pEffect->unaffect();
             SAFE_DELETE(pEffect);
-
-            i++;
         }
 
         m_Effects.clear();
@@ -133,8 +129,6 @@ void EffectManager::deleteEffect(ObjectID_t effectID)
                 SAFE_DELETE(pEffect);
                 return;
             }
-
-            i++;
         }
 
         // cerr << "EffectManager::deleteEffect could not find the effect."<<endl;

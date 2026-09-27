@@ -16,15 +16,15 @@ GQuestElement::ResultType GQuestGiveMoneyElement::checkCondition(PlayerCreature*
     GCSystemMessage gcSM;
     char buffer[256];
     if (pPC->isSlayer()) {
-        sprintf(buffer, "Received %u gold.", m_Amount);
+        snprintf(buffer, sizeof(buffer), "Received %u gold.", m_Amount);
         gcSM.setMessage(buffer);
         pPC->getPlayer()->sendPacket(&gcSM);
     } else if (pPC->isVampire()) {
-        sprintf(buffer, "Received %u gold.", m_Amount);
+        snprintf(buffer, sizeof(buffer), "Received %u gold.", m_Amount);
         gcSM.setMessage(buffer);
         pPC->getPlayer()->sendPacket(&gcSM);
     } else if (pPC->isOusters()) {
-        sprintf(buffer, "Received %u gold.", m_Amount);
+        snprintf(buffer, sizeof(buffer), "Received %u gold.", m_Amount);
         gcSM.setMessage(buffer);
         pPC->getPlayer()->sendPacket(&gcSM);
     }

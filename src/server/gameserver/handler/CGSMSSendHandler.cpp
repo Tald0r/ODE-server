@@ -48,7 +48,7 @@ void CGSMSSendHandler::execute(CGSMSSend* pPacket, Player* pPlayer)
     pPC->setSMSCharge(pPC->getSMSCharge() - pPacket->getNumbersList().size());
 
     char buffer[100];
-    sprintf(buffer, "SMSCharge=%u", pPC->getSMSCharge());
+    snprintf(buffer, sizeof(buffer), "SMSCharge=%u", pPC->getSMSCharge());
     pPC->tinysave(buffer);
 
     list<string>::const_iterator itr = pPacket->getNumbersList().begin();

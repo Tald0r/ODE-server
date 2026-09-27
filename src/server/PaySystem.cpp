@@ -254,15 +254,15 @@ bool PaySystem::updatePayPlayTime(const string& playerID, const VSDateTime& curr
             // [1] Update DB every hour.
             && (currentTime.tv_sec >= m_PayPlayStartTime.tv_sec + DELAY_PAY_TIME_UPDATE
                 // [2] If less than an hour remains, check immediately.
-                || m_PayPlayAvailableHours < MINUTE_PAY_TIME_DECREASE && elapsedSec > remainSec
+                || (m_PayPlayAvailableHours < MINUTE_PAY_TIME_DECREASE && elapsedSec > remainSec)
                 // [3] PC-room billing: remaining time is under 1h*UserMax and
                 //     elapsed*UserMax exceeds remaining (UserMax limited 1~12 to avoid too many checks),
                 //     or remaining minutes are fewer than users, so check each minute.
-                || m_PayPlayType == PAY_PLAY_TYPE_PCROOM
-                       //&& elapsedSec <= DELAY_PAY_TIME_UPDATE
-                       && m_PayPlayAvailableHours < MINUTE_PAY_TIME_DECREASE * UserMax &&
-                       (elapsedSec * (min(12, max(1, (int)m_UserMax))) > remainSec ||
-                        elapsedSec >= 60 && m_PayPlayAvailableHours <= UserMax))) {
+                || (m_PayPlayType == PAY_PLAY_TYPE_PCROOM
+                    //&& elapsedSec <= DELAY_PAY_TIME_UPDATE
+                    && m_PayPlayAvailableHours < MINUTE_PAY_TIME_DECREASE * UserMax &&
+                    (elapsedSec * (min(12, max(1, (int)m_UserMax))) > remainSec ||
+                     (elapsedSec >= 60 && m_PayPlayAvailableHours <= UserMax))))) {
             // Convert to minutes.
             int decreaseMin = (currentTime.tv_sec - m_PayPlayStartTime.tv_sec) / 60;
 
@@ -351,8 +351,8 @@ bool PaySystem::loginPayPlayPCRoom(const string& ip, const string& playerID) {
             bool bAvailable = checkPayPlayAvailable();
 
             // The room is full for its pay type.
-            if (m_PayType == PAY_TYPE_PERIOD && users >= m_UserLimit ||
-                m_PayType == PAY_TYPE_TIME && users >= m_UserMax) {
+            if ((m_PayType == PAY_TYPE_PERIOD && users >= m_UserLimit) ||
+                (m_PayType == PAY_TYPE_TIME && users >= m_UserMax)) {
                 return false;
             }
 
@@ -368,8 +368,8 @@ bool PaySystem::loginPayPlayPCRoom(const string& ip, const string& playerID) {
                 // row goes away again.
                 users = repo.loadPCRoomUserCount(m_PCRoomID);
 
-                if (m_PayType == PAY_TYPE_PERIOD && users >= m_UserLimit ||
-                    m_PayType == PAY_TYPE_TIME && users >= m_UserMax) {
+                if ((m_PayType == PAY_TYPE_PERIOD && users >= m_UserLimit) ||
+                    (m_PayType == PAY_TYPE_TIME && users >= m_UserMax)) {
                     repo.deletePCRoomUser(playerID);
                     return false;
                 } else {

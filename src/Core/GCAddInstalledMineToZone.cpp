@@ -22,7 +22,7 @@ GCAddInstalledMineToZone::GCAddInstalledMineToZone()
 //--------------------------------------------------------------------
 // Destructor
 //--------------------------------------------------------------------
-GCAddInstalledMineToZone::~GCAddInstalledMineToZone() noexcept {
+GCAddInstalledMineToZone::~GCAddInstalledMineToZone() {
     // no resources; keep noexcept
 }
 

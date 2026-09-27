@@ -66,8 +66,8 @@ private:
     Turn_t m_Tick; // EffectBloodyStorm turn;
     int m_Level;   // EffectBloodyStorm level;
     bool m_bVampire;
-    Duration_t m_Duration;      // EffectBloodyStorm Duration;
-    Duration_t m_StormDuration; // BloodyStorm effect duration
+    Duration_t m_Duration;                       // EffectBloodyStorm Duration;
+    [[maybe_unused]] Duration_t m_StormDuration; // BloodyStorm effect duration
     ObjectID_t m_UserObjectID;
 };
 

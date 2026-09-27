@@ -52,7 +52,7 @@ void giveMemberReward(PlayerCreature* pPC, uint type) {
 GQuestElement::ResultType GQuestGiveEventQuestItemElement::checkCondition(PlayerCreature* pPC) const {
     if (m_Grade == 0) {
         GQuestInventory& inventory = pPC->getGQuestManager()->getGQuestInventory();
-        ItemType_t base;
+        ItemType_t base = 0;
         if (pPC->isVampire()) {
             base = 4 + m_Type - 1;
         } else if (pPC->isSlayer()) {

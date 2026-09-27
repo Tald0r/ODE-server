@@ -742,7 +742,7 @@ bool isAbleToUseSelfSkill(Creature* pCreature, SkillType_t SkillType) {
         pCreature->isFlag(Effect::EFFECT_CLASS_CAUSE_CRITICAL_WOUNDS) ||
         pCreature->isFlag(Effect::EFFECT_CLASS_SOUL_CHAIN) || pCreature->isFlag(Effect::EFFECT_CLASS_LOVE_CHAIN) ||
         pCreature->isFlag(Effect::EFFECT_CLASS_GUN_SHOT_GUIDANCE_AIM) ||
-        pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_BAT) && SkillType != SKILL_UN_TRANSFORM ||
+        (pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_BAT) && SkillType != SKILL_UN_TRANSFORM) ||
         pCreature->isFlag(Effect::EFFECT_CLASS_SLEEP) || pCreature->isFlag(Effect::EFFECT_CLASS_ARMAGEDDON) ||
         pCreature->isFlag(Effect::EFFECT_CLASS_TENDRIL) || pCreature->isFlag(Effect::EFFECT_CLASS_BLOCK_HEAD) ||
         pCreature->isFlag(Effect::EFFECT_CLASS_REFINIUM_TICKET) || pCreature->isFlag(Effect::EFFECT_CLASS_TRAPPED) ||
@@ -754,14 +754,9 @@ bool isAbleToUseSelfSkill(Creature* pCreature, SkillType_t SkillType) {
         return false;
     }
 
-    // In wolf form every skill request is rejected: the guard below is true for any skill type.
+    // In wolf form every skill request is rejected.
     if (pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_WOLF)) {
-        if (SkillType != SKILL_HOWL || SkillType != SKILL_EAT_CORPSE || SkillType != SKILL_UN_TRANSFORM)
-        // end  edit
-        // if (SkillType != SKILL_HOWL && SkillType != SKILL_EAT_CORPSE && SkillType != SKILL_UN_TRANSFORM)
-        {
-            return false;
-        }
+        return false;
     }
 
     if (pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_WERWOLF)) {
@@ -826,14 +821,9 @@ bool isAbleToUseObjectSkill(Creature* pCreature, SkillType_t SkillType) {
         pCreature->isFlag(Effect::EFFECT_CLASS_TRAPPED) || pCreature->isFlag(Effect::EFFECT_CLASS_EXPLOSION_WATER))
         return false;
 
-    // In wolf form every skill request is rejected: the guard below is true for any skill type.
+    // In wolf form every skill request is rejected.
     if (pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_WOLF)) {
-        if (SkillType != SKILL_HOWL || SkillType != SKILL_EAT_CORPSE || SkillType != SKILL_ATTACK_MELEE)
-        // end  edit
-        // if (SkillType != SKILL_HOWL && SkillType != SKILL_EAT_CORPSE && SkillType != SKILL_ATTACK_MELEE)
-        {
-            return false;
-        }
+        return false;
     }
 
     if (pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_WERWOLF)) {
@@ -887,14 +877,9 @@ bool isAbleToUseTileSkill(Creature* pCreature, SkillType_t SkillType) {
         pCreature->isFlag(Effect::EFFECT_CLASS_TRAPPED) || pCreature->isFlag(Effect::EFFECT_CLASS_EXPLOSION_WATER))
         return false;
 
-    // In wolf form every skill request is rejected: the guard below is true for any skill type.
+    // In wolf form every skill request is rejected.
     if (pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_WOLF)) {
-        // if (SkillType != SKILL_HOWL && SkillType != SKILL_EAT_CORPSE)
-        if (SkillType != SKILL_HOWL || SkillType != SKILL_EAT_CORPSE)
-        // end  edit
-        {
-            return false;
-        }
+        return false;
     }
 
     if (pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_WERWOLF)) {
@@ -952,14 +937,9 @@ bool isAbleToUseInventorySkill(Creature* pCreature, BYTE X, BYTE Y, BYTE TX, BYT
         pCreature->isFlag(Effect::EFFECT_CLASS_TRAPPED) || pCreature->isFlag(Effect::EFFECT_CLASS_EXPLOSION_WATER))
         return false;
 
-    // In wolf form every skill request is rejected: the guard below is true for any skill type.
+    // In wolf form every skill request is rejected.
     if (pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_WOLF)) {
-        // if (SkillType != SKILL_HOWL && SkillType != SKILL_EAT_CORPSE)
-        if (SkillType != SKILL_HOWL || SkillType != SKILL_EAT_CORPSE)
-        // end  edit
-        {
-            return false;
-        }
+        return false;
     }
 
     if (pCreature->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_WERWOLF)) {
@@ -1085,10 +1065,10 @@ bool isAbleToPickupItem(Creature* pCreature, Item* pItem) {
             const RelicInfo* pRelicInfo =
                 dynamic_cast<RelicInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_RELIC, itemtype));
 
-            if (pRelicInfo->relicType == RELIC_TYPE_SLAYER &&
-                    !pCreature->isFlag(Effect::EFFECT_CLASS_HAS_SLAYER_RELIC) ||
-                pRelicInfo->relicType == RELIC_TYPE_VAMPIRE &&
-                    !pCreature->isFlag(Effect::EFFECT_CLASS_HAS_VAMPIRE_RELIC)) {
+            if ((pRelicInfo->relicType == RELIC_TYPE_SLAYER &&
+                 !pCreature->isFlag(Effect::EFFECT_CLASS_HAS_SLAYER_RELIC)) ||
+                (pRelicInfo->relicType == RELIC_TYPE_VAMPIRE &&
+                 !pCreature->isFlag(Effect::EFFECT_CLASS_HAS_VAMPIRE_RELIC))) {
                 return true;
             }
         } break;
@@ -1914,7 +1894,8 @@ void giveLotto(PlayerCreature* pPC, BYTE type, uint num) {
 
         if (defaultPlayRecordRepository().addLotto(pGamePlayer->getID(), type, num, count)) {
             char buffer[256];
-            sprintf(buffer, "You now hold %d event lottery tickets. See the official homepage for details.", count);
+            snprintf(buffer, sizeof(buffer),
+                     "You now hold %d event lottery tickets. See the official homepage for details.", count);
             GCSystemMessage gcSM;
             gcSM.setMessage(buffer);
             pGamePlayer->sendPacket(&gcSM);

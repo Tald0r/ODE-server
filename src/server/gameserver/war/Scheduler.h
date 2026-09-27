@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "Exception.h"
-#include "HashMap.h"
 #include "Schedule.h"
 #include "Work.h"
 

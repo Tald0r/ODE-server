@@ -209,7 +209,7 @@ void opInvincible(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage
 
     if (value1 == "on") {
         char msg[50];
-        sprintf(msg, de::gameContext().strings().c_str(STRID_INVINCIBLE), "ON");
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_INVINCIBLE), "ON");
 
         if (bInvincible)
             gcSystemMessage.setMessage(msg);
@@ -220,7 +220,7 @@ void opInvincible(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage
         filelog("change.txt", "[%s]%s", pCreature->getName().c_str(), gcSystemMessage.toString().c_str());
     } else if (value1 == "off") {
         char msg[50];
-        sprintf(msg, de::gameContext().strings().c_str(STRID_INVINCIBLE), "OFF");
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_INVINCIBLE), "OFF");
 
         if (!bInvincible)
             gcSystemMessage.setMessage(msg);
@@ -244,7 +244,7 @@ void opGhost(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage& gcS
 
     if (value1 == "on") {
         char msg[50];
-        sprintf(msg, de::gameContext().strings().c_str(STRID_GHOST), "ON");
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_GHOST), "ON");
 
         if (bGhost)
             gcSystemMessage.setMessage(msg);
@@ -267,7 +267,7 @@ void opGhost(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage& gcS
                 GCAddEffect gcAddEffect;
                 gcAddEffect.setObjectID(pCreature->getObjectID());
                 gcAddEffect.setEffectID(Effect::EFFECT_CLASS_GHOST);
-                gcAddEffect.setDuration(999999);
+                gcAddEffect.setDuration(static_cast<Duration_t>(999999));
                 pGamePlayer->sendPacket(&gcAddEffect);
 
                 EffectGhost* pEffect = new EffectGhost(pCreature);
@@ -282,7 +282,7 @@ void opGhost(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage& gcS
         filelog("change.txt", "[%s]%s", pCreature->getName().c_str(), gcSystemMessage.toString().c_str());
     } else if (value1 == "off") {
         char msg[50];
-        sprintf(msg, de::gameContext().strings().c_str(STRID_GHOST), "OFF");
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_GHOST), "OFF");
 
         if (!bGhost)
             gcSystemMessage.setMessage(msg);
@@ -526,13 +526,12 @@ void opRemoveWar(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage&
         }
     }
 
+    char msg[100];
     if (de::gameContext().warSystem().removeWar(zoneID)) {
-        char msg[100];
-        sprintf(msg, de::gameContext().strings().c_str(STRID_GUILD_WAR_REMOVED), (int)zoneID);
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_GUILD_WAR_REMOVED), (int)zoneID);
         gcSystemMessage.setMessage(msg);
     } else {
-        char msg[100];
-        sprintf(msg, de::gameContext().strings().c_str(STRID_NO_GUILD_WAR_IN_ACTIVE), (int)zoneID);
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_NO_GUILD_WAR_IN_ACTIVE), (int)zoneID);
         gcSystemMessage.setMessage(msg);
     }
     bSendPacket = true;
@@ -642,7 +641,7 @@ void opShowZonePCNum(GamePlayer* pGamePlayer, const string& value1, GCSystemMess
     if (pGamePlayer != NULL) {
         WORD num = pGamePlayer->getCreature()->getZone()->getPCManager()->getSize();
         char msg[100];
-        sprintf(msg, de::gameContext().strings().getString(STRID_PC_NUM).c_str(), num);
+        snprintf(msg, sizeof(msg), de::gameContext().strings().getString(STRID_PC_NUM).c_str(), num);
         gcSystemMessage.setMessage(msg);
     }
 }
@@ -656,7 +655,7 @@ void opShowPKZonePCNum(GamePlayer* pGamePlayer, const string& value1, GCSystemMe
             int num = de::gameContext().pkZoneInfos().getPKZoneInfo(zoneID)->getCurrentPCNum();
 
             char msg[100];
-            sprintf(msg, de::gameContext().strings().getString(STRID_PC_NUM).c_str(), num);
+            snprintf(msg, sizeof(msg), de::gameContext().strings().getString(STRID_PC_NUM).c_str(), num);
             gcSystemMessage.setMessage(msg);
         } else {
             bSendPacket = false;
@@ -1044,7 +1043,7 @@ void opResetAttr(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage&
                 pVampire->initAllStat();
                 pVampire->sendModifyInfo(prev);
 
-                sprintf(buffer, "STR=20, DEX=20, INTE=20, Bonus=%d", pVampire->getBonus());
+                snprintf(buffer, sizeof(buffer), "STR=20, DEX=20, INTE=20, Bonus=%d", pVampire->getBonus());
                 pVampire->tinysave(buffer);
             }
         } else if (pCreature->isOusters()) {
@@ -1064,7 +1063,7 @@ void opResetAttr(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage&
                 pOusters->initAllStat();
                 pOusters->sendModifyInfo(prev);
 
-                sprintf(buffer, "STR=10, DEX=10, INTE=10, Bonus=%d", pOusters->getBonus());
+                snprintf(buffer, sizeof(buffer), "STR=10, DEX=10, INTE=10, Bonus=%d", pOusters->getBonus());
                 pOusters->tinysave(buffer);
             }
         }
@@ -1166,7 +1165,7 @@ void opEventZonePCLimit(GamePlayer* pGamePlayer, const string& value1, GCSystemM
         WORD lim = (WORD)atoi(value1.c_str());
         pEventZoneInfo->setPCLimit(lim);
         char buffer[100];
-        sprintf(buffer, "PC limit : %u", lim);
+        snprintf(buffer, sizeof(buffer), "PC limit : %u", lim);
         gcSystemMessage.setMessage(buffer);
     }
 }
@@ -1486,7 +1485,8 @@ void opShowpcstat(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage
     Assert(pCreature != NULL);
     vector<uint> num = pCreature->getZone()->getPCManager()->getPCNumByRace();
     char buffer[200];
-    sprintf(buffer, "Slayers %u, Vampires %u, Ousters %u", num[RACE_SLAYER], num[RACE_VAMPIRE], num[RACE_OUSTERS]);
+    snprintf(buffer, sizeof(buffer), "Slayers %u, Vampires %u, Ousters %u", num[RACE_SLAYER], num[RACE_VAMPIRE],
+             num[RACE_OUSTERS]);
     gcSystemMessage.setMessage(buffer);
 }
 
@@ -1520,7 +1520,7 @@ void opAddDynamicZone(GamePlayer* pGamePlayer, const string& value1, GCSystemMes
     }
 
     char zoneID[32];
-    sprintf(zoneID, "%u - %u", pDynamicZone->getTemplateZoneID(), pDynamicZone->getZoneID());
+    snprintf(zoneID, sizeof(zoneID), "%u - %u", pDynamicZone->getTemplateZoneID(), pDynamicZone->getZoneID());
 
     gcSystemMessage.setMessage(zoneID);
 }

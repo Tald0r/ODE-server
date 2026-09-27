@@ -89,7 +89,7 @@ void CGAddItemToCodeSheetHandler::execute(CGAddItemToCodeSheet* pPacket, Player*
     setOptionTypeToField(pTargetItem->getOptionTypeList(), optionField);
 
     char query[100];
-    sprintf(query, "OptionType = '%s'", optionField.c_str());
+    snprintf(query, sizeof(query), "OptionType = '%s'", optionField.c_str());
     pTargetItem->tinysave(query);
 
     pPC->deleteItemFromExtraInventorySlot();

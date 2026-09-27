@@ -16,7 +16,7 @@ public:
         return Effect::EFFECT_CLASS_SLAYER_REGEN_ZONE;
     }
     EffectClass getSendEffectClass() const {
-        return (EffectClass)(getEffectClass() + m_OwnerRace);
+        return (EffectClass)(static_cast<int>(getEffectClass()) + m_OwnerRace);
     }
     void setOwner(RegenZoneInfo::RegenZoneIndex Owner) {
         m_OwnerRace = Owner;

@@ -131,7 +131,7 @@ void CGSelectTileEffectHandler::executeVampirePortal(CGSelectTileEffect* pPacket
         }
 
         try {
-            ZoneInfo* pZoneInfo = de::gameContext().zoneInfos().getZoneInfo(zonecoord.id);
+            de::gameContext().zoneInfos().getZoneInfo(zonecoord.id);
         } catch (NoSuchElementException&) {
             return;
         }

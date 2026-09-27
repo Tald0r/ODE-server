@@ -55,7 +55,6 @@ void VariableInfo::parse()
 
     bool bEnd = false;
 
-    int index = 0;
     i = 0;
 
     do {
@@ -70,7 +69,6 @@ void VariableInfo::parse()
         string parameter = parameters.substr(i, j - i);
         m_Parameters.push_back(trim(parameter));
 
-        index++;
         i = j + 1;
     } while (!bEnd);
 

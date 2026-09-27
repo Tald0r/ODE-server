@@ -14,7 +14,7 @@ class WarSchedule;
 class Player;
 class GamePlayer;
 class PlayerCreature;
-class WarScheduleInfo;
+struct WarScheduleInfo;
 
 class ActiveWarInfo {
 public:

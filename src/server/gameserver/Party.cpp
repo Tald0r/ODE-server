@@ -1872,7 +1872,6 @@ void Party::dissectCorpse(Creature* pDissecter, MonsterCorpse* pCorpse) {
         return;
     cout << "dissectCorpse!" << endl;
 
-    Zone* pZone = pDissecter->getZone();
     ZoneCoord_t cx = pDissecter->getX();
     ZoneCoord_t cy = pDissecter->getY();
 

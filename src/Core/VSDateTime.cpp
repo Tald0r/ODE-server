@@ -101,9 +101,9 @@ string VSDate::toString() const {
 
     jul2greg(jd, y, m, d);
 
-    sprintf(buf1, "%d", y);
-    sprintf(buf2, "%d", m);
-    sprintf(buf3, "%d", d);
+    snprintf(buf1, sizeof(buf1), "%d", y);
+    snprintf(buf2, sizeof(buf2), "%d", m);
+    snprintf(buf3, sizeof(buf3), "%d", d);
 
     string year = string(buf1);
     string month = string(buf2);
@@ -136,9 +136,9 @@ string VSDate::toStringforWeb() const {
 
     jul2greg(jd, y, m, d);
 
-    sprintf(buf1, "%d", y);
-    sprintf(buf2, "%d", m);
-    sprintf(buf3, "%d", d);
+    snprintf(buf1, sizeof(buf1), "%d", y);
+    snprintf(buf2, sizeof(buf2), "%d", m);
+    snprintf(buf3, sizeof(buf3), "%d", d);
 
     string year = string(buf1);
     string month = string(buf2);
@@ -316,10 +316,10 @@ string VSTime::toString() const {
         0,
     };
 
-    sprintf(buf1, "%d", hour());
-    sprintf(buf2, "%d", minute());
-    sprintf(buf3, "%d", second());
-    sprintf(buf4, "%d", msec());
+    snprintf(buf1, sizeof(buf1), "%d", hour());
+    snprintf(buf2, sizeof(buf2), "%d", minute());
+    snprintf(buf3, sizeof(buf3), "%d", second());
+    snprintf(buf4, sizeof(buf4), "%d", msec());
 
     string hour = string(buf1);
     string minute = string(buf2);
@@ -354,8 +354,8 @@ string VSTime::toStringforWeb() const {
         0,
     };
 
-    sprintf(buf1, "%d", hour());
-    sprintf(buf2, "%d", minute());
+    snprintf(buf1, sizeof(buf1), "%d", hour());
+    snprintf(buf2, sizeof(buf2), "%d", minute());
 
     string hour = string(buf1);
     string minute = string(buf2);
@@ -513,7 +513,8 @@ VSDateTime::VSDateTime(const string& DateTime) {
 
 string VSDateTime::toDateTime() const {
     char str[20];
-    sprintf(str, "%04d-%02d-%02d %02d:%02d:%02d", d.year(), d.month(), d.day(), t.hour(), t.minute(), t.second());
+    snprintf(str, sizeof(str), "%04d-%02d-%02d %02d:%02d:%02d", d.year(), d.month(), d.day(), t.hour(), t.minute(),
+             t.second());
 
     return string(str);
 }

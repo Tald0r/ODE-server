@@ -163,8 +163,8 @@ void CGBuyStoreItemHandler::execute(CGBuyStoreItem* pPacket, Player* pPlayer)
     pPC->decreaseGoldEx(price);
 
     char pField[80];
-    sprintf(pField, "OwnerID='%s', Storage=%d, X=%d, Y=%d", pPC->getName().c_str(), STORAGE_INVENTORY, emptyPos.x,
-            emptyPos.y);
+    snprintf(pField, sizeof(pField), "OwnerID='%s', Storage=%d, X=%d, Y=%d", pPC->getName().c_str(), STORAGE_INVENTORY,
+             emptyPos.x, emptyPos.y);
     pItem->tinysave(pField);
 
     filelog("StoreBought.log", "[%s:%u/%u] Item given.", pPC->getName().c_str(), pItem->getItemClass(),

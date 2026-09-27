@@ -83,12 +83,13 @@ bool Monster::isRealEnemy(Creature* pEnemy)
         // An enemy in bat form is not recognized when air attacks are impossible.
         || (!m_pBrain->canAttackAir() && pEnemy->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_BAT))
         // An enemy in sniping mode is not recognized as an enemy either.
-        || !pEnemy->isFlag(Effect::EFFECT_CLASS_PARALYZE) // A petrified creature is treated as visible.
-               && !pZone->isMasterLair()                  // Everything is visible inside a master lair.
-               && (!isFlag(Effect::EFFECT_CLASS_OBSERVING_EYE) && pEnemy->isFlag(Effect::EFFECT_CLASS_SNIPING_MODE)
-                   // An invisible enemy is not recognized either, unless detect invisibility is held.
-                   || !isFlag(Effect::EFFECT_CLASS_DETECT_INVISIBILITY) &&
-                          pEnemy->isFlag(Effect::EFFECT_CLASS_INVISIBILITY))
+        ||
+        (!pEnemy->isFlag(Effect::EFFECT_CLASS_PARALYZE) // A petrified creature is treated as visible.
+         && !pZone->isMasterLair()                      // Everything is visible inside a master lair.
+         &&
+         ((!isFlag(Effect::EFFECT_CLASS_OBSERVING_EYE) && pEnemy->isFlag(Effect::EFFECT_CLASS_SNIPING_MODE))
+          // An invisible enemy is not recognized either, unless detect invisibility is held.
+          || (!isFlag(Effect::EFFECT_CLASS_DETECT_INVISIBILITY) && pEnemy->isFlag(Effect::EFFECT_CLASS_INVISIBILITY))))
         // A creature under Armageddon must not be hit; it cannot be hit anyway.
         || pEnemy->isFlag(Effect::EFFECT_CLASS_ARMAGEDDON)
         // An enemy inside a safe zone is not recognized when safe zones cannot be seen into.

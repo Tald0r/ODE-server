@@ -72,7 +72,6 @@
 #include "skill/EffectTransformToWolf.h"
 #include "skill/OustersCastleSkillSlot.h"
 
-const Color_t UNIQUE_COLOR = 0xFFFF;
 const Color_t QUEST_COLOR = 0xFFFE;
 
 const Level_t MAX_OUSTERS_LEVEL = 150;
@@ -144,9 +143,9 @@ Ousters::~Ousters()
 
     // Persist outlook info before destruction. by sigi. 2002.6.18
     char pField[128];
-    sprintf(pField, "CoatType=%d,ArmType=%d,CoatColor=%d,ArmColor=%d,BootsColor=%d", m_OustersInfo.getCoatType(),
-            m_OustersInfo.getArmType(), m_OustersInfo.getCoatColor(), m_OustersInfo.getArmColor(),
-            m_OustersInfo.getBootsColor());
+    snprintf(pField, sizeof(pField), "CoatType=%d,ArmType=%d,CoatColor=%d,ArmColor=%d,BootsColor=%d",
+             m_OustersInfo.getCoatType(), m_OustersInfo.getArmType(), m_OustersInfo.getCoatColor(),
+             m_OustersInfo.getArmColor(), m_OustersInfo.getBootsColor());
 
     tinysave(pField);
 
@@ -819,11 +818,11 @@ void Ousters::wearItem(WearPart Part, Item* pItem)
 
                 // by sigi. 2002.5.15
                 char pField[80];
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 addItemToExtraInventorySlot(pLeft);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
             } else {
                 return;
@@ -837,11 +836,11 @@ void Ousters::wearItem(WearPart Part, Item* pItem)
                 m_pWearItem[WEAR_LEFTHAND] = pItem;
 
                 // by sigi. 2002.5.15
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 addItemToExtraInventorySlot(pRight);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pRight->tinysave(pField);
             } else if (isWear(WEAR_LEFTHAND)) {
                 pLeft = getWearItem(WEAR_LEFTHAND);
@@ -849,18 +848,18 @@ void Ousters::wearItem(WearPart Part, Item* pItem)
                 m_pWearItem[WEAR_LEFTHAND] = pItem;
 
                 // by sigi. 2002.5.15
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 addItemToExtraInventorySlot(pLeft);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
             } else {
                 m_pWearItem[WEAR_RIGHTHAND] = pItem;
                 m_pWearItem[WEAR_LEFTHAND] = pItem;
 
                 // by sigi. 2002.5.15
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
             }
         }
@@ -871,18 +870,18 @@ void Ousters::wearItem(WearPart Part, Item* pItem)
 
             // by sigi. 2002.5.15
             char pField[80];
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
 
             addItemToExtraInventorySlot(pPrevItem);
-            sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+            snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
             pPrevItem->tinysave(pField);
         } else {
             m_pWearItem[Part] = pItem;
 
             // by sigi. 2002.5.15
             char pField[80];
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
         }
     }
@@ -942,12 +941,12 @@ void Ousters::wearItem(WearPart Part)
                 m_pWearItem[WEAR_RIGHTHAND] = pItem;
                 m_pWearItem[WEAR_LEFTHAND] = pItem;
                 // by sigi. 2002.5.15
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 deleteItemFromExtraInventorySlot();
                 addItemToExtraInventorySlot(pLeft);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
 
             } else {
@@ -964,12 +963,12 @@ void Ousters::wearItem(WearPart Part)
                 m_pWearItem[WEAR_LEFTHAND] = pItem;
 
                 // by sigi. 2002.5.15
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 deleteItemFromExtraInventorySlot();
                 addItemToExtraInventorySlot(pRight);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pRight->tinysave(pField);
 
             } else if (isWear(WEAR_LEFTHAND)) {
@@ -981,12 +980,12 @@ void Ousters::wearItem(WearPart Part)
                 m_pWearItem[WEAR_LEFTHAND] = pItem;
 
                 // by sigi. 2002.5.15
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 deleteItemFromExtraInventorySlot();
                 addItemToExtraInventorySlot(pLeft);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
             } else {
                 m_pWearItem[WEAR_RIGHTHAND] = pItem;
@@ -1003,20 +1002,20 @@ void Ousters::wearItem(WearPart Part)
             m_pWearItem[Part] = pItem;
 
             // by sigi. 2002.5.15
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
 
             deleteItemFromExtraInventorySlot();
             addItemToExtraInventorySlot(pPrevItem);
 
-            sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+            snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
             pPrevItem->tinysave(pField);
         } else {
             m_pWearItem[Part] = pItem;
             deleteItemFromExtraInventorySlot();
 
             // by sigi. 2002.5.15
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
         }
     }
@@ -1126,7 +1125,7 @@ void Ousters::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
     if (bAddOnMouse) {
         addItemToExtraInventorySlot(pItem);
         char pField[80];
-        sprintf(pField, "Storage=%d, Durability=%d", STORAGE_EXTRASLOT, pItem->getDurability());
+        snprintf(pField, sizeof(pField), "Storage=%d, Durability=%d", STORAGE_EXTRASLOT, pItem->getDurability());
         pItem->tinysave(pField);
     }
 
@@ -1685,7 +1684,7 @@ void Ousters::saveGears(void) const
             Durability_t maxDurability = computeMaxDurability(pItem);
             if (pItem->getDurability() < maxDurability) {
                 // pItem->save(m_Name, STORAGE_GEAR, 0, i, 0);
-                sprintf(pField, "Durability=%d", pItem->getDurability());
+                snprintf(pField, sizeof(pField), "Durability=%d", pItem->getDurability());
                 pItem->tinysave(pField);
             }
         }

@@ -63,7 +63,7 @@ StringStream& StringStream::operator<<(uchar T) {
 
 StringStream& StringStream::operator<<(short T) {
     char buf[7];
-    sprintf(buf, "%d", T);
+    snprintf(buf, sizeof(buf), "%d", T);
 
     string str(buf);
 
@@ -77,7 +77,7 @@ StringStream& StringStream::operator<<(short T) {
 
 StringStream& StringStream::operator<<(ushort T) {
     char buf[7];
-    sprintf(buf, "%u", T);
+    snprintf(buf, sizeof(buf), "%u", T);
 
     string str(buf);
 
@@ -91,7 +91,7 @@ StringStream& StringStream::operator<<(ushort T) {
 
 StringStream& StringStream::operator<<(int T) {
     char buf[12];
-    sprintf(buf, "%d", T);
+    snprintf(buf, sizeof(buf), "%d", T);
 
     string str(buf);
 
@@ -105,7 +105,7 @@ StringStream& StringStream::operator<<(int T) {
 
 StringStream& StringStream::operator<<(uint T) {
     char buf[12];
-    sprintf(buf, "%u", T);
+    snprintf(buf, sizeof(buf), "%u", T);
 
     string str(buf);
 

@@ -26,6 +26,7 @@ public:
         return SKILL_SNAKE_COMBO;
     }
 
+    using SkillHandler::execute;
     void execute(Slayer* pSlayer, ObjectID_t ObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID);
     void execute(Slayer* pSlayer, Creature* pCreature);
 

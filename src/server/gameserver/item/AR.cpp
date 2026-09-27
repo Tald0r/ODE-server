@@ -244,7 +244,6 @@ void ARLoader::load(Creature* pCreature)
                 pAR->setUnique();
 
             Storage storage = (Storage)rows[r].storage;
-            StorageID_t storageID = rows[r].storageID;
             BYTE x = rows[r].x;
             BYTE y = rows[r].y;
 
@@ -263,18 +262,12 @@ void ARLoader::load(Creature* pCreature)
             Inventory* pInventory = NULL;
             Slayer* pSlayer = NULL;
             Vampire* pVampire = NULL;
-            Motorcycle* pMotorcycle = NULL;
-            Inventory* pMotorInventory = NULL;
             Stash* pStash = NULL;
 
             if (pCreature->isSlayer()) {
                 pSlayer = dynamic_cast<Slayer*>(pCreature);
                 pInventory = pSlayer->getInventory();
                 pStash = pSlayer->getStash();
-                pMotorcycle = pSlayer->getMotorcycle();
-
-                if (pMotorcycle)
-                    pMotorInventory = pMotorcycle->getInventory();
             } else if (pCreature->isVampire()) {
                 pVampire = dynamic_cast<Vampire*>(pCreature);
                 pInventory = pVampire->getInventory();
@@ -365,7 +358,6 @@ void ARLoader::load(Zone* pZone)
         pAR->setItemType(rows[r].itemType);
 
         Storage storage = (Storage)rows[r].storage;
-        StorageID_t storageID = rows[r].storageID;
         BYTE x = rows[r].x;
         BYTE y = rows[r].y;
 

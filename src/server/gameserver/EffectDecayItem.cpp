@@ -130,7 +130,7 @@ void EffectDecayItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object
                         Money* pMoney = dynamic_cast<Money*>(pTempItem);
                         if (pMoney->getAmount() >= de::gameContext().variables().getMoneyTraceLogLimit()) {
                             char zoneName[15];
-                            sprintf(zoneName, "%4d%3d%3d", pZone->getZoneID(), x, y);
+                            snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", pZone->getZoneID(), x, y);
                             remainMoneyTraceLog(zoneName, "GOD", ITEM_LOG_DELETE, DETAIL_TIMEOUT, pMoney->getAmount());
                         }
                     }

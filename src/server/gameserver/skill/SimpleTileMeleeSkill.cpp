@@ -517,7 +517,6 @@ void SimpleTileMeleeSkill::execute(Ousters* pOusters, int X, int Y, OustersSkill
             Damage_t Damage = 0;
             Damage_t MaxDamage = 0;
             bool bCriticalHit = false;
-            bool bHit = false;
 
             VSRect rect(0, 0, pZone->getWidth() - 1, pZone->getHeight() - 1);
 
@@ -613,10 +612,6 @@ void SimpleTileMeleeSkill::execute(Ousters* pOusters, int X, int Y, OustersSkill
 
                                 if (bCriticalHit || bForceKnockback) {
                                     knockbackCreature(pZone, pTargetCreature, pOusters->getX(), pOusters->getY());
-                                }
-
-                                if (!pTargetCreature->isOusters()) {
-                                    bHit = true;
                                 }
 
                                 if (pTargetCreature->isDead()) {

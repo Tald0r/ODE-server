@@ -271,7 +271,7 @@ void GuildUnionManager::publish(const UnionChanges& changes) {
 
 void GuildUnionManager::sendModifyUnionInfo(uint gID) {
     char Msg[80];
-    sprintf(Msg, "*modifyunioninfo %d", gID);
+    snprintf(Msg, sizeof(Msg), "*modifyunioninfo %d", gID);
 
     GGCommand ggCommand;
     ggCommand.setCommand(Msg);

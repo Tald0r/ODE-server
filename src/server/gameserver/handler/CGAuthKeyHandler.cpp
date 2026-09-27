@@ -33,8 +33,6 @@ void CGAuthKeyHandler::execute(CGAuthKey* pPacket, Player* pPlayer)
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Assert(pGamePlayer != NULL);
 
-    DWORD key = pPacket->getKey();
-
 
 #endif
 

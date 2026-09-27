@@ -61,7 +61,7 @@ void CGWithdrawPetHandler::execute(CGWithdrawPet* pPacket, Player* pPlayer)
             pInventory->addItemEx(tp.x, tp.y, pPetItem);
 
             char pField[80];
-            sprintf(pField, "Storage=%d, StorageID=0, X=%d, Y=%d ", STORAGE_INVENTORY, tp.x, tp.y);
+            snprintf(pField, sizeof(pField), "Storage=%d, StorageID=0, X=%d, Y=%d ", STORAGE_INVENTORY, tp.x, tp.y);
             pPetItem->tinysave(pField);
 
             gcPetStashVerify.setCode(PET_STASH_OK);

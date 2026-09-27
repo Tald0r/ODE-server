@@ -73,7 +73,7 @@ public:
         return FLAG_ISSET(m_wFlags, TILE_BURROWING_CREATURE) > 0;
     }
     bool hasCreature(Creature::MoveMode mode) const {
-        return FLAG_ISSET(m_wFlags, mode + TILE_WALKING_CREATURE) > 0;
+        return FLAG_ISSET(m_wFlags, static_cast<int>(mode) + TILE_WALKING_CREATURE) > 0;
     }
     bool hasCreature() const {
         return FLAG_ISSET(m_wFlags, TILE_WALKING_CREATURE) || FLAG_ISSET(m_wFlags, TILE_BURROWING_CREATURE) ||
@@ -141,13 +141,13 @@ public:
         return FLAG_ISSET(m_wFlags, TILE_UNDERGROUND_BLOCKED) > 0;
     }
     bool isBlocked(Creature::MoveMode mode) const {
-        return FLAG_ISSET(m_wFlags, TILE_GROUND_BLOCKED + mode) > 0;
+        return FLAG_ISSET(m_wFlags, TILE_GROUND_BLOCKED + static_cast<int>(mode)) > 0;
     }
     void setBlocked(Creature::MoveMode mode) {
-        FLAG_SET(m_wFlags, TILE_GROUND_BLOCKED + mode);
+        FLAG_SET(m_wFlags, TILE_GROUND_BLOCKED + static_cast<int>(mode));
     }
     void clearBlocked(Creature::MoveMode mode) {
-        FLAG_CLEAR(m_wFlags, TILE_GROUND_BLOCKED + mode);
+        FLAG_CLEAR(m_wFlags, TILE_GROUND_BLOCKED + static_cast<int>(mode));
     }
 
     bool isFixedGroundBlocked() const {

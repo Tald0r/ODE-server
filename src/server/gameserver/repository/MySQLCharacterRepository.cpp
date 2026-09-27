@@ -492,9 +492,9 @@ public:
         // comma.
         char silverDam[40];
         if (race == CHARACTER_RACE_OUSTERS)
-            sprintf(silverDam, ", SilverDamage = %d", record.silverDamage);
+            snprintf(silverDam, sizeof(silverDam), ", SilverDamage = %d", record.silverDamage);
         else if (record.silverDamage != 0)
-            sprintf(silverDam, ",SilverDamage = %d", record.silverDamage);
+            snprintf(silverDam, sizeof(silverDam), ",SilverDamage = %d", record.silverDamage);
         else
             silverDam[0] = '\0';
 

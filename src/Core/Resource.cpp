@@ -74,10 +74,6 @@ void Resource::load(ifstream& ifile) {
         throw Error("szFilename == 0");
     }
 
-    if (szFilename > maxFilename) {
-        throw Error("too large filename length");
-    }
-
     char filename[maxFilename + 1];
     ifile.read(filename, szFilename);
     filename[szFilename] = 0;
@@ -176,9 +172,6 @@ void Resource::read(Socket* pSocket) {
     if (szFilename == 0)
         throw InvalidProtocolException("szFilename == 0");
 
-    if (szFilename > maxFilename)
-        throw InvalidProtocolException("too large filename length");
-
     char filename[maxFilename + 1];
     pSocket->receive(filename, szFilename);
     filename[szFilename] = 0;
@@ -237,9 +230,6 @@ void Resource::write(Socket* pSocket) const {
 
     if (szFilename == 0)
         throw InvalidProtocolException("szFilename == 0");
-
-    if (szFilename > maxFilename)
-        throw InvalidProtocolException("too large filename length");
 
     pSocket->send(&szFilename, szBYTE);
 

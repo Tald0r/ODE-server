@@ -44,10 +44,6 @@ void CreateHolyWater::execute(Slayer* pSlayer, ObjectID_t InvenObjectID, CoordIn
             return;
         }
 
-        bool bSamePosition = false;
-        if (X == TargetX && Y == TargetY)
-            bSamePosition = true;
-
         // The source and target positions are the same only when the
         // bottle stack being converted into holy water holds exactly one item.
         // (The old bottle is deleted and the holy water is created in the same slot.)

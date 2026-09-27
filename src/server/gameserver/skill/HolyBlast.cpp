@@ -174,7 +174,6 @@ void HolyBlast::execute(Slayer* pSlayer, int X, int Y, SkillSlot* pSkillSlot, co
             uint RealHealPoint = 0;
             bool bCriticalHit = false;
             bool bHit = false;
-            bool bHeal = false;
 
 
             int Splash = 3 + pSkillSlot->getExpLevel() / 10 + 1;
@@ -221,7 +220,6 @@ void HolyBlast::execute(Slayer* pSlayer, int X, int Y, SkillSlot* pSkillSlot, co
 
                                 if (pEffectBloodDrain->getLevel() < param.Level) {
                                     bHPCheck = true;
-                                    bHeal = true;
                                 }
                             }
 
@@ -290,7 +288,6 @@ void HolyBlast::execute(Slayer* pSlayer, int X, int Y, SkillSlot* pSkillSlot, co
 
                                 CurrentHP = min((int)MaxHP, (int)(CurrentHP + HealPoint));
                                 pTargetSlayer->setHP(CurrentHP, ATTR_CURRENT);
-                                bHeal = true;
                             }
                         }
 

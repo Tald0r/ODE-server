@@ -400,7 +400,7 @@ void RaceWarLimiter::clearPCList()
 
     VSDateTime current = VSDateTime::currentDateTime();
     char filename[128];
-    sprintf(filename, "RaceWarPCList%s.txt", current.toString().c_str());
+    snprintf(filename, sizeof(filename), "RaceWarPCList%s.txt", current.toString().c_str());
     ofstream file(filename, ios::out | ios::app);
 
     int num[3] = {0, 0, 0};

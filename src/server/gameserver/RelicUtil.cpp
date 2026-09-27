@@ -293,8 +293,8 @@ void saveItemInCorpse(Item* pItem, Corpse* pCorpse)
 
         pZone->registerObject(pItem);
 
-        sprintf(pField, "ObjectID = %u, OwnerID='%d', Storage=%d, StorageID=%u", pItem->getObjectID(),
-                (int)pZone->getZoneID(), (int)STORAGE_CORPSE, pCorpse->getObjectID());
+        snprintf(pField, sizeof(pField), "ObjectID = %u, OwnerID='%d', Storage=%d, StorageID=%u", pItem->getObjectID(),
+                 (int)pZone->getZoneID(), (int)STORAGE_CORPSE, pCorpse->getObjectID());
 
         pItem->tinysave(pField);
     }
@@ -523,8 +523,8 @@ bool dropRelicToZone(PlayerCreature* pPC, Item* pItem)
     if (pt.x != -1) // if the drop succeeded
     {
         char pField[80];
-        sprintf(pField, "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE, pZone->getZoneID(), pt.x,
-                pt.y);
+        snprintf(pField, sizeof(pField), "OwnerID='', Storage=%d, StorageID=%u, X=%d, Y=%d", STORAGE_ZONE,
+                 pZone->getZoneID(), pt.x, pt.y);
         pItem->tinysave(pField);
 
         // Take it out of the inventory.
@@ -673,7 +673,7 @@ bool dissectionRelicItem(Corpse* pCorpse, Item* pItem, const TPOINT& pt)
             de::gameContext().combatInfo().setRelicOwner(relicIndex, CombatInfoManager::RELIC_OWNER_NULL);
 
             char msg[50];
-            sprintf(msg, strings.c_str(STRID_RELIC_FROM_RELIC_TABLE), pRelicInfo->getName().c_str());
+            snprintf(msg, sizeof(msg), strings.c_str(STRID_RELIC_FROM_RELIC_TABLE), pRelicInfo->getName().c_str());
 
             //				StringStream msg;
             //        msg << "Out of the relic table, "
@@ -709,7 +709,7 @@ bool dissectionRelicItem(Corpse* pCorpse, Item* pItem, const TPOINT& pt)
         //      msg << "A blood bible fragment (" << pBloodBibleInfo->getName() << ") came out.";
 
         char msg[200];
-        sprintf(msg, strings.c_str(STRID_BLOOD_BIBLE_FROM_SHRINE), pBloodBibleInfo->getName().c_str());
+        snprintf(msg, sizeof(msg), strings.c_str(STRID_BLOOD_BIBLE_FROM_SHRINE), pBloodBibleInfo->getName().c_str());
 
         GCSystemMessage gcSystemMessage;
         gcSystemMessage.setMessage(msg);
@@ -748,7 +748,8 @@ bool dissectionRelicItem(Corpse* pCorpse, Item* pItem, const TPOINT& pt)
             //        msg << "A castle symbol (" << pCastleSymbolInfo->getName() << ") came out.";
 
             char msg[200];
-            sprintf(msg, strings.c_str(STRID_CASTLE_SYMBOL_FROM_SHRINE), pCastleSymbolInfo->getName().c_str());
+            snprintf(msg, sizeof(msg), strings.c_str(STRID_CASTLE_SYMBOL_FROM_SHRINE),
+                     pCastleSymbolInfo->getName().c_str());
             GCSystemMessage gcSystemMessage;
             gcSystemMessage.setMessage(msg);
             // g_pZoneGroupManager->broadcast( &gcSystemMessage );

@@ -146,8 +146,8 @@ void EffectHasPet::affect(Creature* pCreature)
         }
 
         char query[100];
-        sprintf(query, "PetHP=%u, LastFeedTime='%s', PetExp=%u", pPetInfo->getPetHP(), currentTime.toDateTime().c_str(),
-                pPetInfo->getPetExp());
+        snprintf(query, sizeof(query), "PetHP=%u, LastFeedTime='%s', PetExp=%u", pPetInfo->getPetHP(),
+                 currentTime.toDateTime().c_str(), pPetInfo->getPetExp());
         pPetInfo->getPetItem()->tinysave(query);
     }
 

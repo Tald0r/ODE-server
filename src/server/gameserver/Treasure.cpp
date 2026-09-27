@@ -862,8 +862,6 @@ void TreasureList::parseString(const string& text)
     size_t a = 0;
     size_t b = 0;
 
-    int count = 0;
-
     while (b < text.size()) {
         a = text.find(bToken, b);
         b = text.find(eToken, a + 1);
@@ -878,8 +876,6 @@ void TreasureList::parseString(const string& text)
         Treasure* pTreasure = new Treasure;
         pTreasure->parseString(substring);
         addTreasure(pTreasure);
-
-        count += 1;
 
         substring.clear();
     }

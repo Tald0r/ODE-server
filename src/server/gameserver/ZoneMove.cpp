@@ -309,9 +309,9 @@ void Zone::movePC(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir
         // A Slayer cannot enter a Slayer safe zone.
         // A Vampire cannot enter a Vampire safe zone.
         // A common safe zone cannot be entered.
-        if (pCreature->isSlayer() && (ZoneLevel & SLAYER_SAFE_ZONE) ||
-            pCreature->isVampire() && (ZoneLevel & VAMPIRE_SAFE_ZONE) ||
-            pCreature->isOusters() && (ZoneLevel & OUSTERS_SAFE_ZONE) || (ZoneLevel & COMPLETE_SAFE_ZONE)) {
+        if ((pCreature->isSlayer() && (ZoneLevel & SLAYER_SAFE_ZONE)) ||
+            (pCreature->isVampire() && (ZoneLevel & VAMPIRE_SAFE_ZONE)) ||
+            (pCreature->isOusters() && (ZoneLevel & OUSTERS_SAFE_ZONE)) || (ZoneLevel & COMPLETE_SAFE_ZONE)) {
             GCMoveError gcMoveError(cx, cy);
             pPlayer->sendPacket(&gcMoveError);
             filelog("ZoneDebug.txt", "movePC - 4\n\r");
@@ -336,8 +336,8 @@ void Zone::movePC(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir
     if (newTile.isBlocked(pCreature->getMoveMode())
         // If BloodyWallBlocked or
         // Sanctuary is in effect, the move is not allowed.
-        || newTile.hasEffect() && (newTile.getEffect(Effect::EFFECT_CLASS_BLOODY_WALL_BLOCKED) ||
-                                   newTile.getEffect(Effect::EFFECT_CLASS_SANCTUARY)) ||
+        || (newTile.hasEffect() && (newTile.getEffect(Effect::EFFECT_CLASS_BLOODY_WALL_BLOCKED) ||
+                                    newTile.getEffect(Effect::EFFECT_CLASS_SANCTUARY))) ||
         oldTile.getEffect(Effect::EFFECT_CLASS_SANCTUARY) != NULL) {
         GCMoveError gcMoveError(cx, cy);
         pPlayer->sendPacket(&gcMoveError);

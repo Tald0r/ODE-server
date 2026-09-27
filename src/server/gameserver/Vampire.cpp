@@ -71,7 +71,6 @@
 #include "skill/EffectTransformToWolf.h"
 #include "skill/VampireCastleSkillSlot.h"
 
-const Color_t UNIQUE_COLOR = 0xFFFF;
 const Color_t QUEST_COLOR = 0xFFFE;
 
 const Level_t MAX_VAMPIRE_LEVEL = 150;
@@ -132,7 +131,7 @@ Vampire::~Vampire()
         getShapeInfo(flag, color);
 
         char pField[128];
-        sprintf(pField, "Shape=%u, CoatColor=%d", flag, color[PCVampireInfo::VAMPIRE_COLOR_COAT]);
+        snprintf(pField, sizeof(pField), "Shape=%u, CoatColor=%d", flag, color[PCVampireInfo::VAMPIRE_COLOR_COAT]);
 
         // cout << "SAVE = " << pField << endl;
 
@@ -849,13 +848,13 @@ void Vampire::wearItem(WearPart Part, Item* pItem)
                 // by sigi. 2002.5.15
                 char pField[80];
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Hand the item that was there back to the mouse pointer.
                 addItemToExtraInventorySlot(pLeft);
                 // pLeft->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
             }
             // Holding a sword and a shield.
@@ -881,13 +880,13 @@ void Vampire::wearItem(WearPart Part, Item* pItem)
 
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Hand the item that was there back to the mouse pointer.
                 addItemToExtraInventorySlot(pRight);
                 // pRight->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pRight->tinysave(pField);
             }
             // Holding an item in the left hand.
@@ -899,13 +898,13 @@ void Vampire::wearItem(WearPart Part, Item* pItem)
 
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Hand the item that was there back to the mouse pointer.
                 addItemToExtraInventorySlot(pLeft);
                 // pLeft->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
             }
             // Holding an item in neither hand.
@@ -916,7 +915,7 @@ void Vampire::wearItem(WearPart Part, Item* pItem)
 
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
             }
         }
@@ -928,12 +927,12 @@ void Vampire::wearItem(WearPart Part, Item* pItem)
             // by sigi. 2002.5.15
             char pField[80];
             // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
 
             addItemToExtraInventorySlot(pPrevItem);
             // pPrevItem->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-            sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+            snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
             pPrevItem->tinysave(pField);
         } else {
             // Put the requested item into the wear point.
@@ -942,7 +941,7 @@ void Vampire::wearItem(WearPart Part, Item* pItem)
             // by sigi. 2002.5.15
             char pField[80];
             // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
         }
     }
@@ -1004,7 +1003,7 @@ void Vampire::wearItem(WearPart Part)
                 m_pWearItem[WEAR_LEFTHAND] = pItem;
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Remove the requested item from the mouse pointer.
@@ -1012,7 +1011,7 @@ void Vampire::wearItem(WearPart Part)
                 // Hand the item that was there back to the mouse pointer.
                 addItemToExtraInventorySlot(pLeft);
                 // pLeft->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
 
             }
@@ -1040,7 +1039,7 @@ void Vampire::wearItem(WearPart Part)
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
 
                 // by sigi. 2002.5.15
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Remove the requested item from the mouse pointer.
@@ -1048,7 +1047,7 @@ void Vampire::wearItem(WearPart Part)
                 // Hand the item that was there back to the mouse pointer.
                 addItemToExtraInventorySlot(pRight);
                 // pRight->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pRight->tinysave(pField);
 
             }
@@ -1064,7 +1063,7 @@ void Vampire::wearItem(WearPart Part)
 
                 // by sigi. 2002.5.15
                 // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-                sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+                snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
                 pItem->tinysave(pField);
 
                 // Remove the requested item from the mouse pointer.
@@ -1072,7 +1071,7 @@ void Vampire::wearItem(WearPart Part)
                 // Hand the item that was there back to the mouse pointer.
                 addItemToExtraInventorySlot(pLeft);
                 // pLeft->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-                sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+                snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
                 pLeft->tinysave(pField);
             }
             // Holding an item in neither hand.
@@ -1094,14 +1093,14 @@ void Vampire::wearItem(WearPart Part)
 
             // by sigi. 2002.5.15
             // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
 
             deleteItemFromExtraInventorySlot();
             addItemToExtraInventorySlot(pPrevItem);
 
             // pPrevItem->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
-            sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+            snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
             pPrevItem->tinysave(pField);
         } else {
             m_pWearItem[Part] = pItem;
@@ -1109,7 +1108,7 @@ void Vampire::wearItem(WearPart Part)
 
             // by sigi. 2002.5.15
             // pItem->save(m_Name, STORAGE_GEAR, 0, Part, 0);
-            sprintf(pField, "Storage=%d, X=%d", STORAGE_GEAR, Part);
+            snprintf(pField, sizeof(pField), "Storage=%d, X=%d", STORAGE_GEAR, Part);
             pItem->tinysave(pField);
         }
     }
@@ -1217,7 +1216,7 @@ void Vampire::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
         // pItem->save(m_Name, STORAGE_EXTRASLOT, 0, 0, 0);
         //  Item save optimization.
         char pField[80];
-        sprintf(pField, "Storage=%d, Durability=%d", STORAGE_EXTRASLOT, pItem->getDurability());
+        snprintf(pField, sizeof(pField), "Storage=%d, Durability=%d", STORAGE_EXTRASLOT, pItem->getDurability());
         pItem->tinysave(pField);
     }
 
@@ -1358,7 +1357,6 @@ bool Vampire::isRealWearing(Item* pItem) const
     if (isCoupleRing(pItem))
         return true;
 
-    Item::ItemClass IClass = pItem->getItemClass();
     Level_t ReqLevel = pItemInfo->getReqLevel();
     Attr_t ReqGender = pItemInfo->getReqGender();
 
@@ -1815,7 +1813,7 @@ void Vampire::saveGears(void) const
             if (pItem->getDurability() < maxDurability) {
                 // pItem->save(m_Name, STORAGE_GEAR, 0, i, 0);
                 //  Item save optimization.
-                sprintf(pField, "Durability=%d", pItem->getDurability());
+                snprintf(pField, sizeof(pField), "Durability=%d", pItem->getDurability());
                 pItem->tinysave(pField);
             }
         }
@@ -1845,7 +1843,6 @@ void Vampire::getShapeInfo(DWORD& flag, Color_t colors[PCVampireInfo::VAMPIRE_CO
 
     Item* pItem;
     // OptionInfo* 				pOptionInfo;
-    int vampireBit;
     int vampireColor;
     WearPart Part;
 
@@ -1857,7 +1854,6 @@ void Vampire::getShapeInfo(DWORD& flag, Color_t colors[PCVampireInfo::VAMPIRE_CO
     //-----------------------------------------------------------------
     Part = WEAR_BODY;
     pItem = m_pWearItem[Part];
-    vampireBit = 0;
     vampireColor = 0;
 
     if (pItem != NULL && m_pRealWearingCheck[Part]) {

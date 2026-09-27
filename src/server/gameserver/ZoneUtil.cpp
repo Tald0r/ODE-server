@@ -1998,7 +1998,7 @@ void transportCreature(Creature* pCreature, ZoneID_t TargetZoneID, ZoneCoord_t T
 
         // Drop the castle symbol when leaving the castle with it.
         if (pCreature->isFlag(Effect::EFFECT_CLASS_HAS_CASTLE_SYMBOL)) {
-            if (pZone->isHolyLand() && !pZoneInfo->isHolyLand() ||
+            if ((pZone->isHolyLand() && !pZoneInfo->isHolyLand()) ||
                 !de::gameContext().castleInfos().isSameCastleZone(pCreature->getZone()->getZoneID(), TargetZoneID)
                 // The castle cannot be entered; the castle symbol lives on the castle basement map.
                 || pZoneInfo->isCastle()) {
@@ -2066,7 +2066,7 @@ void transportCreature(Creature* pCreature, ZoneID_t TargetZoneID, ZoneCoord_t T
 
     // Moving into Adam's holy land from elsewhere, or
     // out of Adam's holy land to somewhere else.
-    if (!pZone->isHolyLand() && pNewZone->isHolyLand() || pZone->isHolyLand() && !pNewZone->isHolyLand()) {
+    if ((!pZone->isHolyLand() && pNewZone->isHolyLand()) || (pZone->isHolyLand() && !pNewZone->isHolyLand())) {
         sendHolyLandWarpEffect(pCreature);
         cout << "ZoneUtil.cpp step 10" << endl;
     }

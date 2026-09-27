@@ -71,7 +71,7 @@ void CGAddQuickSlotToMouseHandler::execute(CGAddQuickSlotToMouse* pPacket, Playe
             pBeltInventory->deleteItem(SlotID, 0);
             pSlayer->addItemToExtraInventorySlot(pSlotItem);
             char pField[80];
-            sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+            snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
             pSlotItem->tinysave(pField);
         }
 
@@ -114,7 +114,7 @@ void CGAddQuickSlotToMouseHandler::execute(CGAddQuickSlotToMouse* pPacket, Playe
             pOustersArmsbandInventory->deleteItem(SlotID, 0);
             pOusters->addItemToExtraInventorySlot(pSlotItem);
             char pField[80];
-            sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+            snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
             pSlotItem->tinysave(pField);
         }
     } catch (Throwable& t) {

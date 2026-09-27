@@ -28,8 +28,12 @@ public:
 
     // parse packet and execute handler for the packet
     void processCommand();
+    void processCommand(bool Option) {
+        Player::processCommand(Option);
+    }
 
     // send packet to player's output buffer
+    using Player::sendPacket;
     void sendPacket(MPacket* pPacket);
 
     // connect

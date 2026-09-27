@@ -412,10 +412,9 @@ void CGUsePotionFromQuickSlotHandler::execute(CGUsePotionFromQuickSlot* pPacket,
 
             Attr_t INT = pSlayer->getINT();
 
-            HP_t PotionHPAmount = 0, PotionMPAmount = 0;
+            HP_t PotionHPAmount = 0;
 
             PotionHPAmount = pPotion->getHPAmount();
-            PotionMPAmount = pPotion->getMPAmount();
 
             int HPAmount = min(MaxHP - CurrentHP, (int)PotionHPAmount);
             int MPAmount = min(MaxMP - CurrentMP, (int)(pPotion->getMPAmount() * (1 + (double)((double)INT / 300.0))));

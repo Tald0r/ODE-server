@@ -244,14 +244,9 @@ void CGUseMessageItemFromInventoryHandler::executeEventFromMessage(CGUseMessageI
     Creature* pCreature = pGamePlayer->getCreature();
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
     Inventory* pInventory = pPC->getInventory();
-    Zone* pZone = pPC->getZone();
     CoordInven_t InvenX = pPacket->getX();
     CoordInven_t InvenY = pPacket->getY();
     Item* pItem = pInventory->getItem(InvenX, InvenY);
-    ObjectID_t ItemObjectID = pItem->getObjectID();
-    MonsterType_t MType = 0;
-
-    int time = 0;
 
     // Check the item
     // Set the color  green = 0  blue = 1  yellow = 2

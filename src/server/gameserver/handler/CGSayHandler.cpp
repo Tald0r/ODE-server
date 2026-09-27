@@ -77,7 +77,6 @@ void CGSayHandler::execute(CGSay* pPacket, Player* pPlayer) {
             g_Sniping.checkRevealRatio(pCreature, 20, 10);
         }
 
-        bool isVampire = false;
         // A transformed Vampire cannot speak.
         if (pCreature->isVampire()) {
             Vampire* pVampire = dynamic_cast<Vampire*>(pCreature);
@@ -87,8 +86,6 @@ void CGSayHandler::execute(CGSay* pPacket, Player* pPlayer) {
                 pVampire->isFlag(Effect::EFFECT_CLASS_TRANSFORM_TO_WERWOLF)) {
                 Success = false;
             }
-
-            isVampire = true;
         }
 
         if (pGamePlayer->isPenaltyFlag(PENALTY_TYPE_MUTE)) {

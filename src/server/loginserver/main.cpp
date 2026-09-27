@@ -97,10 +97,13 @@ int main(int argc, char* argv[]) {
                 throw Error("Usage : loginserver -f config-file [-i ID]");
 
             // Force the port.
-            char sLoginServerPort[5], sLoginServerUDPPort[5], sLoginServerID[5];
-            sprintf(sLoginServerPort, "%d", pConfig->getPropertyInt("LoginServerBasePort") + atoi(argv[4]));
-            sprintf(sLoginServerUDPPort, "%d", pConfig->getPropertyInt("LoginServerBaseUDPPort") + atoi(argv[4]));
-            sprintf(sLoginServerID, "%d", pConfig->getPropertyInt("LoginServerBaseID") + atoi(argv[4]));
+            char sLoginServerPort[12], sLoginServerUDPPort[12], sLoginServerID[12];
+            snprintf(sLoginServerPort, sizeof(sLoginServerPort), "%d",
+                     pConfig->getPropertyInt("LoginServerBasePort") + atoi(argv[4]));
+            snprintf(sLoginServerUDPPort, sizeof(sLoginServerUDPPort), "%d",
+                     pConfig->getPropertyInt("LoginServerBaseUDPPort") + atoi(argv[4]));
+            snprintf(sLoginServerID, sizeof(sLoginServerID), "%d",
+                     pConfig->getPropertyInt("LoginServerBaseID") + atoi(argv[4]));
 
             pConfig->setProperty("LoginServerPort", sLoginServerPort);
             pConfig->setProperty("LoginServerUDPPort", sLoginServerUDPPort);

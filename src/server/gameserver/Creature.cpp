@@ -189,8 +189,8 @@ bool Creature::canMove(ZoneCoord_t nx, ZoneCoord_t ny) const
 
     if (rTile.isBlocked(m_MoveMode)
         // Cannot move while under BloodyWallBlock or Sanctuary effects.
-        || rTile.hasEffect() && (rTile.getEffect(Effect::EFFECT_CLASS_BLOODY_WALL_BLOCKED) ||
-                                 rTile.getEffect(Effect::EFFECT_CLASS_SANCTUARY))) {
+        || (rTile.hasEffect() && (rTile.getEffect(Effect::EFFECT_CLASS_BLOODY_WALL_BLOCKED) ||
+                                  rTile.getEffect(Effect::EFFECT_CLASS_SANCTUARY)))) {
         return false;
     }
 

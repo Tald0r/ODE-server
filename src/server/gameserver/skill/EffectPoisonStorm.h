@@ -62,11 +62,11 @@ public:
     bool affectCreature(Creature* pCreature, bool bAffectByMove);
 
 private:
-    int m_Damage;               // EffectPoisonStorm Damage;
-    Turn_t m_Tick;              // EffectPoisonStorm turn;
-    int m_Level;                // EffectPoisonStorm level;
-    Duration_t m_Duration;      // EffectPoisonStorm Duration;
-    Duration_t m_StormDuration; // PoisonStorm effect duration
+    int m_Damage;                                // EffectPoisonStorm Damage;
+    Turn_t m_Tick;                               // EffectPoisonStorm turn;
+    int m_Level;                                 // EffectPoisonStorm level;
+    Duration_t m_Duration;                       // EffectPoisonStorm Duration;
+    [[maybe_unused]] Duration_t m_StormDuration; // PoisonStorm effect duration
     ObjectID_t m_UserObjectID;
     bool m_bVampire;
 };

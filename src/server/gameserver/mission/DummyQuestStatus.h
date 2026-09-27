@@ -10,6 +10,7 @@ public:
         : QuestStatus(qID, deadline, QUEST_CLASS_MEET_NPC), m_Name(NPC) {}
     virtual ~DummyQuestStatus() {}
 
+    using QuestStatus::isSuccess;
     bool isSuccess() {
         if (!isRewarded())
             setSuccess();

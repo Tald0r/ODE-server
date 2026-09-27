@@ -273,7 +273,7 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
 
         if (logon != "LOGOFF") {
             char str[80];
-            sprintf(str, "Already connected player ID: %s, %s", playerID.c_str(), logon.c_str());
+            snprintf(str, sizeof(str), "Already connected player ID: %s, %s", playerID.c_str(), logon.c_str());
             throw ProtocolException(str);
         }
 
@@ -282,7 +282,7 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
         // LogOn is not LOGOFF, and so on..
         if (!tookTheSession) {
             char str[80];
-            sprintf(str, "Already connected player ID2: %s, %s", playerID.c_str(), logon.c_str());
+            snprintf(str, sizeof(str), "Already connected player ID2: %s, %s", playerID.c_str(), logon.c_str());
             throw ProtocolException(str);
         }
 
@@ -517,7 +517,7 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
         pGamePlayer->setCreature(NULL); // keeps the PCFinder from deleting it.
 
         char str[80];
-        sprintf(str, "Already connected player ID3(Dup): %s", pPacket->getPCName().c_str());
+        snprintf(str, sizeof(str), "Already connected player ID3(Dup): %s", pPacket->getPCName().c_str());
         throw ProtocolException(str);
     }
 
@@ -685,8 +685,6 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
     sendPetInfo(pGamePlayer);
 
     string host = pGamePlayer->getSocket()->getHost();
-
-    IP_t IP = pGamePlayer->getSocket()->getHostIP();
 
     // Finally INSERT the IP information into the DB.
 

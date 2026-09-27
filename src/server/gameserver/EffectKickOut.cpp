@@ -12,7 +12,7 @@ void EffectKickOut::affect() {
     m_MinutesCount--;
 
     char msg[200];
-    sprintf(msg, "%d minutes remain before the time limit.", m_MinutesCount);
+    snprintf(msg, sizeof(msg), "%d minutes remain before the time limit.", m_MinutesCount);
     GCSystemMessage gcSM;
     gcSM.setMessage(msg);
     m_pZone->broadcastPacket(&gcSM);

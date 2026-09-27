@@ -97,8 +97,6 @@ void DeadlyClaw::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampir
         param.addMask(m_pDeadlyClawMask[i].x, m_pDeadlyClawMask[i].y, 100);
     }
 
-    // Knowledge of Blood gives a hit bonus of 10.
-    int HitBonus = 0;
     g_SimpleTileMeleeSkill.execute(pVampire, X, Y, pVampireSkillSlot, param, result, CEffectID);
 
 

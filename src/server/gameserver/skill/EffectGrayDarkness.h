@@ -49,7 +49,7 @@ public:
 private:
     Attr_t m_Level;
     Duration_t m_Duration;
-    Timeval m_StartTime; // Time the skill started
+    [[maybe_unused]] Timeval m_StartTime; // Time the skill started
 };
 
 #endif // __EFFECT_GRAY_DARKNESS__

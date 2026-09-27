@@ -172,8 +172,6 @@ void EffectIceFieldLoader::load(Zone* pZone)
         ZoneCoord_t right = rows[r].right;
         ZoneCoord_t bottom = rows[r].bottom;
         int value1 = rows[r].value1;
-        int value2 = rows[r].value2;
-        int value3 = rows[r].value3;
 
         VSRect rect(0, 0, pZone->getWidth() - 1, pZone->getHeight() - 1);
 

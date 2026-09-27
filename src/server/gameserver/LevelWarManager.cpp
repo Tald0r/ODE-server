@@ -155,7 +155,7 @@ void LevelWarManager::endWar() {
     addSchedule(m_pLevelWarSchedule);
 
     char sLoad[100];
-    sprintf(sLoad, "*world *load sweeper_owner %d", m_Level);
+    snprintf(sLoad, sizeof(sLoad), "*world *load sweeper_owner %d", m_Level);
     de::gm::opworld(NULL, sLoad, 0, true);
 
     // Write the record
@@ -189,9 +189,9 @@ void LevelWarManager::recordLevelWarEnd() {
 
     // Run the script through the system function.
     char cmd[100];
-    sprintf(cmd, "/home/darkeden/vs/bin/script/recordLevelWarHistory.py %d %s %d %d ", m_Level,
-            getLevelWarStartTime().toStringforWeb().c_str(), de::kernelContext().config().getPropertyInt("Dimension"),
-            de::kernelContext().config().getPropertyInt("WorldID"));
+    snprintf(cmd, sizeof(cmd), "/home/darkeden/vs/bin/script/recordLevelWarHistory.py %d %s %d %d ", m_Level,
+             getLevelWarStartTime().toStringforWeb().c_str(), de::kernelContext().config().getPropertyInt("Dimension"),
+             de::kernelContext().config().getPropertyInt("WorldID"));
 
     filelog("script.log", cmd);
     system(cmd);
@@ -384,7 +384,8 @@ void LevelWarManager::freeUserTimeCheck()
         GCSystemMessage gcSystemMessage;
         char msg[100];
 
-        sprintf(msg, de::gameContext().strings().c_str(STRID_LEVEL_WAR_ZONE_FREE_OPEN), m_Level, hour, hour + 1);
+        snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_LEVEL_WAR_ZONE_FREE_OPEN), m_Level, hour,
+                 hour + 1);
 
         gcSystemMessage.setMessage(msg);
         de::gameContext().zoneGroups().broadcast(&gcSystemMessage);

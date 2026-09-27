@@ -51,7 +51,7 @@ void EffectDonation200501::affect(Creature* pCreature)
     GCAddEffect gcAddEffect;
     gcAddEffect.setObjectID(pCreature->getObjectID());
     gcAddEffect.setEffectID(getSendEffectClass());
-    gcAddEffect.setDuration(999999);
+    gcAddEffect.setDuration(static_cast<Duration_t>(999999));
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
 
     __END_CATCH

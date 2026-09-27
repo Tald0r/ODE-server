@@ -75,7 +75,7 @@ void CGStashToMouseHandler::execute(CGStashToMouse* pPacket, Player* pPlayer)
     pStash->remove(rack, index);
     pPC->addItemToExtraInventorySlot(pStashItem);
     char pField[80];
-    sprintf(pField, "Storage=%d", STORAGE_EXTRASLOT);
+    snprintf(pField, sizeof(pField), "Storage=%d", STORAGE_EXTRASLOT);
     pStashItem->tinysave(pField);
 
 

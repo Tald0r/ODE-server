@@ -1017,7 +1017,7 @@ void MasterLairManager::giveKillingReward()
                     // Write an entry to the ItemTrace log.
                     if (pItem != NULL && pItem->isTraceItem()) {
                         char zoneName[15];
-                        sprintf(zoneName, "%4d%3d%3d", m_pZone->getZoneID(), p.x, p.y);
+                        snprintf(zoneName, sizeof(zoneName), "%4d%3d%3d", m_pZone->getZoneID(), p.x, p.y);
                         remainTraceLog(pItem, "LairMaster", zoneName, ITEM_LOG_CREATE, DETAIL_EVENTNPC);
                         remainTraceLogNew(pItem, zoneName, ITL_GET, ITLD_EVENTNPC, m_pZone->getZoneID(), p.x, p.y);
                     }

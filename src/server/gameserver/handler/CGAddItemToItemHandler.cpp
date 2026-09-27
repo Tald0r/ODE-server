@@ -301,7 +301,7 @@ void CGAddItemToItemHandler::execute(CGAddItemToItem* pPacket, Player* pPlayer) 
                 pGamePlayer->sendPacket(&gcAddItemToItemVerify);
 
                 char query[100];
-                sprintf(query, "PetOption=%u", (uint)targetOption);
+                snprintf(query, sizeof(query), "PetOption=%u", (uint)targetOption);
                 pItem->tinysave(query);
             } break;
             case PetEnchantItemInfo::REVIVAL_FUNCTION: {
@@ -382,7 +382,6 @@ void CGAddItemToItemHandler::execute(CGAddItemToItem* pPacket, Player* pPlayer) 
 
                 CoordInven_t X = -1, Y;
                 pPC->getInventory()->findItemOID(pPetItem->getObjectID(), X, Y);
-                Assert(X != -1);
 
                 GCCreateItem gcCI;
                 makeGCCreateItem(&gcCI, pPetItem, X, Y);
@@ -471,9 +470,8 @@ void executeUpGrade(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem) {
 
     Creature* pCreature = pGamePlayer->getCreature();
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
-    Inventory* pInventory = pPC->getInventory();
 
-    const ItemInfo* pItemInfo = de::gameContext().itemInfos().getItemInfo(pItem->getItemClass(), pItem->getItemType());
+    de::gameContext().itemInfos().getItemInfo(pItem->getItemClass(), pItem->getItemType());
 
     int Ratio = 50;
 
@@ -765,7 +763,7 @@ void executeEnchantRareOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* p
                 setOptionTypeToField(pItem->getOptionTypeList(), optionField);
 
                 char pField[80];
-                sprintf(pField, "OptionType='%s'", optionField.c_str());
+                snprintf(pField, sizeof(pField), "OptionType='%s'", optionField.c_str());
                 pItem->tinysave(pField);
             }
         }
@@ -798,7 +796,7 @@ void executeEnchantRareOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* p
                 setOptionTypeToField(pItem->getOptionTypeList(), optionField);
 
                 char pField[80];
-                sprintf(pField, "OptionType='%s'", optionField.c_str());
+                snprintf(pField, sizeof(pField), "OptionType='%s'", optionField.c_str());
                 pItem->tinysave(pField);
             }
         }
@@ -844,7 +842,7 @@ void executeEnchantRareOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* p
                 setOptionTypeToField(pItem->getOptionTypeList(), optionField);
 
                 char pField[80];
-                sprintf(pField, "OptionType='%s'", optionField.c_str());
+                snprintf(pField, sizeof(pField), "OptionType='%s'", optionField.c_str());
                 pItem->tinysave(pField);
             }
         }
@@ -876,7 +874,7 @@ void executeEnchantRareOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* p
                 setOptionTypeToField(pItem->getOptionTypeList(), optionField);
 
                 char pField[80];
-                sprintf(pField, "OptionType='%s'", optionField.c_str());
+                snprintf(pField, sizeof(pField), "OptionType='%s'", optionField.c_str());
                 pItem->tinysave(pField);
             }
         }
@@ -1051,7 +1049,7 @@ void executeAddOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem, Op
 
         // DB change
         char pField[80];
-        sprintf(pField, "OptionType='%s'", optionField.c_str());
+        snprintf(pField, sizeof(pField), "OptionType='%s'", optionField.c_str());
         pItem->tinysave(pField);
 
         uint optionChange = addOptionType;
@@ -1097,7 +1095,7 @@ void executeTransKit(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem) {
     pItem->setItemType(newItemType);
 
     char query[50];
-    sprintf(query, "ItemType=%u", newItemType);
+    snprintf(query, sizeof(query), "ItemType=%u", newItemType);
     pItem->tinysave(query);
 
     gcResult.setCode(ADD_ITEM_TO_ITEM_VERIFY_TRANS_OK);
@@ -1151,7 +1149,7 @@ void processUpgradeOptionType(Item* pItem, OptionType_t currentOptionType, Optio
 
     // DB change
     char pField[80];
-    sprintf(pField, "OptionType='%s'", optionField.c_str());
+    snprintf(pField, sizeof(pField), "OptionType='%s'", optionField.c_str());
     pItem->tinysave(pField);
 
     __END_CATCH
@@ -1193,7 +1191,7 @@ void downgradeOptionType(Item* pItem, OptionType_t currentOptionType, OptionInfo
 
 
     char pField[80];
-    sprintf(pField, "OptionType='%s'", optionField.c_str());
+    snprintf(pField, sizeof(pField), "OptionType='%s'", optionField.c_str());
     pItem->tinysave(pField);
 
 

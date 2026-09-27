@@ -166,7 +166,6 @@ void ActionRegenEventShop::execute(Creature* pCreature1, Creature* pCreature2)
     ShopRackType_t shopType;
     int itemClass;
     ItemType_t minItemType, maxItemType, itemType;
-    uint minOptionLevel, maxOptionLevel;
     OptionType_t optionType;
 
     // Each shop template has an item class and a minimum and maximum type.
@@ -215,8 +214,6 @@ void ActionRegenEventShop::execute(Creature* pCreature1, Creature* pCreature2)
             itemClass = pTemplate->getItemClass();
             minItemType = pTemplate->getMinItemType();
             maxItemType = pTemplate->getMaxItemType();
-            minOptionLevel = pTemplate->getMinOptionLevel();
-            maxOptionLevel = pTemplate->getMaxOptionLevel();
 
             // First build the vector of option types that can be created.
             // If ItemType from the ShopTemplate is 2 or 3, optionType is limited to +2,

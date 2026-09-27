@@ -479,6 +479,8 @@ uint SocketInputStream::fill_RAW() {
 
     return nread;
 
+#else
+    throw UnsupportedError();
 #endif
 
     __END_CATCH
