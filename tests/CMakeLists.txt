@@ -221,6 +221,10 @@ target_link_libraries(formula_tests PRIVATE
 # `make dev-test` builds the wire_tests target; ride along so ctest always
 # has a fresh binary (same pattern as repository_tests above).
 add_dependencies(wire_tests formula_tests)
+# The strict compile of the client-vendored de-core sources
+# (src/domain/CMakeLists.txt) rides along the same way: a warning there
+# fails the suite build.
+add_dependencies(wire_tests de-core-strict)
 
 add_test(NAME formula_tests COMMAND formula_tests)
 set_tests_properties(formula_tests PROPERTIES TIMEOUT 60)

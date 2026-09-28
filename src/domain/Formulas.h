@@ -27,8 +27,8 @@
 // refactor.
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef __DECORE_FORMULAS_H__
-#define __DECORE_FORMULAS_H__
+#ifndef DECORE_FORMULAS_H
+#define DECORE_FORMULAS_H
 
 namespace decore {
 
