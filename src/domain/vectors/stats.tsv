@@ -1,0 +1,405 @@
+# Shared parity vectors: the de-core functions the client calls from slice 3
+# (src/domain/Formulas.h): the slayer, vampire and ousters to-hit, defense,
+# protection and min/max damage its character-select preview shows,
+# vampireSkillConsumeMP for its skill MP check and tooltip,
+# vampireDexHPRegenBonus for its HP regen prediction, and the three steal
+# ratios. Every row is asserted for exact equality by the server's
+# formula_tests and by the client's decore_tests on every client toolchain.
+# A changed expected value is a balance change: review it as one.
+# UPDATE_GOLDENS=1 formula_tests rewrites the expected column only.
+#
+# Tab-separated, one row per call: function, row name, the inputs, and the
+# expected result last. A weapon is written by its WeaponFamily enumerator
+# name (None, Sword, Blade, Cross, Mace, Arms, Other).
+#
+# <race>ToHit, <race>Defense, <race>Protection, oustersMinDamage and
+#   oustersMaxDamage columns: str dex inte level weapon weaponDomainLevel
+#   expected (the StatAttr fields in order).
+# slayerMinDamage, slayerMaxDamage, vampireMinDamage and vampireMaxDamage
+#   columns: the six StatAttr fields, combatDamageBonus, expected.
+# slayerStealRatio columns: the six StatAttr fields, amount, expected.
+# vampireStealRatio and oustersStealRatio columns: amount expected.
+# vampireSkillConsumeMP columns: originalMP magicLevel intStat expected. The
+#   server passes the skill's consume MP and level from its skill table and
+#   the vampire's current INT.
+# vampireDexHPRegenBonus columns: dexBasic expected. The server passes the
+#   vampire's basic DEX.
+#
+# The server's caps are 10000 for every stat here, where the client's
+# character-select preview caps at 500 (slayer) and 1000; the stats are
+# stored in 16 bits and wrap before the cap is applied, and a negative
+# combatDamageBonus wraps up to the cap. Double arithmetic truncates once, so
+# a vampire with DEX 1 at level 3 has defense 1, not 0. The steal ratio
+# truncates below zero from amount 48 (65% base: Cross, Mace, Arms, Other)
+# or 65 (90% base: None, Sword, Blade, and every vampire and ousters) and
+# wraps to a byte: 65 gives 255. The rows past those amounts pin the cast
+# through int that defines it (docs/FIXES.md, "Shared stat rules").
+#
+# Named rows cover every branch, race, weapon family and boundary; the
+# grid-* rows are fixed (str, dex, inte, level) tuples from (10, 10, 10, 1)
+# to (500, 512, 400, 150): two per weapon family for the slayer to-hit,
+# defense, protection and min/max damage, with the domain level cycling 0,
+# 1, 25, 57, 100, 150 and 13 for the weapon families and 0 for bare hands
+# (None), and six per vampire and ousters function. The steal ratios have
+# named rows only. Every past-cap row computes a value above its cap. Not
+# here: the attack speed, which only the client's in-game recompute uses
+# and the plan deletes rather than shares.
+slayerToHit	slayer-tohit-bare-hands	30	57	10	1	None	0	28
+slayerToHit	slayer-tohit-bare-hands-ignore-domain	30	57	10	1	None	40	28
+slayerToHit	slayer-tohit-other-ignores-domain	30	57	10	1	Other	40	28
+slayerToHit	slayer-tohit-sword-odd-domain	30	57	10	1	Sword	33	77
+slayerToHit	slayer-tohit-blade-odd-domain	30	57	10	1	Blade	33	77
+slayerToHit	slayer-tohit-cross-odd-domain	30	57	10	1	Cross	33	77
+slayerToHit	slayer-tohit-mace-odd-domain	30	57	10	1	Mace	33	77
+slayerToHit	slayer-tohit-arms-odd-domain	30	57	10	1	Arms	33	77
+slayerToHit	slayer-tohit-domain-1-truncates	30	20	10	1	Sword	1	11
+slayerToHit	slayer-tohit-domain-150	30	290	10	1	Blade	150	370
+slayerToHit	slayer-tohit-level-ignored	30	57	10	150	None	0	28
+slayerToHit	slayer-tohit-zero	0	0	0	0	None	0	0
+slayerToHit	slayer-tohit-above-client-cap-500	30	1100	10	1	Sword	1	551
+slayerToHit	slayer-tohit-at-cap	30	19998	10	1	Sword	1	10000
+slayerToHit	slayer-tohit-past-cap	30	19998	10	1	Sword	2	10000
+slayerToHit	slayer-tohit-word-wrap	30	131074	10	1	None	0	1
+slayerToHit	slayer-tohit-negative-dex-wraps-to-cap	30	-3	10	1	None	0	10000
+vampireToHit	vampire-tohit-level-over-2.5	20	20	20	1	None	0	20
+vampireToHit	vampire-tohit-level-5	20	20	20	5	None	0	22
+vampireToHit	vampire-tohit-level-7-truncates	20	20	20	7	None	0	22
+vampireToHit	vampire-tohit-level-150	200	300	150	150	None	0	360
+vampireToHit	vampire-tohit-weapon-ignored	20	20	20	7	Sword	99	22
+vampireToHit	vampire-tohit-above-client-cap-1000	20	1500	20	100	None	0	1540
+vampireToHit	vampire-tohit-at-cap	20	9999	20	3	None	0	10000
+vampireToHit	vampire-tohit-past-cap	20	10001	20	0	None	0	10000
+vampireToHit	vampire-tohit-word-wrap	20	65535	20	150	None	0	59
+oustersToHit	ousters-tohit-dex-half-plus-level	10	57	10	13	None	0	41
+oustersToHit	ousters-tohit-level-150	200	300	150	150	None	0	300
+oustersToHit	ousters-tohit-weapon-ignored	10	57	10	13	Arms	99	41
+oustersToHit	ousters-tohit-past-cap	10	20001	10	1	None	0	10000
+oustersToHit	ousters-tohit-zero	0	0	0	0	None	0	0
+slayerDefense	slayer-defense-dex-half	30	57	10	1	None	0	28
+slayerDefense	slayer-defense-weapon-and-level-ignored	30	57	10	150	Sword	150	28
+slayerDefense	slayer-defense-above-client-cap-500	30	1201	10	1	None	0	600
+slayerDefense	slayer-defense-past-cap	30	20002	10	1	None	0	10000
+slayerDefense	slayer-defense-negative-dex-wraps-to-cap	30	-2	10	1	None	0	10000
+vampireDefense	vampire-defense-dex-1-level-3-sums-before-truncating	20	1	20	3	None	0	1
+vampireDefense	vampire-defense-dex-21-level-4	20	21	20	4	None	0	11
+vampireDefense	vampire-defense-level-150	20	301	20	150	None	0	180
+vampireDefense	vampire-defense-weapon-ignored	20	21	20	4	Mace	50	11
+vampireDefense	vampire-defense-past-cap	20	19999	20	10	None	0	10000
+vampireDefense	vampire-defense-word-wrap	20	131071	20	5	None	0	0
+oustersDefense	ousters-defense-dex-1-level-3-sums-before-truncating	10	1	10	3	None	0	1
+oustersDefense	ousters-defense-dex-45-level-14	10	45	10	14	None	0	25
+oustersDefense	ousters-defense-level-150	10	301	10	150	None	0	180
+oustersDefense	ousters-defense-past-cap	10	19999	10	10	None	0	10000
+slayerProtection	slayer-protection-is-str	57	30	10	1	None	0	57
+slayerProtection	slayer-protection-weapon-and-level-ignored	57	30	10	150	Arms	150	57
+slayerProtection	slayer-protection-above-client-cap-500	750	30	10	1	None	0	750
+slayerProtection	slayer-protection-at-cap	10000	30	10	1	None	0	10000
+slayerProtection	slayer-protection-past-cap	10001	30	10	1	None	0	10000
+slayerProtection	slayer-protection-word-wrap	65537	30	10	1	None	0	1
+vampireProtection	vampire-protection-level-over-5	20	20	20	9	None	0	21
+vampireProtection	vampire-protection-level-150	300	20	20	150	None	0	330
+vampireProtection	vampire-protection-past-cap	9999	20	20	10	None	0	10000
+vampireProtection	vampire-protection-word-wrap	65535	20	20	5	None	0	0
+oustersProtection	ousters-protection-level-over-10	10	20	10	19	None	0	11
+oustersProtection	ousters-protection-level-150	300	20	10	150	None	0	315
+oustersProtection	ousters-protection-past-cap	10000	20	10	10	None	0	10000
+slayerMinDamage	slayer-min-damage-bare-hands	149	30	10	1	None	0	0	9
+slayerMinDamage	slayer-min-damage-sword	149	30	10	1	Sword	70	0	9
+slayerMinDamage	slayer-min-damage-blade	149	30	10	1	Blade	70	0	9
+slayerMinDamage	slayer-min-damage-cross	149	30	10	1	Cross	70	0	9
+slayerMinDamage	slayer-min-damage-mace	149	30	10	1	Mace	70	0	9
+slayerMinDamage	slayer-min-damage-other	149	30	10	1	Other	70	0	9
+slayerMinDamage	slayer-min-damage-arms-ignores-str	149	30	10	1	Arms	70	0	1
+slayerMinDamage	slayer-min-damage-arms-then-bonus	149	30	10	1	Arms	70	7	8
+slayerMinDamage	slayer-min-damage-combat-bonus	149	30	10	1	Sword	70	7	16
+slayerMinDamage	slayer-min-damage-str-under-divisor	9	30	10	1	None	0	0	0
+slayerMinDamage	slayer-min-damage-above-client-cap-500	9000	30	10	1	None	0	0	600
+slayerMinDamage	slayer-min-damage-past-cap	150000	30	10	1	None	0	9000	10000
+slayerMinDamage	slayer-min-damage-negative-bonus-wraps-to-cap	0	30	10	1	None	0	-1	10000
+slayerMaxDamage	slayer-max-damage-bare-hands	149	30	10	1	None	0	0	14
+slayerMaxDamage	slayer-max-damage-sword	149	30	10	1	Sword	70	0	14
+slayerMaxDamage	slayer-max-damage-blade	149	30	10	1	Blade	70	0	14
+slayerMaxDamage	slayer-max-damage-cross	149	30	10	1	Cross	70	0	14
+slayerMaxDamage	slayer-max-damage-mace	149	30	10	1	Mace	70	0	14
+slayerMaxDamage	slayer-max-damage-other	149	30	10	1	Other	70	0	14
+slayerMaxDamage	slayer-max-damage-arms-ignores-str	149	30	10	1	Arms	70	0	2
+slayerMaxDamage	slayer-max-damage-arms-then-bonus	149	30	10	1	Arms	70	7	9
+slayerMaxDamage	slayer-max-damage-combat-bonus	149	30	10	1	Sword	70	7	21
+slayerMaxDamage	slayer-max-damage-str-under-divisor	9	30	10	1	None	0	0	0
+slayerMaxDamage	slayer-max-damage-above-client-cap-500	9000	30	10	1	None	0	0	900
+slayerMaxDamage	slayer-max-damage-past-cap	150000	30	10	1	None	0	9000	10000
+slayerMaxDamage	slayer-max-damage-negative-bonus-wraps-to-cap	0	30	10	1	None	0	-1	10000
+vampireMinDamage	vampire-min-damage-str-and-level	20	20	20	1	None	0	0	3
+vampireMinDamage	vampire-min-damage-sums-before-truncating	5	20	20	4	None	0	0	1
+vampireMinDamage	vampire-min-damage-level-150	301	20	20	150	None	0	0	80
+vampireMinDamage	vampire-min-damage-combat-bonus	301	20	20	150	None	0	12	92
+vampireMinDamage	vampire-min-damage-weapon-ignored	301	20	20	150	Arms	90	0	80
+vampireMinDamage	vampire-min-damage-zero	0	0	0	0	None	0	0	0
+vampireMinDamage	vampire-min-damage-past-cap	70000	20	20	150	None	0	0	10000
+vampireMinDamage	vampire-min-damage-negative-bonus-wraps-to-cap	0	20	20	0	None	0	-1	10000
+vampireMaxDamage	vampire-max-damage-str-and-level	20	20	20	1	None	0	0	5
+vampireMaxDamage	vampire-max-damage-sums-before-truncating	5	20	20	4	None	0	0	2
+vampireMaxDamage	vampire-max-damage-level-150	301	20	20	150	None	0	0	105
+vampireMaxDamage	vampire-max-damage-combat-bonus	301	20	20	150	None	0	12	117
+vampireMaxDamage	vampire-max-damage-weapon-ignored	301	20	20	150	Arms	90	0	105
+vampireMaxDamage	vampire-max-damage-zero	0	0	0	0	None	0	0	0
+vampireMaxDamage	vampire-max-damage-past-cap	70000	20	20	150	None	0	0	10000
+vampireMaxDamage	vampire-max-damage-negative-bonus-wraps-to-cap	0	20	20	0	None	0	-1	10000
+oustersMinDamage	ousters-min-damage-str-and-level	10	20	10	1	None	0	1
+oustersMinDamage	ousters-min-damage-sums-before-truncating	5	20	10	7	None	0	1
+oustersMinDamage	ousters-min-damage-level-150	301	20	10	150	None	0	45
+oustersMinDamage	ousters-min-damage-weapon-ignored	301	20	10	150	Sword	90	45
+oustersMinDamage	ousters-min-damage-zero	0	0	0	0	None	0	0
+oustersMinDamage	ousters-min-damage-past-cap	100000	20	10	150	None	0	10000
+oustersMaxDamage	ousters-max-damage-str-and-level	10	20	10	1	None	0	1
+oustersMaxDamage	ousters-max-damage-sums-before-truncating	5	20	10	7	None	0	2
+oustersMaxDamage	ousters-max-damage-level-150	301	20	10	150	None	0	75
+oustersMaxDamage	ousters-max-damage-weapon-ignored	301	20	10	150	Sword	90	75
+oustersMaxDamage	ousters-max-damage-zero	0	0	0	0	None	0	0
+oustersMaxDamage	ousters-max-damage-past-cap	100000	20	10	150	None	0	10000
+slayerStealRatio	slayer-steal-none-0	30	30	10	1	None	0	0	0
+slayerStealRatio	slayer-steal-none-10	30	30	10	1	None	0	10	76
+slayerStealRatio	slayer-steal-none-47	30	30	10	1	None	0	47	24
+slayerStealRatio	slayer-steal-none-48	30	30	10	1	None	0	48	22
+slayerStealRatio	slayer-steal-none-64	30	30	10	1	None	0	64	0
+slayerStealRatio	slayer-steal-none-65	30	30	10	1	None	0	65	255
+slayerStealRatio	slayer-steal-none-255	30	30	10	1	None	0	255	245
+slayerStealRatio	slayer-steal-sword-0	30	30	10	1	Sword	0	0	0
+slayerStealRatio	slayer-steal-sword-10	30	30	10	1	Sword	0	10	76
+slayerStealRatio	slayer-steal-sword-47	30	30	10	1	Sword	0	47	24
+slayerStealRatio	slayer-steal-sword-48	30	30	10	1	Sword	0	48	22
+slayerStealRatio	slayer-steal-sword-64	30	30	10	1	Sword	0	64	0
+slayerStealRatio	slayer-steal-sword-65	30	30	10	1	Sword	0	65	255
+slayerStealRatio	slayer-steal-sword-255	30	30	10	1	Sword	0	255	245
+slayerStealRatio	slayer-steal-blade-0	30	30	10	1	Blade	0	0	0
+slayerStealRatio	slayer-steal-blade-10	30	30	10	1	Blade	0	10	76
+slayerStealRatio	slayer-steal-blade-47	30	30	10	1	Blade	0	47	24
+slayerStealRatio	slayer-steal-blade-48	30	30	10	1	Blade	0	48	22
+slayerStealRatio	slayer-steal-blade-64	30	30	10	1	Blade	0	64	0
+slayerStealRatio	slayer-steal-blade-65	30	30	10	1	Blade	0	65	255
+slayerStealRatio	slayer-steal-blade-255	30	30	10	1	Blade	0	255	245
+slayerStealRatio	slayer-steal-cross-0	30	30	10	1	Cross	0	0	0
+slayerStealRatio	slayer-steal-cross-10	30	30	10	1	Cross	0	10	51
+slayerStealRatio	slayer-steal-cross-47	30	30	10	1	Cross	0	47	0
+slayerStealRatio	slayer-steal-cross-48	30	30	10	1	Cross	0	48	254
+slayerStealRatio	slayer-steal-cross-64	30	30	10	1	Cross	0	64	232
+slayerStealRatio	slayer-steal-cross-65	30	30	10	1	Cross	0	65	230
+slayerStealRatio	slayer-steal-cross-255	30	30	10	1	Cross	0	255	220
+slayerStealRatio	slayer-steal-mace-0	30	30	10	1	Mace	0	0	0
+slayerStealRatio	slayer-steal-mace-10	30	30	10	1	Mace	0	10	51
+slayerStealRatio	slayer-steal-mace-47	30	30	10	1	Mace	0	47	0
+slayerStealRatio	slayer-steal-mace-48	30	30	10	1	Mace	0	48	254
+slayerStealRatio	slayer-steal-mace-64	30	30	10	1	Mace	0	64	232
+slayerStealRatio	slayer-steal-mace-65	30	30	10	1	Mace	0	65	230
+slayerStealRatio	slayer-steal-mace-255	30	30	10	1	Mace	0	255	220
+slayerStealRatio	slayer-steal-arms-0	30	30	10	1	Arms	0	0	0
+slayerStealRatio	slayer-steal-arms-10	30	30	10	1	Arms	0	10	51
+slayerStealRatio	slayer-steal-arms-47	30	30	10	1	Arms	0	47	0
+slayerStealRatio	slayer-steal-arms-48	30	30	10	1	Arms	0	48	254
+slayerStealRatio	slayer-steal-arms-64	30	30	10	1	Arms	0	64	232
+slayerStealRatio	slayer-steal-arms-65	30	30	10	1	Arms	0	65	230
+slayerStealRatio	slayer-steal-arms-255	30	30	10	1	Arms	0	255	220
+slayerStealRatio	slayer-steal-other-0	30	30	10	1	Other	0	0	0
+slayerStealRatio	slayer-steal-other-10	30	30	10	1	Other	0	10	51
+slayerStealRatio	slayer-steal-other-47	30	30	10	1	Other	0	47	0
+slayerStealRatio	slayer-steal-other-48	30	30	10	1	Other	0	48	254
+slayerStealRatio	slayer-steal-other-64	30	30	10	1	Other	0	64	232
+slayerStealRatio	slayer-steal-other-65	30	30	10	1	Other	0	65	230
+slayerStealRatio	slayer-steal-other-255	30	30	10	1	Other	0	255	220
+slayerStealRatio	slayer-steal-stats-ignored	290	290	290	150	Sword	150	10	76
+vampireStealRatio	vampire-steal-0	0	0
+vampireStealRatio	vampire-steal-1	1	88
+vampireStealRatio	vampire-steal-64	64	0
+vampireStealRatio	vampire-steal-65	65	255
+vampireStealRatio	vampire-steal-66	66	254
+vampireStealRatio	vampire-steal-128	128	167
+vampireStealRatio	vampire-steal-255	255	245
+oustersStealRatio	ousters-steal-0	0	0
+oustersStealRatio	ousters-steal-1	1	88
+oustersStealRatio	ousters-steal-64	64	0
+oustersStealRatio	ousters-steal-65	65	255
+oustersStealRatio	ousters-steal-66	66	254
+oustersStealRatio	ousters-steal-128	128	167
+oustersStealRatio	ousters-steal-255	255	245
+vampireSkillConsumeMP	consume-int-0	100	10	0	100
+vampireSkillConsumeMP	consume-int-20-deadband	100	10	20	100
+vampireSkillConsumeMP	consume-int-21	100	10	21	100
+vampireSkillConsumeMP	consume-negative-int	100	10	-50	100
+vampireSkillConsumeMP	consume-level-11-int-at-level	200	11	31	200
+vampireSkillConsumeMP	consume-level-11-int-past-level	200	11	32	180
+vampireSkillConsumeMP	consume-level-11-int-at-1.5x-floor	200	11	36	180
+vampireSkillConsumeMP	consume-level-11-int-past-1.5x	200	11	37	150
+vampireSkillConsumeMP	consume-level-11-int-at-2x	200	11	42	150
+vampireSkillConsumeMP	consume-level-11-int-past-2x	200	11	43	100
+vampireSkillConsumeMP	consume-level-11-int-at-3x	200	11	53	100
+vampireSkillConsumeMP	consume-level-11-int-past-3x	200	11	54	80
+vampireSkillConsumeMP	consume-level-11-int-at-4x	200	11	64	80
+vampireSkillConsumeMP	consume-level-11-int-past-4x	200	11	65	50
+vampireSkillConsumeMP	consume-level-11-int-at-5x	200	11	75	50
+vampireSkillConsumeMP	consume-level-11-int-past-5x	200	11	76	30
+vampireSkillConsumeMP	consume-level-11-int-at-6x	200	11	86	30
+vampireSkillConsumeMP	consume-level-11-int-past-6x	200	11	87	20
+vampireSkillConsumeMP	consume-level-11-int-at-7x	200	11	97	20
+vampireSkillConsumeMP	consume-level-11-int-past-7x	200	11	98	10
+vampireSkillConsumeMP	consume-level-11-int-far-past-7x	200	11	520	10
+vampireSkillConsumeMP	consume-level-10-at-1.5x	100	10	35	90
+vampireSkillConsumeMP	consume-level-10-past-1.5x	100	10	36	75
+vampireSkillConsumeMP	consume-level-0-int-20	100	0	20	100
+vampireSkillConsumeMP	consume-level-0-int-21-is-95pct	100	0	21	5
+vampireSkillConsumeMP	consume-level-1-int-22	100	1	22	75
+vampireSkillConsumeMP	consume-level-150-int-500	300	150	500	120
+vampireSkillConsumeMP	consume-mp-0	0	11	500	0
+vampireSkillConsumeMP	consume-mp-1-10pct-discount-truncates-to-0	1	11	32	1
+vampireSkillConsumeMP	consume-mp-1-95pct-discount-truncates-to-0	1	11	500	1
+vampireSkillConsumeMP	consume-mp-33-10pct	33	10	35	30
+vampireSkillConsumeMP	consume-mp-33-25pct	33	10	40	25
+vampireSkillConsumeMP	consume-mp-odd-95pct	37	10	500	2
+vampireSkillConsumeMP	consume-mp-65535	65535	10	500	3277
+vampireSkillConsumeMP	consume-mp-65535-60pct	65535	10	60	26214
+vampireDexHPRegenBonus	regen-dex-minus-1	-1	0
+vampireDexHPRegenBonus	regen-dex-0	0	0
+vampireDexHPRegenBonus	regen-dex-50	50	0
+vampireDexHPRegenBonus	regen-dex-51	51	1
+vampireDexHPRegenBonus	regen-dex-120	120	1
+vampireDexHPRegenBonus	regen-dex-121	121	2
+vampireDexHPRegenBonus	regen-dex-190	190	2
+vampireDexHPRegenBonus	regen-dex-191	191	3
+vampireDexHPRegenBonus	regen-dex-260	260	3
+vampireDexHPRegenBonus	regen-dex-261	261	4
+vampireDexHPRegenBonus	regen-dex-330	330	4
+vampireDexHPRegenBonus	regen-dex-331	331	5
+vampireDexHPRegenBonus	regen-dex-390	390	5
+vampireDexHPRegenBonus	regen-dex-391	391	6
+vampireDexHPRegenBonus	regen-dex-450	450	6
+vampireDexHPRegenBonus	regen-dex-451	451	7
+vampireDexHPRegenBonus	regen-dex-1000	1000	7
+slayerToHit	grid-slayerToHit-none-0	10	10	10	1	None	0	5
+slayerToHit	grid-slayerToHit-none-1	20	20	20	1	None	0	10
+slayerToHit	grid-slayerToHit-sword-0	50	37	23	13	Sword	25	55
+slayerToHit	grid-slayerToHit-sword-1	99	101	77	29	Sword	57	135
+slayerToHit	grid-slayerToHit-blade-0	150	149	120	50	Blade	100	224
+slayerToHit	grid-slayerToHit-blade-1	199	203	150	77	Blade	150	326
+slayerToHit	grid-slayerToHit-cross-0	295	290	210	100	Cross	13	164
+slayerToHit	grid-slayerToHit-cross-1	400	437	300	133	Cross	0	218
+slayerToHit	grid-slayerToHit-mace-0	500	512	400	150	Mace	1	257
+slayerToHit	grid-slayerToHit-mace-1	10	10	10	1	Mace	25	42
+slayerToHit	grid-slayerToHit-arms-0	20	20	20	1	Arms	57	95
+slayerToHit	grid-slayerToHit-arms-1	50	37	23	13	Arms	100	168
+slayerToHit	grid-slayerToHit-other-0	99	101	77	29	Other	150	50
+slayerToHit	grid-slayerToHit-other-1	150	149	120	50	Other	13	74
+slayerDefense	grid-slayerDefense-none-0	99	101	77	29	None	0	50
+slayerDefense	grid-slayerDefense-none-1	150	149	120	50	None	0	74
+slayerDefense	grid-slayerDefense-sword-0	199	203	150	77	Sword	150	101
+slayerDefense	grid-slayerDefense-sword-1	295	290	210	100	Sword	13	145
+slayerDefense	grid-slayerDefense-blade-0	400	437	300	133	Blade	0	218
+slayerDefense	grid-slayerDefense-blade-1	500	512	400	150	Blade	1	256
+slayerDefense	grid-slayerDefense-cross-0	10	10	10	1	Cross	25	5
+slayerDefense	grid-slayerDefense-cross-1	20	20	20	1	Cross	57	10
+slayerDefense	grid-slayerDefense-mace-0	50	37	23	13	Mace	100	18
+slayerDefense	grid-slayerDefense-mace-1	99	101	77	29	Mace	150	50
+slayerDefense	grid-slayerDefense-arms-0	150	149	120	50	Arms	13	74
+slayerDefense	grid-slayerDefense-arms-1	199	203	150	77	Arms	0	101
+slayerDefense	grid-slayerDefense-other-0	295	290	210	100	Other	1	145
+slayerDefense	grid-slayerDefense-other-1	400	437	300	133	Other	25	218
+slayerProtection	grid-slayerProtection-none-0	295	290	210	100	None	0	295
+slayerProtection	grid-slayerProtection-none-1	400	437	300	133	None	0	400
+slayerProtection	grid-slayerProtection-sword-0	500	512	400	150	Sword	1	500
+slayerProtection	grid-slayerProtection-sword-1	10	10	10	1	Sword	25	10
+slayerProtection	grid-slayerProtection-blade-0	20	20	20	1	Blade	57	20
+slayerProtection	grid-slayerProtection-blade-1	50	37	23	13	Blade	100	50
+slayerProtection	grid-slayerProtection-cross-0	99	101	77	29	Cross	150	99
+slayerProtection	grid-slayerProtection-cross-1	150	149	120	50	Cross	13	150
+slayerProtection	grid-slayerProtection-mace-0	199	203	150	77	Mace	0	199
+slayerProtection	grid-slayerProtection-mace-1	295	290	210	100	Mace	1	295
+slayerProtection	grid-slayerProtection-arms-0	400	437	300	133	Arms	25	400
+slayerProtection	grid-slayerProtection-arms-1	500	512	400	150	Arms	57	500
+slayerProtection	grid-slayerProtection-other-0	10	10	10	1	Other	100	10
+slayerProtection	grid-slayerProtection-other-1	20	20	20	1	Other	150	20
+slayerMinDamage	grid-slayerMinDamage-none-0	10	10	10	1	None	0	0	0
+slayerMinDamage	grid-slayerMinDamage-none-1	20	20	20	1	None	0	0	1
+slayerMinDamage	grid-slayerMinDamage-sword-0	50	37	23	13	Sword	100	0	3
+slayerMinDamage	grid-slayerMinDamage-sword-1	99	101	77	29	Sword	150	0	6
+slayerMinDamage	grid-slayerMinDamage-blade-0	150	149	120	50	Blade	13	0	10
+slayerMinDamage	grid-slayerMinDamage-blade-1	199	203	150	77	Blade	0	0	13
+slayerMinDamage	grid-slayerMinDamage-cross-0	295	290	210	100	Cross	1	0	19
+slayerMinDamage	grid-slayerMinDamage-cross-1	400	437	300	133	Cross	25	0	26
+slayerMinDamage	grid-slayerMinDamage-mace-0	500	512	400	150	Mace	57	0	33
+slayerMinDamage	grid-slayerMinDamage-mace-1	10	10	10	1	Mace	100	0	0
+slayerMinDamage	grid-slayerMinDamage-arms-0	20	20	20	1	Arms	150	0	1
+slayerMinDamage	grid-slayerMinDamage-arms-1	50	37	23	13	Arms	13	0	1
+slayerMinDamage	grid-slayerMinDamage-other-0	99	101	77	29	Other	0	0	6
+slayerMinDamage	grid-slayerMinDamage-other-1	150	149	120	50	Other	1	0	10
+slayerMaxDamage	grid-slayerMaxDamage-none-0	99	101	77	29	None	0	0	9
+slayerMaxDamage	grid-slayerMaxDamage-none-1	150	149	120	50	None	0	0	15
+slayerMaxDamage	grid-slayerMaxDamage-sword-0	199	203	150	77	Sword	0	0	19
+slayerMaxDamage	grid-slayerMaxDamage-sword-1	295	290	210	100	Sword	1	0	29
+slayerMaxDamage	grid-slayerMaxDamage-blade-0	400	437	300	133	Blade	25	0	40
+slayerMaxDamage	grid-slayerMaxDamage-blade-1	500	512	400	150	Blade	57	0	50
+slayerMaxDamage	grid-slayerMaxDamage-cross-0	10	10	10	1	Cross	100	0	1
+slayerMaxDamage	grid-slayerMaxDamage-cross-1	20	20	20	1	Cross	150	0	2
+slayerMaxDamage	grid-slayerMaxDamage-mace-0	50	37	23	13	Mace	13	0	5
+slayerMaxDamage	grid-slayerMaxDamage-mace-1	99	101	77	29	Mace	0	0	9
+slayerMaxDamage	grid-slayerMaxDamage-arms-0	150	149	120	50	Arms	1	0	2
+slayerMaxDamage	grid-slayerMaxDamage-arms-1	199	203	150	77	Arms	25	0	2
+slayerMaxDamage	grid-slayerMaxDamage-other-0	295	290	210	100	Other	57	0	29
+slayerMaxDamage	grid-slayerMaxDamage-other-1	400	437	300	133	Other	100	0	40
+vampireToHit	grid-vampireToHit-0	10	10	10	1	None	0	10
+vampireToHit	grid-vampireToHit-2	50	37	23	13	None	0	42
+vampireToHit	grid-vampireToHit-3	99	101	77	29	None	0	112
+vampireToHit	grid-vampireToHit-5	199	203	150	77	None	0	233
+vampireToHit	grid-vampireToHit-6	295	290	210	100	None	0	330
+vampireToHit	grid-vampireToHit-8	500	512	400	150	None	0	572
+vampireDefense	grid-vampireDefense-0	10	10	10	1	None	0	5
+vampireDefense	grid-vampireDefense-2	50	37	23	13	None	0	21
+vampireDefense	grid-vampireDefense-3	99	101	77	29	None	0	56
+vampireDefense	grid-vampireDefense-5	199	203	150	77	None	0	116
+vampireDefense	grid-vampireDefense-6	295	290	210	100	None	0	165
+vampireDefense	grid-vampireDefense-8	500	512	400	150	None	0	286
+vampireProtection	grid-vampireProtection-0	10	10	10	1	None	0	10
+vampireProtection	grid-vampireProtection-2	50	37	23	13	None	0	52
+vampireProtection	grid-vampireProtection-3	99	101	77	29	None	0	104
+vampireProtection	grid-vampireProtection-5	199	203	150	77	None	0	214
+vampireProtection	grid-vampireProtection-6	295	290	210	100	None	0	315
+vampireProtection	grid-vampireProtection-8	500	512	400	150	None	0	530
+vampireMinDamage	grid-vampireMinDamage-0	10	10	10	1	None	0	0	1
+vampireMinDamage	grid-vampireMinDamage-2	50	37	23	13	None	0	0	10
+vampireMinDamage	grid-vampireMinDamage-3	99	101	77	29	None	0	0	22
+vampireMinDamage	grid-vampireMinDamage-5	199	203	150	77	None	0	0	48
+vampireMinDamage	grid-vampireMinDamage-6	295	290	210	100	None	0	0	69
+vampireMinDamage	grid-vampireMinDamage-8	500	512	400	150	None	0	0	113
+vampireMaxDamage	grid-vampireMaxDamage-0	10	10	10	1	None	0	0	2
+vampireMaxDamage	grid-vampireMaxDamage-2	50	37	23	13	None	0	0	15
+vampireMaxDamage	grid-vampireMaxDamage-3	99	101	77	29	None	0	0	30
+vampireMaxDamage	grid-vampireMaxDamage-5	199	203	150	77	None	0	0	65
+vampireMaxDamage	grid-vampireMaxDamage-6	295	290	210	100	None	0	0	93
+vampireMaxDamage	grid-vampireMaxDamage-8	500	512	400	150	None	0	0	155
+oustersToHit	grid-oustersToHit-0	10	10	10	1	None	0	6
+oustersToHit	grid-oustersToHit-2	50	37	23	13	None	0	31
+oustersToHit	grid-oustersToHit-3	99	101	77	29	None	0	79
+oustersToHit	grid-oustersToHit-5	199	203	150	77	None	0	178
+oustersToHit	grid-oustersToHit-6	295	290	210	100	None	0	245
+oustersToHit	grid-oustersToHit-8	500	512	400	150	None	0	406
+oustersDefense	grid-oustersDefense-0	10	10	10	1	None	0	5
+oustersDefense	grid-oustersDefense-2	50	37	23	13	None	0	21
+oustersDefense	grid-oustersDefense-3	99	101	77	29	None	0	56
+oustersDefense	grid-oustersDefense-5	199	203	150	77	None	0	116
+oustersDefense	grid-oustersDefense-6	295	290	210	100	None	0	165
+oustersDefense	grid-oustersDefense-8	500	512	400	150	None	0	286
+oustersProtection	grid-oustersProtection-0	10	10	10	1	None	0	10
+oustersProtection	grid-oustersProtection-2	50	37	23	13	None	0	51
+oustersProtection	grid-oustersProtection-3	99	101	77	29	None	0	101
+oustersProtection	grid-oustersProtection-5	199	203	150	77	None	0	206
+oustersProtection	grid-oustersProtection-6	295	290	210	100	None	0	305
+oustersProtection	grid-oustersProtection-8	500	512	400	150	None	0	515
+oustersMinDamage	grid-oustersMinDamage-0	10	10	10	1	None	0	1
+oustersMinDamage	grid-oustersMinDamage-2	50	37	23	13	None	0	6
+oustersMinDamage	grid-oustersMinDamage-3	99	101	77	29	None	0	12
+oustersMinDamage	grid-oustersMinDamage-5	199	203	150	77	None	0	27
+oustersMinDamage	grid-oustersMinDamage-6	295	290	210	100	None	0	39
+oustersMinDamage	grid-oustersMinDamage-8	500	512	400	150	None	0	65
+oustersMaxDamage	grid-oustersMaxDamage-0	10	10	10	1	None	0	1
+oustersMaxDamage	grid-oustersMaxDamage-2	50	37	23	13	None	0	10
+oustersMaxDamage	grid-oustersMaxDamage-3	99	101	77	29	None	0	21
+oustersMaxDamage	grid-oustersMaxDamage-5	199	203	150	77	None	0	46
+oustersMaxDamage	grid-oustersMaxDamage-6	295	290	210	100	None	0	65
+oustersMaxDamage	grid-oustersMaxDamage-8	500	512	400	150	None	0	108
