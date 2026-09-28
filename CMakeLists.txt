@@ -101,13 +101,20 @@ endif()
 # MySQL
 if(APPLE)
     # Homebrew's mysql-client formulae are keg-only: nothing is linked into
-    # /opt/homebrew/include or /opt/homebrew/lib, so name their opt/ prefixes.
+    # <prefix>/include or <prefix>/lib, so name their opt/ directories, for
+    # both Homebrew prefixes (/opt/homebrew on Apple Silicon, /usr/local on
+    # Intel). mysql-client@8.4 comes first because it is the client the
+    # native build was verified with; the unversioned formula is a newer
+    # series, used only when no versioned keg is installed.
     find_path(MYSQL_INCLUDE_DIR mysql/mysql.h
         PATHS
         /opt/homebrew/include
-        /opt/homebrew/opt/mysql-client/include
         /opt/homebrew/opt/mysql-client@8.4/include
         /opt/homebrew/opt/mysql-client@8.0/include
+        /opt/homebrew/opt/mysql-client/include
+        /usr/local/opt/mysql-client@8.4/include
+        /usr/local/opt/mysql-client@8.0/include
+        /usr/local/opt/mysql-client/include
         /opt/homebrew/Cellar/mysql-client/*/include
         /opt/homebrew/Cellar/mariadb-connector-c/*/include
         /usr/local/include
@@ -116,13 +123,17 @@ if(APPLE)
     find_library(MYSQL_LIBRARY mysqlclient
         PATHS
         /opt/homebrew/lib
-        /opt/homebrew/opt/mysql-client/lib
         /opt/homebrew/opt/mysql-client@8.4/lib
         /opt/homebrew/opt/mysql-client@8.0/lib
+        /opt/homebrew/opt/mysql-client/lib
+        /usr/local/opt/mysql-client@8.4/lib
+        /usr/local/opt/mysql-client@8.0/lib
+        /usr/local/opt/mysql-client/lib
         /opt/homebrew/Cellar/mysql-client/*/lib
         /opt/homebrew/Cellar/mariadb-connector-c/*/lib
         /opt/homebrew/Cellar/mariadb-connector-c/*/lib/mariadb
         /usr/local/lib
+        NO_DEFAULT_PATH
     )
 elseif(UNIX)
     find_path(MYSQL_INCLUDE_DIR mysql/mysql.h

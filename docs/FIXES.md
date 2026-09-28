@@ -241,7 +241,10 @@ do.
   `<luajit-2.1/lua.h>` needs the directory above the one found for the
   headers, which Linux supplies as `/usr/include` and Apple Clang does not.
   The search now names Homebrew's `opt/` prefixes, and the luajit keg's
-  `include/` is added on macOS.
+  `include/` is added on macOS. At first it named only the Apple Silicon
+  prefix and put the unversioned `mysql-client` (a newer series than the
+  verified `mysql-client@8.4`) first; since fix/review-followups it
+  prefers `@8.4`, then `@8.0`, and searches Intel's `/usr/local/opt/` too.
   > **Status:** fixed (fix/macos-native-build)
 - **`tools/devbuild.sh` stopped before starting its container on macOS.**
   macOS ships bash 3.2, where expanding an empty array under `set -u` is an

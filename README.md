@@ -121,12 +121,16 @@ dependencies come from Homebrew:
 
 ```bash
 xcode-select --install
-brew install cmake ninja mysql-client luajit
+brew install cmake ninja mysql-client@8.4 luajit
 ```
 
-`mysql-client` is keg-only. CMake looks for it under Homebrew's `opt/`
-prefixes (`mysql-client`, `mysql-client@8.4`, `mysql-client@8.0`), so no
-extra flags are needed. From the repository root:
+`mysql-client@8.4` is the MySQL client library the build was verified
+with; the unversioned `mysql-client` formula is a newer series nobody has
+built against. Both are keg-only. CMake looks for them under Homebrew's
+`opt/` directories, on Apple Silicon (`/opt/homebrew`) and Intel
+(`/usr/local`) alike, preferring `mysql-client@8.4`, then
+`mysql-client@8.0`, then `mysql-client`, so no extra flags are needed.
+From the repository root:
 
 ```bash
 make debug      # or: make release
