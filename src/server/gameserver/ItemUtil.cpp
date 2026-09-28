@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include <fstream>
+#include <vector>
 
 #include <unordered_set>
 
@@ -38,6 +39,7 @@
 #include "Vampire.h"
 #include "VariableManager.h"
 #include "ctf/FlagManager.h"
+#include "domain/ItemDurability.h"
 #include "item/AR.h"
 #include "item/Magazine.h"
 #include "item/OustersSummonItem.h"
@@ -495,16 +497,14 @@ Durability_t computeMaxDurability(Item* pItem) {
     if (pItem == NULL)
         return 0;
 
-    //	ItemInfo*    pItemInfo     = de::gameContext().itemInfos().getItemInfo(pItem->getItemClass(), pItem->getItemType());
-    //	unsigned long maxDurability = pItemInfo->getDurability();
+    // The item's own maximum: computeBaseMaxDurability for a ConcreteItem,
+    // Item's default of 1 for every other item.
+    Durability_t maxDurability = pItem->getMaxDurability();
 
-    unsigned long maxDurability = pItem->getMaxDurability();
-
-    // Start from 100%
-    unsigned long plusPoint = 100;
-
+    // The plus-points of the durability options, in the order the item
+    // carries them. An option type of 0 is an empty slot.
     const list<OptionType_t>& optionTypes = pItem->getOptionTypeList();
-    // OptionType_t OptionType = pItem->getOptionType();
+    std::vector<int> plusPoints;
 
     list<OptionType_t>::const_iterator itr;
 
@@ -515,16 +515,16 @@ Durability_t computeMaxDurability(Item* pItem) {
             OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(OptionType);
 
             if (pOptionInfo->getClass() == OPTION_DURABILITY) {
-                plusPoint += (pOptionInfo->getPlusPoint() - 100);
+                plusPoints.push_back(pOptionInfo->getPlusPoint());
             }
         }
     }
 
-    maxDurability = (maxDurability * plusPoint / 100);
-    // Going over 65000 breaks.
-    //	maxDurability = min( (unsigned long)65000, maxDurability );
+    return decore::maxDurabilityWithOptions(maxDurability, plusPoints.data(), (int)plusPoints.size());
+}
 
-    return (Durability_t)maxDurability;
+Durability_t computeBaseMaxDurability(Durability_t infoDurability, bool hasDurability, int gradeDurabilityOffset) {
+    return decore::maxDurabilityBase(infoDurability, hasDurability, gradeDurabilityOffset);
 }
 
 //////////////////////////////////////////////////////////////////////////////

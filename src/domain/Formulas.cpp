@@ -10,7 +10,7 @@
 // on purpose, and tests/formula_test.cpp pins representative wrap cases.
 //////////////////////////////////////////////////////////////////////////////
 
-#include "Formulas.h"
+#include "domain/Formulas.h"
 
 #include <algorithm>
 #include <cmath>
@@ -584,7 +584,7 @@ int tileDistance(int ox, int oy, int tx, int ty) {
     // The wire-era formula intentionally returns a byte-wide distance. Make
     // the modulo explicit so Zig's checked Debug mode preserves that behavior
     // instead of trapping when the distance exceeds 255.
-    Byte range = static_cast<Byte>(fmod(sqrt(XOffset + YOffset), 256.0));
+    Byte range = static_cast<Byte>(std::fmod(sqrt(XOffset + YOffset), 256.0));
 
     return range;
 }
@@ -781,7 +781,7 @@ int concealmentProtectionBonus(int str, int effectLevel) {
 }
 
 int willOfIronHPBonus(int maxHP) {
-    return maxHP * 0.15;
+    return (int)(maxHP * 0.15);
 }
 
 LivenessBonus livenessBonus(int grade, int domainLevel) {

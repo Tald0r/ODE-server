@@ -1,0 +1,224 @@
+# Shared parity vectors: decore::itemPrice and decore::skullSellTotal
+# (src/domain/ItemPrice.h). Every row is asserted for exact equality by the
+# server's formula_tests and by the client's decore_tests on every client
+# toolchain. A changed expected value is a balance change: review it as
+# one. UPDATE_GOLDENS=1 formula_tests rewrites the expected column only.
+#
+# Tab-separated, one row per call: function, row name, the inputs, and the
+# expected result last. An option list is comma-separated, "-" for none.
+# The rows named seed-* are the client's transcription of the server's
+# arithmetic; the grid-* rows are every combination of base price
+# {1, 27, 1001, 99999}, grade {-1, 0, 7}, options {-, 150, 110+50} and
+# durability {0/0, 1/2, 2/3, 37/100}, at a market condition cycling
+# 25, 100, 120.
+#
+# itemPrice columns: itemClass itemType basePrice grade charge maxCharge
+#   options curDurability maxDurability marketCond mysteriousRack
+#   createTypeGame timeLimited crownPrice race currentStatSum premiumHalf
+#   potionPriceRatio expected
+# skullSellTotal columns: priceTimesNum headPriceBonusPercent expected
+itemPrice	seed-worn-5000-at-39-of-50	14	0	5000	-1	0	0	-	39	50	100	0	0	0	0	None	0	0	0	3900
+itemPrice	seed-half-of-27-at-30pct	14	0	27	-1	0	0	-	1	2	30	0	0	0	0	None	0	0	0	4
+itemPrice	seed-1001-at-150pct-two-thirds	14	0	1001	-1	0	0	150	2	3	100	0	0	0	0	None	0	0	0	1001
+itemPrice	seed-price-past-2-to-24	14	0	16777217	-1	0	0	-	100	100	100	0	0	0	0	None	0	0	0	16777217
+itemPrice	seed-grade-3-on-27-two-thirds	14	0	27	3	0	0	-	2	3	100	0	0	0	0	None	0	0	0	17
+itemPrice	seed-no-grade	14	0	1000	-1	0	0	-	100	100	100	0	0	0	0	None	0	0	0	1000
+itemPrice	seed-grade-0-is-80pct	14	0	1000	0	0	0	-	100	100	100	0	0	0	0	None	0	0	0	800
+itemPrice	seed-grade-11-is-135pct	14	0	1000	11	0	0	-	100	100	100	0	0	0	0	None	0	0	0	1350
+itemPrice	plain	14	0	1000	-1	0	0	-	100	100	100	0	0	0	0	None	0	0	0	1000
+itemPrice	create-type-game-sells-for-1	14	0	99999	-1	0	0	-	100	100	100	0	1	0	0	None	0	0	0	1
+itemPrice	time-limited-sells-for-50	14	0	99999	-1	0	0	-	100	100	100	0	0	1	0	None	0	0	0	50
+itemPrice	create-type-game-before-time-limited	14	0	1000	-1	0	0	-	100	100	100	0	1	1	0	None	0	0	0	1
+itemPrice	time-limited-before-crown	72	4	1000	-1	0	0	-	100	100	100	0	0	1	5000000	None	0	0	0	50
+itemPrice	moon-card-4-is-crown-price	72	4	2000	-1	0	0	-	100	100	100	0	0	0	5000000	None	0	0	0	5000000
+itemPrice	moon-card-other-type-is-table-price	72	3	2000	-1	0	0	-	1	1	100	0	0	0	5000000	None	0	0	0	2000
+itemPrice	slayer-portal-adds-5000-a-charge	38	0	1000	-1	3	0	-	100	100	100	0	0	0	0	None	0	0	0	16000
+itemPrice	vampire-portal-adds-5000-a-charge	39	0	1000	-1	2	0	-	100	100	100	0	0	0	0	None	0	0	0	11000
+itemPrice	ousters-summon-adds-1000-a-charge	69	0	1000	-1	4	0	-	100	100	100	0	0	0	0	None	0	0	0	5000
+itemPrice	charges-ignored-on-other-classes	14	0	1000	-1	4	0	-	100	100	100	0	0	0	0	None	0	0	0	1000
+itemPrice	charges-then-grade-order	38	0	1000	0	2	0	-	100	100	100	0	0	0	0	None	0	0	0	10800
+itemPrice	options-sum-each-multiplier	14	0	1000	-1	0	0	150,50	100	100	100	0	0	0	0	None	0	0	0	2000
+itemPrice	option-multiplier-0-floors-at-1	14	0	1000	-1	0	0	0	100	100	100	0	0	0	0	None	0	0	0	1
+itemPrice	options-stay-in-double	14	0	1001	-1	0	0	50,50	100	100	100	0	0	0	0	None	0	0	0	1001
+itemPrice	wear-max-1-is-no-durability	14	0	1000	-1	0	0	-	0	1	100	0	0	0	0	None	0	0	0	1000
+itemPrice	wear-max-0-is-no-durability	14	0	1000	-1	0	0	-	0	0	100	0	0	0	0	None	0	0	0	1000
+itemPrice	wear-to-0-floors-at-1	14	0	1000	-1	0	0	-	0	100	100	0	0	0	0	None	0	0	0	1
+itemPrice	wear-above-max-raises-price	14	0	1000	-1	0	0	-	150	100	100	0	0	0	0	None	0	0	0	1500
+itemPrice	market-120	14	0	1000	-1	0	0	-	100	100	120	0	0	0	0	None	0	0	0	1200
+itemPrice	market-0-floors-at-1	14	0	1000	-1	0	0	-	100	100	0	0	0	0	0	None	0	0	0	1
+itemPrice	mysterious-rack-x10	14	0	1000	-1	0	0	-	100	100	100	1	0	0	0	None	0	0	0	10000
+itemPrice	slayer-low-stat-potion-0-at-70pct	1	0	99	-1	0	0	-	100	100	100	0	0	0	0	Slayer	40	0	0	69
+itemPrice	slayer-low-stat-potion-5-at-70pct	1	5	99	-1	0	0	-	100	100	100	0	0	0	0	Slayer	40	0	0	69
+itemPrice	slayer-stat-41-no-discount	1	0	99	-1	0	0	-	100	100	100	0	0	0	0	Slayer	41	0	0	99
+itemPrice	slayer-potion-type-1-no-discount	1	1	99	-1	0	0	-	100	100	100	0	0	0	0	Slayer	10	0	0	99
+itemPrice	slayer-discount-truncates-first	1	0	119	-1	0	0	-	100	100	10	0	0	0	0	Slayer	3	0	0	7
+itemPrice	vampire-skull-half	34	0	1001	-1	0	0	-	100	100	100	0	0	0	0	Vampire	0	0	0	500
+itemPrice	ousters-skull-75pct	34	0	1001	-1	0	0	-	100	100	100	0	0	0	0	Ousters	0	0	0	750
+itemPrice	slayer-skull-full	34	0	1001	-1	0	0	-	100	100	100	0	0	0	0	Slayer	0	0	0	1001
+itemPrice	vampire-non-skull-full	14	0	1001	-1	0	0	-	100	100	100	0	0	0	0	Vampire	0	0	0	1001
+itemPrice	no-creature-skull-full	34	0	1001	-1	0	0	-	100	100	100	0	0	0	0	None	0	0	0	1001
+itemPrice	vampire-low-stat-potion-no-discount	1	0	99	-1	0	0	-	100	100	100	0	0	0	0	Vampire	0	0	0	99
+itemPrice	premium-half-potion	1	1	99	-1	0	0	-	100	100	100	0	0	0	0	None	0	1	0	49
+itemPrice	premium-half-serum	36	0	101	-1	0	0	-	100	100	100	0	0	0	0	None	0	1	0	50
+itemPrice	premium-half-larva	66	0	101	-1	0	0	-	100	100	100	0	0	0	0	None	0	1	0	50
+itemPrice	premium-half-pupa	67	0	101	-1	0	0	-	100	100	100	0	0	0	0	None	0	1	0	50
+itemPrice	premium-half-compos-mei	68	0	101	-1	0	0	-	100	100	100	0	0	0	0	None	0	1	0	50
+itemPrice	premium-half-not-on-sword	14	0	1000	-1	0	0	-	100	100	100	0	0	0	0	None	0	1	0	1000
+itemPrice	premium-half-not-on-skull	34	0	1000	-1	0	0	-	100	100	100	0	0	0	0	None	0	1	0	1000
+itemPrice	blood-bible-potion-minus-10	1	1	1000	-1	0	0	-	100	100	100	0	0	0	0	None	0	0	-10	900
+itemPrice	blood-bible-serum-truncates-toward-zero	36	0	999	-1	0	0	-	100	100	100	0	0	0	0	None	0	0	-10	900
+itemPrice	blood-bible-on-truncated-price	1	1	101	-1	0	0	-	100	100	50	0	0	0	0	None	0	0	-10	45
+itemPrice	blood-bible-not-on-sword	14	0	1000	-1	0	0	-	100	100	100	0	0	0	0	None	0	0	-10	1000
+itemPrice	blood-bible-not-on-larva	66	0	1000	-1	0	0	-	100	100	100	0	0	0	0	None	0	0	-10	1000
+itemPrice	slayer-discount-premium-blood-bible-order	1	0	1000	-1	0	0	-	100	100	100	0	0	0	0	Slayer	30	1	-10	315
+itemPrice	grid-001	14	0	1	-1	0	0	-	0	0	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-002	14	0	1	-1	0	0	-	1	2	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-003	14	0	1	-1	0	0	-	2	3	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-004	14	0	1	-1	0	0	-	37	100	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-005	14	0	1	-1	0	0	150	0	0	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-006	14	0	1	-1	0	0	150	1	2	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-007	14	0	1	-1	0	0	150	2	3	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-008	14	0	1	-1	0	0	150	37	100	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-009	14	0	1	-1	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-010	14	0	1	-1	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-011	14	0	1	-1	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-012	14	0	1	-1	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-013	14	0	1	0	0	0	-	0	0	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-014	14	0	1	0	0	0	-	1	2	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-015	14	0	1	0	0	0	-	2	3	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-016	14	0	1	0	0	0	-	37	100	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-017	14	0	1	0	0	0	150	0	0	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-018	14	0	1	0	0	0	150	1	2	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-019	14	0	1	0	0	0	150	2	3	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-020	14	0	1	0	0	0	150	37	100	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-021	14	0	1	0	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-022	14	0	1	0	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-023	14	0	1	0	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-024	14	0	1	0	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-025	14	0	1	7	0	0	-	0	0	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-026	14	0	1	7	0	0	-	1	2	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-027	14	0	1	7	0	0	-	2	3	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-028	14	0	1	7	0	0	-	37	100	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-029	14	0	1	7	0	0	150	0	0	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-030	14	0	1	7	0	0	150	1	2	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-031	14	0	1	7	0	0	150	2	3	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-032	14	0	1	7	0	0	150	37	100	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-033	14	0	1	7	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	2
+itemPrice	grid-034	14	0	1	7	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-035	14	0	1	7	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	1
+itemPrice	grid-036	14	0	1	7	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	1
+itemPrice	grid-037	14	0	27	-1	0	0	-	0	0	25	0	0	0	0	None	0	0	0	6
+itemPrice	grid-038	14	0	27	-1	0	0	-	1	2	100	0	0	0	0	None	0	0	0	13
+itemPrice	grid-039	14	0	27	-1	0	0	-	2	3	120	0	0	0	0	None	0	0	0	21
+itemPrice	grid-040	14	0	27	-1	0	0	-	37	100	25	0	0	0	0	None	0	0	0	2
+itemPrice	grid-041	14	0	27	-1	0	0	150	0	0	100	0	0	0	0	None	0	0	0	40
+itemPrice	grid-042	14	0	27	-1	0	0	150	1	2	120	0	0	0	0	None	0	0	0	24
+itemPrice	grid-043	14	0	27	-1	0	0	150	2	3	25	0	0	0	0	None	0	0	0	6
+itemPrice	grid-044	14	0	27	-1	0	0	150	37	100	100	0	0	0	0	None	0	0	0	14
+itemPrice	grid-045	14	0	27	-1	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	51
+itemPrice	grid-046	14	0	27	-1	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	5
+itemPrice	grid-047	14	0	27	-1	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	28
+itemPrice	grid-048	14	0	27	-1	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	19
+itemPrice	grid-049	14	0	27	0	0	0	-	0	0	25	0	0	0	0	None	0	0	0	5
+itemPrice	grid-050	14	0	27	0	0	0	-	1	2	100	0	0	0	0	None	0	0	0	10
+itemPrice	grid-051	14	0	27	0	0	0	-	2	3	120	0	0	0	0	None	0	0	0	17
+itemPrice	grid-052	14	0	27	0	0	0	-	37	100	25	0	0	0	0	None	0	0	0	1
+itemPrice	grid-053	14	0	27	0	0	0	150	0	0	100	0	0	0	0	None	0	0	0	32
+itemPrice	grid-054	14	0	27	0	0	0	150	1	2	120	0	0	0	0	None	0	0	0	19
+itemPrice	grid-055	14	0	27	0	0	0	150	2	3	25	0	0	0	0	None	0	0	0	5
+itemPrice	grid-056	14	0	27	0	0	0	150	37	100	100	0	0	0	0	None	0	0	0	11
+itemPrice	grid-057	14	0	27	0	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	41
+itemPrice	grid-058	14	0	27	0	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	4
+itemPrice	grid-059	14	0	27	0	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	23
+itemPrice	grid-060	14	0	27	0	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	15
+itemPrice	grid-061	14	0	27	7	0	0	-	0	0	25	0	0	0	0	None	0	0	0	7
+itemPrice	grid-062	14	0	27	7	0	0	-	1	2	100	0	0	0	0	None	0	0	0	15
+itemPrice	grid-063	14	0	27	7	0	0	-	2	3	120	0	0	0	0	None	0	0	0	24
+itemPrice	grid-064	14	0	27	7	0	0	-	37	100	25	0	0	0	0	None	0	0	0	2
+itemPrice	grid-065	14	0	27	7	0	0	150	0	0	100	0	0	0	0	None	0	0	0	46
+itemPrice	grid-066	14	0	27	7	0	0	150	1	2	120	0	0	0	0	None	0	0	0	27
+itemPrice	grid-067	14	0	27	7	0	0	150	2	3	25	0	0	0	0	None	0	0	0	7
+itemPrice	grid-068	14	0	27	7	0	0	150	37	100	100	0	0	0	0	None	0	0	0	17
+itemPrice	grid-069	14	0	27	7	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	59
+itemPrice	grid-070	14	0	27	7	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	6
+itemPrice	grid-071	14	0	27	7	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	33
+itemPrice	grid-072	14	0	27	7	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	22
+itemPrice	grid-073	14	0	1001	-1	0	0	-	0	0	25	0	0	0	0	None	0	0	0	250
+itemPrice	grid-074	14	0	1001	-1	0	0	-	1	2	100	0	0	0	0	None	0	0	0	500
+itemPrice	grid-075	14	0	1001	-1	0	0	-	2	3	120	0	0	0	0	None	0	0	0	800
+itemPrice	grid-076	14	0	1001	-1	0	0	-	37	100	25	0	0	0	0	None	0	0	0	92
+itemPrice	grid-077	14	0	1001	-1	0	0	150	0	0	100	0	0	0	0	None	0	0	0	1501
+itemPrice	grid-078	14	0	1001	-1	0	0	150	1	2	120	0	0	0	0	None	0	0	0	900
+itemPrice	grid-079	14	0	1001	-1	0	0	150	2	3	25	0	0	0	0	None	0	0	0	250
+itemPrice	grid-080	14	0	1001	-1	0	0	150	37	100	100	0	0	0	0	None	0	0	0	555
+itemPrice	grid-081	14	0	1001	-1	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	1921
+itemPrice	grid-082	14	0	1001	-1	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	200
+itemPrice	grid-083	14	0	1001	-1	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	1067
+itemPrice	grid-084	14	0	1001	-1	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	711
+itemPrice	grid-085	14	0	1001	0	0	0	-	0	0	25	0	0	0	0	None	0	0	0	200
+itemPrice	grid-086	14	0	1001	0	0	0	-	1	2	100	0	0	0	0	None	0	0	0	400
+itemPrice	grid-087	14	0	1001	0	0	0	-	2	3	120	0	0	0	0	None	0	0	0	640
+itemPrice	grid-088	14	0	1001	0	0	0	-	37	100	25	0	0	0	0	None	0	0	0	74
+itemPrice	grid-089	14	0	1001	0	0	0	150	0	0	100	0	0	0	0	None	0	0	0	1201
+itemPrice	grid-090	14	0	1001	0	0	0	150	1	2	120	0	0	0	0	None	0	0	0	720
+itemPrice	grid-091	14	0	1001	0	0	0	150	2	3	25	0	0	0	0	None	0	0	0	200
+itemPrice	grid-092	14	0	1001	0	0	0	150	37	100	100	0	0	0	0	None	0	0	0	444
+itemPrice	grid-093	14	0	1001	0	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	1537
+itemPrice	grid-094	14	0	1001	0	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	160
+itemPrice	grid-095	14	0	1001	0	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	854
+itemPrice	grid-096	14	0	1001	0	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	568
+itemPrice	grid-097	14	0	1001	7	0	0	-	0	0	25	0	0	0	0	None	0	0	0	287
+itemPrice	grid-098	14	0	1001	7	0	0	-	1	2	100	0	0	0	0	None	0	0	0	575
+itemPrice	grid-099	14	0	1001	7	0	0	-	2	3	120	0	0	0	0	None	0	0	0	920
+itemPrice	grid-100	14	0	1001	7	0	0	-	37	100	25	0	0	0	0	None	0	0	0	106
+itemPrice	grid-101	14	0	1001	7	0	0	150	0	0	100	0	0	0	0	None	0	0	0	1726
+itemPrice	grid-102	14	0	1001	7	0	0	150	1	2	120	0	0	0	0	None	0	0	0	1036
+itemPrice	grid-103	14	0	1001	7	0	0	150	2	3	25	0	0	0	0	None	0	0	0	287
+itemPrice	grid-104	14	0	1001	7	0	0	150	37	100	100	0	0	0	0	None	0	0	0	638
+itemPrice	grid-105	14	0	1001	7	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	2210
+itemPrice	grid-106	14	0	1001	7	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	230
+itemPrice	grid-107	14	0	1001	7	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	1227
+itemPrice	grid-108	14	0	1001	7	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	817
+itemPrice	grid-109	14	0	99999	-1	0	0	-	0	0	25	0	0	0	0	None	0	0	0	24999
+itemPrice	grid-110	14	0	99999	-1	0	0	-	1	2	100	0	0	0	0	None	0	0	0	49999
+itemPrice	grid-111	14	0	99999	-1	0	0	-	2	3	120	0	0	0	0	None	0	0	0	79999
+itemPrice	grid-112	14	0	99999	-1	0	0	-	37	100	25	0	0	0	0	None	0	0	0	9249
+itemPrice	grid-113	14	0	99999	-1	0	0	150	0	0	100	0	0	0	0	None	0	0	0	149998
+itemPrice	grid-114	14	0	99999	-1	0	0	150	1	2	120	0	0	0	0	None	0	0	0	89999
+itemPrice	grid-115	14	0	99999	-1	0	0	150	2	3	25	0	0	0	0	None	0	0	0	24999
+itemPrice	grid-116	14	0	99999	-1	0	0	150	37	100	100	0	0	0	0	None	0	0	0	55499
+itemPrice	grid-117	14	0	99999	-1	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	191998
+itemPrice	grid-118	14	0	99999	-1	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	19999
+itemPrice	grid-119	14	0	99999	-1	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	106665
+itemPrice	grid-120	14	0	99999	-1	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	71039
+itemPrice	grid-121	14	0	99999	0	0	0	-	0	0	25	0	0	0	0	None	0	0	0	19999
+itemPrice	grid-122	14	0	99999	0	0	0	-	1	2	100	0	0	0	0	None	0	0	0	39999
+itemPrice	grid-123	14	0	99999	0	0	0	-	2	3	120	0	0	0	0	None	0	0	0	63999
+itemPrice	grid-124	14	0	99999	0	0	0	-	37	100	25	0	0	0	0	None	0	0	0	7399
+itemPrice	grid-125	14	0	99999	0	0	0	150	0	0	100	0	0	0	0	None	0	0	0	119998
+itemPrice	grid-126	14	0	99999	0	0	0	150	1	2	120	0	0	0	0	None	0	0	0	71999
+itemPrice	grid-127	14	0	99999	0	0	0	150	2	3	25	0	0	0	0	None	0	0	0	19999
+itemPrice	grid-128	14	0	99999	0	0	0	150	37	100	100	0	0	0	0	None	0	0	0	44399
+itemPrice	grid-129	14	0	99999	0	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	153598
+itemPrice	grid-130	14	0	99999	0	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	15999
+itemPrice	grid-131	14	0	99999	0	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	85332
+itemPrice	grid-132	14	0	99999	0	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	56831
+itemPrice	grid-133	14	0	99999	7	0	0	-	0	0	25	0	0	0	0	None	0	0	0	28749
+itemPrice	grid-134	14	0	99999	7	0	0	-	1	2	100	0	0	0	0	None	0	0	0	57499
+itemPrice	grid-135	14	0	99999	7	0	0	-	2	3	120	0	0	0	0	None	0	0	0	91999
+itemPrice	grid-136	14	0	99999	7	0	0	-	37	100	25	0	0	0	0	None	0	0	0	10637
+itemPrice	grid-137	14	0	99999	7	0	0	150	0	0	100	0	0	0	0	None	0	0	0	172498
+itemPrice	grid-138	14	0	99999	7	0	0	150	1	2	120	0	0	0	0	None	0	0	0	103498
+itemPrice	grid-139	14	0	99999	7	0	0	150	2	3	25	0	0	0	0	None	0	0	0	28749
+itemPrice	grid-140	14	0	99999	7	0	0	150	37	100	100	0	0	0	0	None	0	0	0	63824
+itemPrice	grid-141	14	0	99999	7	0	0	110,50	0	0	120	0	0	0	0	None	0	0	0	220797
+itemPrice	grid-142	14	0	99999	7	0	0	110,50	1	2	25	0	0	0	0	None	0	0	0	22999
+itemPrice	grid-143	14	0	99999	7	0	0	110,50	2	3	100	0	0	0	0	None	0	0	0	122665
+itemPrice	grid-144	14	0	99999	7	0	0	110,50	37	100	120	0	0	0	0	None	0	0	0	81695
+skullSellTotal	head-bonus-100-pays-x1	5000	100	5000
+skullSellTotal	head-bonus-150-pays-x1	5000	150	5000
+skullSellTotal	head-bonus-200-pays-x2	5000	200	10000
+skullSellTotal	head-bonus-299-pays-x2	5000	299	10000
+skullSellTotal	head-bonus-99-pays-nothing	5000	99	0
+skullSellTotal	head-bonus-0-pays-nothing	5000	0	0
+skullSellTotal	head-total-wraps-at-32-bits	3000000000	200	1705032704

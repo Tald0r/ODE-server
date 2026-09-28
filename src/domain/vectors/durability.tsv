@@ -1,0 +1,202 @@
+# Shared parity vectors: decore::maxDurabilityBase, maxDurabilityWithOptions
+# and maxDurability (src/domain/ItemDurability.h). Every row is asserted for
+# exact equality by the server's formula_tests and by the client's
+# decore_tests on every client toolchain. A changed expected value is a
+# balance change: review it as one. UPDATE_GOLDENS=1 formula_tests rewrites
+# the expected column only.
+#
+# Tab-separated, one row per call: function, row name, the inputs, and the
+# expected result last. A plus-point list is comma-separated, "-" for none;
+# hasDurability is 0 or 1. The grid-* rows are every combination of table
+# durability {0, 500, 1000, 3000, 65000}, hasDurability {0, 1}, grade offset
+# {-4000, -1000, 0, 3000} and plus-points {-, 110, 110+120, 90}.
+#
+# maxDurabilityBase columns: infoDurability hasDurability
+#   gradeDurabilityOffset expected
+# maxDurabilityWithOptions columns: baseMaxDurability durabilityPlusPoints
+#   expected
+# maxDurability columns: infoDurability hasDurability gradeDurabilityOffset
+#   durabilityPlusPoints expected
+maxDurabilityBase	table-durability	3000	1	0	3000
+maxDurabilityBase	grade-offset-adds	3000	1	2000	5000
+maxDurabilityBase	grade-offset-subtracts	3000	1	-1000	2000
+maxDurabilityBase	floor-at-1000	1500	1	-4000	1000
+maxDurabilityBase	floor-at-1000-from-0	0	1	0	1000
+maxDurabilityBase	no-durability-ignores-grade	500	0	3000	500
+maxDurabilityBase	no-durability-0	0	0	0	0
+maxDurabilityBase	no-durability-no-floor	1	0	0	1
+maxDurabilityBase	above-65000-not-capped	64000	1	3000	67000
+maxDurabilityWithOptions	no-options	3000	-	3000
+maxDurabilityWithOptions	one-option-110	3000	110	3300
+maxDurabilityWithOptions	options-add-their-excess	3000	110,120	3900
+maxDurabilityWithOptions	option-below-100-lowers	3000	90	2700
+maxDurabilityWithOptions	option-100-is-neutral	3000	100	3000
+maxDurabilityWithOptions	truncates	1001	110	1101
+maxDurabilityWithOptions	options-total-0	3000	0	0
+maxDurabilityWithOptions	options-total-negative-wraps	1000	0,0	4123167604
+maxDurabilityWithOptions	options-above-65000-not-capped	60000	120	72000
+maxDurabilityWithOptions	base-1-of-a-plain-item	1	-	1
+maxDurability	floor-before-options	500	1	-4000	150	1500
+maxDurability	no-durability-class-with-options	0	0	0	150	0
+maxDurability	graded-then-options	3000	1	2000	110	5500
+maxDurability	graded-no-options	64000	1	3000	-	67000
+maxDurability	grid-001	0	0	-4000	-	0
+maxDurability	grid-002	0	0	-4000	110	0
+maxDurability	grid-003	0	0	-4000	110,120	0
+maxDurability	grid-004	0	0	-4000	90	0
+maxDurability	grid-005	0	0	-1000	-	0
+maxDurability	grid-006	0	0	-1000	110	0
+maxDurability	grid-007	0	0	-1000	110,120	0
+maxDurability	grid-008	0	0	-1000	90	0
+maxDurability	grid-009	0	0	0	-	0
+maxDurability	grid-010	0	0	0	110	0
+maxDurability	grid-011	0	0	0	110,120	0
+maxDurability	grid-012	0	0	0	90	0
+maxDurability	grid-013	0	0	3000	-	0
+maxDurability	grid-014	0	0	3000	110	0
+maxDurability	grid-015	0	0	3000	110,120	0
+maxDurability	grid-016	0	0	3000	90	0
+maxDurability	grid-017	0	1	-4000	-	1000
+maxDurability	grid-018	0	1	-4000	110	1100
+maxDurability	grid-019	0	1	-4000	110,120	1300
+maxDurability	grid-020	0	1	-4000	90	900
+maxDurability	grid-021	0	1	-1000	-	1000
+maxDurability	grid-022	0	1	-1000	110	1100
+maxDurability	grid-023	0	1	-1000	110,120	1300
+maxDurability	grid-024	0	1	-1000	90	900
+maxDurability	grid-025	0	1	0	-	1000
+maxDurability	grid-026	0	1	0	110	1100
+maxDurability	grid-027	0	1	0	110,120	1300
+maxDurability	grid-028	0	1	0	90	900
+maxDurability	grid-029	0	1	3000	-	3000
+maxDurability	grid-030	0	1	3000	110	3300
+maxDurability	grid-031	0	1	3000	110,120	3900
+maxDurability	grid-032	0	1	3000	90	2700
+maxDurability	grid-033	500	0	-4000	-	500
+maxDurability	grid-034	500	0	-4000	110	550
+maxDurability	grid-035	500	0	-4000	110,120	650
+maxDurability	grid-036	500	0	-4000	90	450
+maxDurability	grid-037	500	0	-1000	-	500
+maxDurability	grid-038	500	0	-1000	110	550
+maxDurability	grid-039	500	0	-1000	110,120	650
+maxDurability	grid-040	500	0	-1000	90	450
+maxDurability	grid-041	500	0	0	-	500
+maxDurability	grid-042	500	0	0	110	550
+maxDurability	grid-043	500	0	0	110,120	650
+maxDurability	grid-044	500	0	0	90	450
+maxDurability	grid-045	500	0	3000	-	500
+maxDurability	grid-046	500	0	3000	110	550
+maxDurability	grid-047	500	0	3000	110,120	650
+maxDurability	grid-048	500	0	3000	90	450
+maxDurability	grid-049	500	1	-4000	-	1000
+maxDurability	grid-050	500	1	-4000	110	1100
+maxDurability	grid-051	500	1	-4000	110,120	1300
+maxDurability	grid-052	500	1	-4000	90	900
+maxDurability	grid-053	500	1	-1000	-	1000
+maxDurability	grid-054	500	1	-1000	110	1100
+maxDurability	grid-055	500	1	-1000	110,120	1300
+maxDurability	grid-056	500	1	-1000	90	900
+maxDurability	grid-057	500	1	0	-	1000
+maxDurability	grid-058	500	1	0	110	1100
+maxDurability	grid-059	500	1	0	110,120	1300
+maxDurability	grid-060	500	1	0	90	900
+maxDurability	grid-061	500	1	3000	-	3500
+maxDurability	grid-062	500	1	3000	110	3850
+maxDurability	grid-063	500	1	3000	110,120	4550
+maxDurability	grid-064	500	1	3000	90	3150
+maxDurability	grid-065	1000	0	-4000	-	1000
+maxDurability	grid-066	1000	0	-4000	110	1100
+maxDurability	grid-067	1000	0	-4000	110,120	1300
+maxDurability	grid-068	1000	0	-4000	90	900
+maxDurability	grid-069	1000	0	-1000	-	1000
+maxDurability	grid-070	1000	0	-1000	110	1100
+maxDurability	grid-071	1000	0	-1000	110,120	1300
+maxDurability	grid-072	1000	0	-1000	90	900
+maxDurability	grid-073	1000	0	0	-	1000
+maxDurability	grid-074	1000	0	0	110	1100
+maxDurability	grid-075	1000	0	0	110,120	1300
+maxDurability	grid-076	1000	0	0	90	900
+maxDurability	grid-077	1000	0	3000	-	1000
+maxDurability	grid-078	1000	0	3000	110	1100
+maxDurability	grid-079	1000	0	3000	110,120	1300
+maxDurability	grid-080	1000	0	3000	90	900
+maxDurability	grid-081	1000	1	-4000	-	1000
+maxDurability	grid-082	1000	1	-4000	110	1100
+maxDurability	grid-083	1000	1	-4000	110,120	1300
+maxDurability	grid-084	1000	1	-4000	90	900
+maxDurability	grid-085	1000	1	-1000	-	1000
+maxDurability	grid-086	1000	1	-1000	110	1100
+maxDurability	grid-087	1000	1	-1000	110,120	1300
+maxDurability	grid-088	1000	1	-1000	90	900
+maxDurability	grid-089	1000	1	0	-	1000
+maxDurability	grid-090	1000	1	0	110	1100
+maxDurability	grid-091	1000	1	0	110,120	1300
+maxDurability	grid-092	1000	1	0	90	900
+maxDurability	grid-093	1000	1	3000	-	4000
+maxDurability	grid-094	1000	1	3000	110	4400
+maxDurability	grid-095	1000	1	3000	110,120	5200
+maxDurability	grid-096	1000	1	3000	90	3600
+maxDurability	grid-097	3000	0	-4000	-	3000
+maxDurability	grid-098	3000	0	-4000	110	3300
+maxDurability	grid-099	3000	0	-4000	110,120	3900
+maxDurability	grid-100	3000	0	-4000	90	2700
+maxDurability	grid-101	3000	0	-1000	-	3000
+maxDurability	grid-102	3000	0	-1000	110	3300
+maxDurability	grid-103	3000	0	-1000	110,120	3900
+maxDurability	grid-104	3000	0	-1000	90	2700
+maxDurability	grid-105	3000	0	0	-	3000
+maxDurability	grid-106	3000	0	0	110	3300
+maxDurability	grid-107	3000	0	0	110,120	3900
+maxDurability	grid-108	3000	0	0	90	2700
+maxDurability	grid-109	3000	0	3000	-	3000
+maxDurability	grid-110	3000	0	3000	110	3300
+maxDurability	grid-111	3000	0	3000	110,120	3900
+maxDurability	grid-112	3000	0	3000	90	2700
+maxDurability	grid-113	3000	1	-4000	-	1000
+maxDurability	grid-114	3000	1	-4000	110	1100
+maxDurability	grid-115	3000	1	-4000	110,120	1300
+maxDurability	grid-116	3000	1	-4000	90	900
+maxDurability	grid-117	3000	1	-1000	-	2000
+maxDurability	grid-118	3000	1	-1000	110	2200
+maxDurability	grid-119	3000	1	-1000	110,120	2600
+maxDurability	grid-120	3000	1	-1000	90	1800
+maxDurability	grid-121	3000	1	0	-	3000
+maxDurability	grid-122	3000	1	0	110	3300
+maxDurability	grid-123	3000	1	0	110,120	3900
+maxDurability	grid-124	3000	1	0	90	2700
+maxDurability	grid-125	3000	1	3000	-	6000
+maxDurability	grid-126	3000	1	3000	110	6600
+maxDurability	grid-127	3000	1	3000	110,120	7800
+maxDurability	grid-128	3000	1	3000	90	5400
+maxDurability	grid-129	65000	0	-4000	-	65000
+maxDurability	grid-130	65000	0	-4000	110	71500
+maxDurability	grid-131	65000	0	-4000	110,120	84500
+maxDurability	grid-132	65000	0	-4000	90	58500
+maxDurability	grid-133	65000	0	-1000	-	65000
+maxDurability	grid-134	65000	0	-1000	110	71500
+maxDurability	grid-135	65000	0	-1000	110,120	84500
+maxDurability	grid-136	65000	0	-1000	90	58500
+maxDurability	grid-137	65000	0	0	-	65000
+maxDurability	grid-138	65000	0	0	110	71500
+maxDurability	grid-139	65000	0	0	110,120	84500
+maxDurability	grid-140	65000	0	0	90	58500
+maxDurability	grid-141	65000	0	3000	-	65000
+maxDurability	grid-142	65000	0	3000	110	71500
+maxDurability	grid-143	65000	0	3000	110,120	84500
+maxDurability	grid-144	65000	0	3000	90	58500
+maxDurability	grid-145	65000	1	-4000	-	61000
+maxDurability	grid-146	65000	1	-4000	110	67100
+maxDurability	grid-147	65000	1	-4000	110,120	79300
+maxDurability	grid-148	65000	1	-4000	90	54900
+maxDurability	grid-149	65000	1	-1000	-	64000
+maxDurability	grid-150	65000	1	-1000	110	70400
+maxDurability	grid-151	65000	1	-1000	110,120	83200
+maxDurability	grid-152	65000	1	-1000	90	57600
+maxDurability	grid-153	65000	1	0	-	65000
+maxDurability	grid-154	65000	1	0	110	71500
+maxDurability	grid-155	65000	1	0	110,120	84500
+maxDurability	grid-156	65000	1	0	90	58500
+maxDurability	grid-157	65000	1	3000	-	68000
+maxDurability	grid-158	65000	1	3000	110	74800
+maxDurability	grid-159	65000	1	3000	110,120	88400
+maxDurability	grid-160	65000	1	3000	90	61200

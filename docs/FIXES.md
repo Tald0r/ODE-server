@@ -13,6 +13,42 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Shared price rules (2026-09-28)
+
+The shop buy, sell and repair price and an item's maximum durability moved
+into de-core (`src/domain/ItemPrice.cpp`, `ItemDurability.cpp`) so the
+client can build the same source. The move is verbatim; what it kept and
+what it changed:
+
+- **The price rules' oddities are kept as the server charges them.**
+  `getPrice` treats a maximum durability of 1 as none (`> 1`) while
+  `getRepairPrice` does not (`!= 0`); the low-stat slayer's potion discount
+  and the Blood Bible adjustment truncate the price in the middle of the
+  calculation; the head price multiplies by `bonus / 100` in integers, so a
+  150% head price bonus pays x1; a vampire portal is repaired by durability
+  while the slayer portal and the ousters summon item are charged for their
+  missing charges; a charge count above the maximum wraps the repair price
+  through unsigned arithmetic. Each is pinned by a named row in
+  `src/domain/vectors/`, and changing one is a balance decision.
+  > **Status:** recorded, not fixed (feat/shared-price-rules)
+- **`getPrice` dereferenced a null creature** on the premium half-price and
+  Blood Bible branches (the race branch checked it, those two did not), and
+  the premium branch also dereferenced the creature's `GamePlayer` without a
+  check. No caller passes either. The adapter now reads the player's pay
+  state and potion ratio only when the creature is a player with a
+  `GamePlayer`, so a null creature prices as none and a player without one
+  as not paying.
+  > **Status:** fixed (feat/shared-price-rules)
+- **Flat-priced items now read the item tables first.** An item given away
+  by the game, a time-limited item and the crown moon card used to return 1,
+  50 or the crown price before any table read. The adapter now gathers every
+  input, the item table, the option table and the maximum durability
+  included, before de-core picks the flat price, so an item whose option id
+  is corrupt now reaches the option table's existing `Assert` instead of
+  returning early. Every shop item has all three, so no valid item prices
+  differently.
+  > **Status:** recorded, not fixed (feat/shared-price-rules)
+
 ## Compiler-warning cleanup (2026-09-27)
 
 Clearing the server's ~1,000 compiler warnings (Apple Clang 21 and the Zig

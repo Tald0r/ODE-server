@@ -8,10 +8,26 @@
 //
 // The suite links ONLY de-core and gtest: it is also the proof that de-core
 // stays freestanding (no Core, no gameserver, no transport).
+//
+// The rules the client repository shares (its byte-identical copy of part of
+// de-core) are pinned by the vector files in src/domain/vectors, one
+// data-driven TEST per file at the end of this file. The client asserts the
+// same files, so a row there is a contract with every client toolchain.
+
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <map>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
 #include "domain/Formulas.h"
+#include "domain/ItemDurability.h"
+#include "domain/ItemPrice.h"
 #include "domain/SkillOutputFormulas.h"
 
 using decore::StatAttr;
@@ -982,6 +998,268 @@ TEST(InitAllStatBonus, BloodBibleSignFameLadders) {
     EXPECT_EQ(1, decore::oustersBloodBibleSignOpenNum(29999, 6));
     EXPECT_EQ(5, decore::oustersBloodBibleSignOpenNum(49999999, 6));
     EXPECT_EQ(6, decore::oustersBloodBibleSignOpenNum(50000000, 6));
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Shared parity vectors (src/domain/vectors/*.tsv)
+//
+// Each non-comment line is one call: function name, row name, the inputs,
+// and the expected result in the last column. UPDATE_GOLDENS=1 rewrites
+// the expected column from what de-core computes and leaves every other
+// byte of the file as it was; otherwise every row must match exactly.
+//////////////////////////////////////////////////////////////////////////
+
+bool recordingVectors() {
+    const char* value = std::getenv("UPDATE_GOLDENS");
+    return value != NULL && std::string(value) == "1";
+}
+
+std::vector<std::string> splitTabs(const std::string& line) {
+    std::vector<std::string> fields;
+    std::string::size_type start = 0;
+    for (;;) {
+        std::string::size_type tab = line.find('\t', start);
+        fields.push_back(line.substr(start, tab == std::string::npos ? std::string::npos : tab - start));
+        if (tab == std::string::npos)
+            return fields;
+        start = tab + 1;
+    }
+}
+
+// One row's inputs, read left to right. A malformed field records an error
+// and reads as 0, so the row fails with a message rather than a throw.
+class RowReader {
+public:
+    RowReader(const std::vector<std::string>& fields) : m_Fields(fields), m_Next(2) {}
+
+    long long integer() {
+        const std::string text = next();
+        if (text.empty())
+            return 0;
+        char* end = NULL;
+        long long value = std::strtoll(text.c_str(), &end, 10);
+        if (end == NULL || *end != '\0')
+            fail("not an integer: \"" + text + "\"");
+        return value;
+    }
+    bool flag() {
+        long long value = integer();
+        if (value != 0 && value != 1)
+            fail("not 0 or 1");
+        return value == 1;
+    }
+    std::vector<int> list() {
+        const std::string text = next();
+        std::vector<int> values;
+        if (text == "-")
+            return values;
+        std::stringstream items(text);
+        std::string item;
+        while (std::getline(items, item, ',')) {
+            char* end = NULL;
+            long value = std::strtol(item.c_str(), &end, 10);
+            if (item.empty() || end == NULL || *end != '\0')
+                fail("not an integer list: \"" + text + "\"");
+            values.push_back((int)value);
+        }
+        return values;
+    }
+    decore::PriceRace race() {
+        const std::string text = next();
+        if (text == "None")
+            return decore::PriceRace::None;
+        if (text == "Slayer")
+            return decore::PriceRace::Slayer;
+        if (text == "Vampire")
+            return decore::PriceRace::Vampire;
+        if (text == "Ousters")
+            return decore::PriceRace::Ousters;
+        fail("not a race: \"" + text + "\"");
+        return decore::PriceRace::None;
+    }
+
+    // Every input consumed, and exactly the expected column left.
+    void finish() {
+        if (m_Next + 1 != m_Fields.size())
+            fail("expected " + std::to_string(m_Next + 1) + " columns, found " + std::to_string(m_Fields.size()));
+    }
+    const std::string& error() const {
+        return m_Error;
+    }
+
+private:
+    std::string next() {
+        if (m_Next + 1 >= m_Fields.size()) {
+            fail("too few columns");
+            m_Next++;
+            return std::string();
+        }
+        return m_Fields[m_Next++];
+    }
+    void fail(const std::string& message) {
+        if (m_Error.empty())
+            m_Error = message;
+    }
+
+    const std::vector<std::string>& m_Fields;
+    std::vector<std::string>::size_type m_Next;
+    std::string m_Error;
+};
+
+decore::ItemPriceInput readPriceItem(RowReader& in, std::vector<int>& multipliers) {
+    decore::ItemPriceInput input = {};
+    input.itemClass = (int)in.integer();
+    input.itemType = (int)in.integer();
+    input.basePrice = (unsigned)in.integer();
+    input.grade = (int)in.integer();
+    input.charge = (int)in.integer();
+    input.maxCharge = (int)in.integer();
+    multipliers = in.list();
+    input.optionPriceMultipliers = multipliers.data();
+    input.optionCount = (int)multipliers.size();
+    input.curDurability = (unsigned)in.integer();
+    input.maxDurability = (unsigned)in.integer();
+    return input;
+}
+
+// Evaluates one row. Returns the result as decimal text; sets `error` for a
+// row this suite cannot read.
+std::string evaluateRow(const std::vector<std::string>& fields, std::string& error) {
+    RowReader in(fields);
+    const std::string& function = fields[0];
+    long long result = 0;
+
+    if (function == "itemPrice") {
+        std::vector<int> multipliers;
+        decore::ItemPriceInput input = readPriceItem(in, multipliers);
+        input.marketCond = (int)in.integer();
+        input.mysteriousRack = in.flag();
+        input.createTypeGame = in.flag();
+        input.timeLimited = in.flag();
+        input.crownPrice = (int)in.integer();
+        input.race = in.race();
+        input.currentStatSum = (int)in.integer();
+        input.premiumHalf = in.flag();
+        input.potionPriceRatio = (int)in.integer();
+        in.finish();
+        if (in.error().empty())
+            result = decore::itemPrice(input);
+    } else if (function == "repairPrice") {
+        std::vector<int> multipliers;
+        decore::ItemPriceInput input = readPriceItem(in, multipliers);
+        in.finish();
+        if (in.error().empty())
+            result = decore::repairPrice(input);
+    } else if (function == "skullSellTotal") {
+        unsigned priceTimesNum = (unsigned)in.integer();
+        unsigned bonus = (unsigned)in.integer();
+        in.finish();
+        result = decore::skullSellTotal(priceTimesNum, bonus);
+    } else if (function == "maxDurabilityBase") {
+        unsigned info = (unsigned)in.integer();
+        bool hasDurability = in.flag();
+        int offset = (int)in.integer();
+        in.finish();
+        result = decore::maxDurabilityBase(info, hasDurability, offset);
+    } else if (function == "maxDurabilityWithOptions") {
+        unsigned base = (unsigned)in.integer();
+        std::vector<int> plusPoints = in.list();
+        in.finish();
+        result = decore::maxDurabilityWithOptions(base, plusPoints.data(), (int)plusPoints.size());
+    } else if (function == "maxDurability") {
+        unsigned info = (unsigned)in.integer();
+        bool hasDurability = in.flag();
+        int offset = (int)in.integer();
+        std::vector<int> plusPoints = in.list();
+        in.finish();
+        result = decore::maxDurability(info, hasDurability, offset, plusPoints.data(), (int)plusPoints.size());
+    } else {
+        error = "unknown function \"" + function + "\"";
+        return std::string();
+    }
+    error = in.error();
+    return std::to_string(result);
+}
+
+// Checks (or, when recording, rewrites) one vector file, and requires at
+// least one row for each of `functions` and no row for any other.
+void checkVectorFile(const std::string& file, const std::set<std::string>& functions) {
+    const std::string path = std::string(DECORE_VECTOR_DIR) + "/" + file;
+    std::ifstream in(path.c_str(), std::ios::binary);
+    ASSERT_TRUE(in.good()) << "missing " << path;
+
+    const bool recording = recordingVectors();
+    std::string rewritten;
+    std::map<std::string, int> rowsPerFunction;
+    std::set<std::string> names;
+    int lineNumber = 0;
+    int rows = 0;
+    std::string line;
+    while (std::getline(in, line)) {
+        lineNumber++;
+        if (!line.empty() && line[line.size() - 1] == '\r')
+            ADD_FAILURE() << path << ":" << lineNumber << ": CRLF line ending; vector files are LF";
+        if (line.empty() || line[0] == '#') {
+            rewritten += line + "\n";
+            continue;
+        }
+
+        std::vector<std::string> fields = splitTabs(line);
+        const std::string where =
+            path + ":" + std::to_string(lineNumber) + " (" + (fields.size() > 1 ? fields[1] : std::string("?")) + ")";
+        if (fields.size() < 3) {
+            ADD_FAILURE() << where << ": fewer than three columns";
+            rewritten += line + "\n";
+            continue;
+        }
+        if (functions.count(fields[0]) == 0)
+            ADD_FAILURE() << where << ": " << fields[0] << " does not belong in " << file;
+        if (!names.insert(fields[1]).second)
+            ADD_FAILURE() << where << ": row name used twice";
+        rowsPerFunction[fields[0]]++;
+        rows++;
+
+        std::string error;
+        const std::string actual = evaluateRow(fields, error);
+        if (!error.empty()) {
+            ADD_FAILURE() << where << ": " << error;
+            rewritten += line + "\n";
+            continue;
+        }
+
+        if (recording) {
+            fields[fields.size() - 1] = actual;
+            std::string joined = fields[0];
+            for (std::vector<std::string>::size_type i = 1; i < fields.size(); i++)
+                joined += "\t" + fields[i];
+            rewritten += joined + "\n";
+        } else {
+            EXPECT_EQ(fields[fields.size() - 1], actual) << where;
+        }
+    }
+
+    for (std::set<std::string>::const_iterator it = functions.begin(); it != functions.end(); ++it)
+        EXPECT_LT(0, rowsPerFunction[*it]) << path << " has no " << *it << " row";
+
+    if (recording) {
+        in.close();
+        std::ofstream out(path.c_str(), std::ios::binary | std::ios::trunc);
+        ASSERT_TRUE(out.good()) << "cannot write " << path;
+        out << rewritten;
+        std::printf("recorded %s (%d rows)\n", path.c_str(), rows);
+    }
+}
+
+TEST(SharedVectors, Price) {
+    checkVectorFile("price.tsv", {"itemPrice", "skullSellTotal"});
+}
+
+TEST(SharedVectors, RepairPrice) {
+    checkVectorFile("repair_price.tsv", {"repairPrice"});
+}
+
+TEST(SharedVectors, Durability) {
+    checkVectorFile("durability.tsv", {"maxDurabilityBase", "maxDurabilityWithOptions", "maxDurability"});
 }
 
 } // namespace

@@ -34,10 +34,14 @@
 #   C1  a core file may not include MySQL, Lua, or socket-transport
 #       headers. Persistence belongs behind repository interfaces
 #       (task 3.2), transport belongs to the apps.
-#   D1  a de-core file (src/domain/) may quote-include only domain/
-#       headers: de-core is freestanding by definition (task 3.3), and
-#       until this rule existed that was enforced only indirectly, by
-#       formula_tests linking nothing else.
+#   D1  a de-core file (src/domain/) may quote-include only an existing
+#       domain header, spelled "domain/X.h", and angle-include only
+#       <algorithm> and <cmath>: de-core
+#       is freestanding by definition (task 3.3), and the client builds a
+#       byte-identical copy of part of it with every toolchain it has, so
+#       a standard header beyond those two is a new portability question
+#       for all of them. Until this rule existed the quote half was
+#       enforced only indirectly, by formula_tests linking nothing else.
 #
 # Existing violations of C1 live in tests/arch/baseline.txt and may
 # only shrink (the ratchet pattern): a NEW violation fails the build,
@@ -96,6 +100,18 @@ sub quoted_includes {
     return @inc;
 }
 
+sub angle_includes {
+    my ($path) = @_;
+    my @inc;
+    open(my $fh, '<', $path) or die "$path: $!";
+    while (<$fh>) {
+        s{//.*$}{};
+        push @inc, $1 if /^\s*#\s*include\s*<([^>]+)>/;
+    }
+    close $fh;
+    return @inc;
+}
+
 my @violations;
 
 # K1 + K2 over the kernel list.
@@ -147,18 +163,24 @@ for my $file (sort keys %kernel) {
     close $cm;
 }
 
-# D1 over src/domain: quote-includes must stay inside domain/.
+# D1 over src/domain: quote-includes are "domain/X.h" only, and the
+# standard library is <algorithm> and <cmath> only.
 {
+    my %d1_std = map { $_ => 1 } qw(algorithm cmath);
     if (opendir(my $dd, 'src/domain')) {
         for my $entry (sort readdir($dd)) {
             next unless $entry =~ /\.(h|cpp)$/;
             my $path = "src/domain/$entry";
             for my $inc (quoted_includes($path)) {
-                # Allowed forms: "domain/X.h" (the consumer-facing path)
-                # or a bare same-directory sibling that actually exists.
+                # The one allowed form is "domain/X.h" for a header that
+                # exists: the spelling every consumer resolves the same
+                # way, the client's copy included.
                 next if $inc =~ m{^domain/[^/]+$} && -f "src/$inc";
-                next if $inc !~ m{/} && -f "src/domain/$inc";
-                push @violations, "D1 $path includes non-domain \"$inc\"";
+                push @violations, "D1 $path includes \"$inc\", not an existing \"domain/X.h\"";
+            }
+            for my $inc (angle_includes($path)) {
+                next if $d1_std{$inc};
+                push @violations, "D1 $path includes <$inc>, outside <algorithm> and <cmath>";
             }
         }
         closedir $dd;

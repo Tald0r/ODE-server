@@ -8,6 +8,12 @@
 #include "ItemInfoManager.h"
 #include "ItemPolicies.h"
 
+// An item's own maximum durability, before its options: the item table's
+// durability moved by the grade and floored at 1000 when the class tracks
+// durability, the table value otherwise. Defined in ItemUtil.cpp over
+// decore::maxDurabilityBase, so this header stays free of de-core includes.
+Durability_t computeBaseMaxDurability(Durability_t infoDurability, bool hasDurability, int gradeDurabilityOffset);
+
 template <Item::ItemClass IClass, typename StackPolicy = NoStack, typename DurabilityPolicy = NoDurability,
           typename OptionPolicy = NoOption, typename GradePolicy = NoGrade, typename AttackingStatPolicy = NoAttacking,
           typename EnchantLevelPolicy = HasEnchantLevel>
@@ -63,12 +69,8 @@ public:
         m_Durability.setValue(durability);
     }
     Durability_t getMaxDurability() const {
-        if (m_Durability.hasValue()) {
-            Durability_t baseDur = getItemInfo()->getDurability();
-            //			return max(1000,((int)baseDur) + min((int)m_Grade.getDurabilityOffset(), 65000-baseDur));
-            return max(1000, (int)baseDur + m_Grade.getDurabilityOffset());
-        } else
-            return getItemInfo()->getDurability();
+        return computeBaseMaxDurability(getItemInfo()->getDurability(), m_Durability.hasValue(),
+                                        m_Grade.getDurabilityOffset());
     }
 
 public:

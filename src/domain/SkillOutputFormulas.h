@@ -26,8 +26,8 @@
 // were machine-recovered through that chain and translated to English.
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef __DECORE_SKILL_OUTPUT_FORMULAS_H__
-#define __DECORE_SKILL_OUTPUT_FORMULAS_H__
+#ifndef DECORE_SKILL_OUTPUT_FORMULAS_H
+#define DECORE_SKILL_OUTPUT_FORMULAS_H
 
 namespace decore {
 namespace skillformula {
