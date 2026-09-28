@@ -235,6 +235,34 @@ add_dependencies(wire_tests de-core-strict)
 add_test(NAME formula_tests COMMAND formula_tests)
 set_tests_properties(formula_tests PROPERTIES TIMEOUT 60)
 
+# ConcreteItem's grade and durability wiring (docs/RESTRUCTURING.md 3.6):
+# every item class built on ConcreteItem, probed through the exact
+# ConcreteItem base its header declares, against de-core's per-class table.
+# This links the adapter (ConcreteItem.cpp), de-core, the game context's
+# translation unit and de-kernel (for Assert), and none of the item sources:
+# the members of Item, ItemInfo, EffectManager and ItemInfoManager that the
+# probes reference are stubbed by the test, as gm_console_command_tests
+# stubs the command bodies. A failing Assert appends to assertion_failed.log
+# in the working directory, hence the build-tree WORKING_DIRECTORY.
+add_executable(concrete_item_tests EXCLUDE_FROM_ALL
+    concrete_item_test.cpp
+    ${CMAKE_SOURCE_DIR}/src/server/gameserver/ConcreteItem.cpp
+    ${CMAKE_SOURCE_DIR}/src/server/gameserver/GameContext.cpp
+)
+target_include_directories(concrete_item_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/server/gameserver
+    ${CMAKE_SOURCE_DIR}/src/server/gameserver/item
+)
+# The headers the test checks its class list against.
+target_compile_definitions(concrete_item_tests PRIVATE
+    CONCRETE_ITEM_HEADER_DIR="${CMAKE_SOURCE_DIR}/src/server/gameserver/item"
+)
+target_link_libraries(concrete_item_tests PRIVATE de-core de-kernel gtest_main Threads::Threads)
+add_dependencies(wire_tests concrete_item_tests)
+add_test(NAME concrete_item_tests COMMAND concrete_item_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(concrete_item_tests PROPERTIES TIMEOUT 60)
+
 # C++20 structured-concurrency contract. This stays isolated from the game
 # libraries so lifecycle failures cannot be hidden by unrelated fixtures.
 add_executable(cooperative_thread_tests EXCLUDE_FROM_ALL

@@ -28,7 +28,8 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | No seed guild leads or joins two guild unions | `ratchets.sh` | the guild and its unions, named |
 | Every seed union has a member or a pending join offer, and every seed join offer names a union | `ratchets.sh` | the union or the offer, named |
 | Every `src/**/*.cpp` is compiled by some target, every header is included | ratchets R15/R16 | the dead file, listed |
-| The de-core subset the client vendors computes exactly the parity vectors and compiles under the client's warning set | `formula_tests`' `SharedVectors` over `src/domain/vectors/`; `de-core-strict` (`-Werror`, built by `make dev-test`) | the row, named, with its expected and actual value; the warning, as an error |
+| The de-core subset the client vendors computes exactly the parity vectors and compiles without a warning under a GCC/Clang proxy for the client's warning set (MSVC's C4146 and C4805 have no counterpart) | `formula_tests`' `SharedVectors` over `src/domain/vectors/`; `de-core-strict` (`-Werror`, built by `make dev-test`) | the row, named, with its expected and actual value; the warning, as an error |
+| `NDEBUG` is never defined, so `Assert` and `__BEGIN_TRY`/`__END_CATCH` keep one meaning | an `#error` in `src/Core/Assert.h` and `src/Core/Exception.h` | the compile of every project file, in any configuration that defines it |
 | Repository SQL behaves against a real MySQL | `make integration-test` (`tests/integration/`, needs docker) | the failing statement |
 
 ## Working in this repository
@@ -83,7 +84,9 @@ configures with `-DCMAKE_BUILD_TYPE=Debug`, `make release` with `Release`;
 both build with tests off (`-DDARKEDEN_BUILD_TESTS=OFF`). Binaries go to
 `bin/`, libraries to `lib/`. For development, always choose the debug build:
 `DE_OWNERSHIP_CHECKS` is armed only there. `Assert` and `__BEGIN_TRY` stay
-live in every configuration, because `NDEBUG` is never defined.
+live in every configuration, because `NDEBUG` is never defined: the
+optimized configurations pass `-UNDEBUG` (`zig c++` defines it from `-O1`
+up), and `Assert.h` and `Exception.h` refuse to compile with it.
 
 ### Code formatting
 
@@ -147,8 +150,8 @@ at ~20% CPU on 8 cores. `tools/devbuild.sh` syncs the build *inputs*
 (`cmake/`, `src/`, `tests/`, `third_party/`, `data/`, `initdb/`,
 `docker/start.sh` and the top-level CMakeLists/Makefile) into a container
 volume, builds there with Ninja and ccache, and copies only generated test
-data back (`tests/golden/`, `tests/generated/`, `tests/wire-layout.txt`, and
-de-core's parity vectors in `src/domain/vectors/`).
+data back (`tests/golden/`, `tests/generated/`, `tests/wire-layout.txt`, and,
+after `--record` only, de-core's parity vectors in `src/domain/vectors/`).
 Same build: **~3.5 minutes at ~95% CPU**, and a no-op rebuild in seconds.
 
 ```bash

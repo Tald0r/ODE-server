@@ -109,14 +109,14 @@ private:
 //
 //--------------------------------------------------------------------------------
 
-// NOTE: no build type defines NDEBUG (see CMakeLists.txt). These macros are not
-// interchangeable with the real ones: 344 call sites use __END_CATCH_NO_RETHROW
-// to swallow exceptions, which the ((void)0) form lets escape instead.
+// No build defines NDEBUG (see the top-level CMakeLists.txt): these macros
+// have one meaning, and 344 call sites use __END_CATCH_NO_RETHROW to swallow
+// exceptions that would otherwise escape. A translation unit compiled with
+// NDEBUG is refused rather than given a second set.
 #if defined(NDEBUG)
-#define __BEGIN_TRY ((void)0);
-#define __END_CATCH ((void)0);
-#define __END_CATCH_NO_RETHROW ((void)0);
-#else
+#error "NDEBUG must not be defined for DarkEden sources (see the top-level CMakeLists.txt)"
+#endif
+
 // t.addStack() takes the enclosing function from its defaulted
 // std::source_location, so these macros carry no location plumbing of their own.
 #define __BEGIN_TRY try {
@@ -131,7 +131,6 @@ private:
     catch (Throwable & t) {    \
         t.addStack();          \
     }
-#endif
 
 
 //--------------------------------------------------------------------------------
@@ -245,10 +244,6 @@ private:
 // Only the console form survives: this build defines __LINUX__ (or __APPLE__),
 // never __WIN32__, __WIN_CONSOLE__ or __MFC__, so the Windows and MFC branches
 // were dead code referencing a port that no longer exists.
-#if defined(NDEBUG)
-#define __BEGIN_DEBUG ((void)0);
-#define __END_DEBUG ((void)0);
-#else
 #define __BEGIN_DEBUG try {
 #define __END_DEBUG                   \
     }                                 \
@@ -260,7 +255,6 @@ private:
         cout << e.what() << endl;     \
         throw;                        \
     }
-#endif
 
 
 //////////////////////////////////////////////////////////////////////

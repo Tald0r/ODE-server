@@ -40,19 +40,19 @@ add_compile_options(${WARNING_FLAGS})
 
 # Build type flags.
 #
-# NDEBUG is deliberately NOT defined in the optimized configurations. The code
-# base uses it for far more than assertions, and none of it is safe to drop:
+# NDEBUG is never defined. The code base used it for far more than
+# assertions, and none of it is safe to drop:
 #
-#   * Assert(expr) expands to ((void)0) under NDEBUG, but ~165 call sites put
-#     the work inside it, e.g. Assert(pTree->GetAttribute("class", iClass)) in
-#     GQuestGiveItemElement.cpp - the attribute would never be read.
-#   * __BEGIN_TRY / __END_CATCH / __END_CATCH_NO_RETHROW (Exception.h) also
-#     collapse to ((void)0). 344 call sites use __END_CATCH_NO_RETHROW to
-#     swallow exceptions, mostly in client packet handlers, so under NDEBUG
-#     those exceptions would escape instead.
+#   * ~165 call sites put the work inside Assert(expr), e.g.
+#     Assert(pTree->GetAttribute("class", iClass)) in
+#     GQuestGiveItemElement.cpp.
+#   * 344 call sites use __END_CATCH_NO_RETHROW (Exception.h) to swallow
+#     exceptions, mostly in client packet handlers; with the handlers
+#     compiled away those exceptions would escape instead.
 #
-# Only the non-NDEBUG configuration has ever been exercised; keep it that way
-# and let the optimizer do the rest.
+# src/Core/Assert.h and Exception.h stop the compile with an #error when
+# NDEBUG is defined, so a toolchain or flag that defines it fails the
+# build instead of changing what the servers do.
 # DE_OWNERSHIP_CHECKS arms the thread-ownership machinery (task 3.4:
 # ZoneGroup lock bookkeeping + the aborting assertOwned() on the Zone
 # mutation gateways). It rides its own macro rather than NDEBUG because this
@@ -62,7 +62,9 @@ add_compile_options(${WARNING_FLAGS})
 #
 # Setting these flags is not enough on its own: `zig c++` defines NDEBUG
 # itself for every optimized mode (-O1 and up, -Os), so the optimized
-# configurations undefine it again with -UNDEBUG.
+# configurations undefine it again with -UNDEBUG. The C flags keep CMake's
+# defaults: the only C target is the vendored argon2, which has no assert()
+# and never includes Assert.h.
 set(CMAKE_CXX_FLAGS_DEBUG "-g -DDE_OWNERSHIP_CHECKS")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -UNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -UNDEBUG")
@@ -99,13 +101,20 @@ endif()
 # MySQL
 if(APPLE)
     # Homebrew's mysql-client formulae are keg-only: nothing is linked into
-    # /opt/homebrew/include or /opt/homebrew/lib, so name their opt/ prefixes.
+    # <prefix>/include or <prefix>/lib, so name their opt/ directories, for
+    # both Homebrew prefixes (/opt/homebrew on Apple Silicon, /usr/local on
+    # Intel). mysql-client@8.4 comes first because it is the client the
+    # native build was verified with; the unversioned formula is a newer
+    # series, used only when no versioned keg is installed.
     find_path(MYSQL_INCLUDE_DIR mysql/mysql.h
         PATHS
         /opt/homebrew/include
-        /opt/homebrew/opt/mysql-client/include
         /opt/homebrew/opt/mysql-client@8.4/include
         /opt/homebrew/opt/mysql-client@8.0/include
+        /opt/homebrew/opt/mysql-client/include
+        /usr/local/opt/mysql-client@8.4/include
+        /usr/local/opt/mysql-client@8.0/include
+        /usr/local/opt/mysql-client/include
         /opt/homebrew/Cellar/mysql-client/*/include
         /opt/homebrew/Cellar/mariadb-connector-c/*/include
         /usr/local/include
@@ -114,13 +123,17 @@ if(APPLE)
     find_library(MYSQL_LIBRARY mysqlclient
         PATHS
         /opt/homebrew/lib
-        /opt/homebrew/opt/mysql-client/lib
         /opt/homebrew/opt/mysql-client@8.4/lib
         /opt/homebrew/opt/mysql-client@8.0/lib
+        /opt/homebrew/opt/mysql-client/lib
+        /usr/local/opt/mysql-client@8.4/lib
+        /usr/local/opt/mysql-client@8.0/lib
+        /usr/local/opt/mysql-client/lib
         /opt/homebrew/Cellar/mysql-client/*/lib
         /opt/homebrew/Cellar/mariadb-connector-c/*/lib
         /opt/homebrew/Cellar/mariadb-connector-c/*/lib/mariadb
         /usr/local/lib
+        NO_DEFAULT_PATH
     )
 elseif(UNIX)
     find_path(MYSQL_INCLUDE_DIR mysql/mysql.h
@@ -211,9 +224,12 @@ endif()
 
 # LuaState.h spells the macOS headers <luajit-2.1/lua.h>, so the include root
 # is the directory above the one found for them, which Apple Clang does not
-# search by default the way Linux searches /usr/include. The luajit keg's own
-# include/ comes first in the search above, so the root holds nothing but Lua
-# and cannot shadow a system header the way Homebrew's shared include/ could.
+# search by default the way Linux searches /usr/include. With Homebrew's
+# luajit that is the keg's own include/, which holds nothing but LuaJIT.
+# The PATHS above are CMake's last resort, though: the find_path searches
+# CMake's default prefixes first, so a lua.h directly under one of those
+# wins, and the lua5.1 fallbacks make the root Homebrew's shared include/,
+# whose headers can then shadow the system's.
 if(APPLE AND LUA51_INCLUDE_DIRS)
     get_filename_component(DARKEDEN_LUA_INCLUDE_ROOT "${LUA51_INCLUDE_DIRS}" DIRECTORY)
     list(APPEND DARKEDEN_PROJECT_INCLUDE_DIRS ${DARKEDEN_LUA_INCLUDE_ROOT})

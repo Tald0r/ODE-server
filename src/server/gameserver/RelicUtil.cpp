@@ -672,7 +672,8 @@ bool dissectionRelicItem(Corpse* pCorpse, Item* pItem, const TPOINT& pt)
 
             de::gameContext().combatInfo().setRelicOwner(relicIndex, CombatInfoManager::RELIC_OWNER_NULL);
 
-            char msg[50];
+            // Room for the longest message a GCSystemMessage carries.
+            char msg[de::wire::kMaxByteStringLength + 1];
             snprintf(msg, sizeof(msg), strings.c_str(STRID_RELIC_FROM_RELIC_TABLE), pRelicInfo->getName().c_str());
 
             //				StringStream msg;

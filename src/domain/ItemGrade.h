@@ -16,10 +16,14 @@
 // moves nothing; ShoulderArmor, Persona, Fascia and Mitten move like the
 // grocery armor (belt, glove, helm, shield, shoes) rather than like
 // accessories or cloth; Dermis, Fascia, CarryingReceiver, CoreZap and
-// VampireAmulet keep no durability, so their maximum is the item table's
+// VampireAmulet keep no durability, so their maximum is their item info's
 // durability untouched by grade (maxDurabilityBase with hasDurability
-// false). Changing any of these is a balance decision, recorded in
-// docs/FIXES.md.
+// false). For VampireAmulet that is the item table's durability. The
+// server never reads a durability for the other four, so theirs is 1,
+// whatever the table's Durability column holds (Dermis, Fascia and
+// CarryingReceiver have one; it is 0 in the seed data): the infoDurability
+// input for them is 1. Changing any of these is a balance decision,
+// recorded in docs/FIXES.md.
 //
 // Classes the server does not build on ConcreteItem (money, motorcycle,
 // relic, ...) are None and have no durability here, which is right for
@@ -67,9 +71,12 @@ GradeOffsets gradeOffsets(GradePolicy policy, int grade);
 // for an id outside the table.
 GradePolicy gradePolicyOf(int itemClass);
 
-// Whether a wire item class keeps a durability of its own (HasDurability),
-// the hasDurability input of maxDurabilityBase; false for a class without
-// one and for an id outside the table.
+// Whether the server's ConcreteItem tracks a durability for a wire item
+// class (the HasDurability policy), the hasDurability input of
+// maxDurabilityBase; false for an id outside the table. It is false for the
+// classes the server does not build on ConcreteItem even where they store a
+// durability of their own (the motorcycle, the relics, the castle symbols,
+// the blood bibles, the sweepers): see the note at the top of this file.
 bool hasDurability(int itemClass);
 
 } // namespace decore

@@ -49,6 +49,7 @@ set(MONSTER_SOURCES
 # Item 相关源文件（gameserver 目录下的）
 # ============================================================================
 set(ITEM_SOURCES
+    ConcreteItem.cpp
     Item.cpp
     ItemInfo.cpp
     ItemUtil.cpp

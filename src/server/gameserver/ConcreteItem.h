@@ -10,7 +10,7 @@
 
 // An item's own maximum durability, before its options: the item table's
 // durability moved by the grade and floored at 1000 when the class tracks
-// durability, the table value otherwise. Defined in ItemUtil.cpp over
+// durability, the table value otherwise. Defined in ConcreteItem.cpp over
 // decore::maxDurabilityBase, so this header stays free of de-core includes.
 Durability_t computeBaseMaxDurability(Durability_t infoDurability, bool hasDurability, int gradeDurabilityOffset);
 
@@ -28,17 +28,19 @@ struct ItemGradeOffsets {
 // table (domain/ItemGrade.h): whether the class keeps a grade
 // (decore::gradePolicyOf is not None), whether it keeps a durability
 // (decore::hasDurability), and the offsets a grade gives under the class's
-// grade policy (decore::gradeOffsets). Defined in ItemUtil.cpp, so this
+// grade policy (decore::gradeOffsets). Defined in ConcreteItem.cpp, so this
 // header stays free of de-core includes.
 bool itemClassHasGrade(Item::ItemClass itemClass);
 bool itemClassHasDurability(Item::ItemClass itemClass);
 ItemGradeOffsets itemClassGradeOffsets(Item::ItemClass itemClass, Grade_t grade);
 
 // An item built from policies. Its grade and durability rules are not
-// template arguments: they come from de-core's table for IClass, the same
-// table the client builds, so the two cannot disagree. A class without a
-// grade reads -1 and ignores setGrade; a class without a durability reads
-// 1 and ignores setDurability.
+// template arguments: they come from de-core's table for IClass, the table
+// the client vendors, so the server keeps no second copy of it. The client
+// departs from the table on purpose for two classes that are not built on
+// ConcreteItem, the couple rings, which it gives the accessories' rules.
+// A class without a grade reads -1 and ignores setGrade; a class without a
+// durability reads 1 and ignores setDurability.
 template <Item::ItemClass IClass, typename StackPolicy = NoStack, typename OptionPolicy = NoOption,
           typename AttackingStatPolicy = NoAttacking, typename EnchantLevelPolicy = HasEnchantLevel>
 class ConcreteItem : public Item {

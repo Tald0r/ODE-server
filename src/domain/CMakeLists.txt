@@ -13,8 +13,11 @@
 set(DECORE_INCLUDE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 # The same source must give the same numbers on every toolchain that builds
-# it: no fused multiply-add (Clang contracts `a * b + c` by default on arm64,
-# and not on x86-64) and no fast-math reassociation.
+# it: no fused multiply-add and no fast-math reassociation. Clang, and so
+# `zig c++`, contracts `a * b + c` into a fused multiply-add whenever the
+# target CPU has one, at -O0 too: on every arm64 target, and on x86-64 when
+# the CPU has FMA. A Zig build without a target compiles for the build
+# machine's CPU, which on any recent x86-64 machine has FMA.
 set(DECORE_FP_FLAGS -ffp-contract=off -fno-fast-math)
 
 add_library(de-core STATIC
@@ -34,11 +37,15 @@ set_target_properties(de-core PROPERTIES INCLUDE_DIRECTORIES "${DECORE_INCLUDE_R
 target_compile_options(de-core PRIVATE ${DECORE_FP_FLAGS})
 
 # de-core-strict compiles the sources the client repository vendors (its
-# third_party/decore copy, byte for byte) under a warning set at least as
-# strict as the client's zero-warning budget: GCC/Clang -Wall -Wextra
-# -Wundef, plus -Wimplicit-fallthrough and -Wfloat-conversion as a proxy for
-# MSVC's C4244. A warning here would be a warning in every client build, so
-# it is an error. The objects are thrown away; tests/CMakeLists.txt makes
+# third_party/decore copy, byte for byte) under the client's GCC/Clang
+# warning set, -Wall -Wextra -Wundef, plus a proxy for its MSVC /W3 budget:
+# -Wimplicit-fallthrough, -Wfloat-conversion and, under Clang,
+# -Wshorten-64-to-32, for the floating and the 64-to-32-bit halves of C4244.
+# It is a proxy, not a guarantee: MSVC's C4146 (unary minus on an unsigned
+# value) and C4805 (bool mixed with int) have no GCC/Clang counterpart
+# here, so a clean build on the client's MSVC toolchains is what finally
+# decides. A warning here would be a warning in every client build, so it
+# is an error. The objects are thrown away; tests/CMakeLists.txt makes
 # wire_tests depend on this target so the suite build compiles it.
 # SkillOutputFormulas.cpp is not vendored and so is not listed.
 set(DECORE_VENDORED_SOURCES
@@ -56,5 +63,6 @@ target_compile_options(de-core-strict PRIVATE
     -Wundef
     -Wimplicit-fallthrough
     -Wfloat-conversion
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wshorten-64-to-32>
     -Werror
 )

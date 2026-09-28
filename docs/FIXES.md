@@ -13,6 +13,45 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Review follow-ups (2026-09-28)
+
+Defects a review of the four preceding changes found in them or next to
+them.
+
+- **The relic holder announcement passed four arguments to a
+  five-conversion format.** `EffectHasSlayerRelic::affect` and
+  `EffectHasVampireRelic::affect` format GSStringPool rows 7 and 8,
+  `"%s (%s) holds the ... Relic at %s (%d, %d)."`, with the name, the race
+  and the coordinates but no zone, so the third `%s` read the x
+  coordinate's argument slot as a string pointer and `%d` read past the
+  arguments: undefined behaviour on every announcement while a player
+  holds a relic. The mismatch is as old as the
+  source; the legacy seed rows had the same three `%s`. The zone's full
+  name is passed now, the race of a creature of no known race is `""`
+  rather than a null `%s`, and the buffer holds the longest message a
+  `GCSystemMessage` carries.
+  > **Status:** fixed (fix/review-followups)
+- **Three system messages were cut off at 49 bytes.** The `sprintf` to
+  `snprintf` change kept their `char msg[50]`, which the seed data
+  overflows, so they arrived truncated where they used to overrun the
+  stack. The relic that leaves the relic table (`RelicUtil.cpp`, GSStringPool
+  row 32, 42 fixed bytes) is announced to every zone group as `Relic
+  (Rommels Tag) has appeared at the Relic Shr`, 53 and 61 bytes for the two
+  seed relics; the transport countdown (`EffectTransportCreature.cpp`,
+  `EventTransport.cpp`, row 14, 34 fixed bytes plus the seconds) cuts every
+  zone name longer than about 13 bytes, and seed zone names run to 27.
+  These and the other seven `char msg[50]` buffers filled from a
+  GSStringPool format (`EventKick`, `EffectSlayerRelic`,
+  `EffectVampireRelic`, four in `gm/ConsoleCommands.cpp`, none of which the
+  seed data overflows) now hold `de::wire::kMaxByteStringLength + 1`
+  bytes, the longest message a `GCSystemMessage` carries, so the string
+  pool, not the buffer, bounds the text. So do the guild war's start, end
+  and status messages (`war/War.cpp`, 80 bytes; `war/WarSystem.cpp`, 100):
+  a guild war's name is the guild's name (up to 30 bytes on the wire),
+  " guild attacks ", the castle and " (guild war)", which a long guild name
+  pushes past both.
+  > **Status:** fixed (fix/review-followups)
+
 ## Per-class grade policy (2026-09-28)
 
 Which item classes keep a grade and a durability, and what a grade does to
@@ -32,11 +71,16 @@ server's choices as they were, and these are kept:
 - **Five gear classes keep no durability.** Dermis, Fascia,
   CarryingReceiver, CoreZap and VampireAmulet read a durability of 1 and
   ignore a new one, while Fascia's grocery siblings and every other
-  accessory track theirs. Dermis, Fascia and CarryingReceiver have a
-  table durability of 0 and CoreZap's table has no durability column
-  (`ItemInfo` reads 1), so their maximum is 0 or 1 and they sell at the
-  full price. VampireAmulet's table durability is 1000 to 24000, so its
-  maximum is that and it sells at 1 / maximum of its price, a few gold.
+  accessory track theirs. The server reads no durability for Dermis,
+  Fascia, CarryingReceiver or CoreZap: their item infos are loaded without
+  one (`loadGearInfosNoDurability` for the first three, `loadIntInfos` for
+  CoreZap, whose table has no such column), so `ItemInfo::getDurability`
+  reads 1 and their maximum before the durability options is 1, the value
+  a client must pass as their table durability. The first three tables do
+  have a `Durability` column, 0 in the seed data, which nothing reads.
+  They sell at the full price. VampireAmulet's item info does read its
+  table durability, 1000 to 24000, so its maximum is that and it sells at
+  1 / maximum of its price, a few gold.
   Pinned by the `durability-<Class>` rows.
   > **Status:** recorded, not fixed (feat/shared-grade-policy)
 - **A class not built on `ConcreteItem` reports a maximum durability of
@@ -46,7 +90,10 @@ server's choices as they were, and these are kept:
   gives them no grade policy and no durability, which matches their grade
   and grade offsets; their maximum is not `maxDurabilityBase`, and
   `ItemGrade.h` says so for the client, whose motorcycle computes one from
-  its item table.
+  its item table. The client also departs from the table on purpose for
+  the two couple rings (`CoupleRing`, `VampireCoupleRing`, built on
+  `CoupleRingBase`, not `ConcreteItem`): it gives them the accessories'
+  grade policy and a durability, where the server has neither.
   > **Status:** recorded, not fixed (feat/shared-grade-policy)
 
 ## Shared price rules (2026-09-28)
@@ -63,17 +110,34 @@ what it changed:
   calculation; the head price multiplies by `bonus / 100` in integers, so a
   150% head price bonus pays x1; a vampire portal is repaired by durability
   while the slayer portal and the ousters summon item are charged for their
-  missing charges; a charge count above the maximum wraps the repair price
-  through unsigned arithmetic. Each is pinned by a named row in
+  missing charges; a charge count above the maximum makes the repair price
+  negative, which `decore::repairPrice` returns as an `int` (-5000 in the
+  `slayer-portal-overcharged-wraps` row) and the server's unsigned
+  `Price_t` receives wrapped (4294962296), as the old unsigned arithmetic
+  gave it. Each is pinned by a named row in
   `src/domain/vectors/`, and changing one is a balance decision.
   > **Status:** recorded, not fixed (feat/shared-price-rules)
+- **de-core's results depended on the build machine's CPU.** Clang, and
+  so `zig c++`, fuses `a * b + c` into one rounding wherever the target CPU
+  has a fused multiply-add: every arm64 target, and x86-64 with FMA, which a
+  Zig build without a target gets from the build machine. So the server's
+  own formulas (`Formulas.cpp`, `SkillOutputFormulas.cpp`) could round
+  differently on the arm64 dev container, an FMA x86-64 host and a
+  non-FMA one. All of de-core compiles with `-ffp-contract=off
+  -fno-fast-math` now (`src/domain/CMakeLists.txt`), for the existing
+  files as well as the shared ones. `formula_tests` passed unchanged on the
+  arm64 container, where contraction had been on, so no pinned result
+  moved; a result within an ulp of an integer that a formula truncates
+  could still come out one lower or higher on an FMA host than before.
+  > **Status:** fixed (feat/shared-price-rules)
 - **`getPrice` dereferenced a null creature** on the premium half-price and
   Blood Bible branches (the race branch checked it, those two did not), and
   the premium branch also dereferenced the creature's `GamePlayer` without a
-  check. No caller passes either. The adapter now reads the player's pay
-  state and potion ratio only when the creature is a player with a
-  `GamePlayer`, so a null creature prices as none and a player without one
-  as not paying.
+  check. No caller passes either. The adapter now reads the creature only
+  when it is not null: the potion ratio for any player creature, the pay
+  state only for a player creature with a `GamePlayer`. So a null creature
+  prices as none, and a player creature without a `GamePlayer` as not
+  paying, with its own potion ratio.
   > **Status:** fixed (feat/shared-price-rules)
 - **Flat-priced items now read the item tables first.** An item given away
   by the game, a time-limited item and the crown moon card used to return 1,
@@ -81,7 +145,10 @@ what it changed:
   input, the item table, the option table and the maximum durability
   included, before de-core picks the flat price, so an item whose option id
   is corrupt now reaches the option table's existing `Assert` instead of
-  returning early. Every shop item has all three, so no valid item prices
+  returning early. `getRepairPrice` changed the same way: a slayer portal
+  or an ousters summon item used to be charged for its missing charges
+  before the option loop and `computeMaxDurability` ran, and now both run
+  first. Every shop item has all three, so no valid item prices
   differently.
   > **Status:** recorded, not fixed (feat/shared-price-rules)
 
@@ -90,8 +157,26 @@ what it changed:
 Clearing the server's ~1,000 compiler warnings (Apple Clang 21 and the Zig
 build; `sprintf` alone was 490 of them) was done behaviour-preserving, so a
 warning that pointed at a bug had the bug kept and written down here. The
-exceptions are the undefined behaviour below, which has no behaviour to keep.
+exceptions are the undefined behaviour below, which has no behaviour to keep,
+and the optimized builds' `NDEBUG`, which changed what the deployed servers
+do.
 
+- **The Zig optimized builds compiled `Assert` and the exception handlers
+  away.** `zig c++` defines `NDEBUG` itself from `-O1` up, so the Release,
+  RelWithDebInfo and MinSizeRel builds ran with it despite the rule that
+  no build defines it, and the Docker image is a Zig Release build by
+  default (`Dockerfile`'s `BUILD_TYPE`, `docker-compose.yml`). Under
+  `NDEBUG`, `Assert` and `ProtocolAssert` evaluated their expression and
+  never fired, and `__BEGIN_TRY`/`__END_CATCH`/`__END_CATCH_NO_RETHROW`
+  and `__BEGIN_DEBUG`/`__END_DEBUG` compiled to nothing. The optimized
+  flags now pass `-UNDEBUG`, which changes the deployed servers: a failing
+  `Assert` throws `AssertionError` (logged to `assertion_failed.log`), a
+  failing `ProtocolAssert` disconnects the client, and the 344
+  `__END_CATCH_NO_RETHROW` sites swallow the exceptions that used to escape
+  them. Debug builds, and so the test suite, always had the handlers.
+  Since fix/review-followups, `Assert.h` and `Exception.h` stop the compile
+  with an `#error` when `NDEBUG` is defined, so this cannot recur silently.
+  > **Status:** fixed (fix/compiler-warnings)
 - **Undefined behaviour removed.** `Zone::load` freed three `new char[]`
   buffers with scalar `delete`; they use `SAFE_DELETE_ARRAY` now.
   `PlayerCreature::setPetInfo` deleted a `Centauro`, `Stirge` or `Pixie`
@@ -100,16 +185,20 @@ exceptions are the undefined behaviour below, which has no behaviour to keep.
   `SystemAPI::fork_ex` ran off the end of a non-void function on non-Linux
   builds; they throw `UnsupportedError` there, as before the non-Linux branch
   was deleted (neither is called on macOS today). Locals read uninitialised on
-  a path for a creature of no known race now start at zero or null
+  a path for a creature of no known race now start at zero, null or empty
   (`EffectHasSlayerRelic`/`EffectHasVampireRelic` race name,
   `GQuestGiveEventQuestItemElement` base, `ActionStashSell` price,
-  `CGLotterySelectHandler` quest id).
+  `CGLotterySelectHandler` quest id). The relic announcement stayed
+  undefined behaviour after this: its format lacked an argument, fixed
+  under *Review follow-ups*.
   > **Status:** fixed (fix/compiler-warnings)
 - **`sprintf` became `snprintf` with the destination's size.** Output is
   identical whenever it fits; where it overflowed before (undefined behaviour)
   it is now truncated. The login server's forced-port strings were 5-byte
   arrays, which a base port of 9900 plus an `-i` of 100 or more overflows;
-  they are sized for any `int` now, so those values are no longer cut.
+  they are sized for any `int` now, so those values are no longer cut. The
+  game server's 50-byte message buffers were not sized to their data and
+  cut three seed messages short; see *Review follow-ups*.
   > **Status:** fixed (fix/compiler-warnings)
 - **Wolf form rejects every skill.** The four `isAbleToUse*Skill` guards test
   `SkillType != A || SkillType != B ...`, true for any skill, so the early
@@ -144,8 +233,13 @@ exceptions are the undefined behaviour below, which has no behaviour to keep.
   > **Status:** recorded, not fixed (fix/compiler-warnings)
 - **Smaller findings, kept as they are:** `Resource::write` stores the file
   name's length in a `BYTE`, so a name of 256 characters or more puts the
-  wrong length on the wire; `opGhost` sends a duration of 999999 through a
-  16-bit `Duration_t` (16959 arrives); `MotorcycleLoader::load` allocates a
+  wrong length on the wire; seven senders put a duration of 999999, meant
+  as "permanent", through the 16-bit `Duration_t`, so 16959 arrives
+  (`static_cast<Duration_t>(999999)` in the GM `opGhost` in
+  `gm/ConsoleCommands.cpp`, `EffectGrandMasterSlayer`,
+  `EffectGrandMasterVampire`, `EffectGrandMasterOusters` and
+  `EffectDonation200501`, and the tile portals of `DynamicZoneAlterOfBlood`
+  and `DynamicZoneGateOfAlter`); `MotorcycleLoader::load` allocates a
   `Motorcycle` per row and never attaches or frees it; `~PlayerCreature` never
   deletes `m_pPet`; `EffectSatelliteBombAim` uses the skill slot from
   `hasSkill` without a null check; `Guild`'s `ExpireDate` is built from
@@ -170,7 +264,10 @@ exceptions are the undefined behaviour below, which has no behaviour to keep.
   `<luajit-2.1/lua.h>` needs the directory above the one found for the
   headers, which Linux supplies as `/usr/include` and Apple Clang does not.
   The search now names Homebrew's `opt/` prefixes, and the luajit keg's
-  `include/` is added on macOS.
+  `include/` is added on macOS. At first it named only the Apple Silicon
+  prefix and put the unversioned `mysql-client` (a newer series than the
+  verified `mysql-client@8.4`) first; since fix/review-followups it
+  prefers `@8.4`, then `@8.0`, and searches Intel's `/usr/local/opt/` too.
   > **Status:** fixed (fix/macos-native-build)
 - **`tools/devbuild.sh` stopped before starting its container on macOS.**
   macOS ships bash 3.2, where expanding an empty array under `set -u` is an
@@ -194,9 +291,15 @@ exceptions are the undefined behaviour below, which has no behaviour to keep.
   send on a loopback socket and poll at once, before the bytes have always
   arrived there.
   > **Status:** recorded, not fixed (fix/macos-native-build)
-- **`shutdown_supervisor` times out natively on macOS** (90 s); not
-  diagnosed. It drives `docker/start.sh`, which is written for the Linux
-  container.
+- **`shutdown_supervisor` times out natively on macOS** (90 s). It drives
+  `docker/start.sh`, which is written for the Linux container. Its
+  `is_alive` reads `/proc/<pid>/stat`, which macOS does not have, so every
+  server always looks dead: the first scenario still passes, but in the
+  second, whose loginserver ignores SIGTERM, the supervisor never reaches
+  its "did not drain; forcing termination" branch and its final `wait`
+  blocks on the loginserver until ctest's timeout. The script's
+  `${pids[-1]}` is also an error in macOS's bash 3.2, which only loses the
+  log mirroring; `stdbuf` exists on macOS 27 (`/usr/bin/stdbuf`).
   > **Status:** recorded, not fixed (fix/macos-native-build)
 
 ## Connection admission: gateway header and socket ownership (2026-09-25)

@@ -44,20 +44,24 @@
 protocolAssertionFailed(const char* expr,
                         const std::source_location& loc = std::source_location::current()) noexcept(false);
 
+// NDEBUG is never defined for this project (the top-level CMakeLists.txt
+// undefines it where `zig c++` defines it itself). Assert has one meaning:
+// many call sites do real work inside it, e.g.
+// Assert(pTree->GetAttribute("class", iClass)), and Exception.h's
+// __END_CATCH_NO_RETHROW sites depend on the handlers existing, so a build
+// that defined NDEBUG would change what the servers do. It is refused here
+// rather than given a second meaning. Only project translation units
+// include this header: the vendored argon2 is C, which zig compiles with
+// NDEBUG at -O2, but it neither includes this header nor calls assert().
 #if defined(NDEBUG)
-// Still evaluate the expression: many call sites do real work inside Assert(),
-// e.g. Assert(pTree->GetAttribute("class", iClass)), and dropping it silently
-// breaks them. Only the diagnostic is disabled here. No build type defines
-// NDEBUG - see the note in the top-level CMakeLists.txt.
-#define Assert(expr) ((void)(expr))
-#define ProtocolAssert(expr) ((void)(expr))
-#else
+#error "NDEBUG must not be defined for DarkEden sources (see the top-level CMakeLists.txt)"
+#endif
+
 // std::source_location is portable, so the former __LINUX__ / __APPLE__ /
 // __WIN_CONSOLE__ / __WIN32__ / __MFC__ ladder is gone: only __LINUX__ and
 // __APPLE__ were ever defined by this build, and the remaining branches
 // referenced a Windows/MFC port that no longer exists.
 #define Assert(expr) ((void)((expr) ? 0 : (assertionFailed(#expr), 0)))
 #define ProtocolAssert(expr) ((void)((expr) ? 0 : (protocolAssertionFailed(#expr), 0)))
-#endif
 
 #endif

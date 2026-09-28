@@ -57,7 +57,8 @@ void EffectSlayerRelic::affect(Creature* pCreature)
 {
     __BEGIN_TRY
 
-    char msg[50];
+    // Room for the longest message a GCSystemMessage carries.
+    char msg[de::wire::kMaxByteStringLength + 1];
     snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_TAKE_SLAYER_RELIC),
              pCreature->getName().c_str());
 

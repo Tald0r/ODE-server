@@ -30,6 +30,12 @@ tests/arch/*.pl text eol=lf
 tests/tools/*.pl text eol=lf
 tools/*.sh text eol=lf
 tools/*.pl text eol=lf
+# The de-core subset the client vendors (src/domain's sources and its
+# parity vectors) is byte-compared with the client's copy by
+# tests/tools/decore_client_diff.sh, and the vectors are read in binary by
+# formula_tests, which fails a CRLF line. The client pins its copy
+# (third_party/decore/**) the same way.
+src/domain/** text eol=lf
 # The dumps are imported by the MySQL containers and checked by the ratchet
 # script inside the dev container; keep them LF like the other inputs above.
 initdb/*.sql text eol=lf

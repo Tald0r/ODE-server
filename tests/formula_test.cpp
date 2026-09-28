@@ -1053,15 +1053,19 @@ std::string gradePolicyName(decore::GradePolicy policy) {
 }
 
 // One row's inputs, read left to right. A malformed field records an error
-// and reads as 0, so the row fails with a message rather than a throw.
+// and reads as 0, so the row fails with a message rather than a throw. An
+// empty field is malformed wherever a number is read: a doubled tab or a
+// missing value must not pass as an input of 0.
 class RowReader {
 public:
     RowReader(const std::vector<std::string>& fields) : m_Fields(fields), m_Next(2) {}
 
     long long integer() {
         const std::string text = next();
-        if (text.empty())
+        if (text.empty()) {
+            fail("empty field");
             return 0;
+        }
         char* end = NULL;
         long long value = std::strtoll(text.c_str(), &end, 10);
         if (end == NULL || *end != '\0')
@@ -1318,6 +1322,27 @@ TEST(SharedVectors, Durability) {
 
 TEST(SharedVectors, ItemGrade) {
     checkVectorFile("item_grade.tsv", {"gradeOffsets", "gradePolicyOf", "hasDurability"});
+}
+
+// A doubled tab or a missing value leaves an empty field; read as a number
+// it is an error, not an input of 0, and so is a flag read the same way.
+TEST(SharedVectors, AnEmptyNumberIsAnError) {
+    const std::vector<std::string> fields = {"hasDurability", "empty-item-class", "", "0"};
+    RowReader in(fields);
+    EXPECT_EQ(0, in.integer());
+    in.finish();
+    EXPECT_EQ("empty field", in.error());
+
+    const std::vector<std::string> flagFields = {"itemPrice", "empty-flag", "", "0"};
+    RowReader flags(flagFields);
+    EXPECT_FALSE(flags.flag());
+    EXPECT_EQ("empty field", flags.error());
+
+    const std::vector<std::string> filled = {"hasDurability", "filled", "7", "0"};
+    RowReader ok(filled);
+    EXPECT_EQ(7, ok.integer());
+    ok.finish();
+    EXPECT_EQ("", ok.error());
 }
 
 } // namespace

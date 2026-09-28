@@ -121,12 +121,16 @@ dependencies come from Homebrew:
 
 ```bash
 xcode-select --install
-brew install cmake ninja mysql-client luajit
+brew install cmake mysql-client@8.4 luajit
 ```
 
-`mysql-client` is keg-only. CMake looks for it under Homebrew's `opt/`
-prefixes (`mysql-client`, `mysql-client@8.4`, `mysql-client@8.0`), so no
-extra flags are needed. From the repository root:
+`mysql-client@8.4` is the MySQL client library the build was verified
+with; the unversioned `mysql-client` formula is a newer series nobody has
+built against. Both are keg-only. CMake looks for them under Homebrew's
+`opt/` directories, on Apple Silicon (`/opt/homebrew`) and Intel
+(`/usr/local`) alike, preferring `mysql-client@8.4`, then
+`mysql-client@8.0`, then `mysql-client`, so no extra flags are needed.
+From the repository root:
 
 ```bash
 make debug      # or: make release
@@ -161,7 +165,7 @@ cmake --build build-tests --target wire_tests -j"$(sysctl -n hw.ncpu)"
 (cd build-tests && ctest --output-on-failure)
 ```
 
-49 of the 52 tests pass, the wire goldens among them. `ratchets`,
+50 of the 53 tests pass, the wire goldens among them. `ratchets`,
 `proxy_acceptor_tests` and `shutdown_supervisor` fail because of the
 platform rather than the code; `docs/FIXES.md` records each one.
 
