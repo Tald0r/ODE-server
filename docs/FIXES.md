@@ -127,10 +127,11 @@ what it changed:
 - **`getPrice` dereferenced a null creature** on the premium half-price and
   Blood Bible branches (the race branch checked it, those two did not), and
   the premium branch also dereferenced the creature's `GamePlayer` without a
-  check. No caller passes either. The adapter now reads the player's pay
-  state and potion ratio only when the creature is a player with a
-  `GamePlayer`, so a null creature prices as none and a player without one
-  as not paying.
+  check. No caller passes either. The adapter now reads the creature only
+  when it is not null: the potion ratio for any player creature, the pay
+  state only for a player creature with a `GamePlayer`. So a null creature
+  prices as none, and a player creature without a `GamePlayer` as not
+  paying, with its own potion ratio.
   > **Status:** fixed (feat/shared-price-rules)
 - **Flat-priced items now read the item tables first.** An item given away
   by the game, a time-limited item and the crown moon card used to return 1,
@@ -138,7 +139,10 @@ what it changed:
   input, the item table, the option table and the maximum durability
   included, before de-core picks the flat price, so an item whose option id
   is corrupt now reaches the option table's existing `Assert` instead of
-  returning early. Every shop item has all three, so no valid item prices
+  returning early. `getRepairPrice` changed the same way: a slayer portal
+  or an ousters summon item used to be charged for its missing charges
+  before the option loop and `computeMaxDurability` ran, and now both run
+  first. Every shop item has all three, so no valid item prices
   differently.
   > **Status:** recorded, not fixed (feat/shared-price-rules)
 
