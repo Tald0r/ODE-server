@@ -99,7 +99,10 @@ int vampireCriticalRatio(const StatAttr& a);
 int oustersCriticalRatio(const StatAttr& a);
 int monsterCriticalRatio(const StatAttr& a, int enhancePercent);
 
-// amount is the steal amount (BYTE-ranged); returns the success percentage.
+// amount is the steal amount (BYTE-ranged); returns the success percentage,
+// 0 for amount 0. From amount 48 (65% base) or 65 (90% base) on, the
+// percentage truncates below zero and wraps to a byte (-1 is 255), the
+// same result as x86-64's own conversion.
 int slayerStealRatio(const StatAttr& a, int amount);
 int vampireStealRatio(int amount);
 int oustersStealRatio(int amount);

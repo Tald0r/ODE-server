@@ -236,6 +236,20 @@ TEST(StealRatio, WeaponFamilyPicksTheBase) {
     EXPECT_EQ(0, decore::vampireStealRatio(0));
 }
 
+TEST(StealRatio, RatioBelowZeroWrapsToAByte) {
+    // The ratio passes through int before it is narrowed to a byte, so a
+    // ratio below zero wraps on every target, as x86-64's own conversion
+    // does, instead of being undefined. 90 - 65*1.4 is exactly -1.
+    EXPECT_EQ(0, decore::vampireStealRatio(64));
+    EXPECT_EQ(255, decore::vampireStealRatio(65));
+    EXPECT_EQ(255, decore::oustersStealRatio(65));
+    EXPECT_EQ(245, decore::vampireStealRatio(255));
+    // The 65 base: 65 - 47*1.4 truncates to 0, 65 - 48*1.4 to -2.
+    EXPECT_EQ(0, decore::slayerStealRatio(attr(0, 0, 0, 0, WeaponFamily::Mace, 0), 47));
+    EXPECT_EQ(254, decore::slayerStealRatio(attr(0, 0, 0, 0, WeaponFamily::Mace, 0), 48));
+    EXPECT_EQ(255, decore::slayerStealRatio(attr(0, 0, 0, 0, WeaponFamily::Blade, 0), 65));
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Combat / progression
 //////////////////////////////////////////////////////////////////////////
