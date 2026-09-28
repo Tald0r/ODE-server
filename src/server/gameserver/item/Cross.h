@@ -20,8 +20,7 @@
 // class Cross;
 //////////////////////////////////////////////////////////////////////////////
 
-class Cross
-    : public ConcreteItem<Item::ITEM_CLASS_CROSS, NoStack, HasDurability, HasOption, WeaponGrade, SlayerWeapon> {
+class Cross : public ConcreteItem<Item::ITEM_CLASS_CROSS, NoStack, HasOption, SlayerWeapon> {
 public:
     Cross();
     Cross(ItemType_t itemType, const list<OptionType_t>& optionType);

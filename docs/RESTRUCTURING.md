@@ -845,10 +845,21 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   existing de-core functions (client only); (4) equip requirements; (5)
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
-  > **Status:** in progress (slice 1's client copy and adapters, then
-  > slices 2-6) — slice 1's server half is in: `ItemPrice` and
-  > `ItemDurability`, with `PriceManager`, `computeMaxDurability`,
-  > `ConcreteItem::getMaxDurability` and the skull sale as adapters.
+  > **Status:** in progress (slice 1's client copy and adapters, on the
+  > client's `feat/shared-price-rules`; slice 2's client half; then slices
+  > 3-6) — slice 1's server half is in:
+  > `ItemPrice` and `ItemDurability`, with `PriceManager`,
+  > `computeMaxDurability`, `ConcreteItem::getMaxDurability` and the skull
+  > sale as adapters.
+  > Slice 2's server half is in: `ItemGrade` (`gradeOffsets`,
+  > `gradePolicyOf`, `hasDurability`) holds the per-class grade and
+  > durability table, and `ConcreteItem` reads it through
+  > `itemClassHasGrade`, `itemClassHasDurability` and
+  > `itemClassGradeOffsets` (`ItemUtil.cpp`) instead of taking grade and
+  > durability policies as template arguments, so the server has no second
+  > copy. Classes not built on `ConcreteItem` are `None` with no
+  > durability, and their maximum durability is 1, not
+  > `maxDurabilityBase` — the client's motorcycle must not use it.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/`. Code in it quote-includes only existing
@@ -857,12 +868,16 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > `int`, `unsigned`, `long long`, `double`, `bool`, `enum class` and POD
   > structs of its own, a variable-length input as `(const int*, int)`;
   > is free functions in `namespace decore` with no globals, RNG, I/O or
-  > table lookups and no arithmetic in a header, so the target's fp flags
-  > (`-ffp-contract=off -fno-fast-math`) reach every formula; names each
-  > wire item-class id it branches on in `decore::itemclass`, which the
-  > adapter `static_assert`s; and compiles without a warning in
-  > `de-core-strict`. Moves are verbatim, oddities included (the kept ones
-  > are in `docs/FIXES.md`); changing one is a balance decision. A change
+  > game-table lookups (a fixed switch over wire ids, as in
+  > `gradePolicyOf`, is code) and no arithmetic in a header, so the
+  > target's fp flags (`-ffp-contract=off -fno-fast-math`) reach every
+  > formula; names each
+  > wire item-class id it branches on in `decore::itemclass`
+  > (`domain/ItemClass.h`, all 90 ids), which the adapter
+  > `static_assert`s (`ItemUtil.cpp` asserts every id and the count); and
+  > compiles without a warning in `de-core-strict`. Moves are verbatim,
+  > oddities included (the kept ones are in `docs/FIXES.md`); changing
+  > one is a balance decision. A change
   > to a shared rule: edit `src/domain`, re-record with
   > `bash tools/devbuild.sh test --record` and review the `.tsv` diff as a
   > balance change, resync the client and run

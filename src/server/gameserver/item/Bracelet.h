@@ -20,8 +20,7 @@
 // class Bracelet;
 //////////////////////////////////////////////////////////////////////////////
 
-class Bracelet
-    : public ConcreteItem<Item::ITEM_CLASS_BRACELET, NoStack, HasDurability, HasOption, AccessoryGrade, NoAttacking> {
+class Bracelet : public ConcreteItem<Item::ITEM_CLASS_BRACELET, NoStack, HasOption, NoAttacking> {
 public:
     Bracelet();
     Bracelet(ItemType_t itemType, const list<OptionType_t>& optionType);

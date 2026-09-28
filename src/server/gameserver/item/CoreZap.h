@@ -21,8 +21,7 @@
 // class CoreZap;
 //////////////////////////////////////////////////////////////////////////////
 
-class CoreZap : public ConcreteItem<Item::ITEM_CLASS_CORE_ZAP, NoStack, NoDurability, HasOption, HasGrade, NoAttacking,
-                                    NoEnchantLevel> {
+class CoreZap : public ConcreteItem<Item::ITEM_CLASS_CORE_ZAP, NoStack, HasOption, NoAttacking, NoEnchantLevel> {
 public:
     CoreZap();
     CoreZap(ItemType_t itemType, const list<OptionType_t>& optionType);

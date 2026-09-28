@@ -20,8 +20,7 @@
 // class DyePotion;
 //////////////////////////////////////////////////////////////////////////////
 
-class DyePotion : public ConcreteItem<Item::ITEM_CLASS_DYE_POTION, Stackable, NoDurability, NoOption, NoGrade,
-                                      NoAttacking, NoEnchantLevel> {
+class DyePotion : public ConcreteItem<Item::ITEM_CLASS_DYE_POTION, Stackable, NoOption, NoAttacking, NoEnchantLevel> {
 public:
     DyePotion();
     DyePotion(ItemType_t itemType, const list<OptionType_t>& optionType, ItemNum_t Num);

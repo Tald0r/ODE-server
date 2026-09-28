@@ -20,8 +20,7 @@
 // class Sword;
 //////////////////////////////////////////////////////////////////////////////
 
-class Sword
-    : public ConcreteItem<Item::ITEM_CLASS_SWORD, NoStack, HasDurability, HasOption, WeaponGrade, SlayerWeapon> {
+class Sword : public ConcreteItem<Item::ITEM_CLASS_SWORD, NoStack, HasOption, SlayerWeapon> {
 public:
     Sword();
     Sword(ItemType_t itemType, const list<OptionType_t>& optionType);

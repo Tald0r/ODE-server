@@ -20,8 +20,7 @@
 // class Ring;
 //////////////////////////////////////////////////////////////////////////////
 
-class Ring
-    : public ConcreteItem<Item::ITEM_CLASS_RING, NoStack, HasDurability, HasOption, AccessoryGrade, NoAttacking> {
+class Ring : public ConcreteItem<Item::ITEM_CLASS_RING, NoStack, HasOption, NoAttacking> {
 public:
     Ring();
     Ring(ItemType_t itemType, const list<OptionType_t>& optionType);

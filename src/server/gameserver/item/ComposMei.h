@@ -20,8 +20,7 @@
 // class ComposMei;
 //////////////////////////////////////////////////////////////////////////////
 
-class ComposMei : public ConcreteItem<Item::ITEM_CLASS_COMPOS_MEI, Stackable, NoDurability, NoOption, NoGrade,
-                                      NoAttacking, NoEnchantLevel> {
+class ComposMei : public ConcreteItem<Item::ITEM_CLASS_COMPOS_MEI, Stackable, NoOption, NoAttacking, NoEnchantLevel> {
 public:
     ComposMei();
     ComposMei(ItemType_t itemType, const list<OptionType_t>& optionType, ItemNum_t Num);

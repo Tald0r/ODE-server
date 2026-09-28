@@ -19,7 +19,7 @@
 // class SR;
 //////////////////////////////////////////////////////////////////////////////
 
-class SR : public ConcreteItem<Item::ITEM_CLASS_SR, NoStack, HasDurability, HasOption, WeaponGrade, SlayerGun> {
+class SR : public ConcreteItem<Item::ITEM_CLASS_SR, NoStack, HasOption, SlayerGun> {
 public:
     SR();
     SR(ItemType_t itemType, const list<OptionType_t>& optionType);

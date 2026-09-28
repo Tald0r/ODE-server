@@ -21,8 +21,7 @@
 // class Necklace;
 //////////////////////////////////////////////////////////////////////////////
 
-class Necklace
-    : public ConcreteItem<Item::ITEM_CLASS_NECKLACE, NoStack, HasDurability, HasOption, AccessoryGrade, NoAttacking> {
+class Necklace : public ConcreteItem<Item::ITEM_CLASS_NECKLACE, NoStack, HasOption, NoAttacking> {
 public:
     Necklace();
     Necklace(ItemType_t itemType, const list<OptionType_t>& optionType);

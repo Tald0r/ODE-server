@@ -20,8 +20,7 @@
 // class Shield;
 //////////////////////////////////////////////////////////////////////////////
 
-class Shield
-    : public ConcreteItem<Item::ITEM_CLASS_SHIELD, NoStack, HasDurability, HasOption, GroceryGrade, NoAttacking> {
+class Shield : public ConcreteItem<Item::ITEM_CLASS_SHIELD, NoStack, HasOption, NoAttacking> {
 public:
     Shield();
     Shield(ItemType_t itemType, const list<OptionType_t>& optionType);

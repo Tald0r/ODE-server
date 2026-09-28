@@ -21,8 +21,7 @@
 // class VampireWeapon;
 //////////////////////////////////////////////////////////////////////////////
 
-class VampireWeapon
-    : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_WEAPON, NoStack, HasDurability, HasOption, WeaponGrade, Weapon> {
+class VampireWeapon : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_WEAPON, NoStack, HasOption, Weapon> {
 public:
     VampireWeapon();
     VampireWeapon(ItemType_t itemType, const list<OptionType_t>& optionType);

@@ -19,7 +19,7 @@
 // class SMG;
 //////////////////////////////////////////////////////////////////////////////
 
-class SMG : public ConcreteItem<Item::ITEM_CLASS_SMG, NoStack, HasDurability, HasOption, WeaponGrade, SlayerGun> {
+class SMG : public ConcreteItem<Item::ITEM_CLASS_SMG, NoStack, HasOption, SlayerGun> {
 public:
     SMG();
     SMG(ItemType_t itemType, const list<OptionType_t>& optionType);

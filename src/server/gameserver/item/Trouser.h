@@ -20,8 +20,7 @@
 // class Trouser;
 //////////////////////////////////////////////////////////////////////////////
 
-class Trouser
-    : public ConcreteItem<Item::ITEM_CLASS_TROUSER, NoStack, HasDurability, HasOption, ClothGrade, NoAttacking> {
+class Trouser : public ConcreteItem<Item::ITEM_CLASS_TROUSER, NoStack, HasOption, NoAttacking> {
 public:
     Trouser();
     Trouser(ItemType_t itemType, const list<OptionType_t>& optionType);

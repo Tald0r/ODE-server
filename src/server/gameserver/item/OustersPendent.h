@@ -20,8 +20,7 @@
 // class OustersPendent;
 //////////////////////////////////////////////////////////////////////////////
 
-class OustersPendent : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_PENDENT, NoStack, HasDurability, HasOption,
-                                           AccessoryGrade, NoAttacking> {
+class OustersPendent : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_PENDENT, NoStack, HasOption, NoAttacking> {
 public:
     OustersPendent();
     OustersPendent(ItemType_t itemType, const list<OptionType_t>& optionType);

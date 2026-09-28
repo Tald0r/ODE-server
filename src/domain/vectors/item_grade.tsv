@@ -1,0 +1,301 @@
+# Shared parity vectors: decore::gradeOffsets, gradePolicyOf and
+# hasDurability (src/domain/ItemGrade.h). Every row is asserted for exact
+# equality by the server's formula_tests and by the client's decore_tests
+# on every client toolchain. A changed expected value is a balance change:
+# review it as one. UPDATE_GOLDENS=1 formula_tests rewrites the expected
+# column only.
+#
+# Tab-separated, one row per call: function, row name, the inputs, and the
+# expected result last. A policy is written by its enumerator name (None,
+# Plain, Weapon, Cloth, Grocery, Accessory); an item class by its wire id.
+#
+# gradeOffsets columns: policy grade expected, where expected is the six
+#   offsets comma-separated in GradeOffsets order: durability, damage,
+#   critical, defense, protection, luck. Every policy is pinned at grades
+#   -1 (the grade an item without one reads) and 0 to 7 and 10, which
+#   covers each side of grade 4 and the grocery protection's half step:
+#   (grade - 4) / 2 truncates toward zero, so grades 3 and 5 move nothing
+#   and grades 1 and 2 move -1.
+# gradePolicyOf columns: itemClass expected policy. One row per wire class
+#   0-89, named after the class, plus one id on each side of the table.
+# hasDurability columns: itemClass expected (0 or 1). The same rows.
+#
+# The per-class rows are the server's own choices, oddities included:
+# CoreZap is Plain (a grade that moves nothing) and keeps no durability;
+# ShoulderArmor, Persona, Fascia and Mitten are Grocery; Dermis, Fascia,
+# CarryingReceiver, CoreZap and VampireAmulet keep no durability. Classes
+# the server does not build on ConcreteItem are None and 0.
+gradeOffsets	none-grade-minus-1	None	-1	0,0,0,0,0,0
+gradeOffsets	none-grade-0	None	0	0,0,0,0,0,0
+gradeOffsets	none-grade-1	None	1	0,0,0,0,0,0
+gradeOffsets	none-grade-2	None	2	0,0,0,0,0,0
+gradeOffsets	none-grade-3	None	3	0,0,0,0,0,0
+gradeOffsets	none-grade-4	None	4	0,0,0,0,0,0
+gradeOffsets	none-grade-5	None	5	0,0,0,0,0,0
+gradeOffsets	none-grade-6	None	6	0,0,0,0,0,0
+gradeOffsets	none-grade-7	None	7	0,0,0,0,0,0
+gradeOffsets	none-grade-10	None	10	0,0,0,0,0,0
+gradeOffsets	none-grade-minus-5	None	-5	0,0,0,0,0,0
+gradeOffsets	none-grade-8	None	8	0,0,0,0,0,0
+gradeOffsets	none-grade-9	None	9	0,0,0,0,0,0
+gradeOffsets	none-grade-11	None	11	0,0,0,0,0,0
+gradeOffsets	none-grade-20	None	20	0,0,0,0,0,0
+gradeOffsets	plain-grade-minus-1	Plain	-1	0,0,0,0,0,0
+gradeOffsets	plain-grade-0	Plain	0	0,0,0,0,0,0
+gradeOffsets	plain-grade-1	Plain	1	0,0,0,0,0,0
+gradeOffsets	plain-grade-2	Plain	2	0,0,0,0,0,0
+gradeOffsets	plain-grade-3	Plain	3	0,0,0,0,0,0
+gradeOffsets	plain-grade-4	Plain	4	0,0,0,0,0,0
+gradeOffsets	plain-grade-5	Plain	5	0,0,0,0,0,0
+gradeOffsets	plain-grade-6	Plain	6	0,0,0,0,0,0
+gradeOffsets	plain-grade-7	Plain	7	0,0,0,0,0,0
+gradeOffsets	plain-grade-10	Plain	10	0,0,0,0,0,0
+gradeOffsets	plain-grade-minus-5	Plain	-5	0,0,0,0,0,0
+gradeOffsets	plain-grade-8	Plain	8	0,0,0,0,0,0
+gradeOffsets	plain-grade-9	Plain	9	0,0,0,0,0,0
+gradeOffsets	plain-grade-11	Plain	11	0,0,0,0,0,0
+gradeOffsets	plain-grade-20	Plain	20	0,0,0,0,0,0
+gradeOffsets	weapon-grade-minus-1	Weapon	-1	-5000,-5,-10,0,0,0
+gradeOffsets	weapon-grade-0	Weapon	0	-4000,-4,-8,0,0,0
+gradeOffsets	weapon-grade-1	Weapon	1	-3000,-3,-6,0,0,0
+gradeOffsets	weapon-grade-2	Weapon	2	-2000,-2,-4,0,0,0
+gradeOffsets	weapon-grade-3	Weapon	3	-1000,-1,-2,0,0,0
+gradeOffsets	weapon-grade-4	Weapon	4	0,0,0,0,0,0
+gradeOffsets	weapon-grade-5	Weapon	5	1000,1,2,0,0,0
+gradeOffsets	weapon-grade-6	Weapon	6	2000,2,4,0,0,0
+gradeOffsets	weapon-grade-7	Weapon	7	3000,3,6,0,0,0
+gradeOffsets	weapon-grade-10	Weapon	10	6000,6,12,0,0,0
+gradeOffsets	weapon-grade-minus-5	Weapon	-5	-9000,-9,-18,0,0,0
+gradeOffsets	weapon-grade-8	Weapon	8	4000,4,8,0,0,0
+gradeOffsets	weapon-grade-9	Weapon	9	5000,5,10,0,0,0
+gradeOffsets	weapon-grade-11	Weapon	11	7000,7,14,0,0,0
+gradeOffsets	weapon-grade-20	Weapon	20	16000,16,32,0,0,0
+gradeOffsets	cloth-grade-minus-1	Cloth	-1	-5000,0,0,-10,-5,0
+gradeOffsets	cloth-grade-0	Cloth	0	-4000,0,0,-8,-4,0
+gradeOffsets	cloth-grade-1	Cloth	1	-3000,0,0,-6,-3,0
+gradeOffsets	cloth-grade-2	Cloth	2	-2000,0,0,-4,-2,0
+gradeOffsets	cloth-grade-3	Cloth	3	-1000,0,0,-2,-1,0
+gradeOffsets	cloth-grade-4	Cloth	4	0,0,0,0,0,0
+gradeOffsets	cloth-grade-5	Cloth	5	1000,0,0,2,1,0
+gradeOffsets	cloth-grade-6	Cloth	6	2000,0,0,4,2,0
+gradeOffsets	cloth-grade-7	Cloth	7	3000,0,0,6,3,0
+gradeOffsets	cloth-grade-10	Cloth	10	6000,0,0,12,6,0
+gradeOffsets	cloth-grade-minus-5	Cloth	-5	-9000,0,0,-18,-9,0
+gradeOffsets	cloth-grade-8	Cloth	8	4000,0,0,8,4,0
+gradeOffsets	cloth-grade-9	Cloth	9	5000,0,0,10,5,0
+gradeOffsets	cloth-grade-11	Cloth	11	7000,0,0,14,7,0
+gradeOffsets	cloth-grade-20	Cloth	20	16000,0,0,32,16,0
+gradeOffsets	grocery-grade-minus-1	Grocery	-1	-2500,0,0,-5,-2,0
+gradeOffsets	grocery-grade-0	Grocery	0	-2000,0,0,-4,-2,0
+gradeOffsets	grocery-grade-1	Grocery	1	-1500,0,0,-3,-1,0
+gradeOffsets	grocery-grade-2	Grocery	2	-1000,0,0,-2,-1,0
+gradeOffsets	grocery-grade-3	Grocery	3	-500,0,0,-1,0,0
+gradeOffsets	grocery-grade-4	Grocery	4	0,0,0,0,0,0
+gradeOffsets	grocery-grade-5	Grocery	5	500,0,0,1,0,0
+gradeOffsets	grocery-grade-6	Grocery	6	1000,0,0,2,1,0
+gradeOffsets	grocery-grade-7	Grocery	7	1500,0,0,3,1,0
+gradeOffsets	grocery-grade-10	Grocery	10	3000,0,0,6,3,0
+gradeOffsets	grocery-grade-minus-5	Grocery	-5	-4500,0,0,-9,-4,0
+gradeOffsets	grocery-grade-8	Grocery	8	2000,0,0,4,2,0
+gradeOffsets	grocery-grade-9	Grocery	9	2500,0,0,5,2,0
+gradeOffsets	grocery-grade-11	Grocery	11	3500,0,0,7,3,0
+gradeOffsets	grocery-grade-20	Grocery	20	8000,0,0,16,8,0
+gradeOffsets	accessory-grade-minus-1	Accessory	-1	-5000,0,0,0,0,-5
+gradeOffsets	accessory-grade-0	Accessory	0	-4000,0,0,0,0,-4
+gradeOffsets	accessory-grade-1	Accessory	1	-3000,0,0,0,0,-3
+gradeOffsets	accessory-grade-2	Accessory	2	-2000,0,0,0,0,-2
+gradeOffsets	accessory-grade-3	Accessory	3	-1000,0,0,0,0,-1
+gradeOffsets	accessory-grade-4	Accessory	4	0,0,0,0,0,0
+gradeOffsets	accessory-grade-5	Accessory	5	1000,0,0,0,0,1
+gradeOffsets	accessory-grade-6	Accessory	6	2000,0,0,0,0,2
+gradeOffsets	accessory-grade-7	Accessory	7	3000,0,0,0,0,3
+gradeOffsets	accessory-grade-10	Accessory	10	6000,0,0,0,0,6
+gradeOffsets	accessory-grade-minus-5	Accessory	-5	-9000,0,0,0,0,-9
+gradeOffsets	accessory-grade-8	Accessory	8	4000,0,0,0,0,4
+gradeOffsets	accessory-grade-9	Accessory	9	5000,0,0,0,0,5
+gradeOffsets	accessory-grade-11	Accessory	11	7000,0,0,0,0,7
+gradeOffsets	accessory-grade-20	Accessory	20	16000,0,0,0,0,16
+gradePolicyOf	policy-Motorcycle	0	None
+gradePolicyOf	policy-Potion	1	None
+gradePolicyOf	policy-Water	2	None
+gradePolicyOf	policy-HolyWater	3	None
+gradePolicyOf	policy-Magazine	4	None
+gradePolicyOf	policy-BombMaterial	5	None
+gradePolicyOf	policy-Etc	6	None
+gradePolicyOf	policy-Key	7	None
+gradePolicyOf	policy-Ring	8	Accessory
+gradePolicyOf	policy-Bracelet	9	Accessory
+gradePolicyOf	policy-Necklace	10	Accessory
+gradePolicyOf	policy-Coat	11	Cloth
+gradePolicyOf	policy-Trouser	12	Cloth
+gradePolicyOf	policy-Shoes	13	Grocery
+gradePolicyOf	policy-Sword	14	Weapon
+gradePolicyOf	policy-Blade	15	Weapon
+gradePolicyOf	policy-Shield	16	Grocery
+gradePolicyOf	policy-Cross	17	Weapon
+gradePolicyOf	policy-Glove	18	Grocery
+gradePolicyOf	policy-Helm	19	Grocery
+gradePolicyOf	policy-SG	20	Weapon
+gradePolicyOf	policy-SMG	21	Weapon
+gradePolicyOf	policy-AR	22	Weapon
+gradePolicyOf	policy-SR	23	Weapon
+gradePolicyOf	policy-Bomb	24	None
+gradePolicyOf	policy-Mine	25	None
+gradePolicyOf	policy-Belt	26	Grocery
+gradePolicyOf	policy-LearningItem	27	None
+gradePolicyOf	policy-Money	28	None
+gradePolicyOf	policy-Corpse	29	None
+gradePolicyOf	policy-VampireRing	30	Accessory
+gradePolicyOf	policy-VampireBracelet	31	Accessory
+gradePolicyOf	policy-VampireNecklace	32	Accessory
+gradePolicyOf	policy-VampireCoat	33	Cloth
+gradePolicyOf	policy-Skull	34	None
+gradePolicyOf	policy-Mace	35	Weapon
+gradePolicyOf	policy-Serum	36	None
+gradePolicyOf	policy-VampireEtc	37	None
+gradePolicyOf	policy-SlayerPortalItem	38	None
+gradePolicyOf	policy-VampirePortalItem	39	None
+gradePolicyOf	policy-EventGiftBox	40	None
+gradePolicyOf	policy-EventStar	41	None
+gradePolicyOf	policy-VampireEarring	42	Accessory
+gradePolicyOf	policy-Relic	43	None
+gradePolicyOf	policy-VampireWeapon	44	Weapon
+gradePolicyOf	policy-VampireAmulet	45	Accessory
+gradePolicyOf	policy-QuestItem	46	None
+gradePolicyOf	policy-EventTree	47	None
+gradePolicyOf	policy-EventEtc	48	None
+gradePolicyOf	policy-BloodBible	49	None
+gradePolicyOf	policy-CastleSymbol	50	None
+gradePolicyOf	policy-CoupleRing	51	None
+gradePolicyOf	policy-VampireCoupleRing	52	None
+gradePolicyOf	policy-EventItem	53	None
+gradePolicyOf	policy-DyePotion	54	None
+gradePolicyOf	policy-ResurrectItem	55	None
+gradePolicyOf	policy-MixingItem	56	None
+gradePolicyOf	policy-OustersArmsband	57	Grocery
+gradePolicyOf	policy-OustersBoots	58	Cloth
+gradePolicyOf	policy-OustersChakram	59	Weapon
+gradePolicyOf	policy-OustersCirclet	60	Grocery
+gradePolicyOf	policy-OustersCoat	61	Cloth
+gradePolicyOf	policy-OustersPendent	62	Accessory
+gradePolicyOf	policy-OustersRing	63	Accessory
+gradePolicyOf	policy-OustersStone	64	Accessory
+gradePolicyOf	policy-OustersWristlet	65	Weapon
+gradePolicyOf	policy-Larva	66	None
+gradePolicyOf	policy-Pupa	67	None
+gradePolicyOf	policy-ComposMei	68	None
+gradePolicyOf	policy-OustersSummonItem	69	None
+gradePolicyOf	policy-EffectItem	70	None
+gradePolicyOf	policy-CodeSheet	71	None
+gradePolicyOf	policy-MoonCard	72	None
+gradePolicyOf	policy-Sweeper	73	None
+gradePolicyOf	policy-PetItem	74	None
+gradePolicyOf	policy-PetFood	75	None
+gradePolicyOf	policy-PetEnchantItem	76	None
+gradePolicyOf	policy-LuckyBag	77	None
+gradePolicyOf	policy-SMSItem	78	None
+gradePolicyOf	policy-CoreZap	79	Plain
+gradePolicyOf	policy-GQuestItem	80	None
+gradePolicyOf	policy-TrapItem	81	None
+gradePolicyOf	policy-BloodBibleSign	82	None
+gradePolicyOf	policy-WarItem	83	None
+gradePolicyOf	policy-CarryingReceiver	84	Accessory
+gradePolicyOf	policy-ShoulderArmor	85	Grocery
+gradePolicyOf	policy-Dermis	86	Accessory
+gradePolicyOf	policy-Persona	87	Grocery
+gradePolicyOf	policy-Fascia	88	Grocery
+gradePolicyOf	policy-Mitten	89	Grocery
+gradePolicyOf	policy-below-table	-1	None
+gradePolicyOf	policy-past-table	90	None
+hasDurability	durability-Motorcycle	0	0
+hasDurability	durability-Potion	1	0
+hasDurability	durability-Water	2	0
+hasDurability	durability-HolyWater	3	0
+hasDurability	durability-Magazine	4	0
+hasDurability	durability-BombMaterial	5	0
+hasDurability	durability-Etc	6	0
+hasDurability	durability-Key	7	0
+hasDurability	durability-Ring	8	1
+hasDurability	durability-Bracelet	9	1
+hasDurability	durability-Necklace	10	1
+hasDurability	durability-Coat	11	1
+hasDurability	durability-Trouser	12	1
+hasDurability	durability-Shoes	13	1
+hasDurability	durability-Sword	14	1
+hasDurability	durability-Blade	15	1
+hasDurability	durability-Shield	16	1
+hasDurability	durability-Cross	17	1
+hasDurability	durability-Glove	18	1
+hasDurability	durability-Helm	19	1
+hasDurability	durability-SG	20	1
+hasDurability	durability-SMG	21	1
+hasDurability	durability-AR	22	1
+hasDurability	durability-SR	23	1
+hasDurability	durability-Bomb	24	0
+hasDurability	durability-Mine	25	0
+hasDurability	durability-Belt	26	1
+hasDurability	durability-LearningItem	27	0
+hasDurability	durability-Money	28	0
+hasDurability	durability-Corpse	29	0
+hasDurability	durability-VampireRing	30	1
+hasDurability	durability-VampireBracelet	31	1
+hasDurability	durability-VampireNecklace	32	1
+hasDurability	durability-VampireCoat	33	1
+hasDurability	durability-Skull	34	0
+hasDurability	durability-Mace	35	1
+hasDurability	durability-Serum	36	0
+hasDurability	durability-VampireEtc	37	0
+hasDurability	durability-SlayerPortalItem	38	0
+hasDurability	durability-VampirePortalItem	39	0
+hasDurability	durability-EventGiftBox	40	0
+hasDurability	durability-EventStar	41	0
+hasDurability	durability-VampireEarring	42	1
+hasDurability	durability-Relic	43	0
+hasDurability	durability-VampireWeapon	44	1
+hasDurability	durability-VampireAmulet	45	0
+hasDurability	durability-QuestItem	46	0
+hasDurability	durability-EventTree	47	0
+hasDurability	durability-EventEtc	48	0
+hasDurability	durability-BloodBible	49	0
+hasDurability	durability-CastleSymbol	50	0
+hasDurability	durability-CoupleRing	51	0
+hasDurability	durability-VampireCoupleRing	52	0
+hasDurability	durability-EventItem	53	0
+hasDurability	durability-DyePotion	54	0
+hasDurability	durability-ResurrectItem	55	0
+hasDurability	durability-MixingItem	56	0
+hasDurability	durability-OustersArmsband	57	1
+hasDurability	durability-OustersBoots	58	1
+hasDurability	durability-OustersChakram	59	1
+hasDurability	durability-OustersCirclet	60	1
+hasDurability	durability-OustersCoat	61	1
+hasDurability	durability-OustersPendent	62	1
+hasDurability	durability-OustersRing	63	1
+hasDurability	durability-OustersStone	64	1
+hasDurability	durability-OustersWristlet	65	1
+hasDurability	durability-Larva	66	0
+hasDurability	durability-Pupa	67	0
+hasDurability	durability-ComposMei	68	0
+hasDurability	durability-OustersSummonItem	69	0
+hasDurability	durability-EffectItem	70	0
+hasDurability	durability-CodeSheet	71	0
+hasDurability	durability-MoonCard	72	0
+hasDurability	durability-Sweeper	73	0
+hasDurability	durability-PetItem	74	0
+hasDurability	durability-PetFood	75	0
+hasDurability	durability-PetEnchantItem	76	0
+hasDurability	durability-LuckyBag	77	0
+hasDurability	durability-SMSItem	78	0
+hasDurability	durability-CoreZap	79	0
+hasDurability	durability-GQuestItem	80	0
+hasDurability	durability-TrapItem	81	0
+hasDurability	durability-BloodBibleSign	82	0
+hasDurability	durability-WarItem	83	0
+hasDurability	durability-CarryingReceiver	84	0
+hasDurability	durability-ShoulderArmor	85	1
+hasDurability	durability-Dermis	86	0
+hasDurability	durability-Persona	87	1
+hasDurability	durability-Fascia	88	0
+hasDurability	durability-Mitten	89	1
+hasDurability	durability-below-table	-1	0
+hasDurability	durability-past-table	90	0

@@ -20,8 +20,7 @@
 // class Mitten;
 //////////////////////////////////////////////////////////////////////////////
 
-class Mitten
-    : public ConcreteItem<Item::ITEM_CLASS_MITTEN, NoStack, HasDurability, HasOption, GroceryGrade, NoAttacking> {
+class Mitten : public ConcreteItem<Item::ITEM_CLASS_MITTEN, NoStack, HasOption, NoAttacking> {
 public:
     Mitten();
     Mitten(ItemType_t itemType, const list<OptionType_t>& optionType);

@@ -191,7 +191,7 @@ src/
 │   ├── [GC|CG|CL|LC|GL|LG|GS|SG|GG]*.{h,cpp}   # Protocol packet classes, directly in Core/
 │   ├── [core utilities]       # Socket, datagram, player info, items, skills, etc.
 │   └── CMakeLists.txt         # de-kernel, Core, and the per-server packet libraries
-├── domain/                    # de-core: pure formula functions (Formulas, SkillOutputFormulas, ItemPrice, ItemDurability), freestanding; vectors/ holds the parity rows the client asserts too
+├── domain/                    # de-core: pure formula functions (Formulas, SkillOutputFormulas, ItemPrice, ItemDurability, ItemGrade, ItemClass), freestanding; vectors/ holds the parity rows the client asserts too
 ├── server/
 │   ├── Thread.h, ManagedThread.h  # the worker-thread base (CooperativeThread.h is reached only through ManagedThread)
 │   ├── Mailbox.h, Snapshot.h  # cross-thread command queue, copy-on-write tables

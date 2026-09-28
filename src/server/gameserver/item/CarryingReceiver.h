@@ -20,8 +20,7 @@
 // class CarryingReceiver;
 //////////////////////////////////////////////////////////////////////////////
 
-class CarryingReceiver : public ConcreteItem<Item::ITEM_CLASS_CARRYING_RECEIVER, NoStack, NoDurability, HasOption,
-                                             AccessoryGrade, NoAttacking> {
+class CarryingReceiver : public ConcreteItem<Item::ITEM_CLASS_CARRYING_RECEIVER, NoStack, HasOption, NoAttacking> {
 public:
     CarryingReceiver();
     CarryingReceiver(ItemType_t itemType, const list<OptionType_t>& optionType);

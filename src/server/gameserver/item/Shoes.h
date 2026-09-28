@@ -20,8 +20,7 @@
 // class Shoes;
 //////////////////////////////////////////////////////////////////////////////
 
-class Shoes
-    : public ConcreteItem<Item::ITEM_CLASS_SHOES, NoStack, HasDurability, HasOption, GroceryGrade, NoAttacking> {
+class Shoes : public ConcreteItem<Item::ITEM_CLASS_SHOES, NoStack, HasOption, NoAttacking> {
 public:
     Shoes();
     Shoes(ItemType_t itemType, const list<OptionType_t>& optionType);

@@ -21,8 +21,7 @@
 // class Blade;
 //////////////////////////////////////////////////////////////////////////////
 
-class Blade
-    : public ConcreteItem<Item::ITEM_CLASS_BLADE, NoStack, HasDurability, HasOption, WeaponGrade, SlayerWeapon> {
+class Blade : public ConcreteItem<Item::ITEM_CLASS_BLADE, NoStack, HasOption, SlayerWeapon> {
 public:
     Blade();
     Blade(ItemType_t itemType, const list<OptionType_t>& optionType);
