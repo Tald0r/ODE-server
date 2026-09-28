@@ -10,7 +10,7 @@
 
 // An item's own maximum durability, before its options: the item table's
 // durability moved by the grade and floored at 1000 when the class tracks
-// durability, the table value otherwise. Defined in ItemUtil.cpp over
+// durability, the table value otherwise. Defined in ConcreteItem.cpp over
 // decore::maxDurabilityBase, so this header stays free of de-core includes.
 Durability_t computeBaseMaxDurability(Durability_t infoDurability, bool hasDurability, int gradeDurabilityOffset);
 
@@ -28,7 +28,7 @@ struct ItemGradeOffsets {
 // table (domain/ItemGrade.h): whether the class keeps a grade
 // (decore::gradePolicyOf is not None), whether it keeps a durability
 // (decore::hasDurability), and the offsets a grade gives under the class's
-// grade policy (decore::gradeOffsets). Defined in ItemUtil.cpp, so this
+// grade policy (decore::gradeOffsets). Defined in ConcreteItem.cpp, so this
 // header stays free of de-core includes.
 bool itemClassHasGrade(Item::ItemClass itemClass);
 bool itemClassHasDurability(Item::ItemClass itemClass);

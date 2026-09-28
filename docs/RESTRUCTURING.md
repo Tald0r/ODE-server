@@ -855,7 +855,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > `gradePolicyOf`, `hasDurability`) holds the per-class grade and
   > durability table, and `ConcreteItem` reads it through
   > `itemClassHasGrade`, `itemClassHasDurability` and
-  > `itemClassGradeOffsets` (`ItemUtil.cpp`) instead of taking grade and
+  > `itemClassGradeOffsets` (`ConcreteItem.cpp`) instead of taking grade and
   > durability policies as template arguments, so the server has no second
   > copy. Classes not built on `ConcreteItem` are `None` with no
   > durability, and their maximum durability is 1, not
@@ -876,7 +876,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > formula; names each
   > wire item-class id it branches on in `decore::itemclass`
   > (`domain/ItemClass.h`, all 90 ids), which the adapter
-  > `static_assert`s (`ItemUtil.cpp` asserts every id and the count); and
+  > `static_assert`s (`ConcreteItem.cpp` asserts every id and the count); and
   > compiles without a warning in `de-core-strict`. Moves are verbatim,
   > oddities included (the kept ones are in `docs/FIXES.md`); changing
   > one is a balance decision. A change
@@ -889,9 +889,12 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > x86-64 (`cpp20.yml`) and every client toolchain; a mismatch is
   > investigated, never re-recorded.
   - Owner: `formula_tests`' `SharedVectors` tests over
-    `src/domain/vectors/`; `de-core-strict` (`-Werror`, built with the
-    suite); D1 in `arch_includes`; and, as the done-criterion for a change
-    to `src/domain`, `tests/tools/decore_client_diff.sh <client-root>`.
+    `src/domain/vectors/`; `concrete_item_tests`, which probes every class
+    built on `ConcreteItem` through its own base against the table, and
+    fails when a new such class is missing from its list;
+    `de-core-strict` (`-Werror`, built with the suite); D1 in
+    `arch_includes`; and, as the done-criterion for a change to
+    `src/domain`, `tests/tools/decore_client_diff.sh <client-root>`.
 
 
 **Phase exit criteria:** no hard gate — this phase *is* the ratchets trending

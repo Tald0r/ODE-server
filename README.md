@@ -165,7 +165,7 @@ cmake --build build-tests --target wire_tests -j"$(sysctl -n hw.ncpu)"
 (cd build-tests && ctest --output-on-failure)
 ```
 
-49 of the 52 tests pass, the wire goldens among them. `ratchets`,
+50 of the 53 tests pass, the wire goldens among them. `ratchets`,
 `proxy_acceptor_tests` and `shutdown_supervisor` fail because of the
 platform rather than the code; `docs/FIXES.md` records each one.
 
