@@ -55,7 +55,8 @@ void EventTransport::sendMessage()
     //	StringStream msg;
     //	msg << (int)RemainTime << " seconds until the move to " << m_ZoneName << ".";
 
-    char msg[50];
+    // Room for the longest message a GCSystemMessage carries.
+    char msg[de::wire::kMaxByteStringLength + 1];
     snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_TRANSPORT_CREATURE), (int)RemainTime,
              m_ZoneName.c_str());
 

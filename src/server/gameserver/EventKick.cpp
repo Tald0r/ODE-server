@@ -44,7 +44,8 @@ void EventKick::sendMessage()
 
     Turn_t RemainTime = max(0, (int)(m_Deadline.tv_sec - currentTime.tv_sec));
 
-    char msg[50];
+    // Room for the longest message a GCSystemMessage carries.
+    char msg[de::wire::kMaxByteStringLength + 1];
     snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_DISCONNECT_COUNT_DOWN), (int)RemainTime);
 
     string sMsg(msg);

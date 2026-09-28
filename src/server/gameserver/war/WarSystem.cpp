@@ -772,7 +772,8 @@ void WarSystem::broadcastWarList(GamePlayer* pGamePlayer) const
         warExist = true;
 
 
-        char msg[100];
+        // Room for the longest message a GCSystemMessage carries.
+        char msg[de::wire::kMaxByteStringLength + 1];
         snprintf(msg, sizeof(msg), strings.c_str(STRID_WAR_STATUS), pWar->getWarName().c_str(),
                  (pSchedule->getScheduledTime()).toString().c_str());
         gcSystemMessage.setMessage(msg);

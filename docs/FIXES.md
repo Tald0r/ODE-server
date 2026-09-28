@@ -31,6 +31,26 @@ them.
   rather than a null `%s`, and the buffer holds the longest message a
   `GCSystemMessage` carries.
   > **Status:** fixed (fix/review-followups)
+- **Three system messages were cut off at 49 bytes.** The `sprintf` to
+  `snprintf` change kept their `char msg[50]`, which the seed data
+  overflows, so they arrived truncated where they used to overrun the
+  stack. The relic that leaves the relic table (`RelicUtil.cpp`, GSStringPool
+  row 32, 42 fixed bytes) is announced to every zone group as `Relic
+  (Rommels Tag) has appeared at the Relic Shr`, 53 and 61 bytes for the two
+  seed relics; the transport countdown (`EffectTransportCreature.cpp`,
+  `EventTransport.cpp`, row 14, 34 fixed bytes plus the seconds) cuts every
+  zone name longer than about 13 bytes, and seed zone names run to 27.
+  These and the other seven `char msg[50]` buffers filled from a
+  GSStringPool format (`EventKick`, `EffectSlayerRelic`,
+  `EffectVampireRelic`, four in `gm/ConsoleCommands.cpp`, none of which the
+  seed data overflows) now hold `de::wire::kMaxByteStringLength + 1`
+  bytes, the longest message a `GCSystemMessage` carries, so the string
+  pool, not the buffer, bounds the text. So do the guild war's start, end
+  and status messages (`war/War.cpp`, 80 bytes; `war/WarSystem.cpp`, 100):
+  a guild war's name is the guild's name (up to 30 bytes on the wire),
+  " guild attacks ", the castle and " (guild war)", which a long guild name
+  pushes past both.
+  > **Status:** fixed (fix/review-followups)
 
 ## Per-class grade policy (2026-09-28)
 
@@ -130,7 +150,9 @@ exceptions are the undefined behaviour below, which has no behaviour to keep.
   identical whenever it fits; where it overflowed before (undefined behaviour)
   it is now truncated. The login server's forced-port strings were 5-byte
   arrays, which a base port of 9900 plus an `-i` of 100 or more overflows;
-  they are sized for any `int` now, so those values are no longer cut.
+  they are sized for any `int` now, so those values are no longer cut. The
+  game server's 50-byte message buffers were not sized to their data and
+  cut three seed messages short; see *Review follow-ups*.
   > **Status:** fixed (fix/compiler-warnings)
 - **Wolf form rejects every skill.** The four `isAbleToUse*Skill` guards test
   `SkillType != A || SkillType != B ...`, true for any skill, so the early

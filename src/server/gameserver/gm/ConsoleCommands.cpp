@@ -208,7 +208,7 @@ void opInvincible(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage
     bool bInvincible = pCreature->isFlag(Effect::EFFECT_CLASS_NO_DAMAGE);
 
     if (value1 == "on") {
-        char msg[50];
+        char msg[de::wire::kMaxByteStringLength + 1];
         snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_INVINCIBLE), "ON");
 
         if (bInvincible)
@@ -219,7 +219,7 @@ void opInvincible(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage
         }
         filelog("change.txt", "[%s]%s", pCreature->getName().c_str(), gcSystemMessage.toString().c_str());
     } else if (value1 == "off") {
-        char msg[50];
+        char msg[de::wire::kMaxByteStringLength + 1];
         snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_INVINCIBLE), "OFF");
 
         if (!bInvincible)
@@ -243,7 +243,7 @@ void opGhost(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage& gcS
     bool bGhost = pCreature->isFlag(Effect::EFFECT_CLASS_GHOST);
 
     if (value1 == "on") {
-        char msg[50];
+        char msg[de::wire::kMaxByteStringLength + 1];
         snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_GHOST), "ON");
 
         if (bGhost)
@@ -281,7 +281,7 @@ void opGhost(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage& gcS
         }
         filelog("change.txt", "[%s]%s", pCreature->getName().c_str(), gcSystemMessage.toString().c_str());
     } else if (value1 == "off") {
-        char msg[50];
+        char msg[de::wire::kMaxByteStringLength + 1];
         snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_GHOST), "OFF");
 
         if (!bGhost)

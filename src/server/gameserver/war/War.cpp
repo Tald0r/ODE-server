@@ -142,7 +142,8 @@ void War::sendWarStartMessage() const
     __BEGIN_TRY
 
     GCSystemMessage gcSystemMessage;
-    char str[80];
+    // Room for the longest message a GCSystemMessage carries.
+    char str[de::wire::kMaxByteStringLength + 1];
     snprintf(str, sizeof(str), de::gameContext().strings().c_str(STRID_WAR_START), getWarName().c_str());
 
     gcSystemMessage.setMessage(str);
@@ -162,7 +163,8 @@ void War::sendWarEndMessage() const
     __BEGIN_TRY
 
     GCSystemMessage gcSystemMessage;
-    char str[80];
+    // Room for the longest message a GCSystemMessage carries.
+    char str[de::wire::kMaxByteStringLength + 1];
     snprintf(str, sizeof(str), de::gameContext().strings().c_str(STRID_WAR_END), getWarName().c_str());
 
     gcSystemMessage.setMessage(str);
