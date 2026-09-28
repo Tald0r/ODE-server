@@ -107,8 +107,11 @@ what it changed:
   calculation; the head price multiplies by `bonus / 100` in integers, so a
   150% head price bonus pays x1; a vampire portal is repaired by durability
   while the slayer portal and the ousters summon item are charged for their
-  missing charges; a charge count above the maximum wraps the repair price
-  through unsigned arithmetic. Each is pinned by a named row in
+  missing charges; a charge count above the maximum makes the repair price
+  negative, which `decore::repairPrice` returns as an `int` (-5000 in the
+  `slayer-portal-overcharged-wraps` row) and the server's unsigned
+  `Price_t` receives wrapped (4294962296), as the old unsigned arithmetic
+  gave it. Each is pinned by a named row in
   `src/domain/vectors/`, and changing one is a balance decision.
   > **Status:** recorded, not fixed (feat/shared-price-rules)
 - **de-core's results depended on the build machine's CPU.** Clang, and
