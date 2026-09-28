@@ -71,9 +71,12 @@ GradeOffsets gradeOffsets(GradePolicy policy, int grade);
 // for an id outside the table.
 GradePolicy gradePolicyOf(int itemClass);
 
-// Whether a wire item class keeps a durability of its own (HasDurability),
-// the hasDurability input of maxDurabilityBase; false for a class without
-// one and for an id outside the table.
+// Whether the server's ConcreteItem tracks a durability for a wire item
+// class (the HasDurability policy), the hasDurability input of
+// maxDurabilityBase; false for an id outside the table. It is false for the
+// classes the server does not build on ConcreteItem even where they store a
+// durability of their own (the motorcycle, the relics, the castle symbols,
+// the blood bibles, the sweepers): see the note at the top of this file.
 bool hasDurability(int itemClass);
 
 } // namespace decore

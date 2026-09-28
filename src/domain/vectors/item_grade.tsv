@@ -12,10 +12,11 @@
 # gradeOffsets columns: policy grade expected, where expected is the six
 #   offsets comma-separated in GradeOffsets order: durability, damage,
 #   critical, defense, protection, luck. Every policy is pinned at grades
-#   -1 (the grade an item without one reads) and 0 to 7 and 10, which
-#   covers each side of grade 4 and the grocery protection's half step:
-#   (grade - 4) / 2 truncates toward zero, so grades 3 and 5 move nothing
-#   and grades 1 and 2 move -1.
+#   -5, -1 (the grade an item without one reads), 0 to 11 and 20, which
+#   covers each side of grade 4, both far ends of each linear formula and
+#   the grocery protection's half step: (grade - 4) / 2 truncates toward
+#   zero, so grades 3 and 5 move nothing, grades 1 and 2 move -1 and grade
+#   -5 moves -4.
 # gradePolicyOf columns: itemClass expected policy. One row per wire class
 #   0-89, named after the class, plus one id on each side of the table.
 # hasDurability columns: itemClass expected (0 or 1). The same rows.

@@ -90,7 +90,10 @@ server's choices as they were, and these are kept:
   gives them no grade policy and no durability, which matches their grade
   and grade offsets; their maximum is not `maxDurabilityBase`, and
   `ItemGrade.h` says so for the client, whose motorcycle computes one from
-  its item table.
+  its item table. The client also departs from the table on purpose for
+  the two couple rings (`CoupleRing`, `VampireCoupleRing`, built on
+  `CoupleRingBase`, not `ConcreteItem`): it gives them the accessories'
+  grade policy and a durability, where the server has neither.
   > **Status:** recorded, not fixed (feat/shared-grade-policy)
 
 ## Shared price rules (2026-09-28)

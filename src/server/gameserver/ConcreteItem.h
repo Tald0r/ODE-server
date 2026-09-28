@@ -35,10 +35,12 @@ bool itemClassHasDurability(Item::ItemClass itemClass);
 ItemGradeOffsets itemClassGradeOffsets(Item::ItemClass itemClass, Grade_t grade);
 
 // An item built from policies. Its grade and durability rules are not
-// template arguments: they come from de-core's table for IClass, the same
-// table the client builds, so the two cannot disagree. A class without a
-// grade reads -1 and ignores setGrade; a class without a durability reads
-// 1 and ignores setDurability.
+// template arguments: they come from de-core's table for IClass, the table
+// the client vendors, so the server keeps no second copy of it. The client
+// departs from the table on purpose for two classes that are not built on
+// ConcreteItem, the couple rings, which it gives the accessories' rules.
+// A class without a grade reads -1 and ignores setGrade; a class without a
+// durability reads 1 and ignores setDurability.
 template <Item::ItemClass IClass, typename StackPolicy = NoStack, typename OptionPolicy = NoOption,
           typename AttackingStatPolicy = NoAttacking, typename EnchantLevelPolicy = HasEnchantLevel>
 class ConcreteItem : public Item {
