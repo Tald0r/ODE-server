@@ -268,9 +268,15 @@ do.
   send on a loopback socket and poll at once, before the bytes have always
   arrived there.
   > **Status:** recorded, not fixed (fix/macos-native-build)
-- **`shutdown_supervisor` times out natively on macOS** (90 s); not
-  diagnosed. It drives `docker/start.sh`, which is written for the Linux
-  container.
+- **`shutdown_supervisor` times out natively on macOS** (90 s). It drives
+  `docker/start.sh`, which is written for the Linux container. Its
+  `is_alive` reads `/proc/<pid>/stat`, which macOS does not have, so every
+  server always looks dead: the first scenario still passes, but in the
+  second, whose loginserver ignores SIGTERM, the supervisor never reaches
+  its "did not drain; forcing termination" branch and its final `wait`
+  blocks on the loginserver until ctest's timeout. The script's
+  `${pids[-1]}` is also an error in macOS's bash 3.2, which only loses the
+  log mirroring; `stdbuf` exists on macOS 27 (`/usr/bin/stdbuf`).
   > **Status:** recorded, not fixed (fix/macos-native-build)
 
 ## Connection admission: gateway header and socket ownership (2026-09-25)

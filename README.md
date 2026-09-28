@@ -121,7 +121,7 @@ dependencies come from Homebrew:
 
 ```bash
 xcode-select --install
-brew install cmake ninja mysql-client@8.4 luajit
+brew install cmake mysql-client@8.4 luajit
 ```
 
 `mysql-client@8.4` is the MySQL client library the build was verified

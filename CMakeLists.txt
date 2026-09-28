@@ -224,9 +224,12 @@ endif()
 
 # LuaState.h spells the macOS headers <luajit-2.1/lua.h>, so the include root
 # is the directory above the one found for them, which Apple Clang does not
-# search by default the way Linux searches /usr/include. The luajit keg's own
-# include/ comes first in the search above, so the root holds nothing but Lua
-# and cannot shadow a system header the way Homebrew's shared include/ could.
+# search by default the way Linux searches /usr/include. With Homebrew's
+# luajit that is the keg's own include/, which holds nothing but LuaJIT.
+# The PATHS above are CMake's last resort, though: the find_path searches
+# CMake's default prefixes first, so a lua.h directly under one of those
+# wins, and the lua5.1 fallbacks make the root Homebrew's shared include/,
+# whose headers can then shadow the system's.
 if(APPLE AND LUA51_INCLUDE_DIRS)
     get_filename_component(DARKEDEN_LUA_INCLUDE_ROOT "${LUA51_INCLUDE_DIRS}" DIRECTORY)
     list(APPEND DARKEDEN_PROJECT_INCLUDE_DIRS ${DARKEDEN_LUA_INCLUDE_ROOT})
