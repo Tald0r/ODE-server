@@ -150,8 +150,8 @@ at ~20% CPU on 8 cores. `tools/devbuild.sh` syncs the build *inputs*
 (`cmake/`, `src/`, `tests/`, `third_party/`, `data/`, `initdb/`,
 `docker/start.sh` and the top-level CMakeLists/Makefile) into a container
 volume, builds there with Ninja and ccache, and copies only generated test
-data back (`tests/golden/`, `tests/generated/`, `tests/wire-layout.txt`, and
-de-core's parity vectors in `src/domain/vectors/`).
+data back (`tests/golden/`, `tests/generated/`, `tests/wire-layout.txt`, and,
+after `--record` only, de-core's parity vectors in `src/domain/vectors/`).
 Same build: **~3.5 minutes at ~95% CPU**, and a no-op rebuild in seconds.
 
 ```bash

@@ -153,13 +153,18 @@ sync_in='rsync -a --delete --exclude=.git --exclude=/src/server/websocketproxyse
     mkdir -p /work/docker && rsync -a --checksum /repo/docker/start.sh /work/docker/'
 
 # Copy generated test data back so a re-record shows up as a normal diff:
-# the goldens and inventories under tests/, and de-core's shared parity
-# vectors, which live beside the sources they pin.
+# the goldens and inventories under tests/, and, after --record only,
+# de-core's shared parity vectors, which live beside the sources they pin.
+# The vectors' rows are written by hand, and the copy is the snapshot
+# sync_in took when the run started, so copying it back after an ordinary
+# run would revert an edit saved on the host while the suite was building.
 # --checksum because the container clock and the mount can disagree on mtime.
 sync_out='rsync -a --checksum \
     /work/tests/golden /work/tests/generated /work/tests/wire-layout.txt \
-    /repo/tests/ &&
-    rsync -a --checksum /work/src/domain/vectors/ /repo/src/domain/vectors/'
+    /repo/tests/'
+if [ "$record" = "1" ]; then
+    sync_out="$sync_out && rsync -a --checksum /work/src/domain/vectors/ /repo/src/domain/vectors/"
+fi
 
 configure='cmake -G Ninja -B '"$BUILD_DIR"' -S /work \
     -DCMAKE_TOOLCHAIN_FILE=/work/cmake/zig-toolchain.cmake \
