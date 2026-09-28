@@ -129,8 +129,26 @@ what it changed:
 Clearing the server's ~1,000 compiler warnings (Apple Clang 21 and the Zig
 build; `sprintf` alone was 490 of them) was done behaviour-preserving, so a
 warning that pointed at a bug had the bug kept and written down here. The
-exceptions are the undefined behaviour below, which has no behaviour to keep.
+exceptions are the undefined behaviour below, which has no behaviour to keep,
+and the optimized builds' `NDEBUG`, which changed what the deployed servers
+do.
 
+- **The Zig optimized builds compiled `Assert` and the exception handlers
+  away.** `zig c++` defines `NDEBUG` itself from `-O1` up, so the Release,
+  RelWithDebInfo and MinSizeRel builds ran with it despite the rule that
+  no build defines it, and the Docker image is a Zig Release build by
+  default (`Dockerfile`'s `BUILD_TYPE`, `docker-compose.yml`). Under
+  `NDEBUG`, `Assert` and `ProtocolAssert` evaluated their expression and
+  never fired, and `__BEGIN_TRY`/`__END_CATCH`/`__END_CATCH_NO_RETHROW`
+  and `__BEGIN_DEBUG`/`__END_DEBUG` compiled to nothing. The optimized
+  flags now pass `-UNDEBUG`, which changes the deployed servers: a failing
+  `Assert` throws `AssertionError` (logged to `assertion_failed.log`), a
+  failing `ProtocolAssert` disconnects the client, and the 344
+  `__END_CATCH_NO_RETHROW` sites swallow the exceptions that used to escape
+  them. Debug builds, and so the test suite, always had the handlers.
+  Since fix/review-followups, `Assert.h` and `Exception.h` stop the compile
+  with an `#error` when `NDEBUG` is defined, so this cannot recur silently.
+  > **Status:** fixed (fix/compiler-warnings)
 - **Undefined behaviour removed.** `Zone::load` freed three `new char[]`
   buffers with scalar `delete`; they use `SAFE_DELETE_ARRAY` now.
   `PlayerCreature::setPetInfo` deleted a `Centauro`, `Stirge` or `Pixie`
