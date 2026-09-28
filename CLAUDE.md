@@ -18,7 +18,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | A packet that touches the encrypter is pinned at codes 0..5 | `ratchets.sh`, looking for `tests/golden/<Name>.code5.hex` | "packets use the encrypter but have no per-code goldens"; exceptions live in `tests/ratchet/encrypter_exceptions.txt` |
 | Each server registers exactly the factories it registered before | `tests/tools/factory_registrations.pl` vs `tests/ratchet/factory_registrations.txt`, run by `ratchets.sh` | a membership diff, on an add **or** a drop |
 | `tests/generated/AllPacketFactories.inc` matches the kernel membership | `ratchets.sh` re-runs `tests/tools/gen_factory_list.sh` and diffs | "AllPacketFactories.inc is stale" |
-| A kernel file includes only kernel files and mentions no server-type macro or `__COMBAT__` (K1/K2/K3); a core file includes no MySQL, Lua or socket-transport header (C1, shrink-only baseline in `tests/arch/baseline.txt`); `src/domain/` quote-includes only domain headers (D1) | `tests/arch/check_includes.pl`, ctest `arch_includes` | the offending include or macro, named |
+| A kernel file includes only kernel files and mentions no server-type macro or `__COMBAT__` (K1/K2/K3); a core file includes no MySQL, Lua or socket-transport header (C1, shrink-only baseline in `tests/arch/baseline.txt`); `src/domain/` quote-includes only existing `"domain/X.h"` headers and angle-includes only `<algorithm>`/`<cmath>` (D1) | `tests/arch/check_includes.pl`, ctest `arch_includes` | the offending include or macro, named |
 | Packets carry no `execute()` — handlers register at the composition root | ratchet R4 | R4 above 0 |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
 | A critical section is never unlocked by hand | `tests/tools/critical_section_audit.pl`, ctest `critical_section_audit` | the file and line of the hand-written `unlock()` |
@@ -28,6 +28,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | No seed guild leads or joins two guild unions | `ratchets.sh` | the guild and its unions, named |
 | Every seed union has a member or a pending join offer, and every seed join offer names a union | `ratchets.sh` | the union or the offer, named |
 | Every `src/**/*.cpp` is compiled by some target, every header is included | ratchets R15/R16 | the dead file, listed |
+| The de-core subset the client vendors computes exactly the parity vectors and compiles under the client's warning set | `formula_tests`' `SharedVectors` over `src/domain/vectors/`; `de-core-strict` (`-Werror`, built by `make dev-test`) | the row, named, with its expected and actual value; the warning, as an error |
 | Repository SQL behaves against a real MySQL | `make integration-test` (`tests/integration/`, needs docker) | the failing statement |
 
 ## Working in this repository
@@ -55,6 +56,12 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 - **Bugs found while restructuring** are recorded in `docs/FIXES.md` with the
   status convention `fixed (<branch>)` | `recorded, not fixed (<branch>)` |
   `open` | `not a defect` rather than fixed silently.
+- **A change to `src/domain` is done only when
+  `bash tests/tools/decore_client_diff.sh <client-root>` is clean** against a
+  client checkout resynced from this one (its `tools/decore/sync.pl`): the
+  client builds a byte-identical copy of the vendored subset, so the two
+  land together, the server first (`docs/RESTRUCTURING.md` task 3.6). A
+  changed vector row is a balance change: review the `.tsv` diff as one.
 - **A failing golden or inventory diff is a protocol change**, not a test to
   silence. The client repo keeps hand-maintained copies of every packet
   class; ship the identical change there and link the two commits. Re-record

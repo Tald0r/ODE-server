@@ -10,7 +10,7 @@
 // on purpose, and tests/formula_test.cpp pins representative wrap cases.
 //////////////////////////////////////////////////////////////////////////////
 
-#include "Formulas.h"
+#include "domain/Formulas.h"
 
 #include <algorithm>
 #include <cmath>

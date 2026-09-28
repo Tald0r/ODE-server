@@ -49,7 +49,8 @@ conventions.
   Phase 1 is the prerequisite for a port anyway, if that ever changes.)
 - Rewriting the threading model. One `ZoneGroupThread` per zone group with
   serial in-group processing is sound; Phase 3 codifies it, nothing replaces it.
-- Touching the client repo beyond the shared wire-inventory file (Phase 1.4).
+- Touching the client repo beyond the shared wire-inventory file (Phase 1.4)
+  and the vendored de-core subset (task 3.6).
 
 ## Ratchets (shrink-only)
 
@@ -401,8 +402,10 @@ visibility can't express.
   > coincidence of today's `-D` set; **C1** the gameserver domain dirs
   > (skill/item/quest/war/mission/couple/ctf/mofus/exchange) must not
   > include MySQL, Lua or socket-transport headers; **D1** a `src/domain/`
-  > file quote-includes only domain headers. K and D rules have no
-  > baseline (the lists are defined as what complies); C1's remaining
+  > file quote-includes only existing domain headers, spelled
+  > `"domain/X.h"`, and angle-includes only `<algorithm>` and `<cmath>`.
+  > K and D rules have no baseline (the lists are defined as what
+  > complies); C1's remaining
   > pre-existing violations are frozen shrink-only in
   > `tests/arch/baseline.txt` — two entries, both `mofus/` Socket.h users,
   > which are Player-transport classes and stay until the mofus module is
@@ -830,6 +833,48 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > pointers with no server linked — which is what the
   > forward-declaration-only headers are for. R1: 325 → 0.
   - Owner: R1 ratchet test.
+
+- [ ] **3.6 Shared rules library.** The rules the client and the server
+  both compute are implemented once, in de-core, and the client builds a
+  byte-identical, hash-manifested copy of a listed subset
+  (`third_party/decore/` there, written by its `tools/decore/sync.pl`)
+  and asserts the same parity vectors on every client toolchain. Six
+  slices, each a server change followed by the client's: (1) the shop
+  buy, sell and repair price and the maximum durability; (2) the per-class
+  grade policy and durability class table; (3) client callers of the
+  existing de-core functions (client only); (4) equip requirements; (5)
+  the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
+  range, party share, darkness).
+  > **Status:** in progress (slice 1's client copy and adapters, then
+  > slices 2-6) — slice 1's server half is in: `ItemPrice` and
+  > `ItemDurability`, with `PriceManager`, `computeMaxDurability`,
+  > `ConcreteItem::getMaxDurability` and the skull sale as adapters.
+  > The vendored subset is `DECORE_VENDORED_SOURCES`
+  > (`src/domain/CMakeLists.txt`), the domain headers those include, and
+  > `src/domain/vectors/`. Code in it quote-includes only existing
+  > `"domain/X.h"` headers and angle-includes only `<algorithm>` and
+  > `<cmath>` (D1); takes
+  > `int`, `unsigned`, `long long`, `double`, `bool`, `enum class` and POD
+  > structs of its own, a variable-length input as `(const int*, int)`;
+  > is free functions in `namespace decore` with no globals, RNG, I/O or
+  > table lookups and no arithmetic in a header, so the target's fp flags
+  > (`-ffp-contract=off -fno-fast-math`) reach every formula; names each
+  > wire item-class id it branches on in `decore::itemclass`, which the
+  > adapter `static_assert`s; and compiles without a warning in
+  > `de-core-strict`. Moves are verbatim, oddities included (the kept ones
+  > are in `docs/FIXES.md`); changing one is a balance decision. A change
+  > to a shared rule: edit `src/domain`, re-record with
+  > `bash tools/devbuild.sh test --record` and review the `.tsv` diff as a
+  > balance change, resync the client and run
+  > `bash tests/tools/decore_client_diff.sh <client-root>` until it is
+  > clean, then merge the server first and the client straight after. The
+  > vectors are recorded on the dev container and must pass unchanged on
+  > x86-64 (`cpp20.yml`) and every client toolchain; a mismatch is
+  > investigated, never re-recorded.
+  - Owner: `formula_tests`' `SharedVectors` tests over
+    `src/domain/vectors/`; `de-core-strict` (`-Werror`, built with the
+    suite); D1 in `arch_includes`; and, as the done-criterion for a change
+    to `src/domain`, `tests/tools/decore_client_diff.sh <client-root>`.
 
 
 **Phase exit criteria:** no hard gate — this phase *is* the ratchets trending
