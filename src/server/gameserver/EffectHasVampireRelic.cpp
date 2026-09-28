@@ -56,10 +56,11 @@ void EffectHasVampireRelic::affect(Creature* pCreature)
     ZoneInfo* pZoneInfo = de::gameContext().zoneInfos().getZoneInfo(pZone->getZoneID());
     Assert(pZoneInfo != NULL);
 
-    // Announce the location.
-    char msg[100];
+    // Announce the holder, their race and where they stand. The buffer holds
+    // the longest message a GCSystemMessage carries.
+    char msg[de::wire::kMaxByteStringLength + 1];
 
-    const char* race = nullptr;
+    const char* race = "";
     if (pCreature->isSlayer()) {
         race = strings.c_str(STRID_SLAYER);
     } else if (pCreature->isVampire()) {
@@ -68,10 +69,9 @@ void EffectHasVampireRelic::affect(Creature* pCreature)
         race = strings.c_str(STRID_OUSTERS);
     }
 
+    // The format is "<name> (<race>) holds the ... Relic at <zone> (<x>, <y>).".
     snprintf(msg, sizeof(msg), strings.c_str(STRID_HAVING_VAMPIRE_RELIC), pCreature->getName().c_str(), race,
-             //                ( pCreature->isSlayer() ? g_pStringPool->c_str( STRID_SLAYER ) : g_pStringPool->c_str(
-             //                STRID_VAMPIRE ) ),
-             (int)pCreature->getX(), (int)pCreature->getY());
+             pZoneInfo->getFullName().c_str(), (int)pCreature->getX(), (int)pCreature->getY());
 
     GCSystemMessage gcSystemMessage;
     gcSystemMessage.setMessage(msg);

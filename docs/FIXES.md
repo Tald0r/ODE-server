@@ -13,6 +13,25 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Review follow-ups (2026-09-28)
+
+Defects a review of the four preceding changes found in them or next to
+them.
+
+- **The relic holder announcement passed four arguments to a
+  five-conversion format.** `EffectHasSlayerRelic::affect` and
+  `EffectHasVampireRelic::affect` format GSStringPool rows 7 and 8,
+  `"%s (%s) holds the ... Relic at %s (%d, %d)."`, with the name, the race
+  and the coordinates but no zone, so the third `%s` read the x
+  coordinate's argument slot as a string pointer and `%d` read past the
+  arguments: undefined behaviour on every announcement while a player
+  holds a relic. The mismatch is as old as the
+  source; the legacy seed rows had the same three `%s`. The zone's full
+  name is passed now, the race of a creature of no known race is `""`
+  rather than a null `%s`, and the buffer holds the longest message a
+  `GCSystemMessage` carries.
+  > **Status:** fixed (fix/review-followups)
+
 ## Per-class grade policy (2026-09-28)
 
 Which item classes keep a grade and a durability, and what a grade does to
@@ -100,10 +119,12 @@ exceptions are the undefined behaviour below, which has no behaviour to keep.
   `SystemAPI::fork_ex` ran off the end of a non-void function on non-Linux
   builds; they throw `UnsupportedError` there, as before the non-Linux branch
   was deleted (neither is called on macOS today). Locals read uninitialised on
-  a path for a creature of no known race now start at zero or null
+  a path for a creature of no known race now start at zero, null or empty
   (`EffectHasSlayerRelic`/`EffectHasVampireRelic` race name,
   `GQuestGiveEventQuestItemElement` base, `ActionStashSell` price,
-  `CGLotterySelectHandler` quest id).
+  `CGLotterySelectHandler` quest id). The relic announcement stayed
+  undefined behaviour after this: its format lacked an argument, fixed
+  under *Review follow-ups*.
   > **Status:** fixed (fix/compiler-warnings)
 - **`sprintf` became `snprintf` with the destination's size.** Output is
   identical whenever it fits; where it overflowed before (undefined behaviour)
