@@ -71,11 +71,16 @@ server's choices as they were, and these are kept:
 - **Five gear classes keep no durability.** Dermis, Fascia,
   CarryingReceiver, CoreZap and VampireAmulet read a durability of 1 and
   ignore a new one, while Fascia's grocery siblings and every other
-  accessory track theirs. Dermis, Fascia and CarryingReceiver have a
-  table durability of 0 and CoreZap's table has no durability column
-  (`ItemInfo` reads 1), so their maximum is 0 or 1 and they sell at the
-  full price. VampireAmulet's table durability is 1000 to 24000, so its
-  maximum is that and it sells at 1 / maximum of its price, a few gold.
+  accessory track theirs. The server reads no durability for Dermis,
+  Fascia, CarryingReceiver or CoreZap: their item infos are loaded without
+  one (`loadGearInfosNoDurability` for the first three, `loadIntInfos` for
+  CoreZap, whose table has no such column), so `ItemInfo::getDurability`
+  reads 1 and their maximum before the durability options is 1, the value
+  a client must pass as their table durability. The first three tables do
+  have a `Durability` column, 0 in the seed data, which nothing reads.
+  They sell at the full price. VampireAmulet's item info does read its
+  table durability, 1000 to 24000, so its maximum is that and it sells at
+  1 / maximum of its price, a few gold.
   Pinned by the `durability-<Class>` rows.
   > **Status:** recorded, not fixed (feat/shared-grade-policy)
 - **A class not built on `ConcreteItem` reports a maximum durability of

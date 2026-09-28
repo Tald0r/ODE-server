@@ -16,10 +16,14 @@
 // moves nothing; ShoulderArmor, Persona, Fascia and Mitten move like the
 // grocery armor (belt, glove, helm, shield, shoes) rather than like
 // accessories or cloth; Dermis, Fascia, CarryingReceiver, CoreZap and
-// VampireAmulet keep no durability, so their maximum is the item table's
+// VampireAmulet keep no durability, so their maximum is their item info's
 // durability untouched by grade (maxDurabilityBase with hasDurability
-// false). Changing any of these is a balance decision, recorded in
-// docs/FIXES.md.
+// false). For VampireAmulet that is the item table's durability. The
+// server never reads a durability for the other four, so theirs is 1,
+// whatever the table's Durability column holds (Dermis, Fascia and
+// CarryingReceiver have one; it is 0 in the seed data): the infoDurability
+// input for them is 1. Changing any of these is a balance decision,
+// recorded in docs/FIXES.md.
 //
 // Classes the server does not build on ConcreteItem (money, motorcycle,
 // relic, ...) are None and have no durability here, which is right for
