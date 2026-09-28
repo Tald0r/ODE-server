@@ -862,7 +862,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > `maxDurabilityBase` — the client's motorcycle must not use it.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
-  > `src/domain/vectors/`; every file under `src/domain` is checked out
+  > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out
   > LF (`.gitattributes`), as the client's copy is. Code in it
   > quote-includes only existing
   > `"domain/X.h"` headers and angle-includes only `<algorithm>` and
