@@ -13,8 +13,11 @@
 set(DECORE_INCLUDE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 # The same source must give the same numbers on every toolchain that builds
-# it: no fused multiply-add (Clang contracts `a * b + c` by default on arm64,
-# and not on x86-64) and no fast-math reassociation.
+# it: no fused multiply-add and no fast-math reassociation. Clang, and so
+# `zig c++`, contracts `a * b + c` into a fused multiply-add whenever the
+# target CPU has one, at -O0 too: on every arm64 target, and on x86-64 when
+# the CPU has FMA. A Zig build without a target compiles for the build
+# machine's CPU, which on any recent x86-64 machine has FMA.
 set(DECORE_FP_FLAGS -ffp-contract=off -fno-fast-math)
 
 add_library(de-core STATIC

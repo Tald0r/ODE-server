@@ -111,6 +111,19 @@ what it changed:
   through unsigned arithmetic. Each is pinned by a named row in
   `src/domain/vectors/`, and changing one is a balance decision.
   > **Status:** recorded, not fixed (feat/shared-price-rules)
+- **de-core's results depended on the build machine's CPU.** Clang, and
+  so `zig c++`, fuses `a * b + c` into one rounding wherever the target CPU
+  has a fused multiply-add: every arm64 target, and x86-64 with FMA, which a
+  Zig build without a target gets from the build machine. So the server's
+  own formulas (`Formulas.cpp`, `SkillOutputFormulas.cpp`) could round
+  differently on the arm64 dev container, an FMA x86-64 host and a
+  non-FMA one. All of de-core compiles with `-ffp-contract=off
+  -fno-fast-math` now (`src/domain/CMakeLists.txt`), for the existing
+  files as well as the shared ones. `formula_tests` passed unchanged on the
+  arm64 container, where contraction had been on, so no pinned result
+  moved; a result within an ulp of an integer that a formula truncates
+  could still come out one lower or higher on an FMA host than before.
+  > **Status:** fixed (feat/shared-price-rules)
 - **`getPrice` dereferenced a null creature** on the premium half-price and
   Blood Bible branches (the race branch checked it, those two did not), and
   the premium branch also dereferenced the creature's `GamePlayer` without a
