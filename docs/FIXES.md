@@ -205,8 +205,13 @@ do.
   > **Status:** recorded, not fixed (fix/compiler-warnings)
 - **Smaller findings, kept as they are:** `Resource::write` stores the file
   name's length in a `BYTE`, so a name of 256 characters or more puts the
-  wrong length on the wire; `opGhost` sends a duration of 999999 through a
-  16-bit `Duration_t` (16959 arrives); `MotorcycleLoader::load` allocates a
+  wrong length on the wire; seven senders put a duration of 999999, meant
+  as "permanent", through the 16-bit `Duration_t`, so 16959 arrives
+  (`static_cast<Duration_t>(999999)` in the GM `opGhost` in
+  `gm/ConsoleCommands.cpp`, `EffectGrandMasterSlayer`,
+  `EffectGrandMasterVampire`, `EffectGrandMasterOusters` and
+  `EffectDonation200501`, and the tile portals of `DynamicZoneAlterOfBlood`
+  and `DynamicZoneGateOfAlter`); `MotorcycleLoader::load` allocates a
   `Motorcycle` per row and never attaches or frees it; `~PlayerCreature` never
   deletes `m_pPet`; `EffectSatelliteBombAim` uses the skill slot from
   `hasSkill` without a null check; `Guild`'s `ExpireDate` is built from
