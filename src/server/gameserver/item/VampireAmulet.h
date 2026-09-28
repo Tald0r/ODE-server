@@ -20,8 +20,7 @@
 // class VampireAmulet;
 //////////////////////////////////////////////////////////////////////////////
 
-class VampireAmulet : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_AMULET, NoStack, NoDurability, HasOption,
-                                          AccessoryGrade, NoAttacking> {
+class VampireAmulet : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_AMULET, NoStack, HasOption, NoAttacking> {
 public:
     VampireAmulet();
     VampireAmulet(ItemType_t itemType, const list<OptionType_t>& optionType);

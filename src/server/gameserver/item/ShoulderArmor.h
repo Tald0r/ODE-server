@@ -20,8 +20,7 @@
 // class ShoulderArmor;
 //////////////////////////////////////////////////////////////////////////////
 
-class ShoulderArmor : public ConcreteItem<Item::ITEM_CLASS_SHOULDER_ARMOR, NoStack, HasDurability, HasOption,
-                                          GroceryGrade, NoAttacking> {
+class ShoulderArmor : public ConcreteItem<Item::ITEM_CLASS_SHOULDER_ARMOR, NoStack, HasOption, NoAttacking> {
 public:
     ShoulderArmor();
     ShoulderArmor(ItemType_t itemType, const list<OptionType_t>& optionType);

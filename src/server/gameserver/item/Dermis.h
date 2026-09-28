@@ -20,8 +20,7 @@
 // class Dermis;
 //////////////////////////////////////////////////////////////////////////////
 
-class Dermis
-    : public ConcreteItem<Item::ITEM_CLASS_DERMIS, NoStack, NoDurability, HasOption, AccessoryGrade, NoAttacking> {
+class Dermis : public ConcreteItem<Item::ITEM_CLASS_DERMIS, NoStack, HasOption, NoAttacking> {
 public:
     Dermis();
     Dermis(ItemType_t itemType, const list<OptionType_t>& optionType);

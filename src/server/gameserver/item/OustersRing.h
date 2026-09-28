@@ -20,8 +20,7 @@
 // class OustersRing;
 //////////////////////////////////////////////////////////////////////////////
 
-class OustersRing : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_RING, NoStack, HasDurability, HasOption,
-                                        AccessoryGrade, NoAttacking> {
+class OustersRing : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_RING, NoStack, HasOption, NoAttacking> {
 public:
     OustersRing();
     OustersRing(ItemType_t itemType, const list<OptionType_t>& optionType);

@@ -20,8 +20,7 @@
 // class VampireCoat;
 //////////////////////////////////////////////////////////////////////////////
 
-class VampireCoat
-    : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_COAT, NoStack, HasDurability, HasOption, ClothGrade, NoAttacking> {
+class VampireCoat : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_COAT, NoStack, HasOption, NoAttacking> {
 public:
     VampireCoat();
     VampireCoat(ItemType_t itemType, const list<OptionType_t>& optionType);

@@ -39,9 +39,8 @@ public:
 typedef NoValuePolicy<ItemNum_t, 1> NoStack;
 typedef OneValuePolicy<ItemNum_t> Stackable;
 
-// Durability Policies
-typedef NoValuePolicy<Durability_t, 1> NoDurability;
-typedef OneValuePolicy<Durability_t> HasDurability;
+// An item's durability and grade policies are not here: ConcreteItem reads
+// them per item class from de-core's table (src/domain/ItemGrade.h).
 
 // Option Policies
 class NoOption {
@@ -113,109 +112,6 @@ public:
 
 private:
     list<OptionType_t> m_OptionType;
-};
-
-// Grade Policies
-class NoGrade : public NoValuePolicy<Grade_t, -1> {
-public:
-    //	Grade_t	getGrade() const { return -1; }
-    //	void	setGrade(Grade_t Grade) { }
-
-public:
-    // Effect on the item's attributes
-    int getDurabilityOffset() const {
-        return 0;
-    }
-    int getDamageOffset() const {
-        return 0;
-    }
-    int getCriticalOffset() const {
-        return 0;
-    }
-    int getDefenseOffset() const {
-        return 0;
-    }
-    int getProtectionOffset() const {
-        return 0;
-    }
-    Luck_t getLuck() const {
-        return 0;
-    }
-};
-
-class HasGrade : public OneValuePolicy<Grade_t> {
-public:
-    HasGrade() : OneValuePolicy<Grade_t>(4) {}
-
-    //	Grade_t	getGrade() const { return m_Grade; }
-    //	void	setGrade(Grade_t Grade) { m_Grade = Grade; }
-
-public:
-    // Effect on the item's attributes
-    int getDurabilityOffset() const {
-        return 0;
-    }
-    int getDamageOffset() const {
-        return 0;
-    }
-    int getCriticalOffset() const {
-        return 0;
-    }
-    int getDefenseOffset() const {
-        return 0;
-    }
-    int getProtectionOffset() const {
-        return 0;
-    }
-    Luck_t getLuck() const {
-        return 0;
-    }
-
-private:
-    [[maybe_unused]] Grade_t m_Grade;
-};
-
-class WeaponGrade : public HasGrade {
-public:
-    // Effect on the item's attributes
-    int getDurabilityOffset() const {
-        return (getValue() - 4) * 1000;
-    }
-    int getDamageOffset() const {
-        return (getValue() - 4);
-    }
-    int getCriticalOffset() const {
-        return (getValue() - 4) * 2;
-    }
-};
-
-template <int DefensePitch, int DefenseGrade, int ProtectionPitch, int ProtectionGrade, int DurabilityPitch>
-class ArmorGrade : public HasGrade {
-public:
-    // Effect on the item's attributes
-    int getDurabilityOffset() const {
-        return (getValue() - 4) * DurabilityPitch;
-    }
-    int getDefenseOffset() const {
-        return (getValue() - 4) / DefenseGrade * DefensePitch;
-    }
-    int getProtectionOffset() const {
-        return (getValue() - 4) / ProtectionGrade * ProtectionPitch;
-    }
-};
-
-typedef ArmorGrade<2, 1, 1, 1, 1000> ClothGrade;
-typedef ArmorGrade<1, 1, 1, 2, 500> GroceryGrade;
-
-class AccessoryGrade : public HasGrade {
-public:
-    // Effect on the item's attributes
-    int getDurabilityOffset() const {
-        return (getValue() - 4) * 1000;
-    }
-    Luck_t getLuck() const {
-        return (getValue() - 4);
-    }
 };
 
 // Attacking Stats Policies

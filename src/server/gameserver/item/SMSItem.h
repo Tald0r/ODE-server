@@ -20,8 +20,7 @@
 // class SMSItem;
 //////////////////////////////////////////////////////////////////////////////
 
-class SMSItem : public ConcreteItem<Item::ITEM_CLASS_SMS_ITEM, NoStack, NoDurability, NoOption, NoGrade, NoAttacking,
-                                    NoEnchantLevel> {
+class SMSItem : public ConcreteItem<Item::ITEM_CLASS_SMS_ITEM, NoStack, NoOption, NoAttacking, NoEnchantLevel> {
 public:
     SMSItem();
     SMSItem(ItemType_t itemType, const list<OptionType_t>& optionType);

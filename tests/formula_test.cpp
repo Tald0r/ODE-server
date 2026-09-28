@@ -27,6 +27,7 @@
 
 #include "domain/Formulas.h"
 #include "domain/ItemDurability.h"
+#include "domain/ItemGrade.h"
 #include "domain/ItemPrice.h"
 #include "domain/SkillOutputFormulas.h"
 
@@ -1026,6 +1027,31 @@ std::vector<std::string> splitTabs(const std::string& line) {
     }
 }
 
+// The grade policies, and the names the vector files spell them by: the
+// enumerator names.
+std::vector<decore::GradePolicy> allGradePolicies() {
+    return {decore::GradePolicy::None,  decore::GradePolicy::Plain,   decore::GradePolicy::Weapon,
+            decore::GradePolicy::Cloth, decore::GradePolicy::Grocery, decore::GradePolicy::Accessory};
+}
+
+std::string gradePolicyName(decore::GradePolicy policy) {
+    switch (policy) {
+    case decore::GradePolicy::None:
+        return "None";
+    case decore::GradePolicy::Plain:
+        return "Plain";
+    case decore::GradePolicy::Weapon:
+        return "Weapon";
+    case decore::GradePolicy::Cloth:
+        return "Cloth";
+    case decore::GradePolicy::Grocery:
+        return "Grocery";
+    case decore::GradePolicy::Accessory:
+        return "Accessory";
+    }
+    return "?";
+}
+
 // One row's inputs, read left to right. A malformed field records an error
 // and reads as 0, so the row fails with a message rather than a throw.
 class RowReader {
@@ -1078,6 +1104,15 @@ public:
         return decore::PriceRace::None;
     }
 
+    decore::GradePolicy gradePolicy() {
+        const std::string text = next();
+        for (decore::GradePolicy policy : allGradePolicies())
+            if (text == gradePolicyName(policy))
+                return policy;
+        fail("not a grade policy: \"" + text + "\"");
+        return decore::GradePolicy::None;
+    }
+
     // Every input consumed, and exactly the expected column left.
     void finish() {
         if (m_Next + 1 != m_Fields.size())
@@ -1122,8 +1157,9 @@ decore::ItemPriceInput readPriceItem(RowReader& in, std::vector<int>& multiplier
     return input;
 }
 
-// Evaluates one row. Returns the result as decimal text; sets `error` for a
-// row this suite cannot read.
+// Evaluates one row. Returns the result as the expected column spells it:
+// decimal text, a comma-separated list for a struct, or an enumerator name.
+// Sets `error` for a row this suite cannot read.
 std::string evaluateRow(const std::vector<std::string>& fields, std::string& error) {
     RowReader in(fields);
     const std::string& function = fields[0];
@@ -1173,6 +1209,24 @@ std::string evaluateRow(const std::vector<std::string>& fields, std::string& err
         std::vector<int> plusPoints = in.list();
         in.finish();
         result = decore::maxDurability(info, hasDurability, offset, plusPoints.data(), (int)plusPoints.size());
+    } else if (function == "gradeOffsets") {
+        decore::GradePolicy policy = in.gradePolicy();
+        int grade = (int)in.integer();
+        in.finish();
+        const decore::GradeOffsets offsets = decore::gradeOffsets(policy, grade);
+        error = in.error();
+        return std::to_string(offsets.durability) + "," + std::to_string(offsets.damage) + "," +
+               std::to_string(offsets.critical) + "," + std::to_string(offsets.defense) + "," +
+               std::to_string(offsets.protection) + "," + std::to_string(offsets.luck);
+    } else if (function == "gradePolicyOf") {
+        int itemClass = (int)in.integer();
+        in.finish();
+        error = in.error();
+        return gradePolicyName(decore::gradePolicyOf(itemClass));
+    } else if (function == "hasDurability") {
+        int itemClass = (int)in.integer();
+        in.finish();
+        result = decore::hasDurability(itemClass) ? 1 : 0;
     } else {
         error = "unknown function \"" + function + "\"";
         return std::string();
@@ -1260,6 +1314,10 @@ TEST(SharedVectors, RepairPrice) {
 
 TEST(SharedVectors, Durability) {
     checkVectorFile("durability.tsv", {"maxDurabilityBase", "maxDurabilityWithOptions", "maxDurability"});
+}
+
+TEST(SharedVectors, ItemGrade) {
+    checkVectorFile("item_grade.tsv", {"gradeOffsets", "gradePolicyOf", "hasDurability"});
 }
 
 } // namespace

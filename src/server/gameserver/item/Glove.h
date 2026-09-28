@@ -20,8 +20,7 @@
 // class Glove;
 //////////////////////////////////////////////////////////////////////////////
 
-class Glove
-    : public ConcreteItem<Item::ITEM_CLASS_GLOVE, NoStack, HasDurability, HasOption, GroceryGrade, NoAttacking> {
+class Glove : public ConcreteItem<Item::ITEM_CLASS_GLOVE, NoStack, HasOption, NoAttacking> {
 public:
     Glove();
     Glove(ItemType_t itemType, const list<OptionType_t>& optionType);

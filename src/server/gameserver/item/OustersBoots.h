@@ -20,8 +20,7 @@
 // class OustersBoots;
 //////////////////////////////////////////////////////////////////////////////
 
-class OustersBoots
-    : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_BOOTS, NoStack, HasDurability, HasOption, ClothGrade, NoAttacking> {
+class OustersBoots : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_BOOTS, NoStack, HasOption, NoAttacking> {
 public:
     OustersBoots();
     OustersBoots(ItemType_t itemType, const list<OptionType_t>& optionType);

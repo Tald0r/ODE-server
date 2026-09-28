@@ -21,8 +21,7 @@
 // class OustersChakram;
 //////////////////////////////////////////////////////////////////////////////
 
-class OustersChakram
-    : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_CHAKRAM, NoStack, HasDurability, HasOption, WeaponGrade, Weapon> {
+class OustersChakram : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_CHAKRAM, NoStack, HasOption, Weapon> {
 public:
     OustersChakram();
     OustersChakram(ItemType_t itemType, const list<OptionType_t>& optionType);

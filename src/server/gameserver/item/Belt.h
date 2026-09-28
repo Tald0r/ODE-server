@@ -20,7 +20,7 @@
 // class Belt;
 //////////////////////////////////////////////////////////////////////////////
 
-class Belt : public ConcreteItem<Item::ITEM_CLASS_BELT, NoStack, HasDurability, HasOption, GroceryGrade, NoAttacking> {
+class Belt : public ConcreteItem<Item::ITEM_CLASS_BELT, NoStack, HasOption, NoAttacking> {
 public:
     Belt();
     Belt(ItemType_t itemType, const list<OptionType_t>& optionType);

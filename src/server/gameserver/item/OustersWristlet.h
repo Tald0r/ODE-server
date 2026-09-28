@@ -20,8 +20,7 @@
 // class OustersWristlet;
 //////////////////////////////////////////////////////////////////////////////
 
-class OustersWristlet
-    : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_WRISTLET, NoStack, HasDurability, HasOption, WeaponGrade, Weapon> {
+class OustersWristlet : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_WRISTLET, NoStack, HasOption, Weapon> {
 public:
     OustersWristlet();
     OustersWristlet(ItemType_t itemType, const list<OptionType_t>& optionType);

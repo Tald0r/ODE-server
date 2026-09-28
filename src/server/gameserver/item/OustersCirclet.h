@@ -20,8 +20,7 @@
 // class OustersCirclet;
 //////////////////////////////////////////////////////////////////////////////
 
-class OustersCirclet : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_CIRCLET, NoStack, HasDurability, HasOption,
-                                           GroceryGrade, NoAttacking> {
+class OustersCirclet : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_CIRCLET, NoStack, HasOption, NoAttacking> {
 public:
     OustersCirclet();
     OustersCirclet(ItemType_t itemType, const list<OptionType_t>& optionType);

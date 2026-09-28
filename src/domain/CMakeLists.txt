@@ -20,6 +20,7 @@ set(DECORE_FP_FLAGS -ffp-contract=off -fno-fast-math)
 add_library(de-core STATIC
     Formulas.cpp
     ItemDurability.cpp
+    ItemGrade.cpp
     ItemPrice.cpp
     SkillOutputFormulas.cpp
 )
@@ -43,6 +44,7 @@ target_compile_options(de-core PRIVATE ${DECORE_FP_FLAGS})
 set(DECORE_VENDORED_SOURCES
     Formulas.cpp
     ItemDurability.cpp
+    ItemGrade.cpp
     ItemPrice.cpp
 )
 add_library(de-core-strict OBJECT EXCLUDE_FROM_ALL ${DECORE_VENDORED_SOURCES})

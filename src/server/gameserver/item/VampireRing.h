@@ -20,8 +20,7 @@
 // class VampireRing;
 //////////////////////////////////////////////////////////////////////////////
 
-class VampireRing : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_RING, NoStack, HasDurability, HasOption,
-                                        AccessoryGrade, NoAttacking> {
+class VampireRing : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_RING, NoStack, HasOption, NoAttacking> {
 public:
     VampireRing();
     VampireRing(ItemType_t itemType, const list<OptionType_t>& optionType);

@@ -20,8 +20,7 @@
 // class Helm;
 //////////////////////////////////////////////////////////////////////////////
 
-class Helm : public ConcreteItem<Item::ITEM_CLASS_HELM, NoStack, HasDurability, HasOption, GroceryGrade, NoAttacking,
-                                 NoEnchantLevel> {
+class Helm : public ConcreteItem<Item::ITEM_CLASS_HELM, NoStack, HasOption, NoAttacking, NoEnchantLevel> {
 public:
     Helm();
     Helm(ItemType_t itemType, const list<OptionType_t>& optionType);

@@ -20,8 +20,7 @@
 // class Persona;
 //////////////////////////////////////////////////////////////////////////////
 
-class Persona
-    : public ConcreteItem<Item::ITEM_CLASS_PERSONA, NoStack, HasDurability, HasOption, GroceryGrade, NoAttacking> {
+class Persona : public ConcreteItem<Item::ITEM_CLASS_PERSONA, NoStack, HasOption, NoAttacking> {
 public:
     Persona();
     Persona(ItemType_t itemType, const list<OptionType_t>& optionType);

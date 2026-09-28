@@ -20,8 +20,7 @@
 // class EffectItem;
 //////////////////////////////////////////////////////////////////////////////
 
-class EffectItem : public ConcreteItem<Item::ITEM_CLASS_EFFECT_ITEM, Stackable, NoDurability, NoOption, NoGrade,
-                                       NoAttacking, NoEnchantLevel> {
+class EffectItem : public ConcreteItem<Item::ITEM_CLASS_EFFECT_ITEM, Stackable, NoOption, NoAttacking, NoEnchantLevel> {
 public:
     EffectItem();
     EffectItem(ItemType_t itemType, const list<OptionType_t>& optionType, ItemNum_t Num);

@@ -14,9 +14,33 @@
 // decore::maxDurabilityBase, so this header stays free of de-core includes.
 Durability_t computeBaseMaxDurability(Durability_t infoDurability, bool hasDurability, int gradeDurabilityOffset);
 
-template <Item::ItemClass IClass, typename StackPolicy = NoStack, typename DurabilityPolicy = NoDurability,
-          typename OptionPolicy = NoOption, typename GradePolicy = NoGrade, typename AttackingStatPolicy = NoAttacking,
-          typename EnchantLevelPolicy = HasEnchantLevel>
+// How far an item's grade moves each of its attributes (decore::GradeOffsets).
+struct ItemGradeOffsets {
+    int durability;
+    int damage;
+    int critical;
+    int defense;
+    int protection;
+    int luck;
+};
+
+// An item class's grade and durability rules, read from de-core's per-class
+// table (domain/ItemGrade.h): whether the class keeps a grade
+// (decore::gradePolicyOf is not None), whether it keeps a durability
+// (decore::hasDurability), and the offsets a grade gives under the class's
+// grade policy (decore::gradeOffsets). Defined in ItemUtil.cpp, so this
+// header stays free of de-core includes.
+bool itemClassHasGrade(Item::ItemClass itemClass);
+bool itemClassHasDurability(Item::ItemClass itemClass);
+ItemGradeOffsets itemClassGradeOffsets(Item::ItemClass itemClass, Grade_t grade);
+
+// An item built from policies. Its grade and durability rules are not
+// template arguments: they come from de-core's table for IClass, the same
+// table the client builds, so the two cannot disagree. A class without a
+// grade reads -1 and ignores setGrade; a class without a durability reads
+// 1 and ignores setDurability.
+template <Item::ItemClass IClass, typename StackPolicy = NoStack, typename OptionPolicy = NoOption,
+          typename AttackingStatPolicy = NoAttacking, typename EnchantLevelPolicy = HasEnchantLevel>
 class ConcreteItem : public Item {
 public:
     // Concrete implementations of the virtual functions
@@ -63,14 +87,17 @@ public:
 public:
     // Durability
     Durability_t getDurability() const {
+        if (!itemClassHasDurability(IClass))
+            return 1;
         return m_Durability.getValue();
     }
     void setDurability(Durability_t durability) {
-        m_Durability.setValue(durability);
+        if (itemClassHasDurability(IClass))
+            m_Durability.setValue(durability);
     }
     Durability_t getMaxDurability() const {
-        return computeBaseMaxDurability(getItemInfo()->getDurability(), m_Durability.hasValue(),
-                                        m_Grade.getDurabilityOffset());
+        return computeBaseMaxDurability(getItemInfo()->getDurability(), itemClassHasDurability(IClass),
+                                        gradeOffsets().durability);
     }
 
 public:
@@ -106,23 +133,26 @@ public:
 public:
     // Item grade
     Grade_t getGrade() const {
+        if (!itemClassHasGrade(IClass))
+            return -1;
         return m_Grade.getValue();
     }
     void setGrade(Grade_t Grade) {
-        m_Grade.setValue(Grade);
+        if (itemClassHasGrade(IClass))
+            m_Grade.setValue(Grade);
     }
 
     Luck_t getLuck() const {
-        return m_Grade.getLuck();
+        return (Luck_t)gradeOffsets().luck;
     }
 
 public:
     // Attack attributes
     Damage_t getMinDamage() const {
-        return max(1, ((int)getItemInfo()->getMinDamage()) + ((int)getBonusDamage()) + m_Grade.getDamageOffset());
+        return max(1, ((int)getItemInfo()->getMinDamage()) + ((int)getBonusDamage()) + gradeOffsets().damage);
     }
     Damage_t getMaxDamage() const {
-        return max(1, ((int)getItemInfo()->getMaxDamage()) + ((int)getBonusDamage()) + m_Grade.getDamageOffset());
+        return max(1, ((int)getItemInfo()->getMaxDamage()) + ((int)getBonusDamage()) + gradeOffsets().damage);
     }
     Range_t getRange() const {
         return getItemInfo()->getRange();
@@ -134,7 +164,7 @@ public:
         return getItemInfo()->getSpeed();
     }
     int getCriticalBonus() const {
-        return max(0, getItemInfo()->getCriticalBonus() + m_Grade.getCriticalOffset());
+        return max(0, getItemInfo()->getCriticalBonus() + gradeOffsets().critical);
     }
 
     BYTE getBulletCount() const {
@@ -168,10 +198,10 @@ public:
 public:
     // Defense attributes
     Defense_t getDefenseBonus() const {
-        return max(0, ((int)getItemInfo()->getDefenseBonus()) + m_Grade.getDefenseOffset());
+        return max(0, ((int)getItemInfo()->getDefenseBonus()) + gradeOffsets().defense);
     }
     Protection_t getProtectionBonus() const {
-        return max(0, ((int)getItemInfo()->getProtectionBonus()) + m_Grade.getProtectionOffset());
+        return max(0, ((int)getItemInfo()->getProtectionBonus()) + gradeOffsets().protection);
     }
 
 public:
@@ -184,12 +214,22 @@ public:
     }
 
 private:
+    // The offsets the item's grade gives under its class's grade policy;
+    // all 0 for a class without grade effects. The grade is read without
+    // virtual dispatch, as the grade policies read their own value.
+    ItemGradeOffsets gradeOffsets() const {
+        return itemClassGradeOffsets(IClass, ConcreteItem::getGrade());
+    }
+
     ItemType_t m_ItemType;
 
     StackPolicy m_Stack;
-    DurabilityPolicy m_Durability;
+    // Read only when the class keeps a durability; left uninitialised, as
+    // HasDurability left it, until the item's loader or creator sets it.
+    OneValuePolicy<Durability_t> m_Durability;
     OptionPolicy m_Option;
-    GradePolicy m_Grade;
+    // Read only when the class keeps a grade; a new item is grade 4.
+    OneValuePolicy<Grade_t> m_Grade{4};
 
     AttackingStatPolicy m_AttackingStat;
     EnchantLevelPolicy m_EnchantLevel;

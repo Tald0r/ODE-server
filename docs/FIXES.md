@@ -13,6 +13,42 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Per-class grade policy (2026-09-28)
+
+Which item classes keep a grade and a durability, and what a grade does to
+each attribute, moved into de-core (`src/domain/ItemGrade.cpp`) so the
+client can build the same table; `ConcreteItem` reads it instead of taking
+grade and durability policies as template arguments. The table is the
+server's choices as they were, and these are kept:
+
+- **The grade policy of five classes is not what their neighbours use.**
+  ShoulderArmor, Persona, Fascia and Mitten move with the grocery armor
+  (defense `grade - 4`, protection `(grade - 4) / 2`, durability 500 a
+  grade, no luck), not like the accessories or the cloth; CoreZap keeps a
+  grade that moves nothing (`HasGrade`), though the three races' stat
+  code reads it as the option-class level. Each is pinned by a `policy-<Class>` row in
+  `src/domain/vectors/item_grade.tsv`.
+  > **Status:** recorded, not fixed (feat/shared-grade-policy)
+- **Five gear classes keep no durability.** Dermis, Fascia,
+  CarryingReceiver, CoreZap and VampireAmulet read a durability of 1 and
+  ignore a new one, while Fascia's grocery siblings and every other
+  accessory track theirs. Dermis, Fascia and CarryingReceiver have a
+  table durability of 0 and CoreZap's table has no durability column
+  (`ItemInfo` reads 1), so their maximum is 0 or 1 and they sell at the
+  full price. VampireAmulet's table durability is 1000 to 24000, so its
+  maximum is that and it sells at 1 / maximum of its price, a few gold.
+  Pinned by the `durability-<Class>` rows.
+  > **Status:** recorded, not fixed (feat/shared-grade-policy)
+- **A class not built on `ConcreteItem` reports a maximum durability of
+  1.** The motorcycle, the relics, the castle symbols, the blood bibles
+  and the sweepers store a durability, but `Item::getMaxDurability` is 1
+  for them, so `getPrice` never discounts their wear (`> 1`). The table
+  gives them no grade policy and no durability, which matches their grade
+  and grade offsets; their maximum is not `maxDurabilityBase`, and
+  `ItemGrade.h` says so for the client, whose motorcycle computes one from
+  its item table.
+  > **Status:** recorded, not fixed (feat/shared-grade-policy)
+
 ## Shared price rules (2026-09-28)
 
 The shop buy, sell and repair price and an item's maximum durability moved

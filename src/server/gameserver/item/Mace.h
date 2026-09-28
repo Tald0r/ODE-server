@@ -20,7 +20,7 @@
 // class Mace;
 //////////////////////////////////////////////////////////////////////////////
 
-class Mace : public ConcreteItem<Item::ITEM_CLASS_MACE, NoStack, HasDurability, HasOption, WeaponGrade, SlayerWeapon> {
+class Mace : public ConcreteItem<Item::ITEM_CLASS_MACE, NoStack, HasOption, SlayerWeapon> {
 public:
     Mace();
     Mace(ItemType_t itemType, const list<OptionType_t>& optionType);

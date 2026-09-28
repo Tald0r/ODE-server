@@ -20,8 +20,7 @@
 // class OustersArmsband;
 //////////////////////////////////////////////////////////////////////////////
 
-class OustersArmsband : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_ARMSBAND, NoStack, HasDurability, HasOption,
-                                            GroceryGrade, NoAttacking> {
+class OustersArmsband : public ConcreteItem<Item::ITEM_CLASS_OUSTERS_ARMSBAND, NoStack, HasOption, NoAttacking> {
 public:
     OustersArmsband();
     OustersArmsband(ItemType_t itemType, const list<OptionType_t>& optionType);

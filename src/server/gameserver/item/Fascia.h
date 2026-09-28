@@ -20,8 +20,7 @@
 // class Fascia;
 //////////////////////////////////////////////////////////////////////////////
 
-class Fascia
-    : public ConcreteItem<Item::ITEM_CLASS_FASCIA, NoStack, NoDurability, HasOption, GroceryGrade, NoAttacking> {
+class Fascia : public ConcreteItem<Item::ITEM_CLASS_FASCIA, NoStack, HasOption, NoAttacking> {
 public:
     Fascia();
     Fascia(ItemType_t itemType, const list<OptionType_t>& optionType);

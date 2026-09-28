@@ -20,8 +20,7 @@
 // class Potion;
 //////////////////////////////////////////////////////////////////////////////
 
-class Potion : public ConcreteItem<Item::ITEM_CLASS_POTION, Stackable, NoDurability, NoOption, NoGrade, NoAttacking,
-                                   NoEnchantLevel> {
+class Potion : public ConcreteItem<Item::ITEM_CLASS_POTION, Stackable, NoOption, NoAttacking, NoEnchantLevel> {
 public:
     Potion();
     Potion(ItemType_t itemType, const list<OptionType_t>& optionType, ItemNum_t Num);

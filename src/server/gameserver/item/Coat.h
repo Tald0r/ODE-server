@@ -20,7 +20,7 @@
 // class Coat;
 //////////////////////////////////////////////////////////////////////////////
 
-class Coat : public ConcreteItem<Item::ITEM_CLASS_COAT, NoStack, HasDurability, HasOption, ClothGrade, NoAttacking> {
+class Coat : public ConcreteItem<Item::ITEM_CLASS_COAT, NoStack, HasOption, NoAttacking> {
 public:
     Coat();
     Coat(ItemType_t itemType, const list<OptionType_t>& optionType);

@@ -23,23 +23,10 @@
 #ifndef DECORE_ITEM_PRICE_H
 #define DECORE_ITEM_PRICE_H
 
-namespace decore {
+// The wire item-class ids the price rules branch on.
+#include "domain/ItemClass.h"
 
-// The wire item-class ids the price rules branch on (Item::ItemClass on
-// the server, ITEM_CLASS on the client). Each adapter static_asserts them
-// against its own enum.
-namespace itemclass {
-constexpr int Potion = 1;
-constexpr int Skull = 34;
-constexpr int Serum = 36;
-constexpr int SlayerPortalItem = 38;
-constexpr int VampirePortalItem = 39;
-constexpr int Larva = 66;
-constexpr int Pupa = 67;
-constexpr int ComposMei = 68;
-constexpr int OustersSummonItem = 69;
-constexpr int MoonCard = 72;
-} // namespace itemclass
+namespace decore {
 
 // The race of the creature a price is quoted to; None for no creature or
 // one that is not a player race.

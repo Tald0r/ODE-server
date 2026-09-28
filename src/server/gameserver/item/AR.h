@@ -19,7 +19,7 @@
 // class AR;
 //////////////////////////////////////////////////////////////////////////////
 
-class AR : public ConcreteItem<Item::ITEM_CLASS_AR, NoStack, HasDurability, HasOption, WeaponGrade, SlayerGun> {
+class AR : public ConcreteItem<Item::ITEM_CLASS_AR, NoStack, HasOption, SlayerGun> {
 public:
     AR();
     AR(ItemType_t itemType, const list<OptionType_t>& optionType);

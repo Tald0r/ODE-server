@@ -20,8 +20,7 @@
 // class VampireBracelet;
 //////////////////////////////////////////////////////////////////////////////
 
-class VampireBracelet : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_BRACELET, NoStack, HasDurability, HasOption,
-                                            AccessoryGrade, NoAttacking> {
+class VampireBracelet : public ConcreteItem<Item::ITEM_CLASS_VAMPIRE_BRACELET, NoStack, HasOption, NoAttacking> {
 public:
     VampireBracelet();
     VampireBracelet(ItemType_t itemType, const list<OptionType_t>& optionType);
