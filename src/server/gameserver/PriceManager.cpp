@@ -7,6 +7,8 @@
 
 #include "PriceManager.h"
 
+#include <vector>
+
 #include "Creature.h"
 #include "GameContext.h"
 #include "GamePlayer.h"
@@ -18,145 +20,118 @@
 #include "Slayer.h"
 #include "Vampire.h"
 #include "VariableManager.h"
+#include "domain/ItemPrice.h"
 #include "item/OustersSummonItem.h"
 #include "item/Skull.h"
 #include "item/SlayerPortalItem.h"
 #include "item/VampirePortalItem.h"
 
-// constants
-const uint PORTAL_ITEM_CHARGE_PRICE = 5000;
-const uint SUMMON_ITEM_CHARGE_PRICE = 1000;
+// The item-class ids the shared price rules branch on must be this
+// server's.
+static_assert(decore::itemclass::Potion == Item::ITEM_CLASS_POTION);
+static_assert(decore::itemclass::Skull == Item::ITEM_CLASS_SKULL);
+static_assert(decore::itemclass::Serum == Item::ITEM_CLASS_SERUM);
+static_assert(decore::itemclass::SlayerPortalItem == Item::ITEM_CLASS_SLAYER_PORTAL_ITEM);
+static_assert(decore::itemclass::VampirePortalItem == Item::ITEM_CLASS_VAMPIRE_PORTAL_ITEM);
+static_assert(decore::itemclass::Larva == Item::ITEM_CLASS_LARVA);
+static_assert(decore::itemclass::Pupa == Item::ITEM_CLASS_PUPA);
+static_assert(decore::itemclass::ComposMei == Item::ITEM_CLASS_COMPOS_MEI);
+static_assert(decore::itemclass::OustersSummonItem == Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM);
+static_assert(decore::itemclass::MoonCard == Item::ITEM_CLASS_MOON_CARD);
+
+namespace {
+
+// The inputs getPrice and getRepairPrice share: the item, its table price,
+// its options' price multipliers (stored in `multipliers`, which the input
+// points into) and its durability. The charges are left at 0; each caller
+// reads the ones its rule uses.
+decore::ItemPriceInput gatherItemPriceInput(Item* pItem, std::vector<int>& multipliers) {
+    decore::ItemPriceInput input = {};
+    input.itemClass = pItem->getItemClass();
+    input.itemType = pItem->getItemType();
+
+    ItemInfo* pItemInfo = de::gameContext().itemInfos().getItemInfo(pItem->getItemClass(), pItem->getItemType());
+    input.basePrice = pItemInfo->getPrice();
+    input.grade = pItem->getGrade();
+
+    const list<OptionType_t>& optionTypes = pItem->getOptionTypeList();
+    list<OptionType_t>::const_iterator itr;
+    for (itr = optionTypes.begin(); itr != optionTypes.end(); itr++) {
+        OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(*itr);
+        Assert(pOptionInfo != NULL);
+        multipliers.push_back(pOptionInfo->getPriceMultiplier());
+    }
+    input.optionPriceMultipliers = multipliers.data();
+    input.optionCount = (int)multipliers.size();
+
+    input.maxDurability = computeMaxDurability(pItem);
+    input.curDurability = pItem->getDurability();
+    return input;
+}
+
+} // namespace
 
 //////////////////////////////////////////////////////////////////////////////
 // getPrice()
 // Determines the actual price of an item from its item info.
 // The nDiscount parameter (a percentage) controls the price.
+// The rule is decore::itemPrice; this gathers its inputs. The item, option
+// and durability inputs are read for every item, including the ones priced
+// flat (given away, time-limited, the crown moon card); every item a shop
+// handles has all three. The creature is read only when it is not NULL.
 //////////////////////////////////////////////////////////////////////////////
 Price_t PriceManager::getPrice(Item* pItem, MarketCond_t nDiscount, ShopRackType_t shopType,
                                Creature* pCreature) const {
-    // An item that was given away for free sells for only 1.
-    if (pItem->getCreateType() == Item::CREATE_TYPE_GAME)
-        return (Price_t)1;
-    // A time-limited quest item sells for 50.
-    if (pItem->isTimeLimitItem())
-        return (Price_t)50;
-    if (pItem->getItemClass() == Item::ITEM_CLASS_MOON_CARD && pItem->getItemType() == 4) {
-        return (Price_t)de::gameContext().variables().getVariable(CROWN_PRICE);
-    }
+    std::vector<int> multipliers;
+    decore::ItemPriceInput input = gatherItemPriceInput(pItem, multipliers);
 
-    // Get the item's original price.
-    ItemInfo* pItemInfo = de::gameContext().itemInfos().getItemInfo(pItem->getItemClass(), pItem->getItemType());
-    double originalPrice = pItemInfo->getPrice();
-    double finalPrice = 0;
+    input.createTypeGame = (pItem->getCreateType() == Item::CREATE_TYPE_GAME);
+    input.timeLimited = pItem->isTimeLimitItem();
+    input.crownPrice = de::gameContext().variables().getVariable(CROWN_PRICE);
 
-    if (pItem->getGrade() != -1) {
-        double gradePercent = 80 + (5 * pItem->getGrade());
-        //		originalPrice = getPercentValue( originalPrice, gradePercent );
-        originalPrice *= (gradePercent / 100.0);
-    }
-
-    // A slayer portal adds the price of its current charges to the original price.
+    // A slayer portal, a vampire portal and an ousters summon item are
+    // priced with their current charges.
     if (pItem->getItemClass() == Item::ITEM_CLASS_SLAYER_PORTAL_ITEM) {
-        SlayerPortalItem* pSlayerPortalItem = dynamic_cast<SlayerPortalItem*>(pItem);
-        originalPrice += (pSlayerPortalItem->getCharge() * PORTAL_ITEM_CHARGE_PRICE);
+        input.charge = dynamic_cast<SlayerPortalItem*>(pItem)->getCharge();
     } else if (pItem->getItemClass() == Item::ITEM_CLASS_VAMPIRE_PORTAL_ITEM) {
-        VampirePortalItem* pVampirePortalItem = dynamic_cast<VampirePortalItem*>(pItem);
-        originalPrice += (pVampirePortalItem->getCharge() * PORTAL_ITEM_CHARGE_PRICE);
+        input.charge = dynamic_cast<VampirePortalItem*>(pItem)->getCharge();
     } else if (pItem->getItemClass() == Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM) {
-        OustersSummonItem* pOustersSummonItem = dynamic_cast<OustersSummonItem*>(pItem);
-        originalPrice += (pOustersSummonItem->getCharge() * SUMMON_ITEM_CHARGE_PRICE);
+        input.charge = dynamic_cast<OustersSummonItem*>(pItem)->getCharge();
     }
 
-    // If the item has options, multiply the price by the option multiplier.
-    const list<OptionType_t>& optionTypes = pItem->getOptionTypeList();
-    if (!optionTypes.empty()) {
-        finalPrice = 0;
+    input.marketCond = nDiscount;
+    input.mysteriousRack = (shopType == SHOP_RACK_MYSTERIOUS);
 
-        // price = (original price * the option's PriceMultiplier / 100) + ..
-        double priceMultiplier = 0;
-        list<OptionType_t>::const_iterator itr;
-        for (itr = optionTypes.begin(); itr != optionTypes.end(); itr++) {
-            OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(*itr);
-            Assert(pOptionInfo != NULL);
-            priceMultiplier = (double)(pOptionInfo->getPriceMultiplier());
-            finalPrice += (originalPrice * priceMultiplier / 100);
-        }
-
-        originalPrice = finalPrice;
-    }
-
-    // A damaged item loses price in proportion to the damage.
-    double maxDurability = (double)computeMaxDurability(pItem);
-    double curDurability = (double)(pItem->getDurability());
-
-    // Some items have no durability, so handle that case.
-    if (maxDurability > 1)
-        finalPrice = originalPrice * curDurability / maxDurability;
-    else
-        finalPrice = originalPrice;
-
-    // Adjust the price again for the shop's market condition.
-    finalPrice = finalPrice * nDiscount / 100;
-
-    // Adjust the price again for the kind of shop.
-    if (shopType == SHOP_RACK_MYSTERIOUS) {
-        finalPrice *= 10;
-    }
-
-    // Adjust the price again for the creature's own modifiers.
+    input.race = decore::PriceRace::None;
     if (pCreature != NULL) {
         if (pCreature->isSlayer()) {
             Slayer* pSlayer = dynamic_cast<Slayer*>(pCreature);
             Attr_t CSTR = pSlayer->getSTR(ATTR_CURRENT);
             Attr_t CDEX = pSlayer->getDEX(ATTR_CURRENT);
             Attr_t CINT = pSlayer->getINT(ATTR_CURRENT);
-
-            if ((CSTR + CDEX + CINT <= 40) && (pItem->getItemClass() == Item::ITEM_CLASS_POTION) &&
-                (pItem->getItemType() == 0 || pItem->getItemType() == 5)) {
-                finalPrice = getPercentValue((int)finalPrice, 70);
-            }
+            input.race = decore::PriceRace::Slayer;
+            input.currentStatSum = CSTR + CDEX + CINT;
         } else if (pCreature->isVampire()) {
-            // A vampire selling a skull gets half the skull's price.
-            if (pItem->getItemClass() == Item::ITEM_CLASS_SKULL) {
-                finalPrice = finalPrice / 2.0;
-            }
+            input.race = decore::PriceRace::Vampire;
         } else if (pCreature->isOusters()) {
-            // An ousters selling a skull gets 75% of the skull's price.
-            if (pItem->getItemClass() == Item::ITEM_CLASS_SKULL) {
-                finalPrice *= 0.75;
-            }
+            input.race = decore::PriceRace::Ousters;
         }
     }
 
-    // For a paying user in a pay zone.
-    if (de::gameContext().variables().getVariable(PREMIUM_HALF_EVENT)) {
-        if (pItem->getItemClass() == Item::ITEM_CLASS_POTION || pItem->getItemClass() == Item::ITEM_CLASS_SERUM ||
-            pItem->getItemClass() == Item::ITEM_CLASS_LARVA || pItem->getItemClass() == Item::ITEM_CLASS_PUPA ||
-            pItem->getItemClass() == Item::ITEM_CLASS_COMPOS_MEI) {
-            if (pCreature->isPC()) {
-                PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
-                GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPC->getPlayer());
-                if (pGamePlayer->isPayPlaying()) {
-                    // Half price.
-                    finalPrice = finalPrice / 2;
-                }
-            }
-        }
-    }
+    // The premium half-price event applies to a paying user; the Blood Bible
+    // ratio is the player's own.
+    PlayerCreature* pPC = NULL;
+    if (pCreature != NULL && pCreature->isPC())
+        pPC = dynamic_cast<PlayerCreature*>(pCreature);
 
-    // Apply the Blood Bible bonus.
-    if (pItem->getItemClass() == Item::ITEM_CLASS_POTION || pItem->getItemClass() == Item::ITEM_CLASS_SERUM) {
-        if (pCreature->isPC()) {
-            PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
-            int ratio = pPC->getPotionPriceRatio();
-            if (ratio != 0) {
-                // The ratio value is negative.
-                finalPrice += getPercentValue((int)finalPrice, ratio);
-            }
-        }
+    if (de::gameContext().variables().getVariable(PREMIUM_HALF_EVENT) && pPC != NULL) {
+        GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPC->getPlayer());
+        input.premiumHalf = (pGamePlayer != NULL && pGamePlayer->isPayPlaying());
     }
+    if (pPC != NULL)
+        input.potionPriceRatio = pPC->getPotionPriceRatio();
 
-    return max(1, (int)finalPrice);
+    return decore::itemPrice(input);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -164,81 +139,26 @@ Price_t PriceManager::getPrice(Item* pItem, MarketCond_t nDiscount, ShopRackType
 // Returns the cost of repairing an item.
 // For a completely ruined item the repair cost is
 // one tenth of the item's original price.
+// The rule is decore::repairPrice; this gathers its inputs, the item, option
+// and durability ones for a portal or summon item too.
 //////////////////////////////////////////////////////////////////////////////
 Price_t PriceManager::getRepairPrice(Item* pItem, Creature* pCreature) const {
-    // Get the item's original price.
-    ItemInfo* pItemInfo = de::gameContext().itemInfos().getItemInfo(pItem->getItemClass(), pItem->getItemType());
-    double originalPrice = pItemInfo->getPrice();
-    double finalPrice = 0;
+    std::vector<int> multipliers;
+    decore::ItemPriceInput input = gatherItemPriceInput(pItem, multipliers);
 
-    if (pItem->getGrade() != -1) {
-        double gradePercent = 80 + (5 * pItem->getGrade());
-        //		originalPrice = getPercentValue( originalPrice, gradePercent );
-        originalPrice *= (gradePercent / 100.0);
-    }
-
-    // A slayer portal cannot be repaired, but its charges can be topped up.
+    // A slayer portal and an ousters summon item are charged for the
+    // charges they lack.
     if (pItem->getItemClass() == Item::ITEM_CLASS_SLAYER_PORTAL_ITEM) {
         SlayerPortalItem* pSlayerPortalItem = dynamic_cast<SlayerPortalItem*>(pItem);
-        int MaxCharge = pSlayerPortalItem->getMaxCharge();
-        int CurCharge = pSlayerPortalItem->getCharge();
-
-        return (MaxCharge - CurCharge) * PORTAL_ITEM_CHARGE_PRICE;
-    }
-
-    if (pItem->getItemClass() == Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM) {
+        input.maxCharge = pSlayerPortalItem->getMaxCharge();
+        input.charge = pSlayerPortalItem->getCharge();
+    } else if (pItem->getItemClass() == Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM) {
         OustersSummonItem* pOustersSummonItem = dynamic_cast<OustersSummonItem*>(pItem);
-        int MaxCharge = pOustersSummonItem->getMaxCharge();
-        int CurCharge = pOustersSummonItem->getCharge();
-
-        return (MaxCharge - CurCharge) * SUMMON_ITEM_CHARGE_PRICE;
+        input.maxCharge = pOustersSummonItem->getMaxCharge();
+        input.charge = pOustersSummonItem->getCharge();
     }
 
-    // If the item has options, multiply the price by the option multiplier.
-    const list<OptionType_t>& optionTypes = pItem->getOptionTypeList();
-    if (!optionTypes.empty()) {
-        finalPrice = 0;
-        // price = (original price * sum of the options' PriceMultipliers / 100) * number of options
-        double priceMultiplier = 0;
-        list<OptionType_t>::const_iterator itr;
-        for (itr = optionTypes.begin(); itr != optionTypes.end(); itr++) {
-            OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(*itr);
-            Assert(pOptionInfo != NULL);
-            priceMultiplier = (double)(pOptionInfo->getPriceMultiplier());
-            finalPrice += (originalPrice * priceMultiplier / 100);
-        }
-
-        originalPrice = finalPrice;
-    }
-
-    // A damaged item loses price in proportion to the damage.
-    double maxDurability = (double)computeMaxDurability(pItem);
-    double curDurability = (double)(pItem->getDurability());
-
-    // Some items have no durability, so handle that case.
-    if (maxDurability != 0) {
-        // Return early if the item is at full durability.
-        if (curDurability == maxDurability) {
-            return 0;
-        }
-
-        // Current durability divided by maximum durability gives how damaged the item is.
-        // Multiplying the original price by it lowers the value as durability drops.
-        finalPrice = originalPrice * curDurability / maxDurability;
-    } else {
-        // An item without durability cannot be damaged, so
-        // its durability-adjusted price equals the original price.
-        finalPrice = originalPrice;
-    }
-
-    // The repair cost is one tenth of the lost value.
-    finalPrice = (originalPrice - finalPrice) / 10.0;
-
-    if (finalPrice < 1.0) {
-        return 1;
-    }
-
-    return max(0, (int)finalPrice);
+    return decore::repairPrice(input);
 }
 
 //////////////////////////////////////////////////////////////////////////////

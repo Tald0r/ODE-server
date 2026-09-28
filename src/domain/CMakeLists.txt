@@ -19,6 +19,8 @@ set(DECORE_FP_FLAGS -ffp-contract=off -fno-fast-math)
 
 add_library(de-core STATIC
     Formulas.cpp
+    ItemDurability.cpp
+    ItemPrice.cpp
     SkillOutputFormulas.cpp
 )
 
@@ -40,6 +42,8 @@ target_compile_options(de-core PRIVATE ${DECORE_FP_FLAGS})
 # SkillOutputFormulas.cpp is not vendored and so is not listed.
 set(DECORE_VENDORED_SOURCES
     Formulas.cpp
+    ItemDurability.cpp
+    ItemPrice.cpp
 )
 add_library(de-core-strict OBJECT EXCLUDE_FROM_ALL ${DECORE_VENDORED_SOURCES})
 set_target_properties(de-core-strict PROPERTIES INCLUDE_DIRECTORIES "${DECORE_INCLUDE_ROOT}")

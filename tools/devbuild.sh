@@ -152,11 +152,14 @@ sync_in='rsync -a --delete --exclude=.git --exclude=/src/server/websocketproxyse
     /repo/CMakeLists.txt /repo/Makefile /work/ &&
     mkdir -p /work/docker && rsync -a --checksum /repo/docker/start.sh /work/docker/'
 
-# Copy generated test data back so a re-record shows up as a normal diff.
+# Copy generated test data back so a re-record shows up as a normal diff:
+# the goldens and inventories under tests/, and de-core's shared parity
+# vectors, which live beside the sources they pin.
 # --checksum because the container clock and the mount can disagree on mtime.
 sync_out='rsync -a --checksum \
     /work/tests/golden /work/tests/generated /work/tests/wire-layout.txt \
-    /repo/tests/'
+    /repo/tests/ &&
+    rsync -a --checksum /work/src/domain/vectors/ /repo/src/domain/vectors/'
 
 configure='cmake -G Ninja -B '"$BUILD_DIR"' -S /work \
     -DCMAKE_TOOLCHAIN_FILE=/work/cmake/zig-toolchain.cmake \
@@ -172,7 +175,7 @@ case "$command" in
     test)
         target=${args[0]:-wire_tests}
         recorder=""
-        [ "$record" = "1" ] && recorder='echo "--- recording goldens"; (cd '"$BUILD_DIR"' && UPDATE_GOLDENS=1 '"$OUTPUT_ROOT"'/bin/wire_tests >/dev/null);'
+        [ "$record" = "1" ] && recorder='echo "--- recording goldens"; (cd '"$BUILD_DIR"' && UPDATE_GOLDENS=1 '"$OUTPUT_ROOT"'/bin/wire_tests >/dev/null && UPDATE_GOLDENS=1 '"$OUTPUT_ROOT"'/bin/formula_tests >/dev/null);'
         # The recorder and ctest run as one group so that a failed build skips
         # both: a bare `$recorder` ending in `;` would end the && chain and let
         # ctest run a stale binary and report it green.
@@ -203,10 +206,10 @@ elif [ "$command" = "shell" ]; then
     exit 2
 fi
 
-# The checkout stays read-only except tests/, the one place sync_out writes:
-# a nested rw mount over the ro one. Without it a --record run's rsync back
-# fails on the read-only filesystem — and silently, since exit $rc reports
-# ctest's status, not the copy's.
+# The checkout stays read-only except tests/ and src/domain/vectors/, the
+# places sync_out writes: nested rw mounts over the ro one. Without them a
+# --record run's rsync back fails on the read-only filesystem — and
+# silently, since exit $rc reports ctest's status, not the copy's.
 #
 # The ${a[@]+"${a[@]}"} spelling expands an empty array to nothing: macOS
 # ships bash 3.2, where a bare "${a[@]}" of an empty array is an unbound
@@ -214,6 +217,7 @@ fi
 exec docker run --rm ${tty_args[@]+"${tty_args[@]}"} ${cpu_args[@]+"${cpu_args[@]}"} \
     -v "$repo_mount:/repo:ro" \
     -v "$repo_mount/tests:/repo/tests" \
+    -v "$repo_mount/src/domain/vectors:/repo/src/domain/vectors" \
     -v "$WORK_VOLUME:/work" \
     -v "$CCACHE_VOLUME:/ccache" \
     -v "$ZIG_CACHE_VOLUME:/zig-cache" \

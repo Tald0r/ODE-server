@@ -140,12 +140,13 @@ at ~20% CPU on 8 cores. `tools/devbuild.sh` syncs the build *inputs*
 (`cmake/`, `src/`, `tests/`, `third_party/`, `data/`, `initdb/`,
 `docker/start.sh` and the top-level CMakeLists/Makefile) into a container
 volume, builds there with Ninja and ccache, and copies only generated test
-data back (`tests/golden/`, `tests/generated/`, `tests/wire-layout.txt`).
+data back (`tests/golden/`, `tests/generated/`, `tests/wire-layout.txt`, and
+de-core's parity vectors in `src/domain/vectors/`).
 Same build: **~3.5 minutes at ~95% CPU**, and a no-op rebuild in seconds.
 
 ```bash
 make dev-test                          # build wire_tests + ctest
-bash tools/devbuild.sh test --record   # re-record goldens, then run
+bash tools/devbuild.sh test --record   # re-record goldens and vectors, then run
 make dev-build                         # all production targets
 make dev-shell                         # shell in the workspace
 make dev-clean                         # drop the workspace + cache volumes
@@ -183,7 +184,7 @@ src/
 │   ├── [GC|CG|CL|LC|GL|LG|GS|SG|GG]*.{h,cpp}   # Protocol packet classes, directly in Core/
 │   ├── [core utilities]       # Socket, datagram, player info, items, skills, etc.
 │   └── CMakeLists.txt         # de-kernel, Core, and the per-server packet libraries
-├── domain/                    # de-core: pure formula functions (Formulas, SkillOutputFormulas), freestanding
+├── domain/                    # de-core: pure formula functions (Formulas, SkillOutputFormulas, ItemPrice, ItemDurability), freestanding; vectors/ holds the parity rows the client asserts too
 ├── server/
 │   ├── Thread.h, ManagedThread.h  # the worker-thread base (CooperativeThread.h is reached only through ManagedThread)
 │   ├── Mailbox.h, Snapshot.h  # cross-thread command queue, copy-on-write tables

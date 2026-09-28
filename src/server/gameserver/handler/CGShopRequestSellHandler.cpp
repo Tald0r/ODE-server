@@ -28,6 +28,7 @@
 #include "Vampire.h"
 #include "VariableManager.h"
 #include "ZoneUtil.h"
+#include "domain/ItemPrice.h"
 #include "item/Belt.h"
 #include "item/Key.h"
 #include "item/Magazine.h"
@@ -164,7 +165,7 @@ void CGShopRequestSellHandler::executeNormal(CGShopRequestSell* pPacket, Player*
 
     // For a Skull the price is recomputed with the head price multiplier from the Variable Manager
     if (pItem->getItemClass() == Item::ITEM_CLASS_SKULL) {
-        itemPrice = itemPrice * (de::gameContext().variables().getHeadPriceBonus() / 100);
+        itemPrice = decore::skullSellTotal(itemPrice, de::gameContext().variables().getHeadPriceBonus());
     }
 
     // Leave an ItemTrace Log if one has to be left
@@ -474,7 +475,7 @@ void CGShopRequestSellHandler::executeOpAllSkull(CGShopRequestSell* pPacket, Pla
         }
     }
 
-    itemPrice = itemPrice * (de::gameContext().variables().getHeadPriceBonus() / 100);
+    itemPrice = decore::skullSellTotal(itemPrice, de::gameContext().variables().getHeadPriceBonus());
 
     // Pay the player for the goods.
     pPC->increaseGoldEx(itemPrice);

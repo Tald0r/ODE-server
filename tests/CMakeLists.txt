@@ -218,6 +218,12 @@ target_link_libraries(formula_tests PRIVATE
     gtest_main
     Threads::Threads
 )
+# The shared parity vectors formula_test.cpp reads (and, under
+# UPDATE_GOLDENS=1, rewrites). They live beside the sources they pin because
+# the client repository vendors them together.
+set_source_files_properties(formula_test.cpp PROPERTIES
+    COMPILE_DEFINITIONS "DECORE_VECTOR_DIR=\"${CMAKE_SOURCE_DIR}/src/domain/vectors\""
+)
 # `make dev-test` builds the wire_tests target; ride along so ctest always
 # has a fresh binary (same pattern as repository_tests above).
 add_dependencies(wire_tests formula_tests)
