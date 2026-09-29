@@ -200,3 +200,26 @@ TEST(WireBoolTest, everyNonzeroByteReadsAsTrueAndIsStoredAsOne) {
     }
     EXPECT_EQ(0u, in.length());
 }
+
+//////////////////////////////////////////////////////////////////////
+// A repeated script parameter name is malformed input like any other,
+// refused as a protocol error: the receive loops drop the connection on
+// a ProtocolException and let everything else escape the zone thread.
+//////////////////////////////////////////////////////////////////////
+
+TEST(ScriptParameterTest, aRepeatedNameIsRefusedAsAProtocolError) {
+    GCNPCAskVariable packet;
+    EXPECT_THROW(readHandBuiltBody(packet,
+                                   [](SocketOutputStream& out) {
+                                       out.write((ObjectID_t)0x81A2B3C4);
+                                       out.write((ScriptID_t)2);
+                                       out.write((BYTE)2);
+                                       for (int i = 0; i < 2; i++) {
+                                           out.write((BYTE)1);
+                                           out.write("a", 1);
+                                           out.write((BYTE)1);
+                                           out.write("b", 1);
+                                       }
+                                   }),
+                 InvalidProtocolException);
+}
