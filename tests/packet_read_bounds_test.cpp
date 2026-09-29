@@ -178,3 +178,25 @@ TEST(RackSlotTest, aStashSlotPastTheRackOrTheRowIsRefused) {
     EXPECT_THROW(readHandBuiltBody(*pastRack, [](SocketOutputStream& out) { emitStashSlot(out, STASH_RACK_MAX, 0); }),
                  InvalidProtocolException);
 }
+
+//////////////////////////////////////////////////////////////////////
+// A bool on the wire is one byte, and a sender can put any byte there.
+//////////////////////////////////////////////////////////////////////
+
+TEST(WireBoolTest, everyNonzeroByteReadsAsTrueAndIsStoredAsOne) {
+    const unsigned char bytes[] = {0x00, 0x01, 0x02, 0xFF};
+    Socket socket(new SocketImpl());
+    SocketInputStream in(&socket, 16);
+    ASSERT_TRUE(SocketInputStreamTestAccess::Preload(in, bytes, sizeof(bytes)));
+
+    for (unsigned char sent : bytes) {
+        bool value = false;
+        EXPECT_EQ(1u, in.read(value));
+        // Compared through the object's own byte, which is defined for
+        // every value a bool can hold and for the ones it cannot.
+        unsigned char stored = 0xAA;
+        std::memcpy(&stored, &value, 1);
+        EXPECT_EQ(sent != 0 ? 1 : 0, (int)stored) << "sent " << (int)sent;
+    }
+    EXPECT_EQ(0u, in.length());
+}
