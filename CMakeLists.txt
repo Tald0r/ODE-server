@@ -63,6 +63,11 @@ if(DARKEDEN_BUILD_FUZZERS)
                             "See tools/fuzz/Dockerfile.fuzz.")
     endif()
     include(CheckCXXSourceCompiles)
+    # check_cxx_source_compiles caches its answer, a failure included, so
+    # the probe drops the cached one first and runs on every configure: a
+    # compiler-rt installed after a failed configure is then seen in the
+    # same build directory.
+    unset(DARKEDEN_HAVE_LIBFUZZER CACHE)
     set(CMAKE_REQUIRED_FLAGS "-fsanitize=fuzzer")
     check_cxx_source_compiles([=[
 #include <cstddef>
