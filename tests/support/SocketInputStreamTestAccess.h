@@ -3,12 +3,22 @@
 // Filename    : SocketInputStreamTestAccess.h
 // Description : Loads bytes straight into a SocketInputStream's buffer,
 //               as if fill() had received them, so a packet can be read
-//               from memory with no socket. SocketInputStream befriends
-//               this class for that purpose alone.
+//               from memory instead of from a connected socket.
+//               SocketInputStream befriends this class for that purpose
+//               alone.
 //
-//               It uses no test framework: the gtest suites and the fuzz
-//               targets (tests/fuzz/), which must not link gtest, both
-//               include it.
+//               It uses no test framework: the gtest suites and the
+//               packet-read fuzz targets (tests/fuzz/), which must not
+//               link gtest, both include it.
+//
+//               The stream still needs a Socket object: its constructor
+//               asserts one. Socket(new SocketImpl()) is one that owns no
+//               descriptor, so building it makes no system call and
+//               destroying it closes nothing:
+//
+//                   Socket socket(new SocketImpl());
+//                   SocketEncryptInputStream in(&socket, 1024);
+//                   SocketInputStreamTestAccess::Preload(in, bytes, n);
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -30,9 +40,13 @@ public:
     // empty one, so at most capacity() - 1 bytes fit; a longer len loads
     // nothing and returns false.
     //
-    // The bytes go in as given: fill() runs each received chunk through
-    // EncryptData() first, and Preload() does not. A SocketEncryptInputStream
-    // still undoes its per-field encryption as the packet is read.
+    // The bytes then go through the same receive transform fill() applies
+    // to each chunk, EncryptData(), which carries the stream's key on from
+    // the value it holds. Today that transform returns at once and
+    // changes nothing, so the bytes are read exactly as given; should it
+    // ever do work again, a preloaded input is still treated as bytes
+    // straight off the socket. A SocketEncryptInputStream undoes its
+    // per-field encryption as the packet is read, as it always does.
     static bool Preload(SocketInputStream& stream, const unsigned char* data, std::size_t len) {
         if (len >= stream.m_BufferLen)
             return false;
@@ -40,6 +54,7 @@ public:
             std::memcpy(stream.m_Buffer, data, len);
         stream.m_Head = 0;
         stream.m_Tail = static_cast<uint>(len);
+        stream.m_EncryptKey = stream.EncryptData(stream.m_EncryptKey, stream.m_Buffer, static_cast<int>(len));
         return true;
     }
 };

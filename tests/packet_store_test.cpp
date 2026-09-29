@@ -276,6 +276,9 @@
 #include "GCShopVersion.h"
 #include "GCStashList.h"
 #include "GCStashSell.h"
+#include "Socket.h"
+#include "SocketImpl.h"
+#include "SocketInputStreamTestAccess.h"
 #include "StoreInfo.h"
 #include "TestStreams.h"
 #include "WireString.h"
@@ -683,6 +686,38 @@ TEST(GCMyStoreInfoTest, closedBodyBytesMatchGolden) {
     roundTrip(f.packet, dst.packet, kPlainCode);
     EXPECT_EQ(0, (int)dst.info.isOpen());
     expectStoreInfoEqual(f.info, dst.info);
+}
+
+// A body loaded straight into the stream's buffer reads back exactly as
+// one that crossed the loopback does: the in-memory load the packet-read
+// fuzz targets use is the receive path with only the socket taken out.
+TEST(GCMyStoreInfoTest, aBodyPreloadedFromMemoryReadsBack) {
+    MyStoreFixture src;
+    fillMyStore(src, 1);
+    const std::vector<unsigned char> body = writeBody(src.packet, kPlainCode);
+
+    Socket socket(new SocketImpl());
+    SocketEncryptInputStream in(&socket, (uint)body.size() + 1);
+    ASSERT_TRUE(SocketInputStreamTestAccess::Preload(in, body.data(), body.size()));
+    ASSERT_EQ((uint)body.size(), in.length());
+
+    MyStoreFixture dst;
+    dst.packet.read(in);
+    EXPECT_EQ(0u, in.length());
+    EXPECT_EQ((int)src.packet.getOpenUI(), (int)dst.packet.getOpenUI());
+    expectStoreInfoEqual(src.info, dst.info);
+}
+
+// The buffer keeps one slot free, as fill() does, so a body that would
+// fill it is refused whole and the stream is left as it was.
+TEST(GCMyStoreInfoTest, aPreloadThatWouldFillTheBufferIsRefused) {
+    const unsigned char bytes[4] = {1, 2, 3, 4};
+    Socket socket(new SocketImpl());
+    SocketEncryptInputStream in(&socket, 4);
+    EXPECT_FALSE(SocketInputStreamTestAccess::Preload(in, bytes, sizeof(bytes)));
+    EXPECT_EQ(0u, in.length());
+    EXPECT_TRUE(SocketInputStreamTestAccess::Preload(in, bytes, sizeof(bytes) - 1));
+    EXPECT_EQ(3u, in.length());
 }
 
 TEST(GCOtherStoreInfoTest, roundTripsThroughLoopback) {
