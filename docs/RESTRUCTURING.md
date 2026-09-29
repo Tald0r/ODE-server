@@ -846,8 +846,8 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   steal-ratio cast; client: the callers); (4) equip requirements; (5)
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
-  > **Status:** in progress (slice 4's parity vectors and its client
-  > half; then slices 5 and 6) — slices 1 to 3 are in on both sides
+  > **Status:** in progress (slice 4's client half; then slices 5 and
+  > 6) — slices 1 to 3 are in on both sides
   > (server PRs #276 to #280, client PRs #285 to #287).
   > Slice 1: `ItemPrice` and `ItemDurability`, with `PriceManager`,
   > `computeMaxDurability`, `ConcreteItem::getMaxDurability` and the skull
@@ -875,8 +875,13 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > `computeEquipRequirement` (`ItemUtil.cpp`), which reads the item and
   > option tables. The advancement-class checks, time-limited items, the
   > premium-zone and pay gate and couple rings stay in the races, in
-  > their own order. The client must add `domain/EquipRequirement.cpp` to
-  > its `third_party/decore/CMakeLists.txt` source list.
+  > their own order. `src/domain/vectors/equip.tsv` pins all three
+  > functions; its header lays out the row kinds the client's
+  > `decore_tests` must learn (an `EquipRace` column, the six
+  > `EquipRequirement` fields, two option lists, the five `EquipStats`
+  > fields, the requirement result as a comma-separated list). The client
+  > must also add `domain/EquipRequirement.cpp` to its
+  > `third_party/decore/CMakeLists.txt` source list.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out
