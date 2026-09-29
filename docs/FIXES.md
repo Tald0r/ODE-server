@@ -50,11 +50,14 @@ the castle. The move defined one conversion and kept the rest:
   `tax-last-in-int-at-110` and `tax-last-in-int-at-200` just inside it.
   > **Status:** fixed (feat/shared-castle-tax)
 - **A ratio of 100 or below is no discount, but the shop tells the client
-  it is.** The handler taxes only above 100, while
-  `CGShopRequestListHandler` sends the player's ratio (`NPC::getTaxRatio`)
-  as the list's `MarketCondSell` and `ActionSell` sends it in
-  `GCShopVersion` whenever it is not 100, so a client pricing by that
-  market condition quotes a discount the server does not give. The guild
+  it is.** The handler taxes only above 100, while `ActionSell` sends the
+  player's ratio (`NPC::getTaxRatio`) as `GCShopVersion`'s
+  `MarketCondSell` whenever it is not 100 (the normal and mysterious
+  racks' only source of it) and `CGShopRequestListHandler` sends it as
+  `GCShopList`'s and `GCShopListMysterious`'s, so a client pricing by that
+  market condition quotes a discount the server does not give;
+  `ActionBuy`'s `GCShopMarketCondition` writes the NPC's untaxed market
+  condition into the same client field. The guild
   master's command sets 100 to 110; the GM command sets any int, and the
   wire's `MarketCond_t` is a 16-bit `short`, so a GM ratio outside
   -32768..32767 reaches the client truncated (40000 arrives as -25536,

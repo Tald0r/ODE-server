@@ -97,10 +97,10 @@ unsigned skullSellTotal(unsigned priceTimesNum, unsigned headPriceBonusPercent);
 // The widths are the server's: the total and the result are its 32-bit
 // unsigned Price_t, since an untaxed total is returned as it came, and a
 // taxed one passes through an int. A taxed total of 2^31 or more has no
-// int, and converting it is undefined in C++. x86 and x86-64, the
-// client's platform and the CI's, give INT_MIN, which Price_t reads as
-// 2147483648; this returns that value on every target. It is more gold
-// than a player can hold, so the server refuses such a purchase.
+// int, and converting it is undefined in C++: x86 and x86-64 give INT_MIN,
+// which Price_t reads as 2147483648, arm64 gives INT_MAX, and a sanitized
+// build traps. This returns x86-64's 2147483648 on every target. It is
+// more gold than a player can hold, so the server refuses such a purchase.
 unsigned applyCastleTax(unsigned total, int ratio);
 
 } // namespace decore

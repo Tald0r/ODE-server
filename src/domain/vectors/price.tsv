@@ -11,20 +11,25 @@
 # its shop shows. From slice 5 the client's purchase quote (the buy check
 # in UIMessageManager, and the shop's price display) is meant to call
 # applyCastleTax once on the price times the count, and on the mysterious
-# rack's price, with the ratio the shop list sends as its MarketCondSell.
-# That replaces pricing each item at that market condition and scaling it
+# rack's price, with the castle's ratio for the player. That replaces
+# pricing each item at the ratio as a market condition and scaling it
 # again by the tax-change event's percentage (EVENTID_TAX_CHANGE): that
 # taxed the normal rack twice after a tax change broadcast to the
-# player's zone, and the mysterious rack not at all otherwise. Until the
-# wire sends the ratio apart from the NPC's market condition (open
-# decision 7 of the shared-rules plan), the client prices the item at a
-# market condition of 100, which every seed shop uses. The ratio reaches
-# the client as that 16-bit MarketCond_t, so the client sees the server's
-# ratio only within -32768..32767, which covers every ratio a guild master
-# or the defaults set; a GM-set ratio past it arrives truncated, and the
-# rows past it (tax-ratio-int-max, tax-uint-max-at-int-max,
-# tax-ratio-int-min-untaxed) pin de-core, not a ratio the client can
-# receive.
+# player's zone, and the mysterious rack not at all otherwise. The ratio
+# reaches the client as a MarketCondSell: in GCShopVersion (ActionSell)
+# for the normal and mysterious racks, and only when it is not 100 (the
+# field is then the NPC's market condition), and in GCShopList and
+# GCShopListMysterious for the rack lists the client requests; the sell
+# dialog's GCShopMarketCondition (ActionBuy) writes the NPC's untaxed
+# market condition into the same client field. Until the wire sends the
+# ratio apart from the market condition (open decision 7 of the
+# shared-rules plan), the client prices the item at a market condition of
+# 100, which every seed shop uses. MarketCond_t is 16 bits, so the client
+# sees the server's ratio only within -32768..32767, which covers every
+# ratio a guild master or the defaults set; a GM-set ratio past it arrives
+# truncated, and the rows past it (tax-ratio-int-max,
+# tax-uint-max-at-int-max, tax-ratio-int-min-untaxed) pin de-core, not a
+# ratio the client can receive.
 #
 # Tab-separated, one row per call: function, row name, the inputs, and the
 # expected result last. An option list is comma-separated, "-" for none.
@@ -270,6 +275,7 @@ applyCastleTax	tax-ratio-110-on-1-truncates-to-1	1	110	1
 applyCastleTax	tax-three-at-17-taxed-once	51	110	56
 applyCastleTax	tax-ratio-150-on-1	1	150	1
 applyCastleTax	tax-ratio-150-on-3	3	150	4
+applyCastleTax	tax-ratio-150	1000	150	1500
 applyCastleTax	tax-ratio-200	1000	200	2000
 applyCastleTax	tax-ratio-1000	7	1000	70
 applyCastleTax	tax-ratio-int-max	1	2147483647	21474836
