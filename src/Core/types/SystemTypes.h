@@ -19,11 +19,25 @@
 #include <sys/types.h>
 #endif
 
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <string>
 
 using namespace std;
+
+//////////////////////////////////////////////////////////////////////////////
+// The entry a table of names gives a value, or the value as a number when
+// the table has no entry for it. Debug strings name enumerators through
+// such tables, and a field decoded off the wire holds whatever byte the
+// sender put there, so it is never used as an index unchecked.
+//////////////////////////////////////////////////////////////////////////////
+template <typename Value, std::size_t N> string nameOrNumber(const string (&names)[N], Value value) {
+    const long long index = static_cast<long long>(value);
+    if (index < 0 || static_cast<unsigned long long>(index) >= N)
+        return std::to_string(index);
+    return names[index];
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // built-in type redefinition

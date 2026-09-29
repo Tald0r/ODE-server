@@ -191,22 +191,24 @@ void PCSlayerInfo::write(SocketOutputStream& oStream) const {
 string PCSlayerInfo::toString() const {
     StringStream msg;
 
-    msg << "PCSlayerInfo(" << "NSize:" << m_Name.size() << ",Name:" << m_Name << ",Slot:" << Slot2String[m_Slot]
-        << ",Alignment:" << m_Alignment << ",Rank:" << m_Rank << ",STR[BASIC]:" << (int)m_STR
-        << ",DEX[BASIC]:" << (int)m_DEX << ",INT[BASIC]:" << (int)m_INT << ",HP:" << m_HP[ATTR_CURRENT] << "/"
-        << m_HP[ATTR_MAX] << ",MP:" << m_MP[ATTR_CURRENT] << "/" << m_MP[ATTR_MAX] << ",Fame:" << m_Fame;
+    msg << "PCSlayerInfo(" << "NSize:" << m_Name.size() << ",Name:" << m_Name
+        << ",Slot:" << nameOrNumber(Slot2String, m_Slot) << ",Alignment:" << m_Alignment << ",Rank:" << m_Rank
+        << ",STR[BASIC]:" << (int)m_STR << ",DEX[BASIC]:" << (int)m_DEX << ",INT[BASIC]:" << (int)m_INT
+        << ",HP:" << m_HP[ATTR_CURRENT] << "/" << m_HP[ATTR_MAX] << ",MP:" << m_MP[ATTR_CURRENT] << "/"
+        << m_MP[ATTR_MAX] << ",Fame:" << m_Fame;
     //		<< ",Gold:" << m_Gold;
 
     for (uint i = 0; i < SKILL_DOMAIN_VAMPIRE; i++)
-        msg << "," << SkillDomain2String[i] << ":" << (int)m_DomainLevels[i];
+        msg << "," << nameOrNumber(SkillDomain2String, i) << ":" << (int)m_DomainLevels[i];
 
-    msg << ",Sex:" << Sex2String[getSex()] << ",HairStyle:" << HairStyle2String[getHairStyle()]
-        << ",HairColor:" << (int)getHairColor() << ",SkinColor:" << (int)getSkinColor()
-        << " ,Helmet:" << (int)getHelmetType() << ",HelmetColor:" << (int)getHelmetColor()
-        << " ,Jacket:" << (int)getJacketType() << ",JacketColor:" << (int)getJacketColor()
-        << " ,Pants:" << (int)getPantsType() << ",PantsColor:" << (int)getPantsColor()
-        << " ,Weapon:" << (int)getWeaponType() << ",WeaponColor:" << (int)getWeaponColor()
-        << " ,Shield:" << (int)getShieldType() << ",ShieldColor:" << (int)getShieldColor() << ")";
+    msg << ",Sex:" << nameOrNumber(Sex2String, getSex())
+        << ",HairStyle:" << nameOrNumber(HairStyle2String, getHairStyle()) << ",HairColor:" << (int)getHairColor()
+        << ",SkinColor:" << (int)getSkinColor() << " ,Helmet:" << (int)getHelmetType()
+        << ",HelmetColor:" << (int)getHelmetColor() << " ,Jacket:" << (int)getJacketType()
+        << ",JacketColor:" << (int)getJacketColor() << " ,Pants:" << (int)getPantsType()
+        << ",PantsColor:" << (int)getPantsColor() << " ,Weapon:" << (int)getWeaponType()
+        << ",WeaponColor:" << (int)getWeaponColor() << " ,Shield:" << (int)getShieldType()
+        << ",ShieldColor:" << (int)getShieldColor() << ")";
 
     return msg.toString();
 }

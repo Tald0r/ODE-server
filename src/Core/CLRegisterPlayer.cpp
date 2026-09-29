@@ -107,9 +107,9 @@ string CLRegisterPlayer::toString() const
 
     StringStream msg;
     msg << "CLRegisterPlayer(" << "ID:" << m_ID << ",Password:" << m_Password << ",Name:" << m_Name
-        << ",Sex:" << Sex2String[m_Sex] << ",SSN:" << m_SSN << ",Telephone:" << m_Telephone
+        << ",Sex:" << nameOrNumber(Sex2String, m_Sex) << ",SSN:" << m_SSN << ",Telephone:" << m_Telephone
         << ",Cellular:" << m_Cellular << ",ZipCode:" << m_ZipCode << ",Address:" << m_Address
-        << ",Nation:" << Nation2String[m_Nation] << ",e-mail:" << m_Email << ",Homepage:" << m_Homepage
+        << ",Nation:" << nameOrNumber(Nation2String, m_Nation) << ",e-mail:" << m_Email << ",Homepage:" << m_Homepage
         << ",Profile:" << m_Profile << ",Public:" << ((m_bPublic == true) ? "PUBLIC" : "PRIVATE") << ")";
     return msg.toString();
 

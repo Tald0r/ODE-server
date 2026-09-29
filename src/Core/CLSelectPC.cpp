@@ -58,7 +58,7 @@ string CLSelectPC::toString() const
     __BEGIN_TRY
 
     StringStream msg;
-    msg << "CLSelectPC(" << "PCName:" << m_PCName << ",PCType:" << PCType2String[m_PCType] << ")";
+    msg << "CLSelectPC(" << "PCName:" << m_PCName << ",PCType:" << nameOrNumber(PCType2String, m_PCType) << ")";
     return msg.toString();
 
     __END_CATCH

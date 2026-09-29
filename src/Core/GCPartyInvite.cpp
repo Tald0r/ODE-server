@@ -41,7 +41,8 @@ string GCPartyInvite::toString() const
     __BEGIN_TRY
 
     StringStream msg;
-    msg << "GCPartyInvite(" << "CODE:" << GCPartyInvite2String[m_Code] << "TOID:" << m_TargetObjectID << ")";
+    msg << "GCPartyInvite(" << "CODE:" << nameOrNumber(GCPartyInvite2String, m_Code) << "TOID:" << m_TargetObjectID
+        << ")";
     return msg.toString();
 
     __END_CATCH
