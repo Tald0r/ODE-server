@@ -846,8 +846,9 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   steal-ratio cast; client: the callers); (4) equip requirements; (5)
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
-  > **Status:** in progress (the client halves of slices 4 and 5; then
-  > slice 6) — slices 1 to 3 are in on both sides
+  > **Status:** in progress (the client halves of slices 4, 5 and 6a;
+  > then the rest of slice 6: skill range, party share, darkness) —
+  > slices 1 to 3 are in on both sides
   > (server PRs #276 to #280, client PRs #285 to #287).
   > Slice 1: `ItemPrice` and `ItemDurability`, with `PriceManager`,
   > `computeMaxDurability`, `ConcreteItem::getMaxDurability` and the skull
@@ -890,6 +891,12 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > `applyCastleTax` rows of `src/domain/vectors/price.tsv`, so the
   > client's `decore_tests` must learn that function (total, ratio,
   > expected).
+  > Slice 6a's server half: `SkillOutputFormulas` is in the vendored
+  > subset. Its warnings under `de-core-strict` were cleared without a
+  > change in behaviour: `(void)` for the unused parameters,
+  > `[[fallthrough]]` on HeadShot's deliberate fall-throughs, and an
+  > explicit truncating `(int)` around each double expression that was
+  > converted implicitly.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out
@@ -907,7 +914,14 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > wire item-class id it branches on in `decore::itemclass`
   > (`domain/ItemClass.h`, all 90 ids), which the adapter
   > `static_assert`s (`ConcreteItem.cpp` asserts every id and the count); and
-  > compiles without a warning in `de-core-strict`. Moves are verbatim,
+  > compiles without a warning in `de-core-strict`. `SkillOutputFormulas`
+  > (namespace `decore::skillformula`) has three named exceptions, kept so
+  > its bodies stay verbatim moves of the gameserver's: the constant,
+  > read-only party tables `PartyEffectBoost` and `PartyDurationBoost` in
+  > an anonymous namespace; the plain enums `SkillGrade`,
+  > `SkillInput::TargetType` and `SkillInput::TargetRace`, which mirror the
+  > game's integer values; and `SkillOutput`, whose constructor zeroes it
+  > as the gameserver's does, so it is not POD. Moves are verbatim,
   > oddities included (the kept ones are in `docs/FIXES.md`); changing
   > one is a balance decision. A change
   > to a shared rule: edit `src/domain`, re-record with

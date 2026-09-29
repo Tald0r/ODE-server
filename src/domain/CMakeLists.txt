@@ -48,13 +48,13 @@ target_compile_options(de-core PRIVATE ${DECORE_FP_FLAGS})
 # decides. A warning here would be a warning in every client build, so it
 # is an error. The objects are thrown away; tests/CMakeLists.txt makes
 # wire_tests depend on this target so the suite build compiles it.
-# SkillOutputFormulas.cpp is not vendored and so is not listed.
 set(DECORE_VENDORED_SOURCES
     EquipRequirement.cpp
     Formulas.cpp
     ItemDurability.cpp
     ItemGrade.cpp
     ItemPrice.cpp
+    SkillOutputFormulas.cpp
 )
 add_library(de-core-strict OBJECT EXCLUDE_FROM_ALL ${DECORE_VENDORED_SOURCES})
 set_target_properties(de-core-strict PROPERTIES INCLUDE_DIRECTORIES "${DECORE_INCLUDE_ROOT}")
