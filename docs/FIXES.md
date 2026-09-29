@@ -18,8 +18,9 @@ repo and the client's. Entries below are newest first; the oldest is the
 The fuzz targets in `tests/fuzz/` feed a client's bytes through the
 gates of `GamePlayer::processCommand` and `LoginPlayer::processCommand`
 into the packets' `read()`; `CLAUDE.md` says how to build and run them.
-Each input that found a defect below is replayed by ctest from
-`tests/fuzz/regressions/`.
+Where a fuzz run found a defect below, its input is replayed by ctest from
+`tests/fuzz/regressions/`, and every fix but the validator's has a gtest
+in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
 
 - **`StoreInfo::read` indexed its item vector with a count off the
   wire.** The stall record has `MAX_ITEM_NUM` (20) slots and `write()`
@@ -31,8 +32,11 @@ Each input that found a defect below is replayed by ctest from
   `GCMyStoreInfo` and `GCOtherStoreInfo` unread, and even with that
   refusal off (`DE_FUZZ_NO_STORE_SKIP=1`, fuzzed for five minutes) the
   factory's packets hold no record, so their `read()` throws "no store
-  record" before `StoreInfo::read`. The refusal in `GamePlayer` stays
-  for now. The client has the identical loop and reaches it; it is fixed
+  record" before `StoreInfo::read`. So no recorded input reaches the
+  bound and `StoreInfoTest` is its only guard; the ctest
+  `fuzz_replay_game_no_store_skip` replays the store-info seeds with the
+  refusal off, which checks that refusal, not the bound. The refusal in
+  `GamePlayer` stays for now. The client has the identical loop and reaches it; it is fixed
   there on the client repo's `feat/packet-fuzzing` branch (commit
   0c782d10).
   > **Status:** fixed (feat/packet-fuzzing)

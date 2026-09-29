@@ -1,15 +1,17 @@
 //////////////////////////////////////////////////////////////////////
 //
 // Filename    : packet_read_bounds_test.cpp
-// Description : Malformed bodies the packet-read fuzz targets
-//               (tests/fuzz/) found reaching memory they must not, each
-//               pinned here as the refusal or the value the read now
-//               gives. The inputs that found them are replayed as well,
-//               from tests/fuzz/regressions/, by the fuzz_replay tests.
+// Description : Malformed bodies that reach memory they must not, most
+//               of them found by the packet-read fuzz targets
+//               (tests/fuzz/), each pinned here as the refusal or the
+//               value the read now gives. The inputs a fuzz target found
+//               are replayed as well, from tests/fuzz/regressions/, by the
+//               fuzz_replay tests.
 //
-//               Every case is a body a client can put on the wire: in
+//               A case is a body a client can put on the wire (in
 //               GPS_NORMAL the gameserver reads any packet it registers,
-//               and every packet it reads is printed with toString().
+//               and every packet it reads is printed with toString())
+//               unless its comment says otherwise.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -88,7 +90,8 @@ TEST(DebugNameTest, aSlotSexAndHairStylePastTheirTablesPrintAsNumbers) {
 }
 
 // Every value Sex can hold has a name; the slot enumeration has one
-// more value than its table.
+// more value than its table. PCVampireInfo is read only inside LCPCList,
+// which no client status admits, so this one is not a client's body.
 TEST(DebugNameTest, aVampireSlotPastItsTablePrintsAsItsNumber) {
     PCVampireInfo info{};
     info.setSlot(Slot(3));

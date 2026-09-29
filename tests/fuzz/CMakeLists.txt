@@ -108,13 +108,20 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
 endforeach()
 
 # The gameserver refuses the two store-info packets unread
-# (GamePlayer.cpp:364). This replays the recorded game inputs with that
-# refusal off, so the reads behind it stay checked as well.
+# (GamePlayer.cpp:364). This replays the game seeds and the recorded game
+# inputs with that refusal off, so the store-info seeds reach their
+# read() and the refusal is not all that keeps them safe. The factory's
+# GCMyStoreInfo and GCOtherStoreInfo hold no stall record, so their read()
+# refuses the body with a ProtocolException right after the OpenUI byte:
+# StoreInfo::read is not reachable from a client on this server, and its
+# item-count bound is guarded by StoreInfoTest in wire_tests instead.
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game)
     add_test(NAME fuzz_replay_game_no_store_skip
-        COMMAND fuzz_replay_game ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game
+        COMMAND fuzz_replay_game ${CMAKE_CURRENT_BINARY_DIR}/corpus/game
+            ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game
         WORKING_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
     set_tests_properties(fuzz_replay_game_no_store_skip PROPERTIES
+        FIXTURES_REQUIRED fuzz_corpus_game
         ENVIRONMENT "DE_FUZZ_STRICT_EXCEPTIONS=1;DE_FUZZ_NO_STORE_SKIP=1"
         TIMEOUT 120)
 endif()
