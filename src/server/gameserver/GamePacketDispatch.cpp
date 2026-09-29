@@ -185,18 +185,14 @@ namespace {
 // CG is the client link. GC is here because a handful of packets named for
 // the server -> client direction travel client -> server on the live wire
 // (GCFriendChatting, the personal-store pair and GCCannotUse; see the
-// registrations and the thunks below). LG, SG and GG arrive from the
+// registrations and the thunks below). GC is narrowed to those packets,
+// the ones the client link admits (GameClientLink.h), so a GC handler the
+// link would never deliver does not compile. LG, SG and GG arrive from the
 // loginserver, the sharedserver and the other gameservers.
-constexpr de::packet::DirectionSet kReceivedDirections{de::packet::Direction::CG, de::packet::Direction::GC,
-                                                       de::packet::Direction::GG, de::packet::Direction::LG,
-                                                       de::packet::Direction::SG};
-
-// Whether the gameserver's client link admits packets from this factory,
-// for the GC registrations below: a GC handler the client link refused
-// would never run.
-template <typename Factory> consteval bool admittedOnClientLink() {
-    return de::packet::sentOnGameClientLink(de::packet::metaOf<Factory>());
-}
+constexpr de::packet::DirectionSet kReceivedDirections =
+    de::packet::DirectionSet{de::packet::Direction::CG, de::packet::Direction::GC, de::packet::Direction::GG,
+                             de::packet::Direction::LG, de::packet::Direction::SG}
+        .narrowed(de::packet::Direction::GC, &de::packet::sentOnGameClientLink);
 
 // CGPortCheckHandler::execute takes no player.
 void dispatchCGPortCheck(Packet* pPacket, Player*) {
@@ -372,15 +368,12 @@ void registerGameServerPacketHandlers() {
     // GC packets the gameserver really receives (see the thunks above).
     // GCFriendChatting is the one GC packet with a live server handler:
     // the friend system's requests ride it client -> server. The client
-    // link admits a GC packet only when GameClientLink.h lists it.
+    // link admits a GC packet only when GameClientLink.h lists it, and
+    // kReceivedDirections refuses the registration of any other.
     DE_REGISTER_PACKET_HANDLER(GCFriendChatting);
     DE_REGISTER_PACKET_HANDLER_FN(GCAddStoreItem, dispatchIgnore);
     DE_REGISTER_PACKET_HANDLER_FN(GCRemoveStoreItem, dispatchIgnore);
     DE_REGISTER_PACKET_HANDLER_FN(GCCannotUse, dispatchIgnore);
-    static_assert(admittedOnClientLink<GCFriendChattingFactory>());
-    static_assert(admittedOnClientLink<GCAddStoreItemFactory>());
-    static_assert(admittedOnClientLink<GCRemoveStoreItemFactory>());
-    static_assert(admittedOnClientLink<GCCannotUseFactory>());
 
     // SG (shared -> game), received on the SharedServerClient link.
     // SGModifyGuildMemberOK never ran before 2.3: its execute() was

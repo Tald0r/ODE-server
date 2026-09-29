@@ -158,6 +158,23 @@ static_assert(clientAndDatagrams.contains(Direction::SG));
 static_assert(!clientAndDatagrams.contains(Direction::CL));
 static_assert(!clientAndDatagrams.contains(Direction::GM));
 
+// admits() answers for one packet: a link the set holds, filtered for a
+// narrowed link. This is the second check the registration macros make,
+// and how the gameserver refuses a GC handler its client link would never
+// deliver.
+constexpr bool onlyId7(const Meta& meta) {
+    return meta.id == 7;
+}
+constexpr DirectionSet clientWithFewGC = clientAndDatagrams.narrowed(Direction::GC, &onlyId7);
+static_assert(clientWithFewGC.admits(Meta{7, 4, "GCSeven", Direction::GC}));
+static_assert(!clientWithFewGC.admits(Meta{8, 4, "GCEight", Direction::GC}), "a narrowed link admits only its filter");
+static_assert(clientWithFewGC.admits(Meta{8, 4, "CGEight", Direction::CG}), "narrowing one link leaves the others");
+static_assert(!clientWithFewGC.admits(Meta{7, 4, "CLSeven", Direction::CL}), "the filter never widens the set");
+static_assert(clientWithFewGC.contains(Direction::GC), "a narrowed link is still received");
+static_assert(clientAndDatagrams.admits(Meta{8, 4, "GCEight", Direction::GC}), "narrowed() returns a copy");
+static_assert(!guildRequests.admits(Meta{1, 4, "SGOne", Direction::SG}));
+static_assert(!guildRequests.admits(Meta{1, 4, "", Direction::Unknown}));
+
 // --- 3. the rules, on hand-built tables ---------------------------------
 
 constexpr Meta a{1, 4, "CGA", Direction::CG};

@@ -44,11 +44,16 @@ private:
 //
 // Registering a handler for a packet that rides any other link is a
 // compile error: that packet never arrives at this server, so the entry
-// would be dead and its id would shadow nothing.
+// would be dead and its id would shadow nothing. So is registering one for
+// a packet a narrowed link refuses (DirectionSet::narrowed): the
+// gameserver's GC link is its client link, which admits only the GC-named
+// packets GameClientLink.h lists.
 #define DE_REGISTER_PACKET_HANDLER(Cls)                                                           \
     {                                                                                             \
         static_assert(kReceivedDirections.contains(de::packet::directionOf(Cls##Factory::kName)), \
                       "handler registered for a packet on a link this server does not receive");  \
+        static_assert(kReceivedDirections.admits(de::packet::metaOf<Cls##Factory>()),             \
+                      "handler registered for a packet its link's filter refuses");               \
         struct Thunk {                                                                            \
             static void call(Packet* pPacket, Player* pPlayer) {                                  \
                 Cls##Handler::execute(static_cast<Cls*>(pPacket), pPlayer);                       \
@@ -61,6 +66,8 @@ private:
     {                                                                                             \
         static_assert(kReceivedDirections.contains(de::packet::directionOf(Cls##Factory::kName)), \
                       "handler registered for a packet on a link this server does not receive");  \
+        static_assert(kReceivedDirections.admits(de::packet::metaOf<Cls##Factory>()),             \
+                      "handler registered for a packet its link's filter refuses");               \
         struct Thunk {                                                                            \
             static void call(Packet* pPacket, Player*) {                                          \
                 Cls##Handler::execute(static_cast<Cls*>(pPacket));                                \
@@ -75,6 +82,8 @@ private:
     {                                                                                             \
         static_assert(kReceivedDirections.contains(de::packet::directionOf(Cls##Factory::kName)), \
                       "handler registered for a packet on a link this server does not receive");  \
+        static_assert(kReceivedDirections.admits(de::packet::metaOf<Cls##Factory>()),             \
+                      "handler registered for a packet its link's filter refuses");               \
         PacketDispatcher::registerHandler(Cls##Factory::kPacketID, &(Fn));                        \
     }
 
