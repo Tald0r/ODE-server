@@ -55,7 +55,11 @@ the castle. The move defined one conversion and kept the rest:
   as the list's `MarketCondSell` and `ActionSell` sends it in
   `GCShopVersion` whenever it is not 100, so a client pricing by that
   market condition quotes a discount the server does not give. The guild
-  master's command sets 100 to 110; the GM command sets any int. Pinned
+  master's command sets 100 to 110; the GM command sets any int, and the
+  wire's `MarketCond_t` is a 16-bit `short`, so a GM ratio outside
+  -32768..32767 reaches the client truncated (40000 arrives as -25536,
+  an untaxed quote for a x400 charge). A separate tax field (open
+  decision 7) needs at least 32 bits. Pinned
   by `tax-ratio-90-no-discount`, `tax-ratio-0-untaxed` and the other
   `tax-*-untaxed` rows.
   > **Status:** recorded, not fixed (feat/shared-castle-tax)

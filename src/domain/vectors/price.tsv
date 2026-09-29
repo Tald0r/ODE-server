@@ -18,7 +18,13 @@
 # player's zone, and the mysterious rack not at all otherwise. Until the
 # wire sends the ratio apart from the NPC's market condition (open
 # decision 7 of the shared-rules plan), the client prices the item at a
-# market condition of 100, which every seed shop uses.
+# market condition of 100, which every seed shop uses. The ratio reaches
+# the client as that 16-bit MarketCond_t, so the client sees the server's
+# ratio only within -32768..32767, which covers every ratio a guild master
+# or the defaults set; a GM-set ratio past it arrives truncated, and the
+# rows past it (tax-ratio-int-max, tax-uint-max-at-int-max,
+# tax-ratio-int-min-untaxed) pin de-core, not a ratio the client can
+# receive.
 #
 # Tab-separated, one row per call: function, row name, the inputs, and the
 # expected result last. An option list is comma-separated, "-" for none.
