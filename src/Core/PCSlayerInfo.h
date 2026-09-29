@@ -11,6 +11,7 @@
 
 #include "PCInfo.h"
 #include "WireString.h"
+#include "types/SlayerWeaponShape.h"
 
 //////////////////////////////////////////////////////////////////////////////
 // Object that carries Slayer information.
@@ -20,7 +21,14 @@
 
 class PCSlayerInfo : public PCInfo {
 public:
-    // Slayer Outlook Information
+    // Slayer outlook, one DWORD on the wire. The weapon is two fields.
+    // WEAPON1..4 hold the four-bit view: the weapon itself below 16, and
+    // above that the stand-in slayerWeaponListShape gives it (a cross for
+    // cross1, no weapon for mace and mace1). WEAPON_EXT1..2, past the
+    // shield, hold an extension code: 0 when the four bits are the weapon,
+    // otherwise the weapon's distance past WEAPON_CROSS (1 cross1, 2 mace,
+    // 3 mace1). A client that knows only the four weapon bits keeps bits
+    // 0-16 of the DWORD, so it reads the four-bit view and never the code.
     enum SlayerBits {
         SLAYER_BIT_SEX,
         SLAYER_BIT_HAIRSTYLE1,
@@ -39,9 +47,37 @@ public:
         SLAYER_BIT_WEAPON4,
         SLAYER_BIT_SHIELD1,
         SLAYER_BIT_SHIELD2,
+        SLAYER_BIT_WEAPON_EXT1,
+        SLAYER_BIT_WEAPON_EXT2,
         SLAYER_BIT_MAX
-        // SLAYER_BIT_WEAPON4,
     };
+
+    // Both weapon fields, and nothing else.
+    static constexpr DWORD kWeaponBitsMask = (15u << SLAYER_BIT_WEAPON1) | (3u << SLAYER_BIT_WEAPON_EXT1);
+
+    // The outlook bits of a weapon: its four-bit view and its extension
+    // code. setWeaponType and the gameserver's slayerListWeaponBits, which
+    // Slayer::getShapeInfo writes Slayer.Shape with, both write through
+    // this, so the two fields never disagree. A value past WEAPON_MACE1 is
+    // no weapon: both fields zero.
+    static constexpr DWORD weaponBits(DWORD weaponType) {
+        if (weaponType >= WEAPON_MAX)
+            return 0;
+        const DWORD fourBitView = slayerWeaponListShape(WeaponType(weaponType));
+        const DWORD extension = weaponType > WEAPON_CROSS ? weaponType - WEAPON_CROSS : 0;
+        return (fourBitView << SLAYER_BIT_WEAPON1) | (extension << SLAYER_BIT_WEAPON_EXT1);
+    }
+
+    // The weapon an outlook names: the extension code when it is set, the
+    // four bits otherwise. Every outlook decodes to 0..WEAPON_MACE1 (the
+    // static_asserts below the class), so a table of WEAPON_MAX entries
+    // can be indexed with the result unchecked; the last line keeps that
+    // true if the enum ever changes under it.
+    static constexpr WeaponType weaponFromBits(DWORD outlook) {
+        const DWORD extension = (outlook >> SLAYER_BIT_WEAPON_EXT1) & 3;
+        const DWORD weapon = extension != 0 ? WEAPON_CROSS + extension : (outlook >> SLAYER_BIT_WEAPON1) & 15;
+        return weapon < WEAPON_MAX ? WeaponType(weapon) : WEAPON_NONE;
+    }
 
     // Slayer Color Informations
     enum SlayerColors {
@@ -281,8 +317,7 @@ public:
         return HairStyle((m_Outlook.to_ulong() >> SLAYER_BIT_HAIRSTYLE1) & 3);
     }
     void setHairStyle(HairStyle hairStyle) {
-        m_Outlook &= ~bitset<SLAYER_BIT_MAX>(3 << SLAYER_BIT_HAIRSTYLE1);
-        m_Outlook |= bitset<SLAYER_BIT_MAX>(hairStyle << SLAYER_BIT_HAIRSTYLE1);
+        setOutlookField(SLAYER_BIT_HAIRSTYLE1, 3, hairStyle);
     }
 
     void setHairStyle(string hairStyle) {
@@ -304,8 +339,7 @@ public:
         return HelmetType((m_Outlook.to_ulong() >> SLAYER_BIT_HELMET1) & 3);
     }
     void setHelmetType(HelmetType helmetType) {
-        m_Outlook &= ~bitset<SLAYER_BIT_MAX>(3 << SLAYER_BIT_HELMET1);
-        m_Outlook |= bitset<SLAYER_BIT_MAX>(helmetType << SLAYER_BIT_HELMET1);
+        setOutlookField(SLAYER_BIT_HELMET1, 3, helmetType);
     }
 
     // get/set jacket
@@ -313,8 +347,7 @@ public:
         return JacketType((m_Outlook.to_ulong() >> SLAYER_BIT_JACKET1) & 7);
     }
     void setJacketType(JacketType jacketType) {
-        m_Outlook &= ~bitset<SLAYER_BIT_MAX>(7 << SLAYER_BIT_JACKET1);
-        m_Outlook |= bitset<SLAYER_BIT_MAX>(jacketType << SLAYER_BIT_JACKET1);
+        setOutlookField(SLAYER_BIT_JACKET1, 7, jacketType);
     }
 
     // get/set pants
@@ -322,17 +355,16 @@ public:
         return PantsType((m_Outlook.to_ulong() >> SLAYER_BIT_PANTS1) & 7);
     }
     void setPantsType(PantsType pantsType) {
-        m_Outlook &= ~bitset<SLAYER_BIT_MAX>(7 << SLAYER_BIT_PANTS1);
-        m_Outlook |= bitset<SLAYER_BIT_MAX>(pantsType << SLAYER_BIT_PANTS1);
+        setOutlookField(SLAYER_BIT_PANTS1, 7, pantsType);
     }
 
     // get/set weapon
     WeaponType getWeaponType() const {
-        return WeaponType((m_Outlook.to_ulong() >> SLAYER_BIT_WEAPON1) & 15);
+        return weaponFromBits(m_Outlook.to_ulong());
     }
     void setWeaponType(WeaponType weaponType) {
-        m_Outlook &= ~bitset<SLAYER_BIT_MAX>(15 << SLAYER_BIT_WEAPON1);
-        m_Outlook |= bitset<SLAYER_BIT_MAX>(weaponType << SLAYER_BIT_WEAPON1);
+        m_Outlook &= ~bitset<SLAYER_BIT_MAX>(kWeaponBitsMask);
+        m_Outlook |= bitset<SLAYER_BIT_MAX>(weaponBits(weaponType));
     }
 
     // get/set Shield Type
@@ -340,8 +372,7 @@ public:
         return ShieldType((m_Outlook.to_ulong() >> SLAYER_BIT_SHIELD1) & 3);
     }
     void setShieldType(ShieldType shieldType) {
-        m_Outlook &= ~bitset<SLAYER_BIT_MAX>(3 << SLAYER_BIT_SHIELD1);
-        m_Outlook |= bitset<SLAYER_BIT_MAX>(shieldType << SLAYER_BIT_SHIELD1);
+        setOutlookField(SLAYER_BIT_SHIELD1, 3, shieldType);
     }
 
     void setShapeInfo(DWORD flag, Color_t color[SLAYER_COLOR_MAX]);
@@ -443,10 +474,39 @@ private:
     SkillLevel_t m_DomainLevels[6];
 
 
+    // Replaces the outlook field `mask` wide at bit `first` with the low
+    // bits of value. A value wider than its field is cut to the field, so
+    // no setter writes into a neighbour.
+    void setOutlookField(SlayerBits first, DWORD mask, DWORD value) {
+        m_Outlook &= ~bitset<SLAYER_BIT_MAX>(mask << first);
+        m_Outlook |= bitset<SLAYER_BIT_MAX>((value & mask) << first);
+    }
+
     bitset<SLAYER_BIT_MAX> m_Outlook;   // Slayer appearance information
     Color_t m_Colors[SLAYER_COLOR_MAX]; // Slayer colour information
 
     Level_t m_AdvancementLevel;
 };
+
+// The extension code counts from WEAPON_CROSS, so its largest value (3)
+// decodes to WEAPON_MACE1 and no outlook decodes past the enum.
+static_assert(WEAPON_CROSS == 15 && WEAPON_CROSS1 == 16 && WEAPON_MACE == 17 && WEAPON_MACE1 == 18 && WEAPON_MAX == 19,
+              "the slayer outlook's weapon extension code names WEAPON_CROSS + 1..3");
+static_assert(PCSlayerInfo::SLAYER_BIT_SHIELD2 == 16 && PCSlayerInfo::SLAYER_BIT_WEAPON_EXT1 == 17 &&
+                  PCSlayerInfo::SLAYER_BIT_MAX == 19,
+              "the weapon extension code sits past the shield, at bits 17-18");
+static_assert(
+    [] {
+        for (DWORD weapon = 0; weapon < WEAPON_MAX; weapon++)
+            if (DWORD(PCSlayerInfo::weaponFromBits(PCSlayerInfo::weaponBits(weapon))) != weapon)
+                return false;
+        return PCSlayerInfo::weaponBits(WEAPON_MAX) == 0;
+    }(),
+    "every weapon reads back as itself, and a value past WEAPON_MACE1 writes no weapon");
+// Every real value of an outlook field's type, the enumerators below its
+// _MAX, fits the field, so the setters' cut never changes one.
+static_assert(HAIR_STYLE3 <= 3 && HELMET_MAX - 1 <= 3 && JACKET_MAX - 1 <= 7 && PANTS_MAX - 1 <= 7 &&
+                  SHIELD_MAX - 1 <= 3,
+              "each slayer outlook field holds every value of its type below its _MAX");
 
 #endif

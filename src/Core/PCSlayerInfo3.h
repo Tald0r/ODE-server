@@ -223,7 +223,7 @@ public:
     }
     void setWeaponType(WeaponType weaponType) {
         m_Outlook &= ~bitset<SLAYER_BIT_MAX>(31 << SLAYER_BIT_WEAPON1);
-        m_Outlook |= bitset<SLAYER_BIT_MAX>(weaponType << SLAYER_BIT_WEAPON1);
+        m_Outlook |= bitset<SLAYER_BIT_MAX>((weaponType & 31) << SLAYER_BIT_WEAPON1);
     }
 
     ShieldType getShieldType() const {
