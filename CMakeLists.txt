@@ -42,7 +42,9 @@ add_compile_options(${WARNING_FLAGS})
 # runtimes come with a distribution Clang and its compiler-rt, not with
 # `zig c++` (which also reports itself as Clang, hence the name check), so
 # a fuzz tree is a separate configure: tools/fuzz/Dockerfile.fuzz has the
-# toolchain. Every target is instrumented, so the de-kernel reads the
+# toolchain. AppleClang is refused by its compiler ID, and a Clang
+# without compiler-rt by linking a trivial fuzz target at configure time.
+# Every target is instrumented, so the de-kernel reads the
 # fuzzers drive are covered; only the fuzz executables link libFuzzer.
 # _GLIBCXX_ASSERTIONS bounds-checks the standard containers, which ASan
 # alone cannot do inside a vector's reserved capacity. Clang 18 caps a
@@ -56,8 +58,21 @@ if(DARKEDEN_BUILD_FUZZERS)
     if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
        OR CMAKE_CXX_COMPILER MATCHES "zig"
        OR CMAKE_TOOLCHAIN_FILE MATCHES "zig")
-        message(FATAL_ERROR "DARKEDEN_BUILD_FUZZERS needs a Clang with libFuzzer and compiler-rt "
-                            "(clang++-18 with libclang-rt-18-dev); zig c++ ships neither. "
+        message(FATAL_ERROR "DARKEDEN_BUILD_FUZZERS needs a Clang other than zig c++, with libFuzzer "
+                            "and compiler-rt (clang++-18 with libclang-rt-18-dev); zig c++ ships neither. "
+                            "See tools/fuzz/Dockerfile.fuzz.")
+    endif()
+    include(CheckCXXSourceCompiles)
+    set(CMAKE_REQUIRED_FLAGS "-fsanitize=fuzzer")
+    check_cxx_source_compiles([=[
+#include <cstddef>
+#include <cstdint>
+extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t*, std::size_t) { return 0; }
+]=] DARKEDEN_HAVE_LIBFUZZER)
+    unset(CMAKE_REQUIRED_FLAGS)
+    if(NOT DARKEDEN_HAVE_LIBFUZZER)
+        message(FATAL_ERROR "DARKEDEN_BUILD_FUZZERS: ${CMAKE_CXX_COMPILER} cannot link a -fsanitize=fuzzer "
+                            "target; install its compiler-rt (libclang-rt-<N>-dev). "
                             "See tools/fuzz/Dockerfile.fuzz.")
     endif()
     add_compile_options(-fsanitize=fuzzer-no-link,address,undefined

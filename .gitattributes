@@ -30,6 +30,10 @@ tests/arch/*.pl text eol=lf
 tests/tools/*.pl text eol=lf
 tools/*.sh text eol=lf
 tools/*.pl text eol=lf
+# The fuzz corpus converter runs under ctest in the container, and the
+# regression inputs are read beside the goldens it converts.
+tools/fuzz/*.pl text eol=lf
+tests/fuzz/regressions/**/*.hex text eol=lf
 # The de-core subset the client vendors (src/domain's sources and its
 # parity vectors) is byte-compared with the client's copy by
 # tests/tools/decore_client_diff.sh, and the vectors are read in binary by
