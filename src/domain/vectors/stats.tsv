@@ -2,8 +2,9 @@
 # (src/domain/Formulas.h): the slayer, vampire and ousters to-hit, defense,
 # protection and min/max damage its character-select preview shows,
 # vampireSkillConsumeMP for its skill MP check and tooltip,
-# vampireDexHPRegenBonus for its HP regen prediction, and the three steal
-# ratios. Every row is asserted for exact equality by the server's
+# vampireDexHPRegenBonus for its HP regen prediction; and the three steal
+# ratios, which the client does not call but asserts for parity like every
+# row here. Every row is asserted for exact equality by the server's
 # formula_tests and by the client's decore_tests on every client toolchain.
 # A changed expected value is a balance change: review it as one.
 # UPDATE_GOLDENS=1 formula_tests rewrites the expected column only.
@@ -25,15 +26,16 @@
 # vampireDexHPRegenBonus columns: dexBasic expected. The server passes the
 #   vampire's basic DEX.
 #
-# The server's caps are 10000 for every stat here, where the client's
-# character-select preview caps at 500 (slayer) and 1000; the stats are
-# stored in 16 bits and wrap before the cap is applied, and a negative
-# combatDamageBonus wraps up to the cap. Double arithmetic truncates once, so
-# a vampire with DEX 1 at level 3 has defense 1, not 0. The steal ratio
-# truncates below zero from amount 48 (65% base: Cross, Mace, Arms, Other)
-# or 65 (90% base: None, Sword, Blade, and every vampire and ousters) and
-# wraps to a byte: 65 gives 255. The rows past those amounts pin the cast
-# through int that defines it (docs/FIXES.md, "Shared stat rules").
+# The server's caps are 10000 for every stat here (the client's
+# character-select preview used to cap at 500 for a slayer and 1000); the
+# stats are stored in 16 bits and wrap before the cap is applied, and a
+# negative combatDamageBonus wraps up to the cap. Double arithmetic
+# truncates once, so a vampire with DEX 1 at level 3 has defense 1, not 0.
+# The steal ratio truncates below zero from amount 48 (65% base: Cross,
+# Mace, Arms, Other) or 65 (90% base: None, Sword, Blade, and every vampire
+# and ousters) and wraps to a byte: 65 gives 255. The rows past those
+# amounts pin the cast through int that defines it (docs/FIXES.md, "Shared
+# stat rules").
 #
 # Named rows cover every branch, race, weapon family and boundary; the
 # grid-* rows are fixed (str, dex, inte, level) tuples from (10, 10, 10, 1)
