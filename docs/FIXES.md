@@ -96,9 +96,10 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   throws (an `Error`, an `AssertionError`, a `RuntimeException`) leaves
   the loop that runs it: on the gameserver a zone thread, whose failure
   calls `ServerShutdown::fail()`; on the loginserver `ClientManager::run`,
-  which catches nothing, on the main thread. The replay
-  ctests run with `DE_FUZZ_STRICT_EXCEPTIONS=1`, so a recorded input that
-  throws anything else fails them; the loops themselves are unchanged.
+  which catches nothing, on the main thread. The fuzz targets, and so
+  the replay ctests, abort on any other exception, so a recorded input
+  that throws anything else fails them; the loops themselves are
+  unchanged.
   > **Status:** recorded, not fixed (feat/packet-fuzzing)
 - **Packets cast wire bytes to their enum types.** Reads store a byte
   straight into an enum (`m_PCType = PCType(pcType)`) and getters build
@@ -110,6 +111,19 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   `-fstrict-enums`. It is a wave (the fuzz build turns `-fsanitize=enum`
   off so it does not hide everything else); each field needs its range
   checked where it is read.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+- **`GCUpdateInfo::read` leaks two records per packet.** It allocates
+  the nickname record and the blood bible sign record with `new` on every
+  read, and `~GCUpdateInfo` frees neither: on the server they belong to
+  the creature that installed them, so a packet the server reads for
+  itself leaves 80 bytes behind. A client can send `GCUpdateInfo` in
+  `GPS_NORMAL`, and the gameserver reads it in full before it looks for
+  a handler, so each one a client sends leaks. ASan's leak check reports
+  it in the fuzz build; the documented fuzz runs and the replay ctests in
+  a `DARKEDEN_BUILD_FUZZERS` tree turn leak detection off for it
+  (`ASAN_OPTIONS=detect_leaks=0`), so no other leak has been looked for.
+  The ownership needs one rule for a packet the server writes and one it
+  reads.
   > **Status:** recorded, not fixed (feat/packet-fuzzing)
 - **`SocketInputStream::readPacket` is not bounded by the frame.** A
   packet's `read()` consumes what its fields say, not the size its header

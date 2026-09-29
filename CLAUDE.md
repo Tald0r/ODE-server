@@ -30,7 +30,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Every `src/**/*.cpp` is compiled by some target, every header is included | ratchets R15/R16 | the dead file, listed |
 | The de-core subset the client vendors computes exactly the parity vectors and compiles without a warning under a GCC/Clang proxy for the client's warning set (MSVC's C4146 and C4805 have no counterpart) | `formula_tests`' `SharedVectors` over `src/domain/vectors/`; `de-core-strict` (`-Werror`, built by `make dev-test`) | the row, named, with its expected and actual value; the warning, as an error |
 | `NDEBUG` is never defined, so `Assert` and `__BEGIN_TRY`/`__END_CATCH` keep one meaning | an `#error` in `src/Core/Assert.h` and `src/Core/Exception.h` | the compile of every project file, in any configuration that defines it |
-| A client's bytes reach a packet's `read()` only through the receive loops' gates, and a malformed body is refused only with a `ProtocolException` | the packet-read fuzz targets in `tests/fuzz/`; their replay ctests `fuzz_replay_game`, `fuzz_replay_login` and `fuzz_replay_game_no_store_skip` run every golden seed and every input in `tests/fuzz/regressions/` under `DE_FUZZ_STRICT_EXCEPTIONS=1` | the input, named, aborting the replay (a zig Debug UB trap, an assertion, or a non-protocol exception) |
+| A client's bytes reach a packet's `read()` only through the receive loops' gates, and a malformed body is refused only with a `ProtocolException` | the packet-read fuzz targets in `tests/fuzz/`; their replay ctests `fuzz_replay_game`, `fuzz_replay_login` and `fuzz_replay_game_no_store_skip` run every golden seed and every input in `tests/fuzz/regressions/`, and the targets abort on any other exception | the input, named, aborting the replay (a zig Debug UB trap, an assertion, or a non-protocol exception) |
 | Repository SQL behaves against a real MySQL | `make integration-test` (`tests/integration/`, needs docker) | the failing statement |
 
 ## Working in this repository
@@ -148,11 +148,11 @@ Each mirrors its receive loop (`GamePlayer::processCommand`,
 `LoginPlayer::processCommand`) up to the packet's `read()`, stops short
 of the handler, and prints the packet with `toString()` as the loop does.
 An input is `[code byte][status byte][raw stream]`; `StreamFuzz.h`
-describes it and the switches: `DE_FUZZ_STRICT_BODY=1` (a read must
-consume exactly its declared size; the server's reads do not yet, see
-`docs/FIXES.md`), `DE_FUZZ_STRICT_EXCEPTIONS=1` (anything but a
-`ProtocolException` is a crash) and `DE_FUZZ_NO_STORE_SKIP=1` (read the
-two store-info packets the gameserver refuses unread).
+describes it and the switches. Any exception but a `ProtocolException`
+is a crash unless `DE_FUZZ_ALLOW_EXCEPTIONS=1`; `DE_FUZZ_STRICT_BODY=1`
+makes a read consume exactly its declared size (the server's reads do not
+yet, see `docs/FIXES.md`) and `DE_FUZZ_NO_STORE_SKIP=1` reads the two
+store-info packets the gameserver refuses unread.
 
 The zig suite builds the targets as `fuzz_replay_game` and
 `fuzz_replay_login`, a plain `main()` over saved inputs, and ctest runs

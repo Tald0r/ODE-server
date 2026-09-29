@@ -12,9 +12,10 @@
 //               order. A file named *.hex holds the input as hex digits
 //               (whitespace ignored); any other file is the raw input.
 //               The driver exits 0 once every input has run, 1 when an
-//               argument names nothing or no input was found at all, and
-//               an input that trips the target aborts it, which the test
-//               reports as a failure.
+//               argument names nothing, no input was found at all, or an
+//               input is one the target would not run (StreamFuzz.h's
+//               runsInput), and an input that trips the target aborts
+//               it, which the test reports as a failure.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -28,6 +29,8 @@
 #include <iterator>
 #include <string>
 #include <vector>
+
+#include "StreamFuzz.h"
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv);
 extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size);
@@ -109,6 +112,11 @@ int main(int argc, char** argv) {
     for (const auto& path : inputs) {
         if (!load(path, bytes)) {
             std::fprintf(stderr, "fuzz replay: cannot read %s\n", path.string().c_str());
+            return 1;
+        }
+        if (!de::fuzz::runsInput(bytes.size())) {
+            std::fprintf(stderr, "fuzz replay: %s holds %zu bytes, which the target does not run\n",
+                         path.string().c_str(), bytes.size());
             return 1;
         }
         // Named before the run, so an input that aborts is identified.

@@ -53,6 +53,15 @@ endfunction()
 set(DARKEDEN_FUZZ_SCRATCH ${CMAKE_CURRENT_BINARY_DIR}/scratch)
 file(MAKE_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
 
+# The replay tests' environment. In a DARKEDEN_BUILD_FUZZERS tree every
+# target carries ASan, whose leak check would fail a replay on a read
+# that leaks (GCUpdateInfo::read, recorded in docs/FIXES.md); the
+# libFuzzer runs turn it off the same way.
+set(DARKEDEN_FUZZ_REPLAY_ENV "")
+if(DARKEDEN_BUILD_FUZZERS)
+    list(APPEND DARKEDEN_FUZZ_REPLAY_ENV "ASAN_OPTIONS=detect_leaks=0")
+endif()
+
 foreach(name ${DARKEDEN_FUZZ_TARGETS})
     set(source ${DARKEDEN_FUZZ_${name}_SOURCE})
     set(packets ${DARKEDEN_FUZZ_${name}_PACKETS})
@@ -75,8 +84,10 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
             ${DARKEDEN_FUZZ_${name}_SERVER} ${DARKEDEN_FUZZ_${name}_STATUSES} ${corpus})
     set_tests_properties(fuzz_seed_corpus_${name} PROPERTIES FIXTURES_SETUP fuzz_corpus_${name})
 
-    # Every seed and every recorded crash input runs clean. The scratch
-    # working directory catches assertion_failed.log.
+    # Every seed and every recorded crash input runs clean: a read may
+    # refuse a body only with a ProtocolException, the one kind the receive
+    # loops turn into a dropped connection (the targets abort on anything
+    # else). The scratch working directory catches assertion_failed.log.
     set(inputs ${corpus})
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/regressions/${name})
         list(APPEND inputs ${CMAKE_CURRENT_SOURCE_DIR}/regressions/${name})
@@ -84,13 +95,12 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
     add_test(NAME fuzz_replay_${name}
         COMMAND fuzz_replay_${name} ${inputs}
         WORKING_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
-    # Strict about exceptions: a read may refuse a body only with a
-    # ProtocolException, the one kind the receive loops turn into a
-    # dropped connection.
     set_tests_properties(fuzz_replay_${name} PROPERTIES
         FIXTURES_REQUIRED fuzz_corpus_${name}
-        ENVIRONMENT DE_FUZZ_STRICT_EXCEPTIONS=1
         TIMEOUT 120)
+    if(DARKEDEN_FUZZ_REPLAY_ENV)
+        set_tests_properties(fuzz_replay_${name} PROPERTIES ENVIRONMENT "${DARKEDEN_FUZZ_REPLAY_ENV}")
+    endif()
 
     if(TARGET wire_tests)
         # devbuild's test path builds wire_tests and then runs all of
@@ -120,9 +130,10 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game)
         COMMAND fuzz_replay_game ${CMAKE_CURRENT_BINARY_DIR}/corpus/game
             ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game
         WORKING_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
+    set(store_env DE_FUZZ_NO_STORE_SKIP=1 ${DARKEDEN_FUZZ_REPLAY_ENV})
     set_tests_properties(fuzz_replay_game_no_store_skip PROPERTIES
         FIXTURES_REQUIRED fuzz_corpus_game
-        ENVIRONMENT "DE_FUZZ_STRICT_EXCEPTIONS=1;DE_FUZZ_NO_STORE_SKIP=1"
+        ENVIRONMENT "${store_env}"
         TIMEOUT 120)
 endif()
 

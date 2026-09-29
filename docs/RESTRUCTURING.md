@@ -1294,8 +1294,10 @@ shrink-only work.
   `docs/FIXES.md`, and its input is replayed by ctest from then on.
   > **Status:** in progress (the CI fuzz job; the findings recorded, not
   > fixed, in `docs/FIXES.md` under "Packet-read fuzzing": enumerators
-  > cast from wire bytes, the reads not bounded by their frame, and
-  > non-protocol exceptions escaping the receive loops). The targets are
+  > cast from wire bytes, the reads not bounded by their frame,
+  > non-protocol exceptions escaping the receive loops, and
+  > `GCUpdateInfo::read`'s leak, which is why the fuzz runs have leak
+  > detection off). The targets are
   > in `tests/fuzz/` (game and login), `DARKEDEN_BUILD_FUZZERS` builds
   > them with libFuzzer in `tools/fuzz/Dockerfile.fuzz`, and the replay
   > builds run in the zig suite over the golden seed corpus and
@@ -1304,7 +1306,9 @@ shrink-only work.
   > the validator's status table, name-table lookups in debug strings,
   > shop and stash slot indices, wire bools, repeated script parameter
   > names and the store item count. Next reader: a UDP target for the
-  > loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is not written.
+  > loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is not written,
+  > and the targets load each input at the start of the stream's buffer,
+  > so its wrap-around path is not fuzzed (`StreamFuzz.h`).
   - Owner: the replay ctests (every recorded input replays clean, and a
     read may refuse a body only with a ProtocolException).
 

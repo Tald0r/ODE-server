@@ -19,6 +19,16 @@
 //               sent: any number of 7-byte headers and bodies, read at
 //               most kMaxFrames packets deep.
 //
+//               An input shorter than the two header bytes or longer
+//               than kMaxInput is not run; the replay driver refuses one
+//               instead of passing it.
+//
+//               Any exception that is not a ProtocolException aborts the
+//               target: the player managers catch only ProtocolException,
+//               so anything else a read() throws leaves the receive loop
+//               and, on the gameserver, stops the zone thread and the
+//               server with it.
+//
 //               Environment switches, read once at start-up:
 //
 //                 DE_FUZZ_STRICT_BODY=1   abort when a read() consumes
@@ -28,17 +38,20 @@
 //                                         the frame, so a short or long
 //                                         read desynchronises every
 //                                         packet after it.
-//                 DE_FUZZ_STRICT_EXCEPTIONS=1
-//                                         abort on any exception that is
-//                                         not a ProtocolException. The
-//                                         player managers catch only
-//                                         ProtocolException, so anything
-//                                         else a read() throws leaves the
-//                                         receive loop.
+//                 DE_FUZZ_ALLOW_EXCEPTIONS=1
+//                                         end an input quietly on any
+//                                         exception instead, to look past
+//                                         that class of finding.
 //                 DE_FUZZ_NO_STORE_SKIP=1 (game only) read the two
 //                                         store-info packets that
 //                                         GamePlayer::processCommand
 //                                         refuses unread.
+//
+//               Not covered: the stream is loaded with the input at the
+//               start of its buffer and sized to hold all of it, so the
+//               ring buffer's wrap-around branches in read(), peek() and
+//               skip() and fill()'s growth never run, although a client
+//               decides where its bytes land in the buffer.
 //
 //               Assert appends to assertion_failed.log in the working
 //               directory, so run the targets from a scratch directory.
@@ -84,7 +97,7 @@ inline constexpr std::size_t kSessionBuffer = 1024;
 
 struct Options {
     bool strictBody = false;
-    bool strictExceptions = false;
+    bool strictExceptions = true;
     bool noStoreSkip = false;
 };
 
@@ -104,7 +117,7 @@ inline bool envIsOne(const char* name) {
 // toString(), which still runs, but the text goes nowhere.
 inline void initialise() {
     options().strictBody = envIsOne("DE_FUZZ_STRICT_BODY");
-    options().strictExceptions = envIsOne("DE_FUZZ_STRICT_EXCEPTIONS");
+    options().strictExceptions = !envIsOne("DE_FUZZ_ALLOW_EXCEPTIONS");
     options().noStoreSkip = envIsOne("DE_FUZZ_NO_STORE_SKIP");
 
     std::cout.setstate(std::ios_base::badbit);
@@ -124,8 +137,13 @@ struct Input {
     std::size_t length = 0;
 };
 
+// Whether an input of this length is run at all.
+inline bool runsInput(std::size_t size) {
+    return size >= 2 && size <= kMaxInput;
+}
+
 inline bool parse(const std::uint8_t* data, std::size_t size, Input& input) {
-    if (size < 2 || size > kMaxInput)
+    if (!runsInput(size))
         return false;
     input.code = data[0];
     input.status = PlayerStatus(data[1] % PLAYER_STATUS_MAX);
@@ -160,8 +178,8 @@ inline void readPacket(SocketInputStream& stream, Packet& packet, PacketID_t id,
 
 // Runs one input's receive loop. A ProtocolException is how a server
 // turns a malformed packet away, so it always ends the input quietly.
-// Anything else ends it quietly too, unless DE_FUZZ_STRICT_EXCEPTIONS
-// makes it a crash.
+// Anything else is a crash, unless DE_FUZZ_ALLOW_EXCEPTIONS lets it end
+// the input quietly too.
 inline void run(const std::function<void()>& receive) {
     try {
         receive();
