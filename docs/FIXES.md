@@ -41,7 +41,9 @@ is recorded:
   it gives at 0 or 6 (46,880,000 comparisons, under AddressSanitizer and
   UBSan too). Pinned by
   `SkillOutputFormula.PartySizeOutsideTheTablesReadsTheNearestEnd` in
-  `tests/formula_test.cpp`.
+  `tests/formula_test.cpp`, and by the `party-*` rows (sizes -2^31, -100,
+  -1, 7, 8, 100 and 2^31-1 beside 0 to 6) and the `bless-*-party-*` rows
+  of `src/domain/vectors/skill_output.tsv`.
   > **Status:** not a defect (the clamp is defensive, for the client;
   > feat/vendorable-skill-output)
 - **No party bonus is ever granted.** Because every caller passes 0 or

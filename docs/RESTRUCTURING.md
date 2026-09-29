@@ -900,6 +900,13 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > `partyEffectBoost` and `partyDurationBoost`, which clamp the size to
   > 0..6; the server passes only 0 or 1, so no party bonus is granted
   > (`docs/FIXES.md`), and a client caller must pass the same.
+  > `src/domain/vectors/skill_output.tsv` pins `WillOfLife`, the two
+  > lookups at and past both ends, and `Bless` read through them. The
+  > client's `decore_tests` must learn its row kinds (a skill row: the ten
+  > `SkillInput` fields, the gun by `GunClass` name, the six `SkillOutput`
+  > fields as a comma-separated list; a lookup row: party size, percent),
+  > and its `third_party/decore/CMakeLists.txt` must list
+  > `domain/SkillOutputFormulas.cpp`.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out
