@@ -545,10 +545,10 @@ handler outside that list would never run and does not compile.
 
 `tests/packet_meta_test.cpp` pins the parse of every prefix, that no kernel
 factory is left unclassified, that `DirectionSet` answers only for the links it
-was given and a narrowed link only for its filter, and that an unclassifiable entry is rejected by `validateRegistry`
-naming its id. As with the registration lists, the composition roots' sets are
-compiled only under a server macro, so their `static_assert`s fire in the
-production builds, not in `make dev-test`.
+was given and a narrowed link only for its filter, and that an unclassifiable
+entry is rejected by `validateRegistry` naming its id. As with the registration
+lists, the composition roots' sets are compiled only under a server macro, so
+their `static_assert`s fire in the production builds, not in `make dev-test`.
 
 This complements rather than replaces the golden tests: compile-time checks
 prove internal consistency, while goldens prove compatibility with the client

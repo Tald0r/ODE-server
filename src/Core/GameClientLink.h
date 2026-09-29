@@ -11,8 +11,11 @@
 //               gameserver's factory table while compiling, and
 //               PacketValidator admits exactly that set in GPS_NORMAL,
 //               so a new CG packet is admitted once it is registered and
-//               nothing else is. GamePacketDispatch.cpp checks each GC
-//               handler it registers against the list below.
+//               nothing else is. The gameserver's kReceivedDirections
+//               (GamePacketDispatch.cpp) narrows its GC link to
+//               sentOnGameClientLink, so every DE_REGISTER_PACKET_HANDLER*
+//               (PacketDispatcher.h) refuses to compile a GC handler for a
+//               packet outside the list below.
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef DARKEDEN_GAME_CLIENT_LINK_H
