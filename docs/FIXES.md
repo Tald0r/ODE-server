@@ -13,6 +13,30 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Packet-read fuzzing (2026-09-29)
+
+The fuzz targets in `tests/fuzz/` feed a client's bytes through the
+gates of `GamePlayer::processCommand` and `LoginPlayer::processCommand`
+into the packets' `read()`; `CLAUDE.md` says how to build and run them.
+Each input that found a defect below is replayed by ctest from
+`tests/fuzz/regressions/`.
+
+- **`StoreInfo::read` indexed its item vector with a count off the
+  wire.** The stall record has `MAX_ITEM_NUM` (20) slots and `write()`
+  sends them all, but `read()` looped over a wire BYTE of up to 255,
+  writing `m_Items[i]` past the vector. It now refuses a count past the
+  slots with `InvalidProtocolException` before reading any item
+  (`StoreInfoTest` in `tests/packet_read_bounds_test.cpp`). On the
+  gameserver it was not reachable: `GamePlayer::processCommand` refuses
+  `GCMyStoreInfo` and `GCOtherStoreInfo` unread, and even with that
+  refusal off (`DE_FUZZ_NO_STORE_SKIP=1`, fuzzed for five minutes) the
+  factory's packets hold no record, so their `read()` throws "no store
+  record" before `StoreInfo::read`. The refusal in `GamePlayer` stays
+  for now. The client has the identical loop and reaches it; it is fixed
+  there on the client repo's `feat/packet-fuzzing` branch (commit
+  0c782d10).
+  > **Status:** fixed (feat/packet-fuzzing)
+
 ## The character list could not carry a cross1, a mace or a mace1 (2026-09-29)
 
 - **A slayer's character-list outlook had four weapon bits for nineteen

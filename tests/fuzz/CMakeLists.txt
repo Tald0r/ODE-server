@@ -107,6 +107,18 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
     endif()
 endforeach()
 
+# The gameserver refuses the two store-info packets unread
+# (GamePlayer.cpp:364). This replays the recorded game inputs with that
+# refusal off, so the reads behind it stay checked as well.
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game)
+    add_test(NAME fuzz_replay_game_no_store_skip
+        COMMAND fuzz_replay_game ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game
+        WORKING_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
+    set_tests_properties(fuzz_replay_game_no_store_skip PROPERTIES
+        ENVIRONMENT "DE_FUZZ_STRICT_EXCEPTIONS=1;DE_FUZZ_NO_STORE_SKIP=1"
+        TIMEOUT 120)
+endif()
+
 # The seed corpora for a libFuzzer run, written where the replay tests
 # write them: `cmake --build <dir> --target fuzz_seed_corpus`.
 add_custom_target(fuzz_seed_corpus

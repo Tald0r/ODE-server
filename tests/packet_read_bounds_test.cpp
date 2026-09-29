@@ -223,3 +223,50 @@ TEST(ScriptParameterTest, aRepeatedNameIsRefusedAsAProtocolError) {
                                    }),
                  InvalidProtocolException);
 }
+
+//////////////////////////////////////////////////////////////////////
+// A stall record has MAX_ITEM_NUM window slots. The item count comes off
+// the wire as a byte, so one past the slots is refused before any item is
+// read into a slot that is not there. On the gameserver the two
+// store-info packets are refused before they are read and their factory
+// packets hold no record, so this read is reached only where a caller
+// has given the packet a record.
+//////////////////////////////////////////////////////////////////////
+
+namespace {
+
+std::vector<unsigned char> storeBody(unsigned itemCount) {
+    std::vector<unsigned char> body = {0x01, 0x01, 0x00, (unsigned char)itemCount};
+    body.insert(body.end(), itemCount, 0x00); // every slot empty
+    return body;
+}
+
+// GCMyStoreInfo keeps its record by pointer, so the test owns it.
+struct MyStore {
+    StoreInfo info;
+    GCMyStoreInfo packet;
+    MyStore() {
+        packet.setStoreInfo(&info);
+    }
+};
+
+void readFromMemory(Packet& packet, const std::vector<unsigned char>& body) {
+    Socket socket(new SocketImpl());
+    SocketInputStream in(&socket, (uint)body.size() + 1);
+    ASSERT_TRUE(SocketInputStreamTestAccess::Preload(in, body.data(), body.size()));
+    packet.read(in);
+}
+
+} // namespace
+
+TEST(StoreInfoTest, anItemCountPastTheRecordsSlotsIsRefused) {
+    auto store = std::make_unique<MyStore>();
+    EXPECT_THROW(readFromMemory(store->packet, storeBody(MAX_ITEM_NUM + 1)), InvalidProtocolException);
+    EXPECT_THROW(readFromMemory(store->packet, storeBody(255)), InvalidProtocolException);
+}
+
+TEST(StoreInfoTest, anItemCountThatFillsEverySlotIsRead) {
+    auto store = std::make_unique<MyStore>();
+    readFromMemory(store->packet, storeBody(MAX_ITEM_NUM));
+    EXPECT_EQ((size_t)MAX_ITEM_NUM, store->info.getItems().size());
+}
