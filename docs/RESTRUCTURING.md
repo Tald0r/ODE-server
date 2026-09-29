@@ -1286,6 +1286,28 @@ shrink-only work.
   > `stop_grace_period`.
   - Owner: ratchet R7, held at 0.
 
+- [ ] **5.5 Packet-read fuzzing.** Fuzz what clients send: the bytes a
+  client puts on the wire, through the gates of
+  `GamePlayer::processCommand` and `LoginPlayer::processCommand`, into the
+  packets' `read()` and the `toString()` every read packet is printed
+  with. Every crash the fuzzers find is fixed test-first or recorded in
+  `docs/FIXES.md`, and its input is replayed by ctest from then on.
+  > **Status:** in progress (the CI fuzz job; the findings recorded, not
+  > fixed, in `docs/FIXES.md` under "Packet-read fuzzing": enumerators
+  > cast from wire bytes, the reads not bounded by their frame, and
+  > non-protocol exceptions escaping the receive loops). The targets are
+  > in `tests/fuzz/` (game and login), `DARKEDEN_BUILD_FUZZERS` builds
+  > them with libFuzzer in `tools/fuzz/Dockerfile.fuzz`, and the replay
+  > builds run in the zig suite over the golden seed corpus and
+  > `tests/fuzz/regressions/` (ctests `fuzz_replay_game`,
+  > `fuzz_replay_login`, `fuzz_replay_game_no_store_skip`). Fixed so far:
+  > the validator's status table, name-table lookups in debug strings,
+  > shop and stash slot indices, wire bools, repeated script parameter
+  > names and the store item count. Next reader: a UDP target for the
+  > loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is not written.
+  - Owner: the replay ctests (every recorded input replays clean, and a
+    read may refuse a body only with a ProtocolException).
+
 ---
 
 ## Phase 6 — CI (deliberately last; limited by GitHub Actions minutes)

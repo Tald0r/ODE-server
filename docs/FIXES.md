@@ -36,6 +36,75 @@ Each input that found a defect below is replayed by ctest from
   there on the client repo's `feat/packet-fuzzing` branch (commit
   0c782d10).
   > **Status:** fixed (feat/packet-fuzzing)
+- **`PacketValidator`'s constructor filled a vector it had only
+  reserved.** `m_PacketIDSets.reserve(PLAYER_STATUS_MAX)` followed by
+  `m_PacketIDSets[i] = NULL` wrote into capacity, not elements, and every
+  later lookup read it the same way: undefined behaviour on every
+  server's start-up that happened to work. The fuzz build's
+  `_GLIBCXX_ASSERTIONS` aborted in the constructor. It now assigns
+  `PLAYER_STATUS_MAX` null slots.
+  > **Status:** fixed (feat/packet-fuzzing)
+- **Debug strings indexed name tables with wire values.** Thirteen
+  `toString()` bodies wrote `PCType2String[m_PCType]`,
+  `HelmetType2String[getHelmetType()]` and the like, and
+  `SocketInputStream::readPacket` prints every packet it reads, so one
+  out-of-range byte (CGConnect's character type, CLCreatePC's slot,
+  GCAddSlayerCorpse's helmet) copied a `std::string` that is not there.
+  `nameOrNumber()` (`src/Core/types/SystemTypes.h`) prints such a value as
+  its number (`DebugNameTest`).
+  > **Status:** fixed (feat/packet-fuzzing)
+- **Shop and stash listings wrote their slots by a wire index.**
+  `GCShopList`, `GCShopListMysterious` and `GCStashList` stored each item
+  at an index byte (and, for the stash, a rack byte) with no bound: 255
+  against 20 slots and 3 racks, a heap overflow past the packet
+  (`RackSlotTest`).
+  > **Status:** fixed (feat/packet-fuzzing)
+- **A wire bool could hold any byte.** `read<bool>` copied the raw byte,
+  so 0x02 became a bool that is neither true nor false; the zig Debug
+  build traps on loading it. It now reads the byte and stores
+  `byte != 0`; writers send 1 for true, so no golden changes
+  (`WireBoolTest`).
+  > **Status:** fixed (feat/packet-fuzzing)
+- **A repeated script parameter name stopped the gameserver.**
+  `GCNPCAskVariable::read` let `addScriptParameter`'s
+  `DuplicatedException` out. The receive loops catch only
+  `ProtocolException`, so it left `ZonePlayerManager`, `ZoneGroupThread`
+  rethrew it and the worker's failure called `ServerShutdown::fail()`. The
+  read now refuses the repeat as an `InvalidProtocolException`
+  (`ScriptParameterTest`).
+  > **Status:** fixed (feat/packet-fuzzing)
+- **Non-protocol exceptions from a read escape the receive loops.** The
+  fix above closes the one the fuzzers found, not the route:
+  `ZonePlayerManager::processCommands` and `IncomingPlayerManager` catch
+  only `ProtocolException`, and the loginserver's `LoginPlayerManager`
+  adds only `ConnectException`, so any other `Throwable` a packet read
+  throws (an `Error`, an `AssertionError`, a `RuntimeException`) leaves
+  the loop that runs it: on the gameserver a zone thread, whose failure
+  calls `ServerShutdown::fail()`; on the loginserver `ClientManager::run`,
+  which catches nothing, on the main thread. The replay
+  ctests run with `DE_FUZZ_STRICT_EXCEPTIONS=1`, so a recorded input that
+  throws anything else fails them; the loops themselves are unchanged.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+- **Packets cast wire bytes to their enum types.** Reads store a byte
+  straight into an enum (`m_PCType = PCType(pcType)`) and getters build
+  one from bits (`ShieldType((m_Outlook >> n) & mask)`) without checking
+  the enumerators. A value past the enum's range is undefined behaviour to
+  load; the zig Debug build traps on it, so on a Debug server one such
+  byte from a client aborts the process, while the optimized builds carry
+  no check and Clang does not assume enum ranges without
+  `-fstrict-enums`. It is a wave (the fuzz build turns `-fsanitize=enum`
+  off so it does not hide everything else); each field needs its range
+  checked where it is read.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+- **`SocketInputStream::readPacket` is not bounded by the frame.** A
+  packet's `read()` consumes what its fields say, not the size its header
+  declared, and the receive loops do not check the two agree. A body
+  shorter than declared leaves the rest to be parsed as the next header;
+  a longer one reads into the next frame. `DE_FUZZ_STRICT_BODY=1` shows it
+  on the first seed with a zero-filled body. The client's receive path
+  has a frame-bounded read that refuses both; the server needs the same,
+  checked against every golden.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
 
 ## The character list could not carry a cross1, a mace or a mace1 (2026-09-29)
 
