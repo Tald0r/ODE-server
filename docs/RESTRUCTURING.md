@@ -1302,15 +1302,19 @@ shrink-only work.
   > them with libFuzzer in `tools/fuzz/Dockerfile.fuzz`, and the replay
   > builds run in the zig suite over the golden seed corpus and
   > `tests/fuzz/regressions/` (ctests `fuzz_replay_game`,
-  > `fuzz_replay_login`, `fuzz_replay_game_no_store_skip`). Fixed so far:
-  > the validator's status table, name-table lookups in debug strings,
+  > `fuzz_replay_login`, `fuzz_replay_game_no_store_skip`); each fix but
+  > the validator's has a gtest in `tests/packet_read_bounds_test.cpp`
+  > (`wire_tests`). Fixed so far:
+  > the validator's status table, name-table lookups in debug strings
+  > (including `PCVampireInfo`'s),
   > shop and stash slot indices, wire bools, repeated script parameter
   > names and the store item count. Next reader: a UDP target for the
   > loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is not written,
   > and the targets load each input at the start of the stream's buffer,
   > so its wrap-around path is not fuzzed (`StreamFuzz.h`).
   - Owner: the replay ctests (every recorded input replays clean, and a
-    read may refuse a body only with a ProtocolException).
+    read may refuse a body only with a ProtocolException) and the gtests
+    in `tests/packet_read_bounds_test.cpp` (each fix's refusal or value).
 
 ---
 

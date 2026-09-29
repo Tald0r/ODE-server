@@ -163,7 +163,8 @@ fix). `make dev-test` runs them like any other test.
 
 libFuzzer needs a Clang with compiler-rt, which `zig c++` is not, so the
 fuzzers are a separate configure with `-DDARKEDEN_BUILD_FUZZERS=ON`
-(Clang only; it refuses zig and instruments every target with ASan,
+(it refuses zig, AppleClang and a Clang that cannot link a
+`-fsanitize=fuzzer` target, and instruments every target with ASan,
 UBSan and `_GLIBCXX_ASSERTIONS`). `tools/fuzz/Dockerfile.fuzz` is the
 toolchain:
 
@@ -176,7 +177,8 @@ mkdir /src && cp -a /repo/CMakeLists.txt /repo/cmake /repo/src /repo/tests \
 cmake -G Ninja -S /src -B /build -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18 \
     -DDARKEDEN_BUILD_FUZZERS=ON -DDARKEDEN_OUTPUT_ROOT=/out
-cmake --build /build --target fuzz_game_stream fuzz_login_stream fuzz_seed_corpus
+cmake --build /build --target fuzz_game_stream fuzz_login_stream \
+    fuzz_replay_game fuzz_replay_login fuzz_seed_corpus
 # run from a scratch directory: Assert appends to assertion_failed.log there
 mkdir -p /scratch /corpus && cd /scratch
 ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 /out/bin/fuzz_game_stream \
@@ -185,9 +187,17 @@ ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 /out/bin/fuzz_game_stream \
 ```
 
 `-close_fd_mask=3` keeps the packets' debug output off the terminal;
-`-fork=N -ignore_crashes=1` keeps going past the first crash. Replay a
-crash file with `fuzz_replay_game <file>` in either build; in the fuzz
-build it comes with the sanitizer's report. There is no CI fuzz job yet.
+`-fork=N -ignore_crashes=1` keeps going past the first crash. Leak
+detection is off because `GCUpdateInfo::read` leaks on every read
+(recorded in `docs/FIXES.md`), so the runs find no leaks. Replay a crash
+file with `fuzz_replay_game <file>` in either build; in the fuzz build it
+comes with the sanitizer's report and needs the same
+`ASAN_OPTIONS=detect_leaks=0`, which ctest sets itself there
+(`ctest -R fuzz` in `/build` runs the replay tests). Some recorded inputs
+fail only under ASan: the zig Debug build does not trap on every
+out-of-bounds read (`CGConnect-name-table.hex` is one), so their fixes
+are guarded in the zig suite by the gtests in
+`tests/packet_read_bounds_test.cpp`. There is no CI fuzz job yet.
 
 #### Building in the container
 
