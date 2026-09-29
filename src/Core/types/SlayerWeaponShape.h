@@ -49,12 +49,15 @@ inline WeaponType slayerWeaponShape(WeaponType family, ItemType_t itemType) {
     }
 }
 
-// The character list (PCSlayerInfo, stored as Slayer.Shape) has four
-// weapon bits, and the client reads it with the same four-bit mask, so a
-// value of 16 or more cannot travel there: its high bit would land in the
-// shield field. The high-tier cross shows as the base cross; a mace, which
-// has no value below 16, shows as no weapon rather than as a rifle.
-inline WeaponType slayerWeaponListShape(WeaponType shape) {
+// The weapon the character list (PCSlayerInfo, stored as Slayer.Shape)
+// carries in its four-bit weapon field. A client that knows only those
+// four bits reads them with a four-bit mask, so a value of 16 or more
+// cannot travel there: its high bit would land in the shield field. The
+// high-tier cross shows as the base cross; a mace, which has no value
+// below 16, shows as no weapon rather than as a rifle.
+// PCSlayerInfo::weaponBits writes this beside the extension code that
+// names the real shape.
+constexpr WeaponType slayerWeaponListShape(WeaponType shape) {
     if (shape < 16)
         return shape;
     return shape == WEAPON_CROSS1 ? WEAPON_CROSS : WEAPON_NONE;

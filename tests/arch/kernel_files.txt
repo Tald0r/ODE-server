@@ -14,6 +14,7 @@ src/Core/types/PlayerTypes.h
 src/Core/types/QuestTypes.h
 src/Core/types/ServerType.h
 src/Core/types/ShopTypes.h
+src/Core/types/SlayerWeaponShape.h
 src/Core/types/SystemTypes.h
 src/Core/types/WarTypes.h
 src/Core/types/ZoneTypes.h

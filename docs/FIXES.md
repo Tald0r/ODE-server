@@ -13,6 +13,87 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## The character list could not carry a cross1, a mace or a mace1 (2026-09-29)
+
+- **A slayer's character-list outlook had four weapon bits for nineteen
+  weapon shapes.** `PCSlayerInfo` (the record `LCPCList` carries, and the
+  layout of the `Slayer.Shape` column) packs the outlook into one DWORD
+  with the weapon at bits 11-14 and the shield at 15-16. `WeaponType`
+  runs to `WEAPON_MACE1` = 18, so cross1 (16), mace (17) and mace1 (18)
+  did not fit: `setWeaponType` wrote the value unmasked, so a mace's
+  fifth bit landed on `SLAYER_BIT_SHIELD1` and it read back as weapon 1
+  (a sword) with a shield. No production code called that setter; the
+  live path, `Slayer::getShapeInfo`, clamped the shape through
+  `slayerWeaponListShape` before saving it, so the list showed a cross1
+  as a cross and a mace or mace1 as no weapon. Either way the
+  character-select slot never showed the weapon the slayer held (the
+  client's to-hit preview, commit ad559efb in the client repo, reads the
+  domain level from it).
+  The weapon is now two fields. Bits 11-14 keep the four-bit view: the
+  weapon itself for 0..15 and the clamp's stand-in for 16..18 (a cross
+  for cross1, no weapon for mace and mace1), so they hold exactly what
+  the live path wrote before. Bits 17-18 (`SLAYER_BIT_WEAPON_EXT1..2`,
+  past the shield; `SLAYER_BIT_MAX` 17 -> 19) hold an extension code: 0
+  when the four bits are the weapon, otherwise the weapon minus 15 (1
+  cross1, 2 mace, 3 mace1). `getWeaponType` reads `WEAPON_CROSS + code`
+  when the code is set and the four bits otherwise, so every outlook
+  decodes to 0..18. `PCSlayerInfo::weaponBits` writes both fields, so
+  they cannot disagree; a value past 18 writes no weapon (both fields
+  zero) and never touches the shield. `setWeaponType` writes through it,
+  and so does the gameserver's encoder: `getShapeInfo`'s weapon block is
+  now one call to `slayerListWeaponBits` (`SlayerListWeapon.h`), which
+  takes the right-hand item's class and type to the shape
+  (`slayerWeaponShape`) and the shape to `weaponBits`.
+  `slayerWeaponListShape` is kept as the four-bit view
+  (`types/SlayerWeaponShape.h` joined the kernel so `PCSlayerInfo.h` can
+  use it), and `static_assert`s pin the enum values the code counts from
+  and the round trip of every weapon.
+  The outlook's other setters (hair style, helmet, jacket, pants, shield)
+  now cut their value to their field through one helper,
+  `setOutlookField`, and a `static_assert` checks that every value below
+  each type's `_MAX` fits. Unmasked, `HelmetType`, which runs to
+  `HELMET_MAX` = 4 and so holds 0..7, wrote 4..7 into the jacket's bits.
+  The other types' values all fit their fields here: a shield of 4 or
+  more, which unmasked would land on the extension code now that it sits
+  past the shield, is not a `ShieldType` value, and the Debug build's
+  UBSan stops on its load before any setter runs. The client's copy of
+  the header is where the mask matters most: its `ShieldType` runs to
+  `SHIELD4` and its `HelmetType` to `HELMET5`, so there `SHIELD4` would
+  have written the extension code and `HELMET4`..`HELMET5` the jacket.
+  Interop. Old client, new server: nothing changes. Such a client keeps
+  bits 0-16 of the DWORD (`bitset<17>`), which are bit-identical to what
+  the live path sent before for every weapon and shield, so it still sees
+  a cross1 as a cross and a mace or mace1 as no weapon.
+  New client, old server: bits 17-18 are never set, so it reads the four
+  bits, the clamped values, as before. The same holds for `Slayer.Shape`
+  rows saved before this, until the character is saved again; the column
+  is int(10) unsigned and holds bit 18 without a migration.
+  Pinned by `PCSlayerInfoOutlook` in `tests/packet_login_test.cpp`: the
+  whole DWORD of every weapon with every shield against literal tables
+  (the four-bit view, extended from 0..15 to the clamped values for
+  16..18, and the extension code), an old client's reading of it, an
+  outlook without the code, every combination of the two fields, the
+  values past 18, and every value each other field's type can hold,
+  written under every weapon (`everyValueAFieldsTypeHoldsStaysInTheField`).
+  The gameserver's encoder is pinned by `SlayerListWeapon` in
+  `tests/slayer_list_weapon_test.cpp` (run by `player_race_tests`, which
+  compiles it header-only): literal DWORDs for every weapon class on each
+  side of its item-type thresholds, so a cross1, a mace (type 13) and a
+  mace1 (type 14) carry their code; no bits for a class that is not a
+  slayer weapon; and no bit outside the two weapon fields for any class
+  and type. `LCPCList.code0.hex` (a cross) did not move and the
+  packet's size and inventory line are unchanged; `LCPCList.mace.code0.hex`
+  pins a mace, whose outlook differs from the cross's in bits 11-14 and
+  18 alone (0x00017c9d -> 0x0005049d). The zone view's `PCSlayerInfo3`
+  (`GCAddSlayer`, `GCAddSlayerCorpse`, `GCMorphSlayer2`) already had five
+  contiguous weapon bits; its setter now masks to them, which moves no
+  byte. Its other setters are still unmasked: their types fit their
+  fields there except the motorcycle's (`MOTORCYCLE_MAX` = 4, so 0..7, in
+  two bits) and the shoulder's `BYTE` (two bits), whose callers pass
+  `MOTORCYCLE_NONE`..`MOTORCYCLE3` and 0 or 1, so nothing spills today.
+  `PCSlayerInfo2` and `CLCreatePC` carry no weapon.
+  > **Status:** fixed (fix/slayer-weapon-bits)
+
 ## Shared small rules (2026-09-29)
 
 Three small rules moved into de-core in slice 6b of the shared-rules plan:
