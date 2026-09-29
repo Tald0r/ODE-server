@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // Filename    : SkillOutputFormulas.cpp
 // Description : see SkillOutputFormulas.h. Bodies are verbatim from
-// skill/SkillFormula.cpp except the three substitutions the header
+// skill/SkillFormula.cpp except the substitutions and edits the header
 // documents; the legacy comments were later recovered from their
 // double-encoded mojibake and translated to English (see the header).
 //////////////////////////////////////////////////////////////////////////////

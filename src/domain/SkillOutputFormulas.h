@@ -7,8 +7,9 @@
 // delegate here (skill/SkillFormula.cpp).
 //
 // The structs mirror the gameserver's SkillInput/SkillOutput
-// (skill/SkillHandler.h) field-for-field so the bodies move without edits:
-// same field names, same enum values. Three impurities were externalized:
+// (skill/SkillHandler.h) field-for-field so the bodies move with as few
+// edits as possible: same field names, same enum values. Three impurities
+// were externalized:
 //  - DomainGrade replaces SkillInfoManager::getGradeByDomainLevel(
 //    input.DomainLevel); only the three grade-using adapters fetch it
 //    (ContinualLight, Purify, DetectInvisibility), preserving the
@@ -18,6 +19,14 @@
 //  - HeadShot's Assert(false) on an unknown gun class fires in the
 //    adapter, before delegation (observable state is identical: every
 //    caller passes a freshly zeroed SkillOutput).
+// The bodies also carry edits that change no value, so the file compiles
+// warning-free for every client toolchain: an explicit truncating (int)
+// or (Attr_t) cast where a double or int was already converted at that
+// point, [[fallthrough]] on HeadShot's existing fall-throughs, and
+// (void) on unused parameters. One edit changes behaviour, only where
+// the old code read past a table: the party tables are read through
+// partyEffectBoost()/partyDurationBoost(), which clamp the party size to
+// the tables' 0..6 (docs/FIXES.md).
 //
 // The math is game balance: oddities (dead case-fallthroughs, negative
 // damages, commented-out history) are preserved on purpose. The legacy
