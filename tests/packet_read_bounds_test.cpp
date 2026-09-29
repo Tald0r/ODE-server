@@ -85,3 +85,96 @@ TEST(DebugNameTest, aSlotSexAndHairStylePastTheirTablesPrintAsNumbers) {
     EXPECT_TRUE(contains(text, "Sex:MALE")) << text;
     EXPECT_TRUE(contains(text, "HairStyle:3")) << text;
 }
+
+//////////////////////////////////////////////////////////////////////
+// A rack or stash listing addresses its slots by an index read off the
+// wire. One past the slots is refused before anything is written to it.
+//////////////////////////////////////////////////////////////////////
+
+namespace {
+
+// One shop or stash slot's fields after its index, as the readers take
+// them, with no options.
+void emitShopItem(SocketOutputStream& out) {
+    out.write((ObjectID_t)0x81A2B3C4);
+    out.write((BYTE)1);
+    out.write((ItemType_t)2);
+    out.write((BYTE)0); // option count
+    out.write((Durability_t)3);
+    out.write((Silver_t)4);
+    out.write((Grade_t)5);
+    out.write((EnchantLevel_t)6);
+}
+
+// Both coordinates of a stash slot come off the wire.
+void emitStashSlot(SocketOutputStream& out, BYTE rack, BYTE index) {
+    out.write((BYTE)1); // stash count
+    out.write((BYTE)1); // one item
+    out.write(rack);
+    out.write(index);
+    emitShopItem(out);
+    out.write((BYTE)0); // sub-item count
+    out.write((Gold_t)0);
+}
+
+} // namespace
+
+TEST(RackSlotTest, aShopListSlotPastTheRackIsRefused) {
+    auto packet = std::make_unique<GCShopList>();
+    EXPECT_THROW(readHandBuiltBody(*packet,
+                                   [](SocketOutputStream& out) {
+                                       out.write((ObjectID_t)0x81A2B3C4);
+                                       out.write((ShopVersion_t)1);
+                                       out.write((ShopRackType_t)0);
+                                       out.write((BYTE)1); // one item
+                                       out.write((BYTE)SHOP_RACK_INDEX_MAX);
+                                       emitShopItem(out);
+                                       out.write((MarketCond_t)0);
+                                       out.write((MarketCond_t)0);
+                                       out.write((BYTE)0);
+                                   }),
+                 InvalidProtocolException);
+}
+
+TEST(RackSlotTest, theLastShopListSlotIsRead) {
+    auto packet = std::make_unique<GCShopList>();
+    readHandBuiltBody(*packet, [](SocketOutputStream& out) {
+        out.write((ObjectID_t)0x81A2B3C4);
+        out.write((ShopVersion_t)1);
+        out.write((ShopRackType_t)0);
+        out.write((BYTE)1);
+        out.write((BYTE)(SHOP_RACK_INDEX_MAX - 1));
+        emitShopItem(out);
+        out.write((MarketCond_t)0);
+        out.write((MarketCond_t)0);
+        out.write((BYTE)0);
+    });
+    EXPECT_TRUE(packet->getShopItem(SHOP_RACK_INDEX_MAX - 1).bExist);
+}
+
+TEST(RackSlotTest, aMysteriousShopListSlotPastTheRackIsRefused) {
+    auto packet = std::make_unique<GCShopListMysterious>();
+    EXPECT_THROW(readHandBuiltBody(*packet,
+                                   [](SocketOutputStream& out) {
+                                       out.write((ObjectID_t)0x81A2B3C4);
+                                       out.write((ShopVersion_t)1);
+                                       out.write((ShopRackType_t)0);
+                                       out.write((BYTE)1);
+                                       out.write((BYTE)SHOP_RACK_INDEX_MAX);
+                                       out.write((BYTE)1);
+                                       out.write((ItemType_t)2);
+                                       out.write((MarketCond_t)0);
+                                       out.write((MarketCond_t)0);
+                                   }),
+                 InvalidProtocolException);
+}
+
+TEST(RackSlotTest, aStashSlotPastTheRackOrTheRowIsRefused) {
+    auto pastRow = std::make_unique<GCStashList>();
+    EXPECT_THROW(readHandBuiltBody(*pastRow, [](SocketOutputStream& out) { emitStashSlot(out, 0, STASH_INDEX_MAX); }),
+                 InvalidProtocolException);
+
+    auto pastRack = std::make_unique<GCStashList>();
+    EXPECT_THROW(readHandBuiltBody(*pastRack, [](SocketOutputStream& out) { emitStashSlot(out, STASH_RACK_MAX, 0); }),
+                 InvalidProtocolException);
+}

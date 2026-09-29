@@ -55,6 +55,8 @@ void GCShopListMysterious::read(SocketInputStream& iStream)
     // read each item info
     for (i = 0; i < nTotal; i++) {
         iStream.read(index);
+        if (index >= SHOP_RACK_INDEX_MAX)
+            throw InvalidProtocolException("shop slot out of range");
         iStream.read(m_pBuffer[index].itemClass);
         iStream.read(m_pBuffer[index].itemType);
 
