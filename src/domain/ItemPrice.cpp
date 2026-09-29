@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // Filename    : ItemPrice.cpp
 // Description :
-// Shop and repair prices. See ItemPrice.h.
+// Shop and repair prices and the castle tax. See ItemPrice.h.
 //////////////////////////////////////////////////////////////////////////////
 
 #include "domain/ItemPrice.h"
@@ -192,6 +192,18 @@ int repairPrice(const ItemPriceInput& input) {
 
 unsigned skullSellTotal(unsigned priceTimesNum, unsigned headPriceBonusPercent) {
     return priceTimesNum * (headPriceBonusPercent / 100);
+}
+
+unsigned applyCastleTax(unsigned total, int ratio) {
+    if (ratio > 100) {
+        const double taxed = total * (ratio / 100.0);
+        // Past the int range the server's conversion is undefined; this is
+        // what x86-64 gives (see ItemPrice.h).
+        if (taxed >= 2147483648.0)
+            return 0x80000000u;
+        return (unsigned)(int)taxed;
+    }
+    return total;
 }
 
 } // namespace decore

@@ -13,6 +13,53 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Shared castle tax (2026-09-29)
+
+The castle tax the shop buy handler adds to a purchase moved from
+`CGShopRequestBuyHandler::executeNormal` into de-core
+(`decore::applyCastleTax`, `src/domain/ItemPrice.cpp`) so the client can
+quote the same charge. The handler keeps the tax it logs and credits to
+the castle. The move defined one conversion and kept the rest:
+
+- **A taxed total past the int range was converted by undefined
+  behaviour.** The handler computed
+  `(int)(itemMoney * (itemTaxRatio / 100.0))` with `itemMoney` a 32-bit
+  unsigned `Price_t`, so a product of 2^31 or more had no int. x86-64
+  builds gave INT_MIN, which the handler stored back as a `Price_t` of
+  2147483648; arm64 builds give INT_MAX, 2147483647; Zig's checked Debug
+  build panics on either target ("outside the range of representable
+  values of type 'int'"), so a Debug server aborted on such a purchase.
+  de-core now returns 2147483648 on every target, x86-64's value. It is
+  balance-neutral on both architectures: either value is more than
+  `MAX_MONEY` (2,000,000,000), so the purchase is refused as not enough
+  money before the tax is logged or credited. The seed data does not
+  reach it at the ratios a guild master can set (101 to 110): at 110 it
+  takes a total of 1,952,257,862 before tax, and the dearest seed item
+  lists at 10,000,000. A ratio set by the GM command `ItemTaxRatio`
+  can reach it. The evidence: the old block and the new call, built by
+  the container's Zig for x86-64 at -O0 (without UBSan) and -O2 and run
+  under emulation, give the same `itemMoney` and `itemTax` for 58,398,350
+  total and ratio pairs (totals 0 to 20,000, 2^k +-3, the int and
+  `Price_t` limits, the totals whose product straddles 2^31 at each
+  ratio, 120,000 pseudo-random; ratios -2 to 400, 500, 999, 1000, 10000,
+  100000 and the int limits), 0 mismatches. Built for arm64 they differ
+  on exactly the 14,679,318 pairs whose taxed product is out of range.
+  > **Status:** fixed (feat/shared-castle-tax)
+- **A ratio of 100 or below is no discount, but the shop tells the client
+  it is.** The handler taxes only above 100, while
+  `CGShopRequestListHandler` sends the player's ratio (`NPC::getTaxRatio`)
+  as the list's `MarketCondSell` and `ActionSell` sends it in
+  `GCShopVersion` whenever it is not 100, so a client pricing by that
+  market condition quotes a discount the server does not give. The guild
+  master's command sets 100 to 110; the GM command sets any int.
+  > **Status:** recorded, not fixed (feat/shared-castle-tax)
+- **The tax is taken once on the whole total, in double.** Three items at
+  17 each cost 56 at 110 (51 x 1.1 = 56.1), where taxing each item would
+  cost 54. The ratio is divided by 100.0 before it multiplies, and a ratio
+  whose hundredth rounds low in binary truncates one below the integer
+  answer: 100 at 115 costs 114. No ratio a guild master can set does that.
+  > **Status:** recorded, not fixed (feat/shared-castle-tax)
+
 ## Shared equip rules (2026-09-29)
 
 The three races' item requirement (what an item asks of its wearer once

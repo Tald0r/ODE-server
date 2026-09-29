@@ -28,6 +28,7 @@
 #include "Utility.h"
 #include "Vampire.h"
 #include "ZoneUtil.h"
+#include "domain/ItemPrice.h"
 #include "item/Key.h"
 #include "item/Magazine.h"
 #include "item/Potion.h"
@@ -195,14 +196,12 @@ void CGShopRequestBuyHandler::executeNormal(CGShopRequestBuy* pPacket, Player* p
         itemMoney = de::gameContext().prices().getPrice(pItem, pNPC->getMarketCondSell(), shopType, pPC) * itemNum;
     }
 
+    // A castle that taxes this NPC's sales adds its tax to the total; the
+    // tax is what the castle's balance is credited below.
     if (pNPC->getTaxingCastleZoneID() != 0) {
-        int itemTaxRatio = pNPC->getTaxRatio(pPC);
-        if (itemTaxRatio > 100) {
-            int NewItemMoney = (int)(itemMoney * (itemTaxRatio / 100.0));
-            itemTax = (NewItemMoney - itemMoney);
-
-            itemMoney = NewItemMoney;
-        }
+        Price_t taxedMoney = decore::applyCastleTax(itemMoney, pNPC->getTaxRatio(pPC));
+        itemTax = taxedMoney - itemMoney;
+        itemMoney = taxedMoney;
     }
 
     Item::ItemClass IClass = pItem->getItemClass();
