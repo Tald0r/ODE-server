@@ -44,6 +44,10 @@ the castle. The move defined one conversion and kept the rest:
   ratio, 120,000 pseudo-random; ratios -2 to 400, 500, 999, 1000, 10000,
   100000 and the int limits), 0 mismatches. Built for arm64 they differ
   on exactly the 14,679,318 pairs whose taxed product is out of range.
+  Pinned by `tax-first-past-int-at-110`, `tax-exactly-2-to-31-at-200`,
+  `tax-int-max-at-101`, `tax-uint-max-at-101` and
+  `tax-uint-max-at-int-max` in `src/domain/vectors/price.tsv`, beside
+  `tax-last-in-int-at-110` and `tax-last-in-int-at-200` just inside it.
   > **Status:** fixed (feat/shared-castle-tax)
 - **A ratio of 100 or below is no discount, but the shop tells the client
   it is.** The handler taxes only above 100, while
@@ -51,13 +55,17 @@ the castle. The move defined one conversion and kept the rest:
   as the list's `MarketCondSell` and `ActionSell` sends it in
   `GCShopVersion` whenever it is not 100, so a client pricing by that
   market condition quotes a discount the server does not give. The guild
-  master's command sets 100 to 110; the GM command sets any int.
+  master's command sets 100 to 110; the GM command sets any int. Pinned
+  by `tax-ratio-90-no-discount`, `tax-ratio-0-untaxed` and the other
+  `tax-*-untaxed` rows.
   > **Status:** recorded, not fixed (feat/shared-castle-tax)
 - **The tax is taken once on the whole total, in double.** Three items at
   17 each cost 56 at 110 (51 x 1.1 = 56.1), where taxing each item would
   cost 54. The ratio is divided by 100.0 before it multiplies, and a ratio
   whose hundredth rounds low in binary truncates one below the integer
   answer: 100 at 115 costs 114. No ratio a guild master can set does that.
+  Pinned by `tax-three-at-17-taxed-once` and the `tax-hundredth-low-*`
+  rows.
   > **Status:** recorded, not fixed (feat/shared-castle-tax)
 
 ## Shared equip rules (2026-09-29)

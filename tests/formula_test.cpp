@@ -1327,6 +1327,11 @@ std::string evaluateRow(const std::vector<std::string>& fields, std::string& err
         unsigned bonus = (unsigned)in.integer();
         in.finish();
         result = decore::skullSellTotal(priceTimesNum, bonus);
+    } else if (function == "applyCastleTax") {
+        unsigned total = (unsigned)in.integer();
+        int ratio = (int)in.integer();
+        in.finish();
+        result = decore::applyCastleTax(total, ratio);
     } else if (function == "maxDurabilityBase") {
         unsigned info = (unsigned)in.integer();
         bool hasDurability = in.flag();
@@ -1494,7 +1499,7 @@ void checkVectorFile(const std::string& file, const std::set<std::string>& funct
 }
 
 TEST(SharedVectors, Price) {
-    checkVectorFile("price.tsv", {"itemPrice", "skullSellTotal"});
+    checkVectorFile("price.tsv", {"itemPrice", "skullSellTotal", "applyCastleTax"});
 }
 
 TEST(SharedVectors, RepairPrice) {

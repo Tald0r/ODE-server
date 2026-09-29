@@ -846,9 +846,8 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   steal-ratio cast; client: the callers); (4) equip requirements; (5)
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
-  > **Status:** in progress (slice 4's client half; slice 5's parity
-  > vectors and its client half; then slice 6) — slices 1 to 3 are in on
-  > both sides
+  > **Status:** in progress (the client halves of slices 4 and 5; then
+  > slice 6) — slices 1 to 3 are in on both sides
   > (server PRs #276 to #280, client PRs #285 to #287).
   > Slice 1: `ItemPrice` and `ItemDurability`, with `PriceManager`,
   > `computeMaxDurability`, `ConcreteItem::getMaxDurability` and the skull
@@ -887,7 +886,10 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > tax on a shop purchase, which `CGShopRequestBuyHandler` applies to the
   > price times the count, or the mysterious rack's price; the handler keeps
   > the tax it credits to the castle. A taxed total past the int range is
-  > defined as x86-64's 2147483648 (`docs/FIXES.md`).
+  > defined as x86-64's 2147483648 (`docs/FIXES.md`). Its rows are the
+  > `applyCastleTax` rows of `src/domain/vectors/price.tsv`, so the
+  > client's `decore_tests` must learn that function (total, ratio,
+  > expected).
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out
