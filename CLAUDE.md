@@ -147,7 +147,7 @@ the container, the Windows mount costs ~160x on `stat` and ~145x on reads
 versus the container's own filesystem, and since every translation unit opens
 dozens of headers the build becomes I/O bound: a full build took ~20 minutes
 at ~20% CPU on 8 cores. `tools/devbuild.sh` syncs the build *inputs*
-(`cmake/`, `src/`, `tests/`, `third_party/`, `data/`, `initdb/`,
+(`cmake/`, `src/`, `tests/`, `third_party/`, `data/`, `initdb/`, `tools/`,
 `docker/start.sh` and the top-level CMakeLists/Makefile) into a container
 volume, builds there with Ninja and ccache, and copies only generated test
 data back (`tests/golden/`, `tests/generated/`, `tests/wire-layout.txt`, and,

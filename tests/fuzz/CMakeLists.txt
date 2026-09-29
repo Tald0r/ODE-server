@@ -1,0 +1,121 @@
+# =====================================================================
+# Packet-read fuzz targets: the bytes a client sends, through the gates
+# GamePlayer::processCommand and LoginPlayer::processCommand apply, into
+# the packets' read(). StreamFuzz.h describes the input format and the
+# environment switches.
+#
+# Two builds of the same two targets:
+#
+#   fuzz_replay_game / fuzz_replay_login - the targets with a plain main()
+#     (fuzz_replay_main.cpp) that replays saved inputs. Built by every
+#     DARKEDEN_BUILD_TESTS tree, with the ordinary toolchain, and run by
+#     ctest over the seed corpus and tests/fuzz/regressions/.
+#
+#   fuzz_game_stream / fuzz_login_stream - the same targets linked with
+#     libFuzzer, under DARKEDEN_BUILD_FUZZERS (Clang only; the top-level
+#     CMakeLists.txt instruments every target for it).
+#
+# Each target is compiled as its server (the PlayerStatus values and the
+# factory table differ per server) and links that server's packet
+# library, which carries the server's factory and validator selection on
+# top of de-kernel. The two libraries define the same symbols, so a
+# binary links exactly one of them.
+# =====================================================================
+
+set(DARKEDEN_FUZZ_TARGETS game login)
+set(DARKEDEN_FUZZ_game_SOURCE fuzz_game_stream.cpp)
+set(DARKEDEN_FUZZ_game_PACKETS GameServerPackets)
+set(DARKEDEN_FUZZ_game_DEFINES __GAME_SERVER__ __COMBAT__)
+set(DARKEDEN_FUZZ_game_SERVER gameserver)
+# GPS_NORMAL, where every registered id is admitted; the target
+# static_asserts the value.
+set(DARKEDEN_FUZZ_game_STATUSES 3)
+set(DARKEDEN_FUZZ_login_SOURCE fuzz_login_stream.cpp)
+set(DARKEDEN_FUZZ_login_PACKETS LoginServerPackets)
+set(DARKEDEN_FUZZ_login_DEFINES __LOGIN_SERVER__)
+set(DARKEDEN_FUZZ_login_SERVER loginserver)
+# LPS_BEGIN_SESSION and LPS_PC_MANAGEMENT, which between them admit every
+# CL packet a client sends; the target static_asserts the values.
+set(DARKEDEN_FUZZ_login_STATUSES 1,4)
+
+function(darkeden_fuzz_configure target)
+    target_include_directories(${target} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR}/tests/support
+        ${CMAKE_SOURCE_DIR}/src/Core
+    )
+    set_target_properties(${target} PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+    )
+endfunction()
+
+set(DARKEDEN_FUZZ_SCRATCH ${CMAKE_CURRENT_BINARY_DIR}/scratch)
+file(MAKE_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
+
+foreach(name ${DARKEDEN_FUZZ_TARGETS})
+    set(source ${DARKEDEN_FUZZ_${name}_SOURCE})
+    set(packets ${DARKEDEN_FUZZ_${name}_PACKETS})
+    set(defines ${DARKEDEN_FUZZ_${name}_DEFINES})
+    set(corpus ${CMAKE_CURRENT_BINARY_DIR}/corpus/${name})
+
+    add_executable(fuzz_replay_${name} EXCLUDE_FROM_ALL ${source} fuzz_replay_main.cpp)
+    darkeden_fuzz_configure(fuzz_replay_${name})
+    target_compile_definitions(fuzz_replay_${name} PRIVATE ${defines})
+    target_link_libraries(fuzz_replay_${name} PRIVATE ${packets} Threads::Threads)
+
+    # The seed corpus is written into the build tree from the goldens by a
+    # setup test, so a new golden is a new seed with nothing to regenerate
+    # by hand.
+    add_test(NAME fuzz_seed_corpus_${name}
+        COMMAND perl ${CMAKE_SOURCE_DIR}/tools/fuzz/golden2corpus.pl
+            ${CMAKE_SOURCE_DIR}/tests/golden
+            ${CMAKE_SOURCE_DIR}/tests/wire-layout.txt
+            ${CMAKE_SOURCE_DIR}/tests/ratchet/factory_registrations.txt
+            ${DARKEDEN_FUZZ_${name}_SERVER} ${DARKEDEN_FUZZ_${name}_STATUSES} ${corpus})
+    set_tests_properties(fuzz_seed_corpus_${name} PROPERTIES FIXTURES_SETUP fuzz_corpus_${name})
+
+    # Every seed and every recorded crash input runs clean. The scratch
+    # working directory catches assertion_failed.log.
+    set(inputs ${corpus})
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/regressions/${name})
+        list(APPEND inputs ${CMAKE_CURRENT_SOURCE_DIR}/regressions/${name})
+    endif()
+    add_test(NAME fuzz_replay_${name}
+        COMMAND fuzz_replay_${name} ${inputs}
+        WORKING_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
+    # Strict about exceptions: a read may refuse a body only with a
+    # ProtocolException, the one kind the receive loops turn into a
+    # dropped connection.
+    set_tests_properties(fuzz_replay_${name} PROPERTIES
+        FIXTURES_REQUIRED fuzz_corpus_${name}
+        ENVIRONMENT DE_FUZZ_STRICT_EXCEPTIONS=1
+        TIMEOUT 120)
+
+    if(TARGET wire_tests)
+        # devbuild's test path builds wire_tests and then runs all of
+        # ctest, so the replay binaries ride along like the other suites.
+        add_dependencies(wire_tests fuzz_replay_${name})
+    endif()
+
+    if(DARKEDEN_BUILD_FUZZERS)
+        add_executable(fuzz_${name}_stream ${source})
+        darkeden_fuzz_configure(fuzz_${name}_stream)
+        target_compile_definitions(fuzz_${name}_stream PRIVATE ${defines})
+        target_link_libraries(fuzz_${name}_stream PRIVATE ${packets} Threads::Threads)
+        target_link_options(fuzz_${name}_stream PRIVATE -fsanitize=fuzzer)
+    endif()
+endforeach()
+
+# The seed corpora for a libFuzzer run, written where the replay tests
+# write them: `cmake --build <dir> --target fuzz_seed_corpus`.
+add_custom_target(fuzz_seed_corpus
+    COMMAND perl ${CMAKE_SOURCE_DIR}/tools/fuzz/golden2corpus.pl
+        ${CMAKE_SOURCE_DIR}/tests/golden ${CMAKE_SOURCE_DIR}/tests/wire-layout.txt
+        ${CMAKE_SOURCE_DIR}/tests/ratchet/factory_registrations.txt
+        gameserver ${DARKEDEN_FUZZ_game_STATUSES} ${CMAKE_CURRENT_BINARY_DIR}/corpus/game
+    COMMAND perl ${CMAKE_SOURCE_DIR}/tools/fuzz/golden2corpus.pl
+        ${CMAKE_SOURCE_DIR}/tests/golden ${CMAKE_SOURCE_DIR}/tests/wire-layout.txt
+        ${CMAKE_SOURCE_DIR}/tests/ratchet/factory_registrations.txt
+        loginserver ${DARKEDEN_FUZZ_login_STATUSES} ${CMAKE_CURRENT_BINARY_DIR}/corpus/login
+    VERBATIM)

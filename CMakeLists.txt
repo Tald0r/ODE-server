@@ -38,6 +38,37 @@ set(WARNING_FLAGS
 )
 add_compile_options(${WARNING_FLAGS})
 
+# The packet-read fuzz targets (tests/fuzz/). libFuzzer and the sanitizer
+# runtimes come with a distribution Clang and its compiler-rt, not with
+# `zig c++` (which also reports itself as Clang, hence the name check), so
+# a fuzz tree is a separate configure: tools/fuzz/Dockerfile.fuzz has the
+# toolchain. Every target is instrumented, so the de-kernel reads the
+# fuzzers drive are covered; only the fuzz executables link libFuzzer.
+# _GLIBCXX_ASSERTIONS bounds-checks the standard containers, which ASan
+# alone cannot do inside a vector's reserved capacity. Clang 18 caps a
+# fold expression at 256 operands, and PacketFactoryManager folds over
+# the gameserver's whole factory list (PacketMeta.h, FactoryList::forEach).
+# The enum check is off: packets cast wire bytes to their enum types
+# throughout (docs/FIXES.md), so it would stop every run at the first such
+# load and hide the memory errors the targets exist to find.
+option(DARKEDEN_BUILD_FUZZERS "Build the libFuzzer packet-read targets (tests/fuzz/); Clang only" OFF)
+if(DARKEDEN_BUILD_FUZZERS)
+    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
+       OR CMAKE_CXX_COMPILER MATCHES "zig"
+       OR CMAKE_TOOLCHAIN_FILE MATCHES "zig")
+        message(FATAL_ERROR "DARKEDEN_BUILD_FUZZERS needs a Clang with libFuzzer and compiler-rt "
+                            "(clang++-18 with libclang-rt-18-dev); zig c++ ships neither. "
+                            "See tools/fuzz/Dockerfile.fuzz.")
+    endif()
+    add_compile_options(-fsanitize=fuzzer-no-link,address,undefined
+                        -fno-sanitize-recover=undefined
+                        -fno-sanitize=enum
+                        -fno-omit-frame-pointer
+                        -fbracket-depth=1024
+                        -D_GLIBCXX_ASSERTIONS)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+
 # Build type flags.
 #
 # NDEBUG is never defined. The code base used it for far more than
@@ -251,6 +282,11 @@ add_subdirectory(src/server)
 if(DARKEDEN_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+elseif(DARKEDEN_BUILD_FUZZERS)
+    # A fuzz tree needs only the fuzz targets and their replay tests, not
+    # the gtest suite (tests/CMakeLists.txt adds tests/fuzz itself).
+    enable_testing()
+    add_subdirectory(tests/fuzz)
 endif()
 
 # ============================================================================

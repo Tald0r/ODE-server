@@ -148,7 +148,7 @@ done
 # Only the build inputs are synced. Everything else in the checkout (the
 # 2.7 GB of build trees, lib/, bin/, .git) never crosses the mount.
 sync_in='rsync -a --delete --exclude=.git --exclude=/src/server/websocketproxyserver/target \
-    /repo/cmake /repo/src /repo/tests /repo/third_party /repo/data /repo/initdb \
+    /repo/cmake /repo/src /repo/tests /repo/third_party /repo/data /repo/initdb /repo/tools \
     /repo/CMakeLists.txt /repo/Makefile /work/ &&
     mkdir -p /work/docker && rsync -a --checksum /repo/docker/start.sh /work/docker/'
 
