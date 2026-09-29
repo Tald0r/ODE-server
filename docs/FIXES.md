@@ -51,7 +51,12 @@ Each input that found a defect below is replayed by ctest from
   out-of-range byte (CGConnect's character type, CLCreatePC's slot,
   GCAddSlayerCorpse's helmet) copied a `std::string` that is not there.
   `nameOrNumber()` (`src/Core/types/SystemTypes.h`) prints such a value as
-  its number (`DebugNameTest`).
+  its number (`DebugNameTest` in `wire_tests`). The zig Debug build does
+  not trap on the old lookup: it reads the neighbouring object and prints
+  an empty name, so the recorded input
+  (`tests/fuzz/regressions/game/CGConnect-name-table.hex`) fails only
+  under the fuzz build's ASan, and `DebugNameTest` is what guards the fix
+  in the zig suite.
   > **Status:** fixed (feat/packet-fuzzing)
 - **Shop and stash listings wrote their slots by a wire index.**
   `GCShopList`, `GCShopListMysterious` and `GCStashList` stored each item
