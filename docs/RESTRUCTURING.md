@@ -1295,9 +1295,9 @@ shrink-only work.
   > **Status:** in progress (the CI fuzz job; the findings recorded, not
   > fixed, in `docs/FIXES.md` under "Packet-read fuzzing": enumerators
   > cast from wire bytes, the reads not bounded by their frame,
-  > non-protocol exceptions escaping the receive loops, and
-  > `GCUpdateInfo::read`'s leak, which is why the fuzz runs have leak
-  > detection off). The targets are
+  > non-protocol exceptions escaping the receive loops, and the records
+  > six GC reads leak, `GCUpdateInfo`'s among them, which is why the fuzz
+  > runs have leak detection off). The targets are
   > in `tests/fuzz/` (game and login), `DARKEDEN_BUILD_FUZZERS` builds
   > them with libFuzzer in `tools/fuzz/Dockerfile.fuzz`, and the replay
   > builds run in the zig suite over the golden seed corpus and

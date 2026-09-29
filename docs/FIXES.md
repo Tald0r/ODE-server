@@ -112,18 +112,60 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   off so it does not hide everything else); each field needs its range
   checked where it is read.
   > **Status:** recorded, not fixed (feat/packet-fuzzing)
-- **`GCUpdateInfo::read` leaks two records per packet.** It allocates
-  the nickname record and the blood bible sign record with `new` on every
-  read, and `~GCUpdateInfo` frees neither: on the server they belong to
-  the creature that installed them, so a packet the server reads for
-  itself leaves 80 bytes behind. A client can send `GCUpdateInfo` in
-  `GPS_NORMAL`, and the gameserver reads it in full before it looks for
-  a handler, so each one a client sends leaks. ASan's leak check reports
-  it in the fuzz build; the documented fuzz runs and the replay ctests in
-  a `DARKEDEN_BUILD_FUZZERS` tree turn leak detection off for it
-  (`ASAN_OPTIONS=detect_leaks=0`), so no other leak has been looked for.
-  The ownership needs one rule for a packet the server writes and one it
-  reads.
+- **`GCUpdateInfo::read` leaks two records, plus one per NPC record.**
+  Every read allocates one `NicknameInfo` (`GCUpdateInfo.cpp:175`), one
+  `BloodBibleSignInfo` (:184) and one `NPCInfo` for each record its
+  NPCInfoCount byte announces (:159-165). The sender picks that count,
+  0 to 255: the factory's max size budgets all 255 records
+  (`GCUpdateInfoFactory::kMaxSize`), and a nameless one costs one body
+  byte. `~GCUpdateInfo` frees none of them. It only clears the NPC list,
+  because on the writing side `PacketUtil.cpp` installs records that the
+  creature and the zone own. Each record's own heap goes with it: the
+  sign list's buffer, and a custom nickname or an NPC name longer than
+  the string's inline capacity. A record whose read throws is lost as
+  well: an `NPCInfo` that throws never reaches `addNPCInfo`, and the
+  nickname and sign records are installed before they are read. So a
+  read that reaches the end leaks 2 + N records and their buffers, N
+  being the count byte. In the fuzz build (aarch64, libstdc++) the three
+  records take 48, 32 and 40 bytes, so a read leaks 80 + 40N bytes
+  before those buffers, up to 10,280 at N = 255. (This entry and commit
+  c79da7b4 used to count only the first two records, 48 + 32 bytes.)
+  A hostile client reaches it on the gameserver. `GCUpdateInfoFactory`
+  is in the gameserver's table (`GameOnlyFactories`), and `GPS_NORMAL`
+  admits any registered id (`PIST_ANY`, `PacketValidator.cpp`).
+  `GamePlayer::processCommand` reads the body in full and puts the
+  packet in its history (`GamePlayer.cpp:394-404`) before it dispatches.
+  The gameserver registers no `GCUpdateInfo` handler, so
+  `PacketDispatcher::dispatch` throws, and the loop turns that into a
+  `DisconnectException` (:433-438). `~GamePlayer` then deletes the
+  packet and the records stay behind. A body that fails to read is
+  deleted at once instead, by the `unique_ptr` at :394, with the same
+  result. That is one leaking read per game session: a client that has
+  logged in and sent `CGReady` leaks up to 257 records per connection
+  and must reconnect to send the next.
+  ASan's leak check reports it in the fuzz build. The documented fuzz
+  runs and the replay ctests in a `DARKEDEN_BUILD_FUZZERS` tree turn
+  leak detection off (`ASAN_OPTIONS=detect_leaks=0`) for it and for the
+  reads in the next entry. The fix is one ownership rule for the whole
+  set: a written packet borrows its records and a read one owns them.
+  `GCNPCInfo` (`m_OwnsNPCInfos`) and `GCModifyNickname`
+  (`m_bOwnsNicknameInfo`) already carry an owner flag each.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+- **Five more GC reads leak the records they allocate.** With leak
+  detection on, `fuzz_replay_game` over the seed corpus and
+  `tests/fuzz/regressions/game/` reports them beside `GCUpdateInfo`.
+  `GCAddSlayer`, `GCAddVampire` and `GCAddOusters` leak
+  their `NicknameInfo` on every read, and their `PetInfo` unless its
+  type is `PET_NONE`, which the read deletes; their destructors free
+  only the effect record and leave both to the creature, as
+  `GCUpdateInfo` does. `GCPetInfo` leaks its `PetInfo` on every read,
+  since its destructor frees nothing. `GCPetStashList` leaks one
+  `PetInfo` per occupied slot, up to 20: its destructor frees each
+  slot's `PetStashItemInfo` but not the pet in it.
+  All five are in the gameserver's factory table and have no gameserver
+  handler, so a client reaches them the way it reaches `GCUpdateInfo`.
+  The login replay reports no leak. Only the replay inputs have been
+  checked. A libFuzzer run with leak detection on has not been done.
   > **Status:** recorded, not fixed (feat/packet-fuzzing)
 - **`SocketInputStream::readPacket` is not bounded by the frame.** A
   packet's `read()` consumes what its fields say, not the size its header

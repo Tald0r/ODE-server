@@ -188,10 +188,11 @@ ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 /out/bin/fuzz_game_stream \
 
 `-close_fd_mask=3` keeps the packets' debug output off the terminal;
 `-fork=N -ignore_crashes=1` keeps going past the first crash. Leak
-detection is off because `GCUpdateInfo::read` leaks on every read
-(recorded in `docs/FIXES.md`), so the runs find no leaks. Replay a crash
-file with `fuzz_replay_game <file>` in either build; in the fuzz build it
-comes with the sanitizer's report and needs the same
+detection is off because six gameserver reads, `GCUpdateInfo`'s among
+them, leak the records they allocate (recorded in `docs/FIXES.md`), so
+the runs find no leaks. Replay a crash file with
+`fuzz_replay_game <file>` in either build; in the fuzz build it comes
+with the sanitizer's report and needs the same
 `ASAN_OPTIONS=detect_leaks=0`, which ctest sets itself there
 (`ctest -R fuzz` in `/build` runs the replay tests). Some recorded inputs
 fail only under ASan: the zig Debug build does not trap on every
