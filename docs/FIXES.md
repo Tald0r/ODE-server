@@ -148,8 +148,10 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   leak detection off (`ASAN_OPTIONS=detect_leaks=0`) for it and for the
   reads in the next entry. The fix is one ownership rule for the whole
   set: a written packet borrows its records and a read one owns them.
-  `GCNPCInfo` (`m_OwnsNPCInfos`) and `GCModifyNickname`
-  (`m_bOwnsNicknameInfo`) already carry an owner flag each.
+  `GCNPCInfo` (`m_OwnsNPCInfos`), `GCModifyNickname`
+  (`m_bOwnsNicknameInfo`) and `GCBloodBibleSignInfo` (`m_bOwnsInfo`,
+  with `clearSignInfo()`, the closest to the leaking sign record)
+  already carry an owner flag each.
   > **Status:** recorded, not fixed (feat/packet-fuzzing)
 - **Five more GC reads leak the records they allocate.** With leak
   detection on, `fuzz_replay_game` over the seed corpus and
@@ -166,6 +168,15 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   handler, so a client reaches them the way it reaches `GCUpdateInfo`.
   The login replay reports no leak. Only the replay inputs have been
   checked. A libFuzzer run with leak detection on has not been done.
+  The list is the reads that leak when the read succeeds. A read that
+  throws part-way leaks more widely: many list reads allocate a record,
+  read it and only then add it to the list (`new X; x->read(); push_back`,
+  e.g. `GCActiveGuildList.cpp:49-51`, and the same shape in
+  `GCGuildMemberList`, `GCWaitGuildList`, `GCHolyLandBonusInfo`,
+  `GCSweeperBonusInfo` and `GCGoodsList`), so a record whose own read
+  throws is lost. An ownership rule for the six reads above does not
+  cover that shape; refusing on the gameserver the packet ids a client
+  never sends would close both for client input.
   > **Status:** recorded, not fixed (feat/packet-fuzzing)
 - **`SocketInputStream::readPacket` is not bounded by the frame.** A
   packet's `read()` consumes what its fields say, not the size its header
