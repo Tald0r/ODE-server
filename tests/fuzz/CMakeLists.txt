@@ -27,8 +27,9 @@ set(DARKEDEN_FUZZ_game_SOURCE fuzz_game_stream.cpp)
 set(DARKEDEN_FUZZ_game_PACKETS GameServerPackets)
 set(DARKEDEN_FUZZ_game_DEFINES __GAME_SERVER__ __COMBAT__)
 set(DARKEDEN_FUZZ_game_SERVER gameserver)
-# GPS_NORMAL, where every registered id is admitted; the target
-# static_asserts the value.
+# GPS_NORMAL, where every packet a client sends is admitted (and, under
+# DE_FUZZ_ANY_ID, every registered id); the target static_asserts the
+# value.
 set(DARKEDEN_FUZZ_game_STATUSES 3)
 set(DARKEDEN_FUZZ_login_SOURCE fuzz_login_stream.cpp)
 set(DARKEDEN_FUZZ_login_PACKETS LoginServerPackets)
@@ -54,9 +55,10 @@ set(DARKEDEN_FUZZ_SCRATCH ${CMAKE_CURRENT_BINARY_DIR}/scratch)
 file(MAKE_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
 
 # The replay tests' environment. In a DARKEDEN_BUILD_FUZZERS tree every
-# target carries ASan, whose leak check would fail the game replays on
-# the reads that leak (GCUpdateInfo::read and five more, recorded in
-# docs/FIXES.md); the libFuzzer runs turn it off the same way.
+# target carries ASan, whose leak check would fail the all-ids game replay
+# on the reads that leak (GCUpdateInfo::read and five more, recorded in
+# docs/FIXES.md; the client link refuses all six); the libFuzzer runs turn
+# it off the same way.
 set(DARKEDEN_FUZZ_REPLAY_ENV "")
 if(DARKEDEN_BUILD_FUZZERS)
     list(APPEND DARKEDEN_FUZZ_REPLAY_ENV "ASAN_OPTIONS=detect_leaks=0")
@@ -117,25 +119,29 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
     endif()
 endforeach()
 
-# The gameserver refuses the two store-info packets unread
-# (GamePlayer.cpp:364). This replays the game seeds and the recorded game
-# inputs with that refusal off, so the store-info seeds reach their
-# read() and the refusal is not all that keeps them safe. The factory's
-# GCMyStoreInfo and GCOtherStoreInfo hold no stall record, so their read()
-# refuses the body with a ProtocolException before the record:
-# GCMyStoreInfo right after its OpenUI byte, GCOtherStoreInfo after its
-# object id and request flag. StoreInfo::read is not reachable from a
-# client on this server, and its item-count bound is guarded by
-# StoreInfoTest in wire_tests instead.
+# The reads behind the gameserver's client-link gate. The validator
+# refuses every registered id a client does not send before its read(),
+# so fuzz_replay_game proves that gate, and most of the game seeds and
+# recorded game inputs (the GC, GS and SG ones) stop at it. This replays
+# them with the gate as it was before it was narrowed: DE_FUZZ_ANY_ID
+# admits every registered id in GPS_NORMAL and DE_FUZZ_NO_STORE_SKIP turns
+# off the store-info refusal (GamePlayer.cpp:364), so every seed and every
+# recorded input reaches its read() and the fixes they were recorded for
+# stay replayed. The factory's GCMyStoreInfo and GCOtherStoreInfo hold no
+# stall record, so their read() refuses the body with a ProtocolException
+# before the record: GCMyStoreInfo right after its OpenUI byte,
+# GCOtherStoreInfo after its object id and request flag. StoreInfo::read is
+# not reachable from a client on this server, and its item-count bound is
+# guarded by StoreInfoTest in wire_tests instead.
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game)
-    add_test(NAME fuzz_replay_game_no_store_skip
+    add_test(NAME fuzz_replay_game_any_id
         COMMAND fuzz_replay_game ${CMAKE_CURRENT_BINARY_DIR}/corpus/game
             ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game
         WORKING_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
-    set(store_env DE_FUZZ_NO_STORE_SKIP=1 ${DARKEDEN_FUZZ_REPLAY_ENV})
-    set_tests_properties(fuzz_replay_game_no_store_skip PROPERTIES
+    set(any_id_env DE_FUZZ_ANY_ID=1 DE_FUZZ_NO_STORE_SKIP=1 ${DARKEDEN_FUZZ_REPLAY_ENV})
+    set_tests_properties(fuzz_replay_game_any_id PROPERTIES
         FIXTURES_REQUIRED fuzz_corpus_game
-        ENVIRONMENT "${store_env}"
+        ENVIRONMENT "${any_id_env}"
         TIMEOUT 120)
 endif()
 

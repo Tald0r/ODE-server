@@ -9,6 +9,10 @@
 // include files
 #include "PacketValidator.h"
 
+#if defined(__GAME_SERVER__)
+#include "GameClientLink.h"
+#endif
+
 //----------------------------------------------------------------------
 // constructor
 //----------------------------------------------------------------------
@@ -272,8 +276,14 @@ void PacketValidator::init() {
 
     //----------------------------------------------------------------------
     // GPS_NORMAL ( loading is done, the position is settled, into the game )
+    // Every registered packet a game client sends on this connection
+    // (GameClientLink.h), and nothing else: the factory table also holds
+    // the packets the gameserver sends and the ones its server links
+    // carry, and a client must not make it read those.
     //----------------------------------------------------------------------
-    pPacketIDSet = new PacketIDSet(GPS_NORMAL, PacketIDSet::PIST_ANY);
+    pPacketIDSet = new PacketIDSet(GPS_NORMAL);
+    for (PacketID_t packetID : de::packet::gameClientLinkPacketIDs())
+        pPacketIDSet->addPacketID(packetID);
     addPacketIDSet(pPacketIDSet->getPlayerStatus(), pPacketIDSet);
 
     //----------------------------------------------------------------------

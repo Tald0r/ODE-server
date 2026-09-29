@@ -360,7 +360,7 @@ void GamePlayer::processCommand(bool Option) {
                     throw InvalidProtocolException("invalid packet order");
                 }
 
-                // Skip the malformed messages that crash the server
+                // The store UI's info packets, which the validator refuses too
                 if (packetID == Packet::PACKET_GC_OTHER_STORE_INFO || packetID == Packet::PACKET_GC_MY_STORE_INFO) {
                     filelog("GamePlayer.txt", "Not Valid Packet, RECV [%d],ID[%s],Host[%s]", packetID, m_ID.c_str(),
                             //						getCreature()->getName().c_str(),
@@ -450,7 +450,7 @@ void GamePlayer::processCommand(bool Option) {
                 // CGReady's handler runs on the MAIN thread (this loop, called
                 // from IncomingPlayerManager with Option == false), hands the
                 // player to the zone pipeline and flips the status to
-                // GPS_NORMAL -- which opens PacketValidator's PIST_ANY gate.
+                // GPS_NORMAL -- which opens PacketValidator's in-game gate.
                 // Packets a client pipelined behind CGReady must not keep
                 // draining here: they would dispatch on the main thread and
                 // reach the Zone mutation gateways with no group mutex held

@@ -42,10 +42,18 @@
 //                                         end an input quietly on any
 //                                         exception instead, to look past
 //                                         that class of finding.
+//                 DE_FUZZ_ANY_ID=1        (game only) admit every
+//                                         registered id in GPS_NORMAL,
+//                                         as the validator did before it
+//                                         was narrowed to what a client
+//                                         sends, so the reads behind the
+//                                         gate stay fuzzed.
 //                 DE_FUZZ_NO_STORE_SKIP=1 (game only) read the two
 //                                         store-info packets that
 //                                         GamePlayer::processCommand
-//                                         refuses unread.
+//                                         refuses unread. The validator
+//                                         refuses them first unless
+//                                         DE_FUZZ_ANY_ID is on too.
 //
 //               Not covered: the stream is loaded with the input at the
 //               start of its buffer and sized to hold all of it, so the
@@ -99,6 +107,7 @@ struct Options {
     bool strictBody = false;
     bool strictExceptions = true;
     bool noStoreSkip = false;
+    bool anyID = false;
 };
 
 inline Options& options() {
@@ -119,6 +128,7 @@ inline void initialise() {
     options().strictBody = envIsOne("DE_FUZZ_STRICT_BODY");
     options().strictExceptions = !envIsOne("DE_FUZZ_ALLOW_EXCEPTIONS");
     options().noStoreSkip = envIsOne("DE_FUZZ_NO_STORE_SKIP");
+    options().anyID = envIsOne("DE_FUZZ_ANY_ID");
 
     std::cout.setstate(std::ios_base::badbit);
 

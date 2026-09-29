@@ -252,8 +252,8 @@ CPS_AFTER_SENDING_CL_SELECT_LIST,
     GPS_WAITING_FOR_CG_READY,
 
     //----------------------------------------------------------------------
-    // In the game now. Any packet may arrive.
-    // Next Packets : ANY
+    // In the game now. Any packet a client sends may arrive.
+    // Next Packets : every client-sent packet (GameClientLink.h)
     //----------------------------------------------------------------------
     GPS_NORMAL,
 
