@@ -170,8 +170,10 @@ toolchain:
 ```bash
 docker build -f tools/fuzz/Dockerfile.fuzz -t darkeden-fuzz tools/fuzz
 docker run --rm -it -v "$PWD:/repo:ro" darkeden-fuzz bash
-# in the container: build off a copy, never the mount
-cp -a /repo /src && cmake -G Ninja -S /src -B /build -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+# in the container: build off a copy of the inputs, never the mount
+mkdir /src && cp -a /repo/CMakeLists.txt /repo/cmake /repo/src /repo/tests \
+    /repo/third_party /repo/tools /src/
+cmake -G Ninja -S /src -B /build -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18 \
     -DDARKEDEN_BUILD_FUZZERS=ON -DDARKEDEN_OUTPUT_ROOT=/out
 cmake --build /build --target fuzz_game_stream fuzz_login_stream fuzz_seed_corpus
