@@ -235,10 +235,12 @@ void PacketValidator::init() {
 
 
     //----------------------------------------------------------------------
-    // LPS_AFTER_SENDING_LG_INCOMING_CONNECTION
+    // LPS_WAITING_FOR_GL_KICK_VERIFY
+    // The gameserver's GLKickVerify arrives on the datagram socket, never
+    // on the client's connection, so everything the client sends while it
+    // waits is skipped unread.
     //----------------------------------------------------------------------
     pPacketIDSet = new PacketIDSet(LPS_WAITING_FOR_GL_KICK_VERIFY, PacketIDSet::PIST_IGNORE_EXCEPT);
-    pPacketIDSet->addPacketID(Packet::PACKET_GL_KICK_VERIFY);
     addPacketIDSet(pPacketIDSet->getPlayerStatus(), pPacketIDSet);
 
     //----------------------------------------------------------------------

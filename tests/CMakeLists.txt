@@ -1151,6 +1151,15 @@ add_test(NAME game_client_link_tests COMMAND game_client_link_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(game_client_link_tests PROPERTIES TIMEOUT 30)
 
+add_executable(login_client_link_tests EXCLUDE_FROM_ALL login_client_link_test.cpp)
+target_compile_definitions(login_client_link_tests PRIVATE __LOGIN_SERVER__)
+target_include_directories(login_client_link_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/Core)
+target_link_libraries(login_client_link_tests PRIVATE LoginServerPackets gtest_main Threads::Threads)
+add_dependencies(wire_tests login_client_link_tests)
+add_test(NAME login_client_link_tests COMMAND login_client_link_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(login_client_link_tests PROPERTIES TIMEOUT 30)
+
 # --- packet-read fuzz targets ----------------------------------------------
 # The replay builds of the fuzz targets and their ctests over the seed
 # corpus and tests/fuzz/regressions/; see tests/fuzz/CMakeLists.txt.
