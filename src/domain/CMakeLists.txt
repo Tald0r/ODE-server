@@ -27,6 +27,7 @@ add_library(de-core STATIC
     ItemGrade.cpp
     ItemPrice.cpp
     SkillOutputFormulas.cpp
+    SkillRange.cpp
 )
 
 target_include_directories(de-core PUBLIC ${DECORE_INCLUDE_ROOT})
@@ -55,6 +56,7 @@ set(DECORE_VENDORED_SOURCES
     ItemGrade.cpp
     ItemPrice.cpp
     SkillOutputFormulas.cpp
+    SkillRange.cpp
 )
 add_library(de-core-strict OBJECT EXCLUDE_FROM_ALL ${DECORE_VENDORED_SOURCES})
 set_target_properties(de-core-strict PROPERTIES INCLUDE_DIRECTORIES "${DECORE_INCLUDE_ROOT}")

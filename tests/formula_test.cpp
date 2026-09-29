@@ -32,6 +32,7 @@
 #include "domain/ItemGrade.h"
 #include "domain/ItemPrice.h"
 #include "domain/SkillOutputFormulas.h"
+#include "domain/SkillRange.h"
 
 using decore::StatAttr;
 using decore::WeaponFamily;
@@ -1546,6 +1547,12 @@ std::string evaluateRow(const std::vector<std::string>& fields, std::string& err
         int partySize = in.intInteger();
         in.finish();
         result = decore::skillformula::partyDurationBoost(partySize);
+    } else if (function == "skillRange") {
+        int minRange = in.intInteger();
+        int maxRange = in.intInteger();
+        int expLevel = in.intInteger();
+        in.finish();
+        result = decore::skillRange(minRange, maxRange, expLevel);
     } else {
         error = "unknown function \"" + function + "\"";
         return std::string();
@@ -1721,6 +1728,10 @@ TEST(SharedVectors, Equip) {
 
 TEST(SharedVectors, SkillOutput) {
     checkVectorFile("skill_output.tsv", {"WillOfLife", "Bless", "partyEffectBoost", "partyDurationBoost"});
+}
+
+TEST(SharedVectors, SkillRange) {
+    checkVectorFile("skill_range.tsv", {"skillRange"});
 }
 
 // A gun class is one of the five enumerator names, spelled exactly.

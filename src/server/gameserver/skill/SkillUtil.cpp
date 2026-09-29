@@ -90,6 +90,7 @@
 #include "Zone.h"
 #include "ZoneUtil.h"
 #include "domain/Formulas.h"
+#include "domain/SkillRange.h"
 #include "mission/EventQuestLootingManager.h"
 #include "mission/MonsterKillQuestStatus.h"
 #include "mission/QuestManager.h"
@@ -304,23 +305,16 @@ int decreaseMana(Creature* pCaster, int MP, ModifyInfo& info) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// Computes the range of a Slayer skill.
+// Computes the range of a Slayer skill: the skill table's min and max
+// range and the slot's proficiency level, through de-core's skillRange
+// (src/domain/SkillRange.h), the rule the client computes too.
 //////////////////////////////////////////////////////////////////////////////
 Range_t computeSkillRange(SkillSlot* pSkillSlot, SkillInfo* pSkillInfo) {
     Assert(pSkillSlot != NULL);
     Assert(pSkillInfo != NULL);
 
-    // Reads the skill's min and max range.
-    Range_t SkillMinPoint = pSkillInfo->getMinRange();
-    Range_t SkillMaxPoint = pSkillInfo->getMaxRange();
-
-    // Reads the skill level.
-    SkillLevel_t SkillLevel = pSkillSlot->getExpLevel();
-
-    // Computes the skill's range.
-    Range_t Range = (int)(SkillMinPoint + (SkillMaxPoint - SkillMinPoint) * (double)(SkillLevel * 0.01));
-
-    return Range;
+    return decore::skillRange((int)pSkillInfo->getMinRange(), (int)pSkillInfo->getMaxRange(),
+                              pSkillSlot->getExpLevel());
 }
 
 

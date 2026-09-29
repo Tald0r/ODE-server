@@ -1,0 +1,334 @@
+# Shared parity vectors: decore::skillRange (src/domain/SkillRange.h), the
+# range of a slayer skill at a proficiency level. The server's BlazeWalk,
+# BlitzSliding, FlashSliding and ShadowWalk check their target's distance
+# against it (computeSkillRange, skill/SkillUtil.cpp); from slice 6b the
+# client computes its slayer skills' range with it (MPlayer's
+# GetActionInfoRange, for how close its character walks before using a
+# skill) in place of its integer (min + (max - min) * level / 100). Every
+# row is asserted for exact equality by the server's formula_tests and by
+# the client's decore_tests on every client toolchain. A changed expected
+# value is a balance change: review it as one. UPDATE_GOLDENS=1
+# formula_tests rewrites the expected column only.
+#
+# Tab-separated, one row per call: function, row name, the inputs, and the
+# expected result last.
+#
+# skillRange columns: minRange maxRange expLevel expected. The server
+#   passes the skill table's MinRange and MaxRange (SkillBalance) and the
+#   skill slot's exp level, 0 to 100 for a slayer. Each input is read
+#   modulo 256 and so is the result (the server's 8-bit Range_t and
+#   SkillLevel_t); the level is scaled by level * 0.01 in double and the
+#   minimum added before one truncation toward zero.
+#
+# The seed-* rows are the four skills that call it, at their SkillBalance
+# ranges (Flash Sliding and Blaze Walk 2 to 7, Shadow Walk and Blitz
+# Sliding 2 to 6). The level-29-* and level-58-* rows are where 0.29 and
+# 0.58 round low in binary, so a span of 50 or more truncates one below the
+# client's integer answer (no seed skill spans more than 5). The
+# max-below-min-* rows truncate the whole range, not the step: minimum 6
+# and maximum 2 give 4 at level 30, where the client's integer step gives
+# 5; the seed's Raising Dead and Summon Servant (vampire skills, which
+# never reach this) have minimum 1 and maximum 0. The no-fma-* rows are
+# inputs where a fused multiply-add of the step and the minimum truncates
+# one lower (5 + -5 * 0.8 is 1, fused 0.99999999999999978): de-core is
+# built without contraction, and a toolchain that fuses fails them. The
+# wrap-* rows show each input and the result wrapping at 256. The grid-*
+# rows are every combination of minRange {0, 1, 2, 4, 7}, maxRange
+# {0, 1, 2, 5, 7, 11} and expLevel {0, 1, 29, 50, 58, 99, 100, 255}.
+skillRange	seed-flash-sliding-level-0	2	7	0	2
+skillRange	seed-flash-sliding-level-1	2	7	1	2
+skillRange	seed-flash-sliding-level-20	2	7	20	3
+skillRange	seed-flash-sliding-level-25	2	7	25	3
+skillRange	seed-flash-sliding-level-50	2	7	50	4
+skillRange	seed-flash-sliding-level-75	2	7	75	5
+skillRange	seed-flash-sliding-level-99	2	7	99	6
+skillRange	seed-flash-sliding-level-100	2	7	100	7
+skillRange	seed-shadow-walk-level-0	2	6	0	2
+skillRange	seed-shadow-walk-level-1	2	6	1	2
+skillRange	seed-shadow-walk-level-20	2	6	20	2
+skillRange	seed-shadow-walk-level-25	2	6	25	3
+skillRange	seed-shadow-walk-level-50	2	6	50	4
+skillRange	seed-shadow-walk-level-75	2	6	75	5
+skillRange	seed-shadow-walk-level-99	2	6	99	5
+skillRange	seed-shadow-walk-level-100	2	6	100	6
+skillRange	seed-blitz-sliding-level-0	2	6	0	2
+skillRange	seed-blitz-sliding-level-1	2	6	1	2
+skillRange	seed-blitz-sliding-level-20	2	6	20	2
+skillRange	seed-blitz-sliding-level-25	2	6	25	3
+skillRange	seed-blitz-sliding-level-50	2	6	50	4
+skillRange	seed-blitz-sliding-level-75	2	6	75	5
+skillRange	seed-blitz-sliding-level-99	2	6	99	5
+skillRange	seed-blitz-sliding-level-100	2	6	100	6
+skillRange	seed-blaze-walk-level-0	2	7	0	2
+skillRange	seed-blaze-walk-level-1	2	7	1	2
+skillRange	seed-blaze-walk-level-20	2	7	20	3
+skillRange	seed-blaze-walk-level-25	2	7	25	3
+skillRange	seed-blaze-walk-level-50	2	7	50	4
+skillRange	seed-blaze-walk-level-75	2	7	75	5
+skillRange	seed-blaze-walk-level-99	2	7	99	6
+skillRange	seed-blaze-walk-level-100	2	7	100	7
+skillRange	level-29-span-100	0	100	29	28
+skillRange	level-29-span-200	0	200	29	57
+skillRange	level-58-span-50	0	50	58	28
+skillRange	level-58-span-100	0	100	58	57
+skillRange	level-58-span-200-from-12	12	212	58	127
+skillRange	max-below-min-6-2-level-30	6	2	30	4
+skillRange	max-below-min-6-2-level-100	6	2	100	2
+skillRange	max-below-min-1-0-level-0	1	0	0	1
+skillRange	max-below-min-1-0-level-50	1	0	50	0
+skillRange	max-below-min-1-0-level-100	1	0	100	0
+skillRange	no-fma-5-0-level-80	5	0	80	1
+skillRange	no-fma-5-0-level-120	5	0	120	255
+skillRange	wrap-min-256-is-0	256	7	50	3
+skillRange	wrap-min-258-is-2	258	7	50	4
+skillRange	wrap-max-263-is-7	2	263	50	4
+skillRange	wrap-level-256-is-0	2	7	256	2
+skillRange	wrap-level-300-is-44	2	7	300	4
+skillRange	wrap-level-65535-is-255	2	7	65535	14
+skillRange	wrap-level-101	2	7	101	7
+skillRange	wrap-result-above-255	200	255	255	84
+skillRange	wrap-result-below-0	255	0	255	117
+skillRange	wrap-min-minus-1	-1	0	0	255
+skillRange	wrap-int-max	2147483647	2147483647	2147483647	255
+skillRange	wrap-int-min	-2147483648	-2147483648	-2147483648	0
+skillRange	zero-span	7	7	63	7
+skillRange	grid-0-0-0	0	0	0	0
+skillRange	grid-0-0-1	0	0	1	0
+skillRange	grid-0-0-29	0	0	29	0
+skillRange	grid-0-0-50	0	0	50	0
+skillRange	grid-0-0-58	0	0	58	0
+skillRange	grid-0-0-99	0	0	99	0
+skillRange	grid-0-0-100	0	0	100	0
+skillRange	grid-0-0-255	0	0	255	0
+skillRange	grid-0-1-0	0	1	0	0
+skillRange	grid-0-1-1	0	1	1	0
+skillRange	grid-0-1-29	0	1	29	0
+skillRange	grid-0-1-50	0	1	50	0
+skillRange	grid-0-1-58	0	1	58	0
+skillRange	grid-0-1-99	0	1	99	0
+skillRange	grid-0-1-100	0	1	100	1
+skillRange	grid-0-1-255	0	1	255	2
+skillRange	grid-0-2-0	0	2	0	0
+skillRange	grid-0-2-1	0	2	1	0
+skillRange	grid-0-2-29	0	2	29	0
+skillRange	grid-0-2-50	0	2	50	1
+skillRange	grid-0-2-58	0	2	58	1
+skillRange	grid-0-2-99	0	2	99	1
+skillRange	grid-0-2-100	0	2	100	2
+skillRange	grid-0-2-255	0	2	255	5
+skillRange	grid-0-5-0	0	5	0	0
+skillRange	grid-0-5-1	0	5	1	0
+skillRange	grid-0-5-29	0	5	29	1
+skillRange	grid-0-5-50	0	5	50	2
+skillRange	grid-0-5-58	0	5	58	2
+skillRange	grid-0-5-99	0	5	99	4
+skillRange	grid-0-5-100	0	5	100	5
+skillRange	grid-0-5-255	0	5	255	12
+skillRange	grid-0-7-0	0	7	0	0
+skillRange	grid-0-7-1	0	7	1	0
+skillRange	grid-0-7-29	0	7	29	2
+skillRange	grid-0-7-50	0	7	50	3
+skillRange	grid-0-7-58	0	7	58	4
+skillRange	grid-0-7-99	0	7	99	6
+skillRange	grid-0-7-100	0	7	100	7
+skillRange	grid-0-7-255	0	7	255	17
+skillRange	grid-0-11-0	0	11	0	0
+skillRange	grid-0-11-1	0	11	1	0
+skillRange	grid-0-11-29	0	11	29	3
+skillRange	grid-0-11-50	0	11	50	5
+skillRange	grid-0-11-58	0	11	58	6
+skillRange	grid-0-11-99	0	11	99	10
+skillRange	grid-0-11-100	0	11	100	11
+skillRange	grid-0-11-255	0	11	255	28
+skillRange	grid-1-0-0	1	0	0	1
+skillRange	grid-1-0-1	1	0	1	0
+skillRange	grid-1-0-29	1	0	29	0
+skillRange	grid-1-0-50	1	0	50	0
+skillRange	grid-1-0-58	1	0	58	0
+skillRange	grid-1-0-99	1	0	99	0
+skillRange	grid-1-0-100	1	0	100	0
+skillRange	grid-1-0-255	1	0	255	255
+skillRange	grid-1-1-0	1	1	0	1
+skillRange	grid-1-1-1	1	1	1	1
+skillRange	grid-1-1-29	1	1	29	1
+skillRange	grid-1-1-50	1	1	50	1
+skillRange	grid-1-1-58	1	1	58	1
+skillRange	grid-1-1-99	1	1	99	1
+skillRange	grid-1-1-100	1	1	100	1
+skillRange	grid-1-1-255	1	1	255	1
+skillRange	grid-1-2-0	1	2	0	1
+skillRange	grid-1-2-1	1	2	1	1
+skillRange	grid-1-2-29	1	2	29	1
+skillRange	grid-1-2-50	1	2	50	1
+skillRange	grid-1-2-58	1	2	58	1
+skillRange	grid-1-2-99	1	2	99	1
+skillRange	grid-1-2-100	1	2	100	2
+skillRange	grid-1-2-255	1	2	255	3
+skillRange	grid-1-5-0	1	5	0	1
+skillRange	grid-1-5-1	1	5	1	1
+skillRange	grid-1-5-29	1	5	29	2
+skillRange	grid-1-5-50	1	5	50	3
+skillRange	grid-1-5-58	1	5	58	3
+skillRange	grid-1-5-99	1	5	99	4
+skillRange	grid-1-5-100	1	5	100	5
+skillRange	grid-1-5-255	1	5	255	11
+skillRange	grid-1-7-0	1	7	0	1
+skillRange	grid-1-7-1	1	7	1	1
+skillRange	grid-1-7-29	1	7	29	2
+skillRange	grid-1-7-50	1	7	50	4
+skillRange	grid-1-7-58	1	7	58	4
+skillRange	grid-1-7-99	1	7	99	6
+skillRange	grid-1-7-100	1	7	100	7
+skillRange	grid-1-7-255	1	7	255	16
+skillRange	grid-1-11-0	1	11	0	1
+skillRange	grid-1-11-1	1	11	1	1
+skillRange	grid-1-11-29	1	11	29	3
+skillRange	grid-1-11-50	1	11	50	6
+skillRange	grid-1-11-58	1	11	58	6
+skillRange	grid-1-11-99	1	11	99	10
+skillRange	grid-1-11-100	1	11	100	11
+skillRange	grid-1-11-255	1	11	255	26
+skillRange	grid-2-0-0	2	0	0	2
+skillRange	grid-2-0-1	2	0	1	1
+skillRange	grid-2-0-29	2	0	29	1
+skillRange	grid-2-0-50	2	0	50	1
+skillRange	grid-2-0-58	2	0	58	0
+skillRange	grid-2-0-99	2	0	99	0
+skillRange	grid-2-0-100	2	0	100	0
+skillRange	grid-2-0-255	2	0	255	253
+skillRange	grid-2-1-0	2	1	0	2
+skillRange	grid-2-1-1	2	1	1	1
+skillRange	grid-2-1-29	2	1	29	1
+skillRange	grid-2-1-50	2	1	50	1
+skillRange	grid-2-1-58	2	1	58	1
+skillRange	grid-2-1-99	2	1	99	1
+skillRange	grid-2-1-100	2	1	100	1
+skillRange	grid-2-1-255	2	1	255	0
+skillRange	grid-2-2-0	2	2	0	2
+skillRange	grid-2-2-1	2	2	1	2
+skillRange	grid-2-2-29	2	2	29	2
+skillRange	grid-2-2-50	2	2	50	2
+skillRange	grid-2-2-58	2	2	58	2
+skillRange	grid-2-2-99	2	2	99	2
+skillRange	grid-2-2-100	2	2	100	2
+skillRange	grid-2-2-255	2	2	255	2
+skillRange	grid-2-5-0	2	5	0	2
+skillRange	grid-2-5-1	2	5	1	2
+skillRange	grid-2-5-29	2	5	29	2
+skillRange	grid-2-5-50	2	5	50	3
+skillRange	grid-2-5-58	2	5	58	3
+skillRange	grid-2-5-99	2	5	99	4
+skillRange	grid-2-5-100	2	5	100	5
+skillRange	grid-2-5-255	2	5	255	9
+skillRange	grid-2-7-0	2	7	0	2
+skillRange	grid-2-7-1	2	7	1	2
+skillRange	grid-2-7-29	2	7	29	3
+skillRange	grid-2-7-50	2	7	50	4
+skillRange	grid-2-7-58	2	7	58	4
+skillRange	grid-2-7-99	2	7	99	6
+skillRange	grid-2-7-100	2	7	100	7
+skillRange	grid-2-7-255	2	7	255	14
+skillRange	grid-2-11-0	2	11	0	2
+skillRange	grid-2-11-1	2	11	1	2
+skillRange	grid-2-11-29	2	11	29	4
+skillRange	grid-2-11-50	2	11	50	6
+skillRange	grid-2-11-58	2	11	58	7
+skillRange	grid-2-11-99	2	11	99	10
+skillRange	grid-2-11-100	2	11	100	11
+skillRange	grid-2-11-255	2	11	255	24
+skillRange	grid-4-0-0	4	0	0	4
+skillRange	grid-4-0-1	4	0	1	3
+skillRange	grid-4-0-29	4	0	29	2
+skillRange	grid-4-0-50	4	0	50	2
+skillRange	grid-4-0-58	4	0	58	1
+skillRange	grid-4-0-99	4	0	99	0
+skillRange	grid-4-0-100	4	0	100	0
+skillRange	grid-4-0-255	4	0	255	250
+skillRange	grid-4-1-0	4	1	0	4
+skillRange	grid-4-1-1	4	1	1	3
+skillRange	grid-4-1-29	4	1	29	3
+skillRange	grid-4-1-50	4	1	50	2
+skillRange	grid-4-1-58	4	1	58	2
+skillRange	grid-4-1-99	4	1	99	1
+skillRange	grid-4-1-100	4	1	100	1
+skillRange	grid-4-1-255	4	1	255	253
+skillRange	grid-4-2-0	4	2	0	4
+skillRange	grid-4-2-1	4	2	1	3
+skillRange	grid-4-2-29	4	2	29	3
+skillRange	grid-4-2-50	4	2	50	3
+skillRange	grid-4-2-58	4	2	58	2
+skillRange	grid-4-2-99	4	2	99	2
+skillRange	grid-4-2-100	4	2	100	2
+skillRange	grid-4-2-255	4	2	255	255
+skillRange	grid-4-5-0	4	5	0	4
+skillRange	grid-4-5-1	4	5	1	4
+skillRange	grid-4-5-29	4	5	29	4
+skillRange	grid-4-5-50	4	5	50	4
+skillRange	grid-4-5-58	4	5	58	4
+skillRange	grid-4-5-99	4	5	99	4
+skillRange	grid-4-5-100	4	5	100	5
+skillRange	grid-4-5-255	4	5	255	6
+skillRange	grid-4-7-0	4	7	0	4
+skillRange	grid-4-7-1	4	7	1	4
+skillRange	grid-4-7-29	4	7	29	4
+skillRange	grid-4-7-50	4	7	50	5
+skillRange	grid-4-7-58	4	7	58	5
+skillRange	grid-4-7-99	4	7	99	6
+skillRange	grid-4-7-100	4	7	100	7
+skillRange	grid-4-7-255	4	7	255	11
+skillRange	grid-4-11-0	4	11	0	4
+skillRange	grid-4-11-1	4	11	1	4
+skillRange	grid-4-11-29	4	11	29	6
+skillRange	grid-4-11-50	4	11	50	7
+skillRange	grid-4-11-58	4	11	58	8
+skillRange	grid-4-11-99	4	11	99	10
+skillRange	grid-4-11-100	4	11	100	11
+skillRange	grid-4-11-255	4	11	255	21
+skillRange	grid-7-0-0	7	0	0	7
+skillRange	grid-7-0-1	7	0	1	6
+skillRange	grid-7-0-29	7	0	29	4
+skillRange	grid-7-0-50	7	0	50	3
+skillRange	grid-7-0-58	7	0	58	2
+skillRange	grid-7-0-99	7	0	99	0
+skillRange	grid-7-0-100	7	0	100	0
+skillRange	grid-7-0-255	7	0	255	246
+skillRange	grid-7-1-0	7	1	0	7
+skillRange	grid-7-1-1	7	1	1	6
+skillRange	grid-7-1-29	7	1	29	5
+skillRange	grid-7-1-50	7	1	50	4
+skillRange	grid-7-1-58	7	1	58	3
+skillRange	grid-7-1-99	7	1	99	1
+skillRange	grid-7-1-100	7	1	100	1
+skillRange	grid-7-1-255	7	1	255	248
+skillRange	grid-7-2-0	7	2	0	7
+skillRange	grid-7-2-1	7	2	1	6
+skillRange	grid-7-2-29	7	2	29	5
+skillRange	grid-7-2-50	7	2	50	4
+skillRange	grid-7-2-58	7	2	58	4
+skillRange	grid-7-2-99	7	2	99	2
+skillRange	grid-7-2-100	7	2	100	2
+skillRange	grid-7-2-255	7	2	255	251
+skillRange	grid-7-5-0	7	5	0	7
+skillRange	grid-7-5-1	7	5	1	6
+skillRange	grid-7-5-29	7	5	29	6
+skillRange	grid-7-5-50	7	5	50	6
+skillRange	grid-7-5-58	7	5	58	5
+skillRange	grid-7-5-99	7	5	99	5
+skillRange	grid-7-5-100	7	5	100	5
+skillRange	grid-7-5-255	7	5	255	1
+skillRange	grid-7-7-0	7	7	0	7
+skillRange	grid-7-7-1	7	7	1	7
+skillRange	grid-7-7-29	7	7	29	7
+skillRange	grid-7-7-50	7	7	50	7
+skillRange	grid-7-7-58	7	7	58	7
+skillRange	grid-7-7-99	7	7	99	7
+skillRange	grid-7-7-100	7	7	100	7
+skillRange	grid-7-7-255	7	7	255	7
+skillRange	grid-7-11-0	7	11	0	7
+skillRange	grid-7-11-1	7	11	1	7
+skillRange	grid-7-11-29	7	11	29	8
+skillRange	grid-7-11-50	7	11	50	9
+skillRange	grid-7-11-58	7	11	58	9
+skillRange	grid-7-11-99	7	11	99	10
+skillRange	grid-7-11-100	7	11	100	11
+skillRange	grid-7-11-255	7	11	255	17

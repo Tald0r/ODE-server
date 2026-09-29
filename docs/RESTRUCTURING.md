@@ -90,7 +90,7 @@ are enforced so far.
 | File | Baseline lines |
 |------|---------------:|
 | `src/server/gameserver/Zone.cpp` | 1,265 (1,273 before the compiler-warning cleanup; was 9,350 before the 4.2 extractions; enforced by `ratchets.sh` R6g) |
-| `src/server/gameserver/skill/SkillUtil.cpp` | 684 (was 6,626 before the split by concern into `SkillDamage.cpp` / `SkillExperience.cpp` / `SkillGeometry.cpp`, leaving the mana and HP costs, the slot run-time and zone-level gates, the skill-failure packets and the elemental lookups; under the 2,000-line phase exit criterion, so R6a pins it rather than baselining a god file; enforced by `ratchets.sh` R6a) |
+| `src/server/gameserver/skill/SkillUtil.cpp` | 678 (684 before the skill range moved to de-core; was 6,626 before the split by concern into `SkillDamage.cpp` / `SkillExperience.cpp` / `SkillGeometry.cpp`, leaving the mana and HP costs, the slot run-time and zone-level gates, the skill-failure packets and the elemental lookups; under the 2,000-line phase exit criterion, so R6a pins it rather than baselining a god file; enforced by `ratchets.sh` R6a) |
 | `src/server/gameserver/InitAllStat.cpp` | 230 (was 4,787 before the split by race into `SlayerStat.cpp` / `VampireStat.cpp` / `OustersStat.cpp`, leaving `PlayerCreature::applyBloodBibleSign` and `Monster::initAllStat`; under the 2,000-line phase exit criterion, so R6b pins it rather than baselining a god file; enforced by `ratchets.sh` R6b) |
 | `src/server/gameserver/handler/CGSayHandler.cpp` (moved from `src/Core` in 2.4) | 111 (114 before the compiler-warning cleanup; was 4,720 before the 4.1 command extraction; enforced by `ratchets.sh` R6e) |
 | `src/server/gameserver/gm/ConsoleCommands.cpp` | 1,574 (the 61 `*command` sub-command bodies, one function per name; enforced by `ratchets.sh` R6f) |
@@ -846,8 +846,8 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   steal-ratio cast; client: the callers); (4) equip requirements; (5)
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
-  > **Status:** in progress (the client halves of slices 4, 5 and 6a;
-  > then the rest of slice 6: skill range, party share, darkness) —
+  > **Status:** in progress (the client halves of slices 4, 5, 6a and
+  > 6b; the rest of 6b's server half: party share, darkness) —
   > slices 1 to 3 are in on both sides
   > (server PRs #276 to #280, client PRs #285 to #287).
   > Slice 1: `ItemPrice` and `ItemDurability`, with `PriceManager`,
@@ -907,6 +907,15 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > fields as a comma-separated list; a lookup row: party size, percent),
   > and its `third_party/decore/CMakeLists.txt` must list
   > `domain/SkillOutputFormulas.cpp`.
+  > Slice 6b's server half: `skillRange` (`SkillRange`, vendored) is a
+  > slayer skill's range at a proficiency level, which `computeSkillRange`
+  > (`skill/SkillUtil.cpp`) reads the skill table and slot for; its three
+  > inputs and its result wrap at 256 as the server's 8-bit types did, and
+  > it no longer depends on the build machine's fused multiply-add
+  > (`docs/FIXES.md`). `src/domain/vectors/skill_range.tsv` pins it; the
+  > client's `decore_tests` must learn the row (minRange, maxRange,
+  > expLevel, expected), and its `third_party/decore/CMakeLists.txt` must
+  > list `domain/SkillRange.cpp`.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out

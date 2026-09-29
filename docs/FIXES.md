@@ -13,6 +13,55 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Shared small rules (2026-09-29)
+
+Three small rules moved into de-core in slice 6b of the shared-rules plan:
+a slayer skill's range (`src/domain/SkillRange.cpp`, which the client
+vendors), the party experience bonus and the dark and light levels a
+player is sent (server-only). The moves are verbatim; what they kept and
+what they changed:
+
+- **The skill range depended on the build machine's CPU.**
+  `computeSkillRange` (`skill/SkillUtil.cpp`) computed
+  `min + (max - min) * (level * 0.01)` in the gameserver, which is built
+  without `-ffp-contract=off`, so Clang fused the multiply and the add
+  wherever the target CPU has a fused multiply-add: every arm64 target, and
+  x86-64 with FMA, which a Zig build without a target gets from the build
+  machine. A fused result within an ulp below an integer truncates one
+  lower: minimum 5, maximum 0 at level 80 was 0 there and 1 elsewhere.
+  `decore::skillRange` is built without contraction, like the rest of
+  de-core, so it gives the unfused value, a baseline x86-64 build's, on
+  every target. It changes nothing a live server computes: for every
+  `SkillBalance` seed range pair at levels 0 to 100, and for every minimum
+  not above the maximum (0 to 255) at levels 0 to 100, the fused and
+  unfused results agree. They differ only for a maximum below the minimum
+  (4,724 of those 3,296,640 inputs at levels 0 to 100; the seed's two such
+  skills, Raising Dead and Summon Servant, are vampire skills and never
+  reach it) and for levels past 100. The evidence: master's body and the
+  new call, compared over minimum and maximum 0 to 600 and six larger
+  values up to 2^32-1, and levels 0 to 600, 1023 and 65535 (222,174,747
+  inputs), give 0
+  mismatches built without contraction (Apple Clang arm64, -O0 and -O2;
+  Clang 18 x86-64, -O0 and -O2), and 412,797 mismatches, the same inputs
+  on both, built with it (arm64 default, x86-64 `-march=haswell`). Pinned
+  by the `no-fma-*` rows of `src/domain/vectors/skill_range.tsv`, which a
+  fusing toolchain fails.
+  > **Status:** fixed (feat/shared-small-rules)
+- **The skill range's own oddities are kept.** The three inputs and the
+  result are read modulo 256, as the server's 8-bit `Range_t` and
+  `SkillLevel_t` held them, so a level of 300 is 44 and a range past 255
+  wraps; the minimum is added before the truncation, so with a maximum
+  below the minimum a partial step rounds down, away from the minimum
+  (6 to 2 at level 30 is 4); and `level * 0.01` rounds low for some
+  levels, so a span of 50 or more truncates one below the exact answer
+  (0 to 100 at level 29 is 28). No seed skill spans more than 5. Pinned by
+  the `wrap-*`, `max-below-min-*`, `level-29-*` and `level-58-*` rows.
+  `skill/CrossCounter.cpp` writes the same interpolation four times, but
+  for the counter's damage from the skill table's minimum and maximum
+  damage, not for a range; it is a damage rule, left where it is, and
+  whether its result also depends on contraction was not measured.
+  > **Status:** recorded, not fixed (feat/shared-small-rules)
+
 ## Vendorable skill output formulas (2026-09-29)
 
 `src/domain/SkillOutputFormulas.cpp`, the per-skill `computeOutput`
