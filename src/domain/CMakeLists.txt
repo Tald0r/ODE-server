@@ -21,6 +21,7 @@ set(DECORE_INCLUDE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/..")
 set(DECORE_FP_FLAGS -ffp-contract=off -fno-fast-math)
 
 add_library(de-core STATIC
+    DarkLight.cpp
     EquipRequirement.cpp
     Formulas.cpp
     ItemDurability.cpp
@@ -52,8 +53,8 @@ target_compile_options(de-core PRIVATE ${DECORE_FP_FLAGS})
 # wire_tests depend on this target so the suite build compiles it.
 #
 # A de-core source only the server calls stays out of this list, so the
-# client neither copies nor compiles it: PartyExp.cpp. Its parity rows are
-# in vectors/server/, a directory the client's sync and
+# client neither copies nor compiles it: DarkLight.cpp and PartyExp.cpp.
+# Their parity rows are in vectors/server/, a directory the client's sync and
 # tests/tools/decore_client_diff.sh do not read (they take the *.tsv files
 # directly in vectors/).
 set(DECORE_VENDORED_SOURCES

@@ -90,6 +90,7 @@
 #include "PlayerMailbox.h"
 #include "ServerContext.h"
 #include "Store.h"
+#include "domain/DarkLight.h"
 #include "repository/PlayRecordRepository.h"
 
 // Runs on the thread that owns pc, under its group mutex: the broadcast
@@ -346,37 +347,23 @@ void makeGCUpdateInfo(GCUpdateInfo* pUpdateInfo, Creature* pCreature)
     pUpdateInfo->setEffectInfo(pCreature->getEffectInfo());
 
     ////////////////////////////////////////////////////////////
-    // Sight information.
+    // Sight information: the zone's dark and light levels as this
+    // player sees them, by its race, the zone's type and its effects.
+    // Both callers pass a player creature, so it is one of the three
+    // races.
     ////////////////////////////////////////////////////////////
-    if (pZone->getZoneType() == ZONE_CASTLE) {
-        pUpdateInfo->setDarkLevel(pZone->getDarkLevel());
-        pUpdateInfo->setLightLevel(pZone->getLightLevel());
-    } else if (de::gameContext().pkZoneInfos().isPKZone(pZone->getZoneID())) {
-        pUpdateInfo->setLightLevel(14);
-        pUpdateInfo->setDarkLevel(0);
-    } else if (pCreature->isSlayer()) {
-        if (pCreature->isFlag(Effect::EFFECT_CLASS_LIGHTNESS)) {
-            pUpdateInfo->setLightLevel(15);
-            pUpdateInfo->setDarkLevel(1);
-        } else if (pCreature->isFlag(Effect::EFFECT_CLASS_YELLOW_POISON_TO_CREATURE)) {
-            pUpdateInfo->setDarkLevel(15);
-            pUpdateInfo->setLightLevel(1);
-        } else {
-            pUpdateInfo->setDarkLevel(pZone->getDarkLevel());
-            pUpdateInfo->setLightLevel(pZone->getLightLevel());
-        }
-    } else if (pCreature->isVampire()) {
-        pUpdateInfo->setDarkLevel(max(0, DARK_MAX - pZone->getDarkLevel()));
-        pUpdateInfo->setLightLevel(min(13, LIGHT_MAX - pZone->getLightLevel()));
-    } else if (pCreature->isOusters()) {
-        if (pCreature->isFlag(Effect::EFFECT_CLASS_YELLOW_POISON_TO_CREATURE)) {
-            pUpdateInfo->setDarkLevel(15);
-            pUpdateInfo->setLightLevel(1);
-        } else {
-            pUpdateInfo->setDarkLevel(13);
-            pUpdateInfo->setLightLevel(6);
-        }
-    }
+    decore::DarkLightViewer viewer = {};
+    viewer.race = pCreature->isVampire()   ? decore::DarkLightRace::Vampire
+                  : pCreature->isOusters() ? decore::DarkLightRace::Ousters
+                                           : decore::DarkLightRace::Slayer;
+    viewer.castleZone = pZone->getZoneType() == ZONE_CASTLE;
+    viewer.pkZone = de::gameContext().pkZoneInfos().isPKZone(pZone->getZoneID());
+    viewer.lightness = pCreature->isFlag(Effect::EFFECT_CLASS_LIGHTNESS);
+    viewer.yellowPoison = pCreature->isFlag(Effect::EFFECT_CLASS_YELLOW_POISON_TO_CREATURE);
+
+    const decore::DarkLight levels = decore::darkLightForViewer(viewer, pZone->getDarkLevel(), pZone->getLightLevel());
+    pUpdateInfo->setDarkLevel(levels.darkLevel);
+    pUpdateInfo->setLightLevel(levels.lightLevel);
 
     ////////////////////////////////////////////////////////////
     // Weather information.

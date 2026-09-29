@@ -80,6 +80,27 @@ what they changed:
   grant a pool that large was not examined. The splits stayed in
   `Party.cpp`, unchanged.
   > **Status:** recorded, not fixed (feat/shared-small-rules)
+- **Not every dark and light message follows the viewer rule.** The rule
+  `makeGCUpdateInfo` applies when a player enters a zone, now
+  `decore::darkLightForViewer`, decides by the zone's type first (a castle
+  shows its own levels, a PK zone 0 and 14) and then by race and effect.
+  The other senders of `GCChangeDarkLight` each decide less:
+  `EffectFlare::unaffect` sends a vampire the inverted levels even in a
+  castle or PK zone (it now calls the rule as a vampire outside both, which
+  is what it computed); the broadcast when a zone's levels change
+  (`WeatherManager::heartbeat` through
+  `CreatureManager::broadcastDarkLightPacket`) sends every slayer without
+  Lightness or Yellow Poison the zone's own levels and every vampire the
+  inverted ones, in any zone, and sends an ousters nothing; and
+  `EffectLightness::unaffect` and `EffectYellowPoisonToCreature::unaffect`
+  send the zone's own levels whatever the race and the zone, so an ousters
+  whose Yellow Poison wears off is shown the zone's levels in place of its
+  fixed 13 and 6 until its next zone change, and a slayer in a PK zone the
+  zone's levels in place of 0 and 14. (`EffectBloodDrain`'s ousters
+  recovery sends 13 and the ousters' sight, at most 6, a rule of its own.)
+  Making them all call the rule would change what those players see in
+  castle and PK zones; that is a balance decision.
+  > **Status:** recorded, not fixed (feat/shared-small-rules)
 
 ## Vendorable skill output formulas (2026-09-29)
 
