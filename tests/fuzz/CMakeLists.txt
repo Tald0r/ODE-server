@@ -122,9 +122,11 @@ endforeach()
 # inputs with that refusal off, so the store-info seeds reach their
 # read() and the refusal is not all that keeps them safe. The factory's
 # GCMyStoreInfo and GCOtherStoreInfo hold no stall record, so their read()
-# refuses the body with a ProtocolException right after the OpenUI byte:
-# StoreInfo::read is not reachable from a client on this server, and its
-# item-count bound is guarded by StoreInfoTest in wire_tests instead.
+# refuses the body with a ProtocolException before the record:
+# GCMyStoreInfo right after its OpenUI byte, GCOtherStoreInfo after its
+# object id and request flag. StoreInfo::read is not reachable from a
+# client on this server, and its item-count bound is guarded by
+# StoreInfoTest in wire_tests instead.
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game)
     add_test(NAME fuzz_replay_game_no_store_skip
         COMMAND fuzz_replay_game ${CMAKE_CURRENT_BINARY_DIR}/corpus/game
