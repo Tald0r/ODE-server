@@ -1,8 +1,35 @@
-# Shared parity vectors: decore::itemPrice and decore::skullSellTotal
-# (src/domain/ItemPrice.h). Every row is asserted for exact equality by the
-# server's formula_tests and by the client's decore_tests on every client
-# toolchain. A changed expected value is a balance change: review it as
-# one. UPDATE_GOLDENS=1 formula_tests rewrites the expected column only.
+# Shared parity vectors: decore::itemPrice, decore::skullSellTotal and
+# decore::applyCastleTax (src/domain/ItemPrice.h). Every row is asserted
+# for exact equality by the server's formula_tests and by the client's
+# decore_tests on every client toolchain. A changed expected value is a
+# balance change: review it as one. UPDATE_GOLDENS=1 formula_tests
+# rewrites the expected column only.
+#
+# The server's PriceManager and shop sell handler call itemPrice and
+# skullSellTotal, and its shop buy handler calls applyCastleTax; the
+# client's MPriceManager calls itemPrice and skullSellTotal for the prices
+# its shop shows. From slice 5 the client's purchase quote (the buy check
+# in UIMessageManager, and the shop's price display) is meant to call
+# applyCastleTax once on the price times the count, and on the mysterious
+# rack's price, with the castle's ratio for the player. That replaces
+# pricing each item at the ratio as a market condition and scaling it
+# again by the tax-change event's percentage (EVENTID_TAX_CHANGE): that
+# taxed the normal rack twice after a tax change broadcast to the
+# player's zone, and the mysterious rack not at all otherwise. The ratio
+# reaches the client as a MarketCondSell: in GCShopVersion (ActionSell)
+# for the normal and mysterious racks, and only when it is not 100 (the
+# field is then the NPC's market condition), and in GCShopList and
+# GCShopListMysterious for the rack lists the client requests; the sell
+# dialog's GCShopMarketCondition (ActionBuy) writes the NPC's untaxed
+# market condition into the same client field. Until the wire sends the
+# ratio apart from the market condition (open decision 7 of the
+# shared-rules plan), the client prices the item at a market condition of
+# 100, which every seed shop uses. MarketCond_t is 16 bits, so the client
+# sees the server's ratio only within -32768..32767, which covers every
+# ratio a guild master or the defaults set; a GM-set ratio past it arrives
+# truncated, and the rows past it (tax-ratio-int-max,
+# tax-uint-max-at-int-max, tax-ratio-int-min-untaxed) pin de-core, not a
+# ratio the client can receive.
 #
 # Tab-separated, one row per call: function, row name, the inputs, and the
 # expected result last. An option list is comma-separated, "-" for none.
@@ -17,6 +44,16 @@
 #   createTypeGame timeLimited crownPrice race currentStatSum premiumHalf
 #   potionPriceRatio expected
 # skullSellTotal columns: priceTimesNum headPriceBonusPercent expected
+# applyCastleTax columns: total ratio expected. The total is the price
+#   times the count bought, or the mysterious rack's price; the ratio is
+#   the castle's item tax ratio for this player. The tax-* rows cover a
+#   ratio at or below 100 (no tax, and no discount), the ratios a guild
+#   master can set (101 to 110) and the defaults (110, 150), truncation,
+#   a total taxed once for three items, ratios whose hundredth rounds low
+#   in double (tax-hundredth-low-*), and the int limit: a taxed total of
+#   2^31 or more is 2147483648 (docs/FIXES.md). Their expected column was
+#   written by an independent oracle, Python's IEEE doubles cross-checked
+#   against exact rationals, before formula_tests first ran them.
 itemPrice	seed-worn-5000-at-39-of-50	14	0	5000	-1	0	0	-	39	50	100	0	0	0	0	None	0	0	0	3900
 itemPrice	seed-half-of-27-at-30pct	14	0	27	-1	0	0	-	1	2	30	0	0	0	0	None	0	0	0	4
 itemPrice	seed-1001-at-150pct-two-thirds	14	0	1001	-1	0	0	150	2	3	100	0	0	0	0	None	0	0	0	1001
@@ -222,3 +259,36 @@ skullSellTotal	head-bonus-299-pays-x2	5000	299	10000
 skullSellTotal	head-bonus-99-pays-nothing	5000	99	0
 skullSellTotal	head-bonus-0-pays-nothing	5000	0	0
 skullSellTotal	head-total-wraps-at-32-bits	3000000000	200	1705032704
+applyCastleTax	tax-ratio-100-untaxed	1000	100	1000
+applyCastleTax	tax-ratio-0-untaxed	1000	0	1000
+applyCastleTax	tax-ratio-below-0-untaxed	1000	-1	1000
+applyCastleTax	tax-ratio-int-min-untaxed	1000	-2147483648	1000
+applyCastleTax	tax-ratio-90-no-discount	1000	90	1000
+applyCastleTax	tax-untaxed-keeps-32-bits	4294967295	100	4294967295
+applyCastleTax	tax-zero-total	0	150	0
+applyCastleTax	tax-ratio-101	1000	101	1010
+applyCastleTax	tax-ratio-101-truncates	99	101	99
+applyCastleTax	tax-ratio-105	1000	105	1050
+applyCastleTax	tax-ratio-105-truncates	33	105	34
+applyCastleTax	tax-ratio-110	1000	110	1100
+applyCastleTax	tax-ratio-110-on-1-truncates-to-1	1	110	1
+applyCastleTax	tax-three-at-17-taxed-once	51	110	56
+applyCastleTax	tax-ratio-150-on-1	1	150	1
+applyCastleTax	tax-ratio-150-on-3	3	150	4
+applyCastleTax	tax-ratio-150	1000	150	1500
+applyCastleTax	tax-ratio-200	1000	200	2000
+applyCastleTax	tax-ratio-1000	7	1000	70
+applyCastleTax	tax-ratio-int-max	1	2147483647	21474836
+applyCastleTax	tax-hundredth-low-115	100	115	114
+applyCastleTax	tax-hundredth-low-114	50	114	56
+applyCastleTax	tax-hundredth-low-116	25	116	28
+applyCastleTax	tax-hundredth-low-115-not-multiple	101	115	116
+applyCastleTax	tax-hundredth-low-117-rounds-back	100	117	117
+applyCastleTax	tax-reaches-max-money	1818181819	110	2000000000
+applyCastleTax	tax-last-in-int-at-110	1952257861	110	2147483647
+applyCastleTax	tax-first-past-int-at-110	1952257862	110	2147483648
+applyCastleTax	tax-last-in-int-at-200	1073741823	200	2147483646
+applyCastleTax	tax-exactly-2-to-31-at-200	1073741824	200	2147483648
+applyCastleTax	tax-int-max-at-101	2147483647	101	2147483648
+applyCastleTax	tax-uint-max-at-101	4294967295	101	2147483648
+applyCastleTax	tax-uint-max-at-int-max	4294967295	2147483647	2147483648

@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <limits>
 #include <map>
 #include <set>
 #include <sstream>
@@ -1114,6 +1115,20 @@ public:
             fail("not an integer: \"" + text + "\"");
         return value;
     }
+    // A column of a 32-bit type: a value past the type is an error, so a
+    // mistyped limit row cannot wrap to another input and still pass.
+    unsigned unsignedInteger() {
+        long long value = integer();
+        if (value < 0 || value > (long long)std::numeric_limits<unsigned>::max())
+            fail("out of unsigned range");
+        return (unsigned)value;
+    }
+    int intInteger() {
+        long long value = integer();
+        if (value < (long long)std::numeric_limits<int>::min() || value > (long long)std::numeric_limits<int>::max())
+            fail("out of int range");
+        return (int)value;
+    }
     bool flag() {
         long long value = integer();
         if (value != 0 && value != 1)
@@ -1323,10 +1338,15 @@ std::string evaluateRow(const std::vector<std::string>& fields, std::string& err
         if (in.error().empty())
             result = decore::repairPrice(input);
     } else if (function == "skullSellTotal") {
-        unsigned priceTimesNum = (unsigned)in.integer();
-        unsigned bonus = (unsigned)in.integer();
+        unsigned priceTimesNum = in.unsignedInteger();
+        unsigned bonus = in.unsignedInteger();
         in.finish();
         result = decore::skullSellTotal(priceTimesNum, bonus);
+    } else if (function == "applyCastleTax") {
+        unsigned total = in.unsignedInteger();
+        int ratio = in.intInteger();
+        in.finish();
+        result = decore::applyCastleTax(total, ratio);
     } else if (function == "maxDurabilityBase") {
         unsigned info = (unsigned)in.integer();
         bool hasDurability = in.flag();
@@ -1494,7 +1514,7 @@ void checkVectorFile(const std::string& file, const std::set<std::string>& funct
 }
 
 TEST(SharedVectors, Price) {
-    checkVectorFile("price.tsv", {"itemPrice", "skullSellTotal"});
+    checkVectorFile("price.tsv", {"itemPrice", "skullSellTotal", "applyCastleTax"});
 }
 
 TEST(SharedVectors, RepairPrice) {
@@ -1528,6 +1548,31 @@ TEST(SharedVectors, AnEmptyNumberIsAnError) {
     EXPECT_EQ(7, ok.integer());
     ok.finish();
     EXPECT_EQ("", ok.error());
+}
+
+// A 32-bit column reads its limits and rejects a value one past them.
+TEST(SharedVectors, AnOutOfRangeNumberIsAnError) {
+    const std::vector<std::string> limits = {"applyCastleTax", "limits",     "4294967295",
+                                             "-2147483648",    "2147483647", "0"};
+    RowReader ok(limits);
+    EXPECT_EQ(4294967295u, ok.unsignedInteger());
+    EXPECT_EQ(std::numeric_limits<int>::min(), ok.intInteger());
+    EXPECT_EQ(std::numeric_limits<int>::max(), ok.intInteger());
+    ok.finish();
+    EXPECT_EQ("", ok.error());
+
+    for (const char* text : {"4294967296", "-1"}) {
+        const std::vector<std::string> fields = {"applyCastleTax", "past-unsigned", text, "0"};
+        RowReader in(fields);
+        in.unsignedInteger();
+        EXPECT_EQ("out of unsigned range", in.error()) << text;
+    }
+    for (const char* text : {"2147483648", "-2147483649"}) {
+        const std::vector<std::string> fields = {"applyCastleTax", "past-int", text, "0"};
+        RowReader in(fields);
+        in.intInteger();
+        EXPECT_EQ("out of int range", in.error()) << text;
+    }
 }
 
 // A list is "-" or integers joined by single commas: an empty cell or an

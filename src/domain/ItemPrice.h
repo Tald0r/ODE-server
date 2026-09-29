@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////////////////////////
 // Filename    : ItemPrice.h
 // Description :
-// de-core: what a shop charges or pays for an item, and what a repair
-// costs.
+// de-core: what a shop charges or pays for an item, what a repair costs,
+// and what a castle's tax adds to a purchase.
 //
 // The arithmetic is transplanted verbatim from the server's PriceManager
 // and shop handlers, oddities included: the price stays in double from the
@@ -81,6 +81,27 @@ int repairPrice(const ItemPriceInput& input);
 // skulls sold times the head price bonus, a percentage the server divides
 // by 100 in integers first.
 unsigned skullSellTotal(unsigned priceTimesNum, unsigned headPriceBonusPercent);
+
+// What a shop purchase costs once a castle taxes it (the shop buy
+// handler): the total, which is the item's price times the count bought
+// or the mysterious (gamble) rack's price, times the castle's item tax
+// ratio, a percentage. A ratio of 100 or below leaves the total alone, so
+// it never discounts. Above 100 the server computes
+// `(int)(total * (ratio / 100.0))`, taking the tax once on the whole
+// total, not per item. The ratio is divided in double first, so a ratio
+// whose hundredth rounds below its true value can truncate one below the
+// integer answer (100 at 115 is 114). Every ratio from 101 to 112, which
+// covers all a guild master can set, rounds at or above it and gives
+// total * ratio / 100 in integers.
+//
+// The widths are the server's: the total and the result are its 32-bit
+// unsigned Price_t, since an untaxed total is returned as it came, and a
+// taxed one passes through an int. A taxed total of 2^31 or more has no
+// int, and converting it is undefined in C++: x86 and x86-64 give INT_MIN,
+// which Price_t reads as 2147483648, arm64 gives INT_MAX, and a sanitized
+// build traps. This returns x86-64's 2147483648 on every target. It is
+// more gold than a player can hold, so the server refuses such a purchase.
+unsigned applyCastleTax(unsigned total, int ratio);
 
 } // namespace decore
 
