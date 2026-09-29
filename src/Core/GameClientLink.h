@@ -48,15 +48,17 @@ inline constexpr std::array<PacketID_t, 1> kDatagramOnlyCGPacketIDs{
     CGPortCheckFactory::kPacketID,
 };
 
+namespace detail {
 template <std::size_t N> constexpr bool listed(const std::array<PacketID_t, N>& ids, PacketID_t id) {
     return std::find(ids.begin(), ids.end(), id) != ids.end();
 }
+} // namespace detail
 
 // Whether a game client sends this packet on the game connection.
 constexpr bool sentOnGameClientLink(const Meta& meta) {
     if (meta.direction == Direction::CG)
-        return !listed(kDatagramOnlyCGPacketIDs, meta.id);
-    return listed(kClientSentGCPacketIDs, meta.id);
+        return !detail::listed(kDatagramOnlyCGPacketIDs, meta.id);
+    return detail::listed(kClientSentGCPacketIDs, meta.id);
 }
 
 // The ids of the gameserver's registered factories that sentOnGameClientLink
