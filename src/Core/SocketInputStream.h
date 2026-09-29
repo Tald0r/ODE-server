@@ -45,6 +45,12 @@ class Packet;
 //////////////////////////////////////////////////////////////////////
 
 class SocketInputStream {
+    // The unit tests and the packet-read fuzz targets load the buffer
+    // directly through this class (tests/support/SocketInputStreamTestAccess.h),
+    // as if fill() had received the bytes, so a packet can be read from
+    // memory without a socket.
+    friend class SocketInputStreamTestAccess;
+
     //////////////////////////////////////////////////
     // constructor/destructor
     //////////////////////////////////////////////////
