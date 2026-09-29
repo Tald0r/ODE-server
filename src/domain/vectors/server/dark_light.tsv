@@ -1,7 +1,8 @@
 # Parity vectors, server only: decore::darkLightForViewer
 # (src/domain/DarkLight.h), the dark and light levels a player is sent for
-# its zone. The server's makeGCUpdateInfo (PacketUtil.cpp) and a vampire's
-# Flare wearing off (skill/EffectFlare.cpp) call it. The client does not
+# its zone. The server's makeGCUpdateInfo (PacketUtil.cpp), the broadcast
+# when a zone's levels change (WeatherManager.cpp) and a vampire's Flare
+# wearing off (skill/EffectFlare.cpp) call it. The client does not
 # compute it, only draws the levels it is sent, and does not copy this
 # directory. Every row is asserted for exact equality by formula_tests. A
 # changed expected value is a balance change: review it as one.
@@ -22,9 +23,14 @@
 # zone, then a PK zone, then the race. The vampire-* rows are its clamps:
 # the dark level stops at 0 past a zone dark level of 13, and the light
 # level stops at 13 below a zone light level of 2 and goes negative past
-# 15. The grid-* rows are every race and flag combination at three zone
-# settings from the seed data (dark 0 and light 13 at noon, 13 and 6 at
-# dusk, 15 and 4 at midnight).
+# 15. The weather-* rows are what the broadcast sends a slayer and a
+# vampire at the seed data's darkest settings (dark 14 and light 5 from
+# 19:00 and at 4:00, dark 15 and light 4 from 20:00 to 3:50 game time):
+# before the broadcast called this, it sent a vampire 13 minus the dark
+# level unclamped, which the packet's byte wrapped to 255 and 254
+# (docs/FIXES.md). The grid-* rows are every race and flag combination at
+# three zone settings from the seed data (dark 0 and light 13 at noon, 13
+# and 6 at dusk, 15 and 4 at midnight).
 darkLightForViewer	castle-slayer-zone-levels	Slayer	1	0	0	0	15	4	15,4
 darkLightForViewer	castle-over-pk-and-effects	Slayer	1	1	1	1	15	4	15,4
 darkLightForViewer	castle-vampire-not-inverted	Vampire	1	0	0	0	15	4	15,4
@@ -52,6 +58,11 @@ darkLightForViewer	vampire-light-255-negative	Vampire	0	0	0	0	0	255	13,-240
 darkLightForViewer	ousters-dusk	Ousters	0	0	0	0	0	13	13,6
 darkLightForViewer	ousters-ignores-lightness	Ousters	0	0	1	0	0	13	13,6
 darkLightForViewer	ousters-yellow-poison	Ousters	0	0	0	1	0	13	15,1
+darkLightForViewer	weather-slayer-dark-14-light-5	Slayer	0	0	0	0	14	5	14,5
+darkLightForViewer	weather-vampire-dark-14-light-5	Vampire	0	0	0	0	14	5	0,10
+darkLightForViewer	weather-slayer-dark-15-light-4	Slayer	0	0	0	0	15	4	15,4
+darkLightForViewer	weather-vampire-dark-15-light-4	Vampire	0	0	0	0	15	4	0,11
+darkLightForViewer	weather-vampire-dark-13-light-6	Vampire	0	0	0	0	13	6	0,9
 darkLightForViewer	grid-slayer-0000-0-13	Slayer	0	0	0	0	0	13	0,13
 darkLightForViewer	grid-slayer-0000-13-6	Slayer	0	0	0	0	13	6	13,6
 darkLightForViewer	grid-slayer-0000-15-4	Slayer	0	0	0	0	15	4	15,4

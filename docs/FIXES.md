@@ -80,6 +80,31 @@ what they changed:
   grant a pool that large was not examined. The splits stayed in
   `Party.cpp`, unchanged.
   > **Status:** recorded, not fixed (feat/shared-small-rules)
+- **The weather broadcast sent a vampire a wrapped dark level at night.**
+  When a zone's dark or light level changes with the game clock,
+  `WeatherManager::heartbeat` broadcasts `GCChangeDarkLight`: the zone's
+  levels to each slayer, and to each vampire `DARK_MAX - dark` and
+  `LIGHT_MAX - light` (13 and 15), without the clamps `makeGCUpdateInfo`
+  applies (a dark level of at least 0, a light level of at most 13). The
+  packet's fields are bytes, so a zone dark level above 13 reached a
+  vampire as 256 minus the excess, and a zone light level below 2 as 14
+  or 15. It was reachable with the seed data every game night: its
+  `DarkLightInfo` table has dark level 14 (light 5) at 19:00 and 4:00 and
+  15 (light 4) from 20:00 to 3:50 in every month, so each zone's
+  broadcasts at 19:00, 20:00 and 4:00 sent vampires 255, 254 and 255. The
+  light clamp was not: the seed's lowest light level is 4. The stock
+  client ignores a dark level of 16 or more (`MTopView::SetDarkBits`), so
+  a vampire kept the level it had, 0 from the 18:50 broadcast of dark 13
+  or from the clamped `GCUpdateInfo` of its zone entry, which is what the
+  clamp now sends: nothing a player sees changes, only the bytes. The
+  broadcast now calls `decore::darkLightForViewer` for a slayer and a
+  vampire outside a castle and a PK zone. The evidence: over every zone
+  dark and light level 0 to 255, the slayer packet is unchanged and the
+  vampire packet changes on exactly the 61,980 pairs with a dark level
+  above 13 or a light level below 2, and on no other. Pinned by the
+  `weather-*` and `vampire-dark-*` rows of
+  `src/domain/vectors/server/dark_light.tsv`.
+  > **Status:** fixed (feat/shared-small-rules)
 - **Not every dark and light message follows the viewer rule.** The rule
   `makeGCUpdateInfo` applies when a player enters a zone, now
   `decore::darkLightForViewer`, decides by the zone's type first (a castle
@@ -91,7 +116,8 @@ what they changed:
   (`WeatherManager::heartbeat` through
   `CreatureManager::broadcastDarkLightPacket`) sends every slayer without
   Lightness or Yellow Poison the zone's own levels and every vampire the
-  inverted ones, in any zone, and sends an ousters nothing; and
+  inverted ones, in any zone, and sends an ousters nothing (it now calls
+  the rule as a slayer and a vampire outside both); and
   `EffectLightness::unaffect` and `EffectYellowPoisonToCreature::unaffect`
   send the zone's own levels whatever the race and the zone, so an ousters
   whose Yellow Poison wears off is shown the zone's levels in place of its

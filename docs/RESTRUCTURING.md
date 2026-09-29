@@ -847,7 +847,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
   > **Status:** in progress (the client halves of slices 4, 5, 6a and
-  > 6b; the rest of 6b's server half: the weather broadcast's darkness) —
+  > 6b) —
   > slices 1 to 3 are in on both sides
   > (server PRs #276 to #280, client PRs #285 to #287).
   > Slice 1: `ItemPrice` and `ItemDurability`, with `PriceManager`,
@@ -926,9 +926,10 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > compute it. `darkLightForViewer` (`DarkLight`, server only) is the
   > dark and light levels a player is sent for its zone, by the zone's
   > type (castle, PK), its race and its Lightness and Yellow Poison;
-  > `makeGCUpdateInfo` (`PacketUtil.cpp`) and `EffectFlare::unaffect` call
-  > it. The other `GCChangeDarkLight` senders decide less and are recorded
-  > in `docs/FIXES.md`. `src/domain/vectors/server/dark_light.tsv` pins
+  > `makeGCUpdateInfo` (`PacketUtil.cpp`), `EffectFlare::unaffect` and
+  > the weather broadcast (`WeatherManager.cpp`, whose vampire levels were
+  > unclamped until then) call it. The other `GCChangeDarkLight` senders
+  > decide less and are recorded in `docs/FIXES.md`. `src/domain/vectors/server/dark_light.tsv` pins
   > it; the client draws the levels it is sent and computes none.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and

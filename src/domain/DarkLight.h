@@ -10,8 +10,10 @@
 // and an ousters sees a fixed dusk unless Yellow Poison darkens it. A
 // castle zone shows every race the zone's own levels and a PK zone a fixed
 // daylight. The server sends the result in GCUpdateInfo when a player
-// enters a zone (makeGCUpdateInfo, PacketUtil.cpp) and in GCChangeDarkLight
-// when a vampire's Flare wears off (skill/EffectFlare.cpp).
+// enters a zone (makeGCUpdateInfo, PacketUtil.cpp), and in GCChangeDarkLight
+// when the zone's levels change (WeatherManager.cpp, for a slayer and a
+// vampire outside a castle and a PK zone) and when a vampire's Flare wears
+// off (skill/EffectFlare.cpp).
 //
 // The levels are the server's, oddities included: a vampire's dark level
 // is 13 minus the zone's, at least 0, and its light level 15 minus the
