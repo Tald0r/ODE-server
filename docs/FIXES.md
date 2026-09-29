@@ -44,16 +44,22 @@ Each input that found a defect below is replayed by ctest from
   `_GLIBCXX_ASSERTIONS` aborted in the constructor. It now assigns
   `PLAYER_STATUS_MAX` null slots.
   > **Status:** fixed (feat/packet-fuzzing)
-- **Debug strings indexed name tables with wire values.** Thirteen
+- **Debug strings indexed name tables with wire values.** Fourteen
   `toString()` bodies wrote `PCType2String[m_PCType]`,
   `HelmetType2String[getHelmetType()]` and the like, and
   `SocketInputStream::readPacket` prints every packet it reads, so one
   out-of-range byte (CGConnect's character type, CLCreatePC's slot,
   GCAddSlayerCorpse's helmet) copied a `std::string` that is not there.
+  `PCVampireInfo`'s slot is one of them, reached only through `LCPCList`,
+  which only the loginserver registers and no client status admits.
+  Every lookup by a stored value now goes through `nameOrNumber()` or a
+  range check beside it (`GCChangeWeather`, `GCUpdateInfo`'s weather, and
+  `sex2String()`, `dir2String()`, `modifyType2String()`).
   `nameOrNumber()` (`src/Core/types/SystemTypes.h`) prints such a value as
   its number (`DebugNameTest` in `wire_tests`). The zig Debug build does
   not trap on the old lookup: it reads the neighbouring object and prints
-  an empty name, so the recorded input
+  what that holds (an empty name for CGConnect's type 3, "FEMALE" for
+  `PCVampireInfo`'s slot 3), so the recorded input
   (`tests/fuzz/regressions/game/CGConnect-name-table.hex`) fails only
   under the fuzz build's ASan, and `DebugNameTest` is what guards the fix
   in the zig suite.

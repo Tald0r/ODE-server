@@ -29,6 +29,7 @@
 #include "GCShopList.h"
 #include "GCShopListMysterious.h"
 #include "GCStashList.h"
+#include "PCVampireInfo.h"
 #include "Socket.h"
 #include "SocketImpl.h"
 #include "SocketInputStream.h"
@@ -84,6 +85,17 @@ TEST(DebugNameTest, aSlotSexAndHairStylePastTheirTablesPrintAsNumbers) {
     EXPECT_TRUE(contains(text, "Slot:3")) << text;
     EXPECT_TRUE(contains(text, "Sex:MALE")) << text;
     EXPECT_TRUE(contains(text, "HairStyle:3")) << text;
+}
+
+// Every value Sex can hold has a name; the slot enumeration has one
+// more value than its table.
+TEST(DebugNameTest, aVampireSlotPastItsTablePrintsAsItsNumber) {
+    PCVampireInfo info{};
+    info.setSlot(Slot(3));
+    info.setSex(Sex(1));
+    const std::string text = info.toString();
+    EXPECT_TRUE(contains(text, "Slot:3")) << text;
+    EXPECT_TRUE(contains(text, "Sex:MALE")) << text;
 }
 
 //////////////////////////////////////////////////////////////////////
