@@ -94,9 +94,9 @@ are enforced so far.
 | `src/server/gameserver/InitAllStat.cpp` | 230 (was 4,787 before the split by race into `SlayerStat.cpp` / `VampireStat.cpp` / `OustersStat.cpp`, leaving `PlayerCreature::applyBloodBibleSign` and `Monster::initAllStat`; under the 2,000-line phase exit criterion, so R6b pins it rather than baselining a god file; enforced by `ratchets.sh` R6b) |
 | `src/server/gameserver/handler/CGSayHandler.cpp` (moved from `src/Core` in 2.4) | 111 (114 before the compiler-warning cleanup; was 4,720 before the 4.1 command extraction; enforced by `ratchets.sh` R6e) |
 | `src/server/gameserver/gm/ConsoleCommands.cpp` | 1,574 (the 61 `*command` sub-command bodies, one function per name; enforced by `ratchets.sh` R6f) |
-| `src/server/gameserver/Slayer.cpp` | 3,031 (3,043 before the compiler-warning cleanup, 3,068 before the item-load hoist, 3,086 before the initial-rank hoist; was 4,046 before the 4.3 hoists, 3,516 before the commented-out code went; enforced by `ratchets.sh` R6h) |
-| `src/server/gameserver/Vampire.cpp` | 1,954 (1,958 before the compiler-warning cleanup, 1,986 before the item-load hoist, 2,002 before the silver-damage hoist, 2,022 before the initial-rank hoist, 2,047 before the exps hoist; was 2,783 before the 4.3 hoists, 2,235 before the commented-out code went; enforced by `ratchets.sh` R6i) |
-| `src/server/gameserver/Ousters.cpp` | 1,879 (1,880 before the compiler-warning cleanup, 1,900 before the item-load hoist, 1,915 before the silver-damage hoist, 1,934 before the initial-rank hoist, 1,954 before the exps hoist, 1,959 before an empty sight override left by the commented-out code went; was 2,548 before the 4.3 hoists, 2,117 before the commented-out code went; enforced by `ratchets.sh` R6j) |
+| `src/server/gameserver/Slayer.cpp` | 2,972 (3,031 before the equip-requirement move to de-core, 3,043 before the compiler-warning cleanup, 3,068 before the item-load hoist, 3,086 before the initial-rank hoist; was 4,046 before the 4.3 hoists, 3,516 before the commented-out code went; enforced by `ratchets.sh` R6h) |
+| `src/server/gameserver/Vampire.cpp` | 1,919 (1,954 before the equip-requirement move to de-core, 1,958 before the compiler-warning cleanup, 1,986 before the item-load hoist, 2,002 before the silver-damage hoist, 2,022 before the initial-rank hoist, 2,047 before the exps hoist; was 2,783 before the 4.3 hoists, 2,235 before the commented-out code went; enforced by `ratchets.sh` R6i) |
+| `src/server/gameserver/Ousters.cpp` | 1,848 (1,879 before the equip-requirement move to de-core, 1,880 before the compiler-warning cleanup, 1,900 before the item-load hoist, 1,915 before the silver-damage hoist, 1,934 before the initial-rank hoist, 1,954 before the exps hoist, 1,959 before an empty sight override left by the commented-out code went; was 2,548 before the 4.3 hoists, 2,117 before the commented-out code went; enforced by `ratchets.sh` R6j) |
 | `src/server/gameserver/skill/SkillFormula.cpp` | 818 (was 3,081 before the 3.3 computeOutput extraction — now thin adapters + the 11 dice-roll formulas; enforced by `ratchets.sh` R6d) |
 | `src/server/gameserver/skill/HitRoll.cpp` | 642 (not a god file — an extraction-target pin, locked in with its 3.3 extraction; enforced by `ratchets.sh` R6c) |
 
@@ -846,36 +846,37 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   steal-ratio cast; client: the callers); (4) equip requirements; (5)
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
-  > **Status:** in progress (slice 2's client half, on the client's
-  > `feat/shared-grade-policy`; slice 3's client half; then slices 4-6) —
-  > slice 1 is in on both sides (the client's in its PR #285). Its server
-  > half:
-  > `ItemPrice` and `ItemDurability`, with `PriceManager`,
+  > **Status:** in progress (slice 4's parity vectors and its client
+  > half; then slices 5 and 6) — slices 1 to 3 are in on both sides
+  > (server PRs #276 to #280, client PRs #285 to #287).
+  > Slice 1: `ItemPrice` and `ItemDurability`, with `PriceManager`,
   > `computeMaxDurability`, `ConcreteItem::getMaxDurability` and the skull
   > sale as adapters.
-  > Slice 2's server half is in: `ItemGrade` (`gradeOffsets`,
-  > `gradePolicyOf`, `hasDurability`) holds the per-class grade and
-  > durability table, and `ConcreteItem` reads it through
-  > `itemClassHasGrade`, `itemClassHasDurability` and
-  > `itemClassGradeOffsets` (`ConcreteItem.cpp`) instead of taking grade and
-  > durability policies as template arguments, so the server has no second
-  > copy. Classes not built on `ConcreteItem` are `None` with no
-  > durability, and their maximum durability is 1, not
-  > `maxDurabilityBase` — the client's motorcycle must not use it.
-  > Slice 3's server half is in: `src/domain/vectors/stats.tsv` pins every
-  > function the client calls next, all already in `Formulas.cpp` — the
-  > slayer, vampire and ousters to-hit, defense, protection and min/max
-  > damage (its character-select preview), `vampireSkillConsumeMP` and
-  > `vampireDexHPRegenBonus` — and the three steal ratios, whose cast to a
-  > byte now goes through `int` (defined, and what x86-64 always computed;
-  > `docs/FIXES.md`). The client's `decore_tests` must learn its row kinds,
-  > which the stats.tsv header lays out: the six `StatAttr` columns with the
-  > weapon written by its `WeaponFamily` name, an int column after them for
-  > the damage bonus or the steal amount, plain-int rows for the other
-  > steal ratios, `vampireSkillConsumeMP` and `vampireDexHPRegenBonus`, and
-  > the twenty function names. None of these
-  > functions indexes a table; the unchecked party-table index is in
+  > Slice 2: `ItemGrade` (`gradeOffsets`, `gradePolicyOf`,
+  > `hasDurability`) holds the per-class grade and durability table, and
+  > `ConcreteItem` reads it through `itemClassHasGrade`,
+  > `itemClassHasDurability` and `itemClassGradeOffsets`
+  > (`ConcreteItem.cpp`) instead of taking grade and durability policies
+  > as template arguments, so the server has no second copy. Classes not
+  > built on `ConcreteItem` are `None` with no durability, and their
+  > maximum durability is 1, not `maxDurabilityBase`.
+  > Slice 3: `src/domain/vectors/stats.tsv` pins the `Formulas.cpp`
+  > functions the client calls (the three races' to-hit, defense,
+  > protection and min/max damage, `vampireSkillConsumeMP`,
+  > `vampireDexHPRegenBonus`) and the three steal ratios, whose cast to a
+  > byte goes through `int` (`docs/FIXES.md`). None of these indexes a
+  > table; the unchecked party-table index is in
   > `SkillOutputFormulas.cpp`, for slice 6.
+  > Slice 4's server half: `EquipRequirement` (`requiredStats`,
+  > `meetsRequirement`, `genderAllows`) holds the three races' item
+  > requirement, its option raises, caps (slayer 200/290 and 300/435,
+  > vampire level 100/150, ousters level 150) and 16- and 8-bit wraps;
+  > `Slayer`, `Vampire` and `Ousters::isRealWearing` call it through
+  > `computeEquipRequirement` (`ItemUtil.cpp`), which reads the item and
+  > option tables. The advancement-class checks, time-limited items, the
+  > premium-zone and pay gate and couple rings stay in the races, in
+  > their own order. The client must add `domain/EquipRequirement.cpp` to
+  > its `third_party/decore/CMakeLists.txt` source list.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out
@@ -1070,7 +1071,9 @@ trend line.
   > `checkItemTimeLimit`, `updateEventItemTime`, `isRealWearingEx` and
   > `sendRealWearingInfo` are identical in all three. `isRealWearing(Item*)`
   > is the one that differs for real: each
-  > race checks its own item classes and requirement attributes.
+  > race checks its own item classes and gates, in its own order, and
+  > delegates the requirement itself to de-core's `EquipRequirement`
+  > (`computeEquipRequirement` in `ItemUtil.cpp` gathers the inputs).
   > Reconciling the enums is a protocol change the client repo must ship
   > identically, not a refactor.
   > **The two `addSkill` overloads differ in behaviour.**

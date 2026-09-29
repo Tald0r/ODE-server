@@ -21,6 +21,7 @@ set(DECORE_INCLUDE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/..")
 set(DECORE_FP_FLAGS -ffp-contract=off -fno-fast-math)
 
 add_library(de-core STATIC
+    EquipRequirement.cpp
     Formulas.cpp
     ItemDurability.cpp
     ItemGrade.cpp
@@ -49,6 +50,7 @@ target_compile_options(de-core PRIVATE ${DECORE_FP_FLAGS})
 # wire_tests depend on this target so the suite build compiles it.
 # SkillOutputFormulas.cpp is not vendored and so is not listed.
 set(DECORE_VENDORED_SOURCES
+    EquipRequirement.cpp
     Formulas.cpp
     ItemDurability.cpp
     ItemGrade.cpp
