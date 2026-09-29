@@ -1135,6 +1135,31 @@ add_dependencies(wire_tests skill_slot_tests)
 add_test(NAME skill_slot_tests COMMAND skill_slot_tests)
 set_tests_properties(skill_slot_tests PROPERTIES TIMEOUT 60)
 
+# --- client-link packet ids ------------------------------------------------
+# Which packet ids each server's validator lets a client's connection read:
+# only what a client sends. Each test is compiled as its server (the
+# PlayerStatus values and the factory table differ per server) and links
+# that server's packet library, like the fuzz targets below. A failing
+# Assert appends to assertion_failed.log in the working directory, hence
+# the build-tree WORKING_DIRECTORY.
+add_executable(game_client_link_tests EXCLUDE_FROM_ALL game_client_link_test.cpp)
+target_compile_definitions(game_client_link_tests PRIVATE __GAME_SERVER__ __COMBAT__)
+target_include_directories(game_client_link_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/Core)
+target_link_libraries(game_client_link_tests PRIVATE GameServerPackets gtest_main Threads::Threads)
+add_dependencies(wire_tests game_client_link_tests)
+add_test(NAME game_client_link_tests COMMAND game_client_link_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(game_client_link_tests PROPERTIES TIMEOUT 30)
+
+add_executable(login_client_link_tests EXCLUDE_FROM_ALL login_client_link_test.cpp)
+target_compile_definitions(login_client_link_tests PRIVATE __LOGIN_SERVER__)
+target_include_directories(login_client_link_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/Core)
+target_link_libraries(login_client_link_tests PRIVATE LoginServerPackets gtest_main Threads::Threads)
+add_dependencies(wire_tests login_client_link_tests)
+add_test(NAME login_client_link_tests COMMAND login_client_link_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(login_client_link_tests PROPERTIES TIMEOUT 30)
+
 # --- packet-read fuzz targets ----------------------------------------------
 # The replay builds of the fuzz targets and their ctests over the seed
 # corpus and tests/fuzz/regressions/; see tests/fuzz/CMakeLists.txt.

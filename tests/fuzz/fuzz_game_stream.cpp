@@ -12,10 +12,12 @@
 //               Built with __GAME_SERVER__ and linked with
 //               GameServerPackets, so the factory table is the
 //               gameserver's own: Concat<GameOnlyFactories,
-//               ClientLinkFactories, GuildLinkFactories>. In GPS_NORMAL
-//               the validator admits any id, so a client can make the
-//               gameserver read every packet in that table, including
-//               the GC, GG, GL and LG ones it only ever sends.
+//               ClientLinkFactories, GuildLinkFactories>. The validator
+//               is the gameserver's too, so in GPS_NORMAL it admits only
+//               the packets a client sends (GameClientLink.h) and refuses
+//               the rest of that table before any read.
+//               DE_FUZZ_ANY_ID=1 admits every id in GPS_NORMAL instead,
+//               so the reads behind the gate are fuzzed as well.
 //
 //               The input format and the switches are described in
 //               StreamFuzz.h. The loop runs the zone thread's call
@@ -72,7 +74,8 @@ void receive(SocketInputStream& in, PlayerStatus status) {
         try {
             // :356 - "invalid packet order". A PIST_IGNORE_EXCEPT status
             // throws IgnorePacketException from here instead.
-            if (!validator.isValidPacketID(status, packetID))
+            const bool anyID = de::fuzz::options().anyID && status == GPS_NORMAL;
+            if (!anyID && !validator.isValidPacketID(status, packetID))
                 return;
 
             // :364 - the two store-info packets are refused unread.

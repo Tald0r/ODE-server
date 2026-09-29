@@ -8,6 +8,10 @@
 // include files
 #include "PacketFactoryManager.h"
 
+#include <algorithm>
+#include <array>
+#include <span>
+
 #include <type_traits>
 
 #include "Assert.h"
@@ -234,6 +238,7 @@
 #include "GLIncomingConnectionOK.h"
 #include "GLKickVerify.h"
 #include "GMServerInfo.h"
+#include "GameClientLink.h"
 #include "LCCreatePCError.h"
 #include "LCCreatePCOK.h"
 #include "LCDeletePCError.h"
@@ -1049,7 +1054,38 @@ using ServerFactories = GuildLinkFactories;
 using ServerFactories = FactoryList<>;
 #endif
 
+#if defined(__GAME_SERVER__)
+// The gameserver's registered ids that a game client sends on the game
+// connection (GameClientLink.h), folded from the factory table while
+// compiling: a factory added to the lists above is admitted in GPS_NORMAL
+// exactly when the rule says a client sends it.
+consteval std::size_t countGameClientLinkIDs() {
+    std::size_t count = 0;
+    for (const de::packet::Meta& meta : ServerFactories::kMeta)
+        count += de::packet::sentOnGameClientLink(meta) ? 1 : 0;
+    return count;
+}
+
+consteval std::array<PacketID_t, countGameClientLinkIDs()> gameClientLinkIDs() {
+    std::array<PacketID_t, countGameClientLinkIDs()> ids{};
+    std::size_t next = 0;
+    for (const de::packet::Meta& meta : ServerFactories::kMeta)
+        if (de::packet::sentOnGameClientLink(meta))
+            ids[next++] = meta.id;
+    std::sort(ids.begin(), ids.end());
+    return ids;
+}
+
+constexpr auto kGameClientLinkIDs = gameClientLinkIDs();
+#endif
+
 } // namespace
+
+#if defined(__GAME_SERVER__)
+std::span<const PacketID_t> de::packet::gameClientLinkPacketIDs() {
+    return kGameClientLinkIDs;
+}
+#endif
 
 void PacketFactoryManager::init() {
     __BEGIN_TRY

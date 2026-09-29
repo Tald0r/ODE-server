@@ -8,10 +8,18 @@
 //               are replayed as well, from tests/fuzz/regressions/, by the
 //               fuzz_replay tests.
 //
-//               A case is a body a client can put on the wire (in
-//               GPS_NORMAL the gameserver reads any packet it registers,
-//               and every packet it reads is printed with toString())
-//               unless its comment says otherwise.
+//               A CG or CL case is a body a client can put on the wire,
+//               and every packet a server reads is printed with
+//               toString(). Most GC cases are bodies only a server
+//               sends: the gameserver's client link refuses them before
+//               the read, and fuzz_replay_game_any_id reads them with
+//               that gate open. Two cases are neither. StoreInfoTest's
+//               GCMyStoreInfo is a body the live client does send, but
+//               the gameserver refuses it unread and its factory packet
+//               holds no record, so no replay reaches StoreInfo::read and
+//               this test is the bound's only guard. The PCVampireInfo
+//               case is read only inside LCPCList, which the loginserver
+//               sends and no server reads.
 //
 //////////////////////////////////////////////////////////////////////
 

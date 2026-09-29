@@ -85,26 +85,47 @@ consteval Direction directionOf(std::string_view name) {
     return Direction::Unknown;
 }
 
+struct Meta;
+
+// Narrows one link of a DirectionSet to the packets it answers true for.
+using LinkFilter = bool (*)(const Meta&);
+
 // The set of links one server accepts, stated at its composition root. One
 // bit per Direction, so the dispatcher's registration check is a bit test
-// the compiler folds away.
+// the compiler folds away. A link may also carry a filter (narrowed()),
+// for a server that receives only some of a link's packets: the gameserver
+// receives GC packets only from its client link, which admits a few.
 class DirectionSet {
 public:
-    consteval DirectionSet(std::initializer_list<Direction> links) : m_Bits(0) {
+    consteval DirectionSet(std::initializer_list<Direction> links) : m_Bits(0), m_Filters{} {
         for (Direction link : links)
             m_Bits |= bitOf(link);
+    }
+
+    // A copy whose link admits only the packets filter answers true for.
+    consteval DirectionSet narrowed(Direction link, LinkFilter filter) const {
+        DirectionSet copy = *this;
+        copy.m_Filters[static_cast<unsigned>(link)] = filter;
+        return copy;
     }
 
     constexpr bool contains(Direction link) const {
         return (m_Bits & bitOf(link)) != 0;
     }
 
+    // Whether this server receives the packet: its link is in the set and,
+    // for a narrowed link, the filter admits it.
+    constexpr bool admits(const Meta& meta) const;
+
 private:
+    static constexpr unsigned kLinkCount = static_cast<unsigned>(Direction::GM) + 1;
+
     static constexpr unsigned bitOf(Direction link) {
         return 1u << static_cast<unsigned>(link);
     }
 
     unsigned m_Bits;
+    std::array<LinkFilter, kLinkCount> m_Filters;
 };
 
 static_assert(static_cast<unsigned>(Direction::GM) < 32, "DirectionSet holds one bit per Direction");
@@ -118,6 +139,13 @@ struct Meta {
     // until it says which link it means.
     Direction direction = Direction::Unknown;
 };
+
+constexpr bool DirectionSet::admits(const Meta& meta) const {
+    if (!contains(meta.direction))
+        return false;
+    const LinkFilter filter = m_Filters[static_cast<unsigned>(meta.direction)];
+    return filter == nullptr || filter(meta);
+}
 
 template <PacketFactoryType F> consteval Meta metaOf() {
     return Meta{F::kPacketID, F::kMaxSize, F::kName, directionOf(F::kName)};
