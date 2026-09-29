@@ -42,6 +42,7 @@
 #include "PacketUtil.h"
 #include "Party.h"
 #include "Shape.h"
+#include "SlayerListWeapon.h"
 #include "VariableManager.h"
 // #include "RankEXPInfo.h"
 
@@ -2500,29 +2501,9 @@ void Slayer::getShapeInfo(DWORD& flag, Color_t colors[PCSlayerInfo::SLAYER_COLOR
     //-----------------------------------------------------------------
     Part = WEAR_RIGHTHAND;
     pItem = m_pWearItem[Part];
-    slayerBit = PCSlayerInfo::SLAYER_BIT_WEAPON1;
     slayerColor = PCSlayerInfo::SLAYER_COLOR_WEAPON;
 
     if (pItem != NULL && m_pRealWearingCheck[Part]) {
-        DWORD weaponType = 0;
-
-        if (pItem->getItemClass() == Item::ITEM_CLASS_SWORD)
-            weaponType = slayerWeaponListShape(slayerWeaponShape(WEAPON_SWORD, pItem->getItemType()));
-        else if (pItem->getItemClass() == Item::ITEM_CLASS_BLADE)
-            weaponType = slayerWeaponListShape(slayerWeaponShape(WEAPON_BLADE, pItem->getItemType()));
-        else if (pItem->getItemClass() == Item::ITEM_CLASS_SR)
-            weaponType = slayerWeaponListShape(slayerWeaponShape(WEAPON_SR, pItem->getItemType()));
-        else if (pItem->getItemClass() == Item::ITEM_CLASS_AR)
-            weaponType = slayerWeaponListShape(slayerWeaponShape(WEAPON_AR, pItem->getItemType()));
-        else if (pItem->getItemClass() == Item::ITEM_CLASS_SG)
-            weaponType = slayerWeaponListShape(slayerWeaponShape(WEAPON_SG, pItem->getItemType()));
-        else if (pItem->getItemClass() == Item::ITEM_CLASS_SMG)
-            weaponType = slayerWeaponListShape(slayerWeaponShape(WEAPON_SMG, pItem->getItemType()));
-        else if (pItem->getItemClass() == Item::ITEM_CLASS_CROSS)
-            weaponType = slayerWeaponListShape(slayerWeaponShape(WEAPON_CROSS, pItem->getItemType()));
-        else if (pItem->getItemClass() == Item::ITEM_CLASS_MACE)
-            weaponType = slayerWeaponListShape(slayerWeaponShape(WEAPON_MACE, pItem->getItemType()));
-
         // colors[slayerColor] = (pItem->isUnique()? UNIQUE_OPTION : pItem->getFirstOptionType());
 
         if (pItem->isUnique())
@@ -2532,7 +2513,7 @@ void Slayer::getShapeInfo(DWORD& flag, Color_t colors[PCSlayerInfo::SLAYER_COLOR
         else
             colors[slayerColor] = pItem->getFirstOptionType();
 
-        flag |= (weaponType << slayerBit);
+        flag |= slayerListWeaponBits(pItem->getItemClass(), pItem->getItemType());
     } else {
         colors[slayerColor] = 0;
     }

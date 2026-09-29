@@ -1076,9 +1076,13 @@ set_tests_properties(gm_console_command_tests PROPERTIES TIMEOUT 60)
 # The race table a player creature's rows are addressed to
 # (docs/RESTRUCTURING.md 4.3): characterRaceOf() is the one place that decides
 # it now that the three race classes share their persistence bodies, so the
-# mapping is pinned here. Header-only, so nothing but gtest is linked.
+# mapping is pinned here. Beside it, the weapon bits a slayer's
+# character-list outlook carries (SlayerListWeapon.h), which
+# Slayer::getShapeInfo writes to Slayer.Shape. Header-only, so nothing but
+# gtest is linked.
 add_executable(player_race_tests EXCLUDE_FROM_ALL
     player_race_test.cpp
+    slayer_list_weapon_test.cpp
 )
 target_include_directories(player_race_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src/Core

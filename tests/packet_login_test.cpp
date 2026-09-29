@@ -61,7 +61,10 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+#include <bit>
+#include <bitset>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -857,7 +860,8 @@ PCSlayerInfo* makeSlayerInfo() {
     pInfo->setHelmetType(HELMET3);
     pInfo->setJacketType(JACKET4);
     pInfo->setPantsType(PANTS4);
-    // The character list has four weapon bits; a mace (17) does not fit them.
+    // A cross (15), the widest weapon that needs no extension code; a mace
+    // has its own fixture (maceSlayerBodyBytesMatchGolden).
     pInfo->setWeaponType(WEAPON_CROSS);
     pInfo->setShieldType(SHIELD2);
     pInfo->setHairColor(0x8A11);
@@ -1101,6 +1105,316 @@ TEST(LCPCListTest, slayerRecordRefusesABadNameLengthOnTheWire) {
     body[SLOT_MAX] = (unsigned char)(maxNameLength + 1);
     LCPCList longName;
     EXPECT_THROW(readImage(longName, body), InvalidProtocolException);
+}
+
+//////////////////////////////////////////////////////////////////////
+// The slayer outlook DWORD. Its weapon is two fields. Bits 11-14 hold
+// the four-bit view: the weapon itself below 16, and above it the
+// stand-in slayerWeaponListShape gives it (a cross for cross1, no weapon
+// for mace and mace1). Bits 17-18, past the two shield bits at 15-16,
+// hold the extension code: 0, or cross1 1, mace 2, mace1 3. A client
+// that knows only the four weapon bits keeps bits 0-16 of the DWORD, so
+// it reads the four-bit view and never the code; a client that knows the
+// code trusts it over the four bits. No weapon value reaches the shield.
+//////////////////////////////////////////////////////////////////////
+
+// The outlook as the client receives it: the DWORD a slot-1 slayer
+// record writes just before its colors and its advancement level.
+DWORD slayerOutlookOnTheWire(const PCSlayerInfo& info) {
+    LCPCList packet;
+    packet.setPCInfo(SLOT1, new PCSlayerInfo(info));
+    const std::vector<unsigned char> body = writeBody(packet, kPlainCode);
+    const size_t tail = szColor * PCSlayerInfo::SLAYER_COLOR_MAX + szLevel;
+    EXPECT_GE(body.size(), (size_t)SLOT_MAX + szDWORD + tail);
+    const size_t at = body.size() - tail - szDWORD;
+    return (DWORD)body[at] | ((DWORD)body[at + 1] << 8) | ((DWORD)body[at + 2] << 16) | ((DWORD)body[at + 3] << 24);
+}
+
+// Bits 11-14 of each weapon's outlook with no other field set: for 0..15
+// the weapon in the four-bit layout, and for 16..18 the clamped stand-in.
+// These are the DWORDs a client that knows only four weapon bits has
+// always been sent, and must go on reading.
+const DWORD kFourBitWeaponDWORDs[WEAPON_MAX] = {
+    0x00000000, 0x00000800, 0x00001000, 0x00001800, 0x00002000, 0x00002800, 0x00003000, 0x00003800,
+    0x00004000, 0x00004800, 0x00005000, 0x00005800, 0x00006000, 0x00006800, 0x00007000, 0x00007800,
+    0x00007800, // cross1: a cross
+    0x00000000, // mace: no weapon
+    0x00000000, // mace1: no weapon
+};
+// Bits 17-18 of each weapon's outlook: no code below 16, then cross1 1,
+// mace 2, mace1 3.
+const DWORD kExtensionDWORDs[WEAPON_MAX] = {
+    0,          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0x00020000, // cross1: 1
+    0x00040000, // mace: 2
+    0x00060000, // mace1: 3
+};
+const DWORD kShieldDWORDs[SHIELD_MAX] = {0x00000000, 0x00008000, 0x00010000};
+
+// What a client that knows only four weapon bits makes of an outlook:
+// its read() keeps bits 0-16 in a bitset<17>, and its getters mask four
+// weapon bits at 11 and two shield bits at 15.
+struct FourBitReading {
+    DWORD outlook;
+    int weapon;
+    int shield;
+};
+FourBitReading readAsAFourBitClient(DWORD wire) {
+    const DWORD outlook = (DWORD)std::bitset<17>(wire).to_ulong();
+    return {outlook, (int)((outlook >> 11) & 15), (int)((outlook >> 15) & 3)};
+}
+
+// The canonical slayer record with its outlook cleared, so the DWORD
+// holds nothing but what a test sets.
+PCSlayerInfo namedSlayer() {
+    std::unique_ptr<PCSlayerInfo> pCanonical(makeSlayerInfo());
+    PCSlayerInfo info = *pCanonical;
+    Color_t colors[PCSlayerInfo::SLAYER_COLOR_MAX] = {};
+    info.setShapeInfo(0, colors);
+    return info;
+}
+
+TEST(PCSlayerInfoOutlook, everyWeaponAndEveryShieldReadBackInEitherOrder) {
+    for (int weapon = WEAPON_NONE; weapon < WEAPON_MAX; weapon++) {
+        for (int shield = SHIELD_NONE; shield < SHIELD_MAX; shield++) {
+            PCSlayerInfo weaponFirst = namedSlayer();
+            weaponFirst.setWeaponType((WeaponType)weapon);
+            weaponFirst.setShieldType((ShieldType)shield);
+            PCSlayerInfo shieldFirst = namedSlayer();
+            shieldFirst.setShieldType((ShieldType)shield);
+            shieldFirst.setWeaponType((WeaponType)weapon);
+            for (const PCSlayerInfo* pInfo : {&weaponFirst, &shieldFirst}) {
+                EXPECT_EQ(weapon, pInfo->getWeaponType()) << "weapon " << weapon << ", shield " << shield;
+                EXPECT_EQ(shield, pInfo->getShieldType()) << "weapon " << weapon << ", shield " << shield;
+            }
+
+            LCPCList packet;
+            packet.setPCInfo(SLOT1, new PCSlayerInfo(shieldFirst));
+            LCPCList dst;
+            roundTrip(packet, dst, kPlainCode);
+            const PCSlayerInfo& read = *dynamic_cast<const PCSlayerInfo*>(dst.getPCInfo(SLOT1));
+            EXPECT_EQ(weapon, read.getWeaponType()) << "on the wire: weapon " << weapon << ", shield " << shield;
+            EXPECT_EQ(shield, read.getShieldType()) << "on the wire: weapon " << weapon << ", shield " << shield;
+        }
+    }
+}
+
+TEST(PCSlayerInfoOutlook, replacingAWeaponLeavesNoBitOfTheOldOne) {
+    for (int from = WEAPON_NONE; from < WEAPON_MAX; from++) {
+        for (int to = WEAPON_NONE; to < WEAPON_MAX; to++) {
+            PCSlayerInfo info = namedSlayer();
+            info.setShieldType(SHIELD2);
+            info.setWeaponType((WeaponType)from);
+            info.setWeaponType((WeaponType)to);
+            EXPECT_EQ(to, info.getWeaponType()) << from << " -> " << to;
+            EXPECT_EQ(SHIELD2, info.getShieldType()) << from << " -> " << to;
+            EXPECT_EQ(kFourBitWeaponDWORDs[to] | kExtensionDWORDs[to] | kShieldDWORDs[SHIELD2],
+                      slayerOutlookOnTheWire(info))
+                << from << " -> " << to;
+        }
+    }
+}
+
+// The whole DWORD of every weapon with every shield: the four-bit view at
+// 11-14, the extension code at 17-18, and nothing else. Weapons below 16
+// carry no code, so their DWORD is the four-bit layout's exactly.
+TEST(PCSlayerInfoOutlook, everyWeaponWritesItsFourBitViewAndItsExtensionCode) {
+    for (int weapon = WEAPON_NONE; weapon < WEAPON_MAX; weapon++) {
+        for (int shield = SHIELD_NONE; shield < SHIELD_MAX; shield++) {
+            PCSlayerInfo info = namedSlayer();
+            info.setWeaponType((WeaponType)weapon);
+            info.setShieldType((ShieldType)shield);
+            EXPECT_EQ(kFourBitWeaponDWORDs[weapon] | kExtensionDWORDs[weapon] | kShieldDWORDs[shield],
+                      slayerOutlookOnTheWire(info))
+                << "weapon " << weapon << ", shield " << shield;
+        }
+    }
+}
+
+// Old client, new server: a client that knows only four weapon bits
+// reads bits 0-16, and they are the four-bit table's DWORD exactly,
+// weapon and shield alike: below 16 the weapon, from 16 the clamped
+// stand-in.
+TEST(PCSlayerInfoOutlook, aFourBitClientReadsTheFourBitView) {
+    for (int weapon = WEAPON_NONE; weapon < WEAPON_MAX; weapon++) {
+        const int seen = weapon < 16 ? weapon : weapon == WEAPON_CROSS1 ? (int)WEAPON_CROSS : (int)WEAPON_NONE;
+        for (int shield = SHIELD_NONE; shield < SHIELD_MAX; shield++) {
+            PCSlayerInfo info = namedSlayer();
+            info.setWeaponType((WeaponType)weapon);
+            info.setShieldType((ShieldType)shield);
+            const FourBitReading reading = readAsAFourBitClient(slayerOutlookOnTheWire(info));
+            EXPECT_EQ(kFourBitWeaponDWORDs[weapon] | kShieldDWORDs[shield], reading.outlook)
+                << "weapon " << weapon << ", shield " << shield;
+            EXPECT_EQ(seen, reading.weapon) << "weapon " << weapon << ", shield " << shield;
+            EXPECT_EQ(shield, reading.shield) << "weapon " << weapon << ", shield " << shield;
+        }
+    }
+    EXPECT_EQ(WEAPON_CROSS, readAsAFourBitClient(0x00007800 | 0x00020000).weapon);
+    EXPECT_EQ(WEAPON_NONE, readAsAFourBitClient(0x00040000).weapon);
+    EXPECT_EQ(WEAPON_NONE, readAsAFourBitClient(0x00060000).weapon);
+}
+
+// New client, old server, or a Slayer.Shape row written without the
+// code: bits 17-18 are clear, so the outlook reads back as its four bits
+// say: weapons 0..15 as themselves, and the clamped DWORDs of cross1,
+// mace and mace1 as a cross, no weapon and no weapon.
+TEST(PCSlayerInfoOutlook, anOutlookWithoutTheCodeReadsAsItsFourBits) {
+    for (int weapon = WEAPON_NONE; weapon < WEAPON_MAX; weapon++) {
+        const int clamped = weapon < 16 ? weapon : weapon == WEAPON_CROSS1 ? (int)WEAPON_CROSS : (int)WEAPON_NONE;
+        for (int shield = SHIELD_NONE; shield < SHIELD_MAX; shield++) {
+            PCSlayerInfo stored = namedSlayer();
+            Color_t colors[PCSlayerInfo::SLAYER_COLOR_MAX] = {};
+            stored.setShapeInfo(kFourBitWeaponDWORDs[weapon] | kShieldDWORDs[shield], colors);
+            EXPECT_EQ(clamped, stored.getWeaponType()) << "weapon " << weapon << ", shield " << shield;
+            EXPECT_EQ(shield, stored.getShieldType()) << "weapon " << weapon << ", shield " << shield;
+        }
+    }
+}
+
+// Every combination of the two weapon fields decodes to a weapon a table
+// of WEAPON_MAX entries can hold: the code when it is set, whatever the
+// four bits say, and the four bits otherwise. Each is tried under every
+// shield, alone and with every other bit of the DWORD set.
+TEST(PCSlayerInfoOutlook, everyOutlookDecodesToAWeaponBelowTheMax) {
+    const DWORD kWeaponFields = 0x00007800 | 0x00060000;
+    const DWORD kShieldField = 0x00018000;
+    for (DWORD low = 0; low < 16; low++) {
+        for (DWORD extension = 0; extension < 4; extension++) {
+            const int expected = extension != 0 ? (int)(WEAPON_CROSS + extension) : (int)low;
+            for (int shield = SHIELD_NONE; shield < SHIELD_MAX; shield++) {
+                for (DWORD others : {(DWORD)0, (DWORD) ~(kWeaponFields | kShieldField)}) {
+                    const DWORD outlook = (low << 11) | (extension << 17) | kShieldDWORDs[shield] | others;
+                    PCSlayerInfo info = namedSlayer();
+                    Color_t colors[PCSlayerInfo::SLAYER_COLOR_MAX] = {};
+                    info.setShapeInfo(outlook, colors);
+                    EXPECT_EQ(expected, info.getWeaponType()) << std::hex << "outlook 0x" << outlook;
+                    EXPECT_LT((int)info.getWeaponType(), (int)WEAPON_MAX) << std::hex << "outlook 0x" << outlook;
+                    EXPECT_EQ(shield, info.getShieldType()) << std::hex << "outlook 0x" << outlook;
+                }
+            }
+        }
+    }
+}
+
+// A value past WEAPON_MACE1 is no weapon: both weapon fields cleared,
+// nothing spilled into the shield or past the code, whatever was held.
+TEST(PCSlayerInfoOutlook, aValuePastMaceOneWritesNoWeapon) {
+    for (int past = WEAPON_MAX; past < 32; past++) {
+        for (int from = WEAPON_NONE; from < WEAPON_MAX; from++) {
+            for (int shield = SHIELD_NONE; shield < SHIELD_MAX; shield++) {
+                PCSlayerInfo info = namedSlayer();
+                info.setShieldType((ShieldType)shield);
+                info.setWeaponType((WeaponType)from);
+                info.setWeaponType((WeaponType)past);
+                EXPECT_EQ(WEAPON_NONE, info.getWeaponType()) << past << " over " << from << ", shield " << shield;
+                EXPECT_EQ(shield, info.getShieldType()) << past << " over " << from << ", shield " << shield;
+                EXPECT_EQ(kShieldDWORDs[shield], slayerOutlookOnTheWire(info))
+                    << past << " over " << from << ", shield " << shield;
+            }
+        }
+    }
+}
+
+// weaponBits, which setWeaponType writes through, against the tables and
+// against the DWORD the setter puts on the wire; past the enum, any value
+// writes nothing. The gameserver's encoder, which feeds weaponBits the
+// shape of the item a slayer holds, is pinned in
+// tests/slayer_list_weapon_test.cpp.
+TEST(PCSlayerInfoOutlook, weaponBitsMatchTheTablesAndTheSetter) {
+    for (DWORD weapon = WEAPON_NONE; weapon < WEAPON_MAX; weapon++) {
+        EXPECT_EQ(kFourBitWeaponDWORDs[weapon] | kExtensionDWORDs[weapon], PCSlayerInfo::weaponBits(weapon)) << weapon;
+        PCSlayerInfo info = namedSlayer();
+        info.setWeaponType((WeaponType)weapon);
+        EXPECT_EQ(PCSlayerInfo::weaponBits(weapon), slayerOutlookOnTheWire(info)) << weapon;
+    }
+    for (DWORD past : {(DWORD)WEAPON_MAX, (DWORD)31, (DWORD)32, (DWORD)255, (DWORD)0x10011, (DWORD)0xFFFFFFFF})
+        EXPECT_EQ(0u, PCSlayerInfo::weaponBits(past)) << past;
+    EXPECT_EQ(0x00007800u | 0x00060000u, PCSlayerInfo::kWeaponBitsMask);
+}
+
+// How many values an enum with no fixed underlying type and no negative
+// enumerator can hold: those of the narrowest bit-field that fits its
+// largest enumerator. A value past them is not a value of the type, and
+// this suite's Debug build checks every enum load (UBSan) and stops on
+// one before any setter could mask it.
+constexpr DWORD enumValueCount(DWORD largestEnumerator) {
+    return std::bit_ceil(largestEnumerator + 1);
+}
+
+// The outlook's other multi-bit fields, as their setters write them: the
+// first bit and the mask, spelled as literals so the layout is pinned
+// too, and how many values the field's enum type can hold. HelmetType
+// runs to HELMET_MAX (4), so it holds 0..7 in a two-bit field; the other
+// types fit their fields.
+struct OutlookField {
+    const char* name;
+    int first;
+    DWORD mask;
+    DWORD values;
+    void (*set)(PCSlayerInfo&, DWORD);
+    DWORD (*get)(const PCSlayerInfo&);
+};
+const OutlookField kOutlookFields[] = {
+    {"hair style", 1, 3, enumValueCount(HAIR_STYLE3),
+     [](PCSlayerInfo& info, DWORD value) { info.setHairStyle((HairStyle)value); },
+     [](const PCSlayerInfo& info) { return (DWORD)info.getHairStyle(); }},
+    {"helmet", 3, 3, enumValueCount(HELMET_MAX),
+     [](PCSlayerInfo& info, DWORD value) { info.setHelmetType((HelmetType)value); },
+     [](const PCSlayerInfo& info) { return (DWORD)info.getHelmetType(); }},
+    {"jacket", 5, 7, enumValueCount(JACKET_MAX),
+     [](PCSlayerInfo& info, DWORD value) { info.setJacketType((JacketType)value); },
+     [](const PCSlayerInfo& info) { return (DWORD)info.getJacketType(); }},
+    {"pants", 8, 7, enumValueCount(PANTS_MAX),
+     [](PCSlayerInfo& info, DWORD value) { info.setPantsType((PantsType)value); },
+     [](const PCSlayerInfo& info) { return (DWORD)info.getPantsType(); }},
+    {"shield", 15, 3, enumValueCount(SHIELD_MAX),
+     [](PCSlayerInfo& info, DWORD value) { info.setShieldType((ShieldType)value); },
+     [](const PCSlayerInfo& info) { return (DWORD)info.getShieldType(); }},
+};
+
+// Every value a field's type can hold is written into that field alone: a
+// value wider than the field keeps only the field's low bits, and no bit
+// reaches a neighbour. A helmet of 4..7 would otherwise land on the
+// jacket. Every weapon is held while the field is written, so the whole
+// DWORD must be that weapon's, with the field's bits and nothing else.
+TEST(PCSlayerInfoOutlook, everyValueAFieldsTypeHoldsStaysInTheField) {
+    for (const OutlookField& field : kOutlookFields) {
+        for (DWORD value = 0; value < field.values; value++) {
+            for (int weapon = WEAPON_NONE; weapon < WEAPON_MAX; weapon++) {
+                PCSlayerInfo info = namedSlayer();
+                info.setWeaponType((WeaponType)weapon);
+                field.set(info, field.mask);
+                field.set(info, value);
+                EXPECT_EQ(weapon, info.getWeaponType()) << field.name << " " << value << ", weapon " << weapon;
+                EXPECT_EQ(value & field.mask, field.get(info)) << field.name << " " << value << ", weapon " << weapon;
+                EXPECT_EQ(kFourBitWeaponDWORDs[weapon] | kExtensionDWORDs[weapon] |
+                              ((value & field.mask) << field.first),
+                          slayerOutlookOnTheWire(info))
+                    << field.name << " " << value << ", weapon " << weapon;
+            }
+        }
+    }
+}
+
+// The character list of a slayer holding a mace: the only fixture whose
+// weapon needs the extension code. The canonical LCPCList fixture holds
+// a cross, which needs none.
+TEST(LCPCListTest, maceSlayerBodyBytesMatchGolden) {
+    LCPCList packet;
+    PCSlayerInfo* pSlayer = makeSlayerInfo();
+    pSlayer->setWeaponType(WEAPON_MACE);
+    packet.setPCInfo(SLOT1, pSlayer);
+    packet.setPCInfo(SLOT2, makeVampireInfo());
+    packet.setPCInfo(SLOT3, makeOustersInfo());
+    ASSERT_EQ(WEAPON_MACE, dynamic_cast<const PCSlayerInfo*>(packet.getPCInfo(SLOT1))->getWeaponType());
+    ASSERT_EQ(SHIELD2, dynamic_cast<const PCSlayerInfo*>(packet.getPCInfo(SLOT1))->getShieldType());
+
+    const std::vector<unsigned char> body = writeBody(packet, kPlainCode);
+    expectGolden("LCPCList.mace", kPlainCode, body);
+
+    LCPCList dst;
+    roundTrip(packet, dst, kPlainCode);
+    expectEqual(packet, dst);
 }
 
 } // namespace

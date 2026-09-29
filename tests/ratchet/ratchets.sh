@@ -131,7 +131,7 @@ check_ratchet R6g "Zone.cpp lines" 1265 "$R6g"
 # the client sends, so reconciling them is a protocol change rather than a
 # refactor.
 R6h=$(wc -l < src/server/gameserver/Slayer.cpp 2>/dev/null || echo missing)
-check_ratchet R6h "Slayer.cpp lines" 2972 "$R6h"
+check_ratchet R6h "Slayer.cpp lines" 2953 "$R6h"
 R6i=$(wc -l < src/server/gameserver/Vampire.cpp 2>/dev/null || echo missing)
 check_ratchet R6i "Vampire.cpp lines" 1919 "$R6i"
 R6j=$(wc -l < src/server/gameserver/Ousters.cpp 2>/dev/null || echo missing)
