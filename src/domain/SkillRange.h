@@ -19,8 +19,8 @@
 // truncation, so with a maximum below the minimum a partial step rounds
 // down, away from the minimum (minimum 6 and maximum 2 give 4 at level
 // 30, where truncating the step alone would give 5); and the result is
-// narrowed to 8 bits again, so a range below 0 or above 255 wraps. Changing any of these is a balance
-// decision, recorded in docs/FIXES.md.
+// narrowed to 8 bits again, so a range below 0 or above 255 wraps.
+// Changing any of these is a balance decision, recorded in docs/FIXES.md.
 //
 // The client vendors this file and computes a slayer skill's range with
 // it, for how close its character walks before using a skill.

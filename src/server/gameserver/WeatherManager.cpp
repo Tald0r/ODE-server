@@ -220,9 +220,10 @@ void WeatherManager::heartbeat()
 
             // The broadcast sends the first packet to each slayer without
             // Lightness or Yellow Poison and the second to each vampire, and
-            // sends an ousters nothing. It does not consult the zone's type:
-            // the levels are the ones a slayer and a vampire see outside a
-            // castle and a PK zone.
+            // sends an ousters nothing. heartbeat returns early outside a
+            // normal non-PK field, so these are the levels a slayer and a
+            // vampire see outside a castle and a PK zone. It does not
+            // consult a vampire's Flare.
             decore::DarkLightViewer slayer = {};
             slayer.race = decore::DarkLightRace::Slayer;
             const decore::DarkLight slayerLevels = decore::darkLightForViewer(slayer, darkLevel, lightLevel);
