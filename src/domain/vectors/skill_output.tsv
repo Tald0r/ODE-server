@@ -1,0 +1,178 @@
+# Shared parity vectors: decore::skillformula (src/domain/SkillOutputFormulas.h),
+# the per-skill computeOutput formulas the client vendors from slice 6a:
+# WillOfLife, whose output its skill description shows, and the party
+# bonus lookups, partyEffectBoost and partyDurationBoost, read at and past
+# both ends of their tables, directly and through Bless. Every row is
+# asserted for exact equality by the server's formula_tests and by the
+# client's decore_tests on every client toolchain. A changed expected
+# value is a balance change: review it as one. UPDATE_GOLDENS=1
+# formula_tests rewrites the expected column only.
+#
+# The server's WillOfLife handler takes Damage as both the HP it charges
+# (before the Wisdom of Blood rank bonus and the consume-MP ratio of the
+# vampire's gear, which are not here) and the effect's bonus, Duration as
+# the effect's duration and Delay as the time until the skill can be used
+# again. The client's description (VS_UI_Description.cpp) shows Damage as
+# the Will of Life's HP cost in place of its own 5 + level / 7, which gives
+# the same number.
+#
+# Tab-separated, one row per call: function, row name, the inputs, and the
+# expected result last.
+#
+# WillOfLife and Bless columns: the ten SkillInput fields in declaration
+#   order (SkillLevel DomainLevel DomainGrade STR DEX INTE TargetType Range
+#   Gun PartySize), then expected: the six SkillOutput fields,
+#   comma-separated in declaration order (Damage, Duration, Tick, ToHit,
+#   Range, Delay), computed from a zeroed SkillOutput. Gun is written by
+#   its GunClass enumerator name (SG, AR, SMG, SR, Other); TargetType 0 is
+#   TARGET_SELF, 1 TARGET_OTHER, 2 TARGET_MAX. The server fills the input
+#   from the caster (skill/SkillHandler.cpp): for a vampire, SkillLevel is
+#   its level (VAMPIRE_MAX_LEVEL is 150), STR, DEX and INTE its current
+#   stats, Range its advancement class level, DomainLevel 0, TargetType 2,
+#   Gun Other and PartySize 0; DomainGrade is -1 unless one of the three
+#   grade formulas needs it. PartySize is 0 for a vampire or a monster and
+#   1 for a slayer or an ousters, never the size of a party, so on the
+#   server no party bonus is granted (docs/FIXES.md); a client caller must
+#   pass the same.
+# partyEffectBoost and partyDurationBoost columns: partySize expected (the
+#   percent). The tables cover sizes 0 to 6; a size below 0 reads the 0
+#   entry and one above 6 the 6 entry.
+#
+# WillOfLife reads SkillLevel only: 5 + SkillLevel / 7, 30 + SkillLevel,
+# and twice that, with the division truncating toward zero (-1 gives 5,
+# -8 gives 4). The level-largest and level-smallest rows are the last
+# levels whose Delay fits an int; past them the formula overflows, which
+# is undefined, so no row goes there. The wol-grid-* rows are every level
+# 0 to 28 and 30 to 150 by 10, with the input a vampire caster gives. The
+# bless-grid-* rows are party sizes -1 to 7 for a self and an other target
+# at level 40 with INT 80 and level 100 with INT 200.
+WillOfLife	wol-level-0	0	0	-1	0	0	0	2	0	Other	0	5,30,0,0,0,60
+WillOfLife	wol-level-1	1	0	-1	0	0	0	2	0	Other	0	5,31,0,0,0,62
+WillOfLife	wol-level-6	6	0	-1	0	0	0	2	0	Other	0	5,36,0,0,0,72
+WillOfLife	wol-level-7	7	0	-1	0	0	0	2	0	Other	0	6,37,0,0,0,74
+WillOfLife	wol-level-13	13	0	-1	0	0	0	2	0	Other	0	6,43,0,0,0,86
+WillOfLife	wol-level-14	14	0	-1	0	0	0	2	0	Other	0	7,44,0,0,0,88
+WillOfLife	wol-level-100	100	0	-1	0	0	0	2	0	Other	0	19,130,0,0,0,260
+WillOfLife	wol-level-150-vampire-max	150	0	-1	0	0	0	2	0	Other	0	26,180,0,0,0,360
+WillOfLife	wol-level-minus-1-truncates-toward-zero	-1	0	-1	0	0	0	2	0	Other	0	5,29,0,0,0,58
+WillOfLife	wol-level-minus-7	-7	0	-1	0	0	0	2	0	Other	0	4,23,0,0,0,46
+WillOfLife	wol-level-minus-8	-8	0	-1	0	0	0	2	0	Other	0	4,22,0,0,0,44
+WillOfLife	wol-level-minus-14	-14	0	-1	0	0	0	2	0	Other	0	3,16,0,0,0,32
+WillOfLife	wol-level-minus-30-duration-0	-30	0	-1	0	0	0	2	0	Other	0	1,0,0,0,0,0
+WillOfLife	wol-level-minus-31-duration-negative	-31	0	-1	0	0	0	2	0	Other	0	1,-1,0,0,0,-2
+WillOfLife	wol-level-largest-without-overflow	1073741793	0	-1	0	0	0	2	0	Other	0	153391689,1073741823,0,0,0,2147483646
+WillOfLife	wol-level-smallest-without-overflow	-1073741854	0	-1	0	0	0	2	0	Other	0	-153391688,-1073741824,0,0,0,-2147483648
+WillOfLife	wol-level-50-other-fields-ignored	50	2147483647	4	2147483647	-2147483648	-1	1	2147483647	SR	6	12,80,0,0,0,160
+WillOfLife	wol-level-50-party-size-ignored	50	0	-1	0	0	0	0	0	Other	2147483647	12,80,0,0,0,160
+WillOfLife	wol-level-50-slayer-shaped-input	50	0	-1	0	0	0	0	0	AR	1	12,80,0,0,0,160
+WillOfLife	wol-grid-level-0	0	0	-1	0	0	0	2	0	Other	0	5,30,0,0,0,60
+WillOfLife	wol-grid-level-1	1	0	-1	0	0	0	2	0	Other	0	5,31,0,0,0,62
+WillOfLife	wol-grid-level-2	2	0	-1	0	0	0	2	0	Other	0	5,32,0,0,0,64
+WillOfLife	wol-grid-level-3	3	0	-1	0	0	0	2	0	Other	0	5,33,0,0,0,66
+WillOfLife	wol-grid-level-4	4	0	-1	0	0	0	2	0	Other	0	5,34,0,0,0,68
+WillOfLife	wol-grid-level-5	5	0	-1	0	0	0	2	0	Other	0	5,35,0,0,0,70
+WillOfLife	wol-grid-level-6	6	0	-1	0	0	0	2	0	Other	0	5,36,0,0,0,72
+WillOfLife	wol-grid-level-7	7	0	-1	0	0	0	2	0	Other	0	6,37,0,0,0,74
+WillOfLife	wol-grid-level-8	8	0	-1	0	0	0	2	0	Other	0	6,38,0,0,0,76
+WillOfLife	wol-grid-level-9	9	0	-1	0	0	0	2	0	Other	0	6,39,0,0,0,78
+WillOfLife	wol-grid-level-10	10	0	-1	0	0	0	2	0	Other	0	6,40,0,0,0,80
+WillOfLife	wol-grid-level-11	11	0	-1	0	0	0	2	0	Other	0	6,41,0,0,0,82
+WillOfLife	wol-grid-level-12	12	0	-1	0	0	0	2	0	Other	0	6,42,0,0,0,84
+WillOfLife	wol-grid-level-13	13	0	-1	0	0	0	2	0	Other	0	6,43,0,0,0,86
+WillOfLife	wol-grid-level-14	14	0	-1	0	0	0	2	0	Other	0	7,44,0,0,0,88
+WillOfLife	wol-grid-level-15	15	0	-1	0	0	0	2	0	Other	0	7,45,0,0,0,90
+WillOfLife	wol-grid-level-16	16	0	-1	0	0	0	2	0	Other	0	7,46,0,0,0,92
+WillOfLife	wol-grid-level-17	17	0	-1	0	0	0	2	0	Other	0	7,47,0,0,0,94
+WillOfLife	wol-grid-level-18	18	0	-1	0	0	0	2	0	Other	0	7,48,0,0,0,96
+WillOfLife	wol-grid-level-19	19	0	-1	0	0	0	2	0	Other	0	7,49,0,0,0,98
+WillOfLife	wol-grid-level-20	20	0	-1	0	0	0	2	0	Other	0	7,50,0,0,0,100
+WillOfLife	wol-grid-level-21	21	0	-1	0	0	0	2	0	Other	0	8,51,0,0,0,102
+WillOfLife	wol-grid-level-22	22	0	-1	0	0	0	2	0	Other	0	8,52,0,0,0,104
+WillOfLife	wol-grid-level-23	23	0	-1	0	0	0	2	0	Other	0	8,53,0,0,0,106
+WillOfLife	wol-grid-level-24	24	0	-1	0	0	0	2	0	Other	0	8,54,0,0,0,108
+WillOfLife	wol-grid-level-25	25	0	-1	0	0	0	2	0	Other	0	8,55,0,0,0,110
+WillOfLife	wol-grid-level-26	26	0	-1	0	0	0	2	0	Other	0	8,56,0,0,0,112
+WillOfLife	wol-grid-level-27	27	0	-1	0	0	0	2	0	Other	0	8,57,0,0,0,114
+WillOfLife	wol-grid-level-28	28	0	-1	0	0	0	2	0	Other	0	9,58,0,0,0,116
+WillOfLife	wol-grid-level-30	30	0	-1	0	0	0	2	0	Other	0	9,60,0,0,0,120
+WillOfLife	wol-grid-level-40	40	0	-1	0	0	0	2	0	Other	0	10,70,0,0,0,140
+WillOfLife	wol-grid-level-50	50	0	-1	0	0	0	2	0	Other	0	12,80,0,0,0,160
+WillOfLife	wol-grid-level-60	60	0	-1	0	0	0	2	0	Other	0	13,90,0,0,0,180
+WillOfLife	wol-grid-level-70	70	0	-1	0	0	0	2	0	Other	0	15,100,0,0,0,200
+WillOfLife	wol-grid-level-80	80	0	-1	0	0	0	2	0	Other	0	16,110,0,0,0,220
+WillOfLife	wol-grid-level-90	90	0	-1	0	0	0	2	0	Other	0	17,120,0,0,0,240
+WillOfLife	wol-grid-level-100	100	0	-1	0	0	0	2	0	Other	0	19,130,0,0,0,260
+WillOfLife	wol-grid-level-110	110	0	-1	0	0	0	2	0	Other	0	20,140,0,0,0,280
+WillOfLife	wol-grid-level-120	120	0	-1	0	0	0	2	0	Other	0	22,150,0,0,0,300
+WillOfLife	wol-grid-level-130	130	0	-1	0	0	0	2	0	Other	0	23,160,0,0,0,320
+WillOfLife	wol-grid-level-140	140	0	-1	0	0	0	2	0	Other	0	25,170,0,0,0,340
+WillOfLife	wol-grid-level-150	150	0	-1	0	0	0	2	0	Other	0	26,180,0,0,0,360
+partyEffectBoost	party-effect-size-int-min	-2147483648	100
+partyEffectBoost	party-effect-size-minus-100	-100	100
+partyEffectBoost	party-effect-size-minus-1	-1	100
+partyEffectBoost	party-effect-size-0	0	100
+partyEffectBoost	party-effect-size-1	1	100
+partyEffectBoost	party-effect-size-2	2	120
+partyEffectBoost	party-effect-size-3	3	135
+partyEffectBoost	party-effect-size-4	4	140
+partyEffectBoost	party-effect-size-5	5	145
+partyEffectBoost	party-effect-size-6	6	150
+partyEffectBoost	party-effect-size-7	7	150
+partyEffectBoost	party-effect-size-8	8	150
+partyEffectBoost	party-effect-size-100	100	150
+partyEffectBoost	party-effect-size-int-max	2147483647	150
+partyDurationBoost	party-duration-size-int-min	-2147483648	100
+partyDurationBoost	party-duration-size-minus-100	-100	100
+partyDurationBoost	party-duration-size-minus-1	-1	100
+partyDurationBoost	party-duration-size-0	0	100
+partyDurationBoost	party-duration-size-1	1	100
+partyDurationBoost	party-duration-size-2	2	130
+partyDurationBoost	party-duration-size-3	3	155
+partyDurationBoost	party-duration-size-4	4	175
+partyDurationBoost	party-duration-size-5	5	190
+partyDurationBoost	party-duration-size-6	6	200
+partyDurationBoost	party-duration-size-7	7	200
+partyDurationBoost	party-duration-size-8	8	200
+partyDurationBoost	party-duration-size-100	100	200
+partyDurationBoost	party-duration-size-int-max	2147483647	200
+Bless	bless-self-party-int-min	40	0	-1	0	0	80	0	0	Other	-2147483648	8,900,0,0,0,50
+Bless	bless-self-party-minus-1	40	0	-1	0	0	80	0	0	Other	-1	8,900,0,0,0,50
+Bless	bless-self-party-7	40	0	-1	0	0	80	0	0	Other	7	12,1800,0,0,0,50
+Bless	bless-self-party-int-max	40	0	-1	0	0	80	0	0	Other	2147483647	12,1800,0,0,0,50
+Bless	bless-other-party-7	40	0	-1	0	0	80	1	0	Other	7	9,1800,0,0,0,50
+Bless	bless-grid-level-40-int-80-self-party-minus-1	40	0	-1	0	0	80	0	0	Other	-1	8,900,0,0,0,50
+Bless	bless-grid-level-40-int-80-self-party-0	40	0	-1	0	0	80	0	0	Other	0	8,900,0,0,0,50
+Bless	bless-grid-level-40-int-80-self-party-1	40	0	-1	0	0	80	0	0	Other	1	8,900,0,0,0,50
+Bless	bless-grid-level-40-int-80-self-party-2	40	0	-1	0	0	80	0	0	Other	2	9,1170,0,0,0,50
+Bless	bless-grid-level-40-int-80-self-party-3	40	0	-1	0	0	80	0	0	Other	3	10,1395,0,0,0,50
+Bless	bless-grid-level-40-int-80-self-party-4	40	0	-1	0	0	80	0	0	Other	4	11,1575,0,0,0,50
+Bless	bless-grid-level-40-int-80-self-party-5	40	0	-1	0	0	80	0	0	Other	5	11,1710,0,0,0,50
+Bless	bless-grid-level-40-int-80-self-party-6	40	0	-1	0	0	80	0	0	Other	6	12,1800,0,0,0,50
+Bless	bless-grid-level-40-int-80-self-party-7	40	0	-1	0	0	80	0	0	Other	7	12,1800,0,0,0,50
+Bless	bless-grid-level-40-int-80-other-party-minus-1	40	0	-1	0	0	80	1	0	Other	-1	6,900,0,0,0,50
+Bless	bless-grid-level-40-int-80-other-party-0	40	0	-1	0	0	80	1	0	Other	0	6,900,0,0,0,50
+Bless	bless-grid-level-40-int-80-other-party-1	40	0	-1	0	0	80	1	0	Other	1	6,900,0,0,0,50
+Bless	bless-grid-level-40-int-80-other-party-2	40	0	-1	0	0	80	1	0	Other	2	7,1170,0,0,0,50
+Bless	bless-grid-level-40-int-80-other-party-3	40	0	-1	0	0	80	1	0	Other	3	8,1395,0,0,0,50
+Bless	bless-grid-level-40-int-80-other-party-4	40	0	-1	0	0	80	1	0	Other	4	8,1575,0,0,0,50
+Bless	bless-grid-level-40-int-80-other-party-5	40	0	-1	0	0	80	1	0	Other	5	8,1710,0,0,0,50
+Bless	bless-grid-level-40-int-80-other-party-6	40	0	-1	0	0	80	1	0	Other	6	9,1800,0,0,0,50
+Bless	bless-grid-level-40-int-80-other-party-7	40	0	-1	0	0	80	1	0	Other	7	9,1800,0,0,0,50
+Bless	bless-grid-level-100-int-200-self-party-minus-1	100	0	-1	0	0	200	0	0	Other	-1	14,1800,0,0,0,20
+Bless	bless-grid-level-100-int-200-self-party-0	100	0	-1	0	0	200	0	0	Other	0	14,1800,0,0,0,20
+Bless	bless-grid-level-100-int-200-self-party-1	100	0	-1	0	0	200	0	0	Other	1	14,1800,0,0,0,20
+Bless	bless-grid-level-100-int-200-self-party-2	100	0	-1	0	0	200	0	0	Other	2	16,2340,0,0,0,20
+Bless	bless-grid-level-100-int-200-self-party-3	100	0	-1	0	0	200	0	0	Other	3	18,2790,0,0,0,20
+Bless	bless-grid-level-100-int-200-self-party-4	100	0	-1	0	0	200	0	0	Other	4	19,3150,0,0,0,20
+Bless	bless-grid-level-100-int-200-self-party-5	100	0	-1	0	0	200	0	0	Other	5	20,3420,0,0,0,20
+Bless	bless-grid-level-100-int-200-self-party-6	100	0	-1	0	0	200	0	0	Other	6	21,3600,0,0,0,20
+Bless	bless-grid-level-100-int-200-self-party-7	100	0	-1	0	0	200	0	0	Other	7	21,3600,0,0,0,20
+Bless	bless-grid-level-100-int-200-other-party-minus-1	100	0	-1	0	0	200	1	0	Other	-1	12,1800,0,0,0,20
+Bless	bless-grid-level-100-int-200-other-party-0	100	0	-1	0	0	200	1	0	Other	0	12,1800,0,0,0,20
+Bless	bless-grid-level-100-int-200-other-party-1	100	0	-1	0	0	200	1	0	Other	1	12,1800,0,0,0,20
+Bless	bless-grid-level-100-int-200-other-party-2	100	0	-1	0	0	200	1	0	Other	2	14,2340,0,0,0,20
+Bless	bless-grid-level-100-int-200-other-party-3	100	0	-1	0	0	200	1	0	Other	3	16,2790,0,0,0,20
+Bless	bless-grid-level-100-int-200-other-party-4	100	0	-1	0	0	200	1	0	Other	4	16,3150,0,0,0,20
+Bless	bless-grid-level-100-int-200-other-party-5	100	0	-1	0	0	200	1	0	Other	5	17,3420,0,0,0,20
+Bless	bless-grid-level-100-int-200-other-party-6	100	0	-1	0	0	200	1	0	Other	6	18,3600,0,0,0,20
+Bless	bless-grid-level-100-int-200-other-party-7	100	0	-1	0	0	200	1	0	Other	7	18,3600,0,0,0,20

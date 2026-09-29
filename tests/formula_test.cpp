@@ -638,6 +638,41 @@ TEST(SkillOutputFormula, BlessSelfOtherAndPartyBoosts) {
     EXPECT_EQ(8, out.Damage); // (2 + 2 + 2) = 6, then 6*140/100
 }
 
+// A party size outside the tables' 0..6 reads the nearest end, through the
+// formulas as through the lookups, instead of reading past the tables.
+TEST(SkillOutputFormula, PartySizeOutsideTheTablesReadsTheNearestEnd) {
+    EXPECT_EQ(100, decore::skillformula::partyEffectBoost(0));
+    EXPECT_EQ(150, decore::skillformula::partyEffectBoost(6));
+    EXPECT_EQ(100, decore::skillformula::partyDurationBoost(0));
+    EXPECT_EQ(200, decore::skillformula::partyDurationBoost(6));
+    for (int size : {-1, std::numeric_limits<int>::min()}) {
+        EXPECT_EQ(100, decore::skillformula::partyEffectBoost(size)) << size;
+        EXPECT_EQ(100, decore::skillformula::partyDurationBoost(size)) << size;
+    }
+    for (int size : {7, std::numeric_limits<int>::max()}) {
+        EXPECT_EQ(150, decore::skillformula::partyEffectBoost(size)) << size;
+        EXPECT_EQ(200, decore::skillformula::partyDurationBoost(size)) << size;
+    }
+
+    SFIn in = sfin();
+    in.INTE = 80;
+    in.SkillLevel = 40;
+    for (int size : {7, 100, std::numeric_limits<int>::max()}) {
+        in.PartySize = size;
+        SFOut out;
+        decore::skillformula::Bless(in, out);
+        EXPECT_EQ(12, out.Damage) << size;     // 8 * 150/100, as at 6
+        EXPECT_EQ(1800, out.Duration) << size; // 900 * 200/100, as at 6
+    }
+    for (int size : {-1, std::numeric_limits<int>::min()}) {
+        in.PartySize = size;
+        SFOut out;
+        decore::skillformula::Bless(in, out);
+        EXPECT_EQ(8, out.Damage) << size;     // unboosted, as at 0
+        EXPECT_EQ(900, out.Duration) << size; // unboosted, as at 0
+    }
+}
+
 TEST(SkillOutputFormula, StrikingDurationBoostOnly) {
     SFIn in = sfin();
     in.TargetType = SFIn::TARGET_OTHER;
@@ -1095,6 +1130,28 @@ std::string weaponFamilyName(WeaponFamily weapon) {
     return "?";
 }
 
+// The gun classes, and the names the vector files spell them by: the
+// enumerator names.
+std::vector<GunClass> allGunClasses() {
+    return {GunClass::SG, GunClass::AR, GunClass::SMG, GunClass::SR, GunClass::Other};
+}
+
+std::string gunClassName(GunClass gun) {
+    switch (gun) {
+    case GunClass::SG:
+        return "SG";
+    case GunClass::AR:
+        return "AR";
+    case GunClass::SMG:
+        return "SMG";
+    case GunClass::SR:
+        return "SR";
+    case GunClass::Other:
+        return "Other";
+    }
+    return "?";
+}
+
 // One row's inputs, read left to right. A malformed field records an error
 // and reads as 0, so the row fails with a message rather than a throw. An
 // empty field is malformed wherever a number is read: a doubled tab or a
@@ -1236,6 +1293,31 @@ public:
         return a;
     }
 
+    GunClass gunClass() {
+        const std::string text = next();
+        for (GunClass gun : allGunClasses())
+            if (text == gunClassName(gun))
+                return gun;
+        fail("not a gun class: \"" + text + "\"");
+        return GunClass::Other;
+    }
+
+    // The ten SkillInput fields in declaration order.
+    SFIn skillInput() {
+        SFIn in;
+        in.SkillLevel = intInteger();
+        in.DomainLevel = intInteger();
+        in.DomainGrade = intInteger();
+        in.STR = intInteger();
+        in.DEX = intInteger();
+        in.INTE = intInteger();
+        in.TargetType = intInteger();
+        in.Range = intInteger();
+        in.Gun = gunClass();
+        in.PartySize = intInteger();
+        return in;
+    }
+
     // Every input consumed, and exactly the expected column left.
     void finish() {
         if (m_Next + 1 != m_Fields.size())
@@ -1304,6 +1386,16 @@ const std::map<std::string, int (*)(const StatAttr&, int)>& statFunctionsWithInt
         {"slayerMinDamage", decore::slayerMinDamage},   {"slayerMaxDamage", decore::slayerMaxDamage},
         {"vampireMinDamage", decore::vampireMinDamage}, {"vampireMaxDamage", decore::vampireMaxDamage},
         {"slayerStealRatio", decore::slayerStealRatio},
+    };
+    return functions;
+}
+
+// The skill output formulas a row names. Each takes the ten SkillInput
+// fields and yields the six SkillOutput fields.
+const std::map<std::string, void (*)(const SFIn&, SFOut&)>& skillOutputFunctions() {
+    static const std::map<std::string, void (*)(const SFIn&, SFOut&)> functions = {
+        {"WillOfLife", decore::skillformula::WillOfLife},
+        {"Bless", decore::skillformula::Bless},
     };
     return functions;
 }
@@ -1436,6 +1528,24 @@ std::string evaluateRow(const std::vector<std::string>& fields, std::string& err
         int dexBasic = (int)in.integer();
         in.finish();
         result = decore::vampireDexHPRegenBonus(dexBasic);
+    } else if (skillOutputFunctions().count(function) != 0) {
+        const SFIn input = in.skillInput();
+        in.finish();
+        error = in.error();
+        if (!error.empty())
+            return std::string();
+        SFOut out;
+        skillOutputFunctions().at(function)(input, out);
+        return std::to_string(out.Damage) + "," + std::to_string(out.Duration) + "," + std::to_string(out.Tick) + "," +
+               std::to_string(out.ToHit) + "," + std::to_string(out.Range) + "," + std::to_string(out.Delay);
+    } else if (function == "partyEffectBoost") {
+        int partySize = in.intInteger();
+        in.finish();
+        result = decore::skillformula::partyEffectBoost(partySize);
+    } else if (function == "partyDurationBoost") {
+        int partySize = in.intInteger();
+        in.finish();
+        result = decore::skillformula::partyDurationBoost(partySize);
     } else {
         error = "unknown function \"" + function + "\"";
         return std::string();
@@ -1607,6 +1717,26 @@ TEST(SharedVectors, Stats) {
 
 TEST(SharedVectors, Equip) {
     checkVectorFile("equip.tsv", {"requiredStats", "meetsRequirement", "genderAllows"});
+}
+
+TEST(SharedVectors, SkillOutput) {
+    checkVectorFile("skill_output.tsv", {"WillOfLife", "Bless", "partyEffectBoost", "partyDurationBoost"});
+}
+
+// A gun class is one of the five enumerator names, spelled exactly.
+TEST(SharedVectors, AnUnknownGunClassIsAnError) {
+    for (const char* text : {"", "sg", "Rifle", "SR "}) {
+        const std::vector<std::string> fields = {"WillOfLife", "bad-gun", text, "0"};
+        RowReader in(fields);
+        EXPECT_EQ(GunClass::Other, in.gunClass());
+        EXPECT_EQ("not a gun class: \"" + std::string(text) + "\"", in.error()) << text;
+    }
+    for (GunClass gun : allGunClasses()) {
+        const std::vector<std::string> fields = {"WillOfLife", "good-gun", gunClassName(gun), "0"};
+        RowReader in(fields);
+        EXPECT_EQ(gun, in.gunClass());
+        EXPECT_EQ("", in.error());
+    }
 }
 
 } // namespace

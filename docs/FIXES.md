@@ -13,6 +13,49 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Vendorable skill output formulas (2026-09-29)
+
+`src/domain/SkillOutputFormulas.cpp`, the per-skill `computeOutput`
+bodies, joined the de-core subset the client vendors. One unchecked read
+was made safe for the client's callers, and one server oddity it exposed
+is recorded:
+
+- **The party tables were indexed with no bounds check.** 23 reads in 18
+  formulas (Bless, Striking, the cures, the protections, Revealer and
+  others) indexed `PartyEffectBoost[7]` and `PartyDurationBoost[7]` with
+  `input.PartySize` directly, so a size outside 0..6 read past the tables:
+  master's `Bless` at size 7, built with AddressSanitizer, stops on a
+  global-buffer-overflow read. The server never passes such a size. The
+  four `SkillInput` constructors (`skill/SkillHandler.cpp`) set 1 for a
+  slayer and an ousters and 0 for a vampire and a monster; nothing else
+  in `src/` writes the field; the default constructor, which leaves it
+  unset, is never used to call a formula, and the de-core adapter
+  (`toFormulaInput`, `skill/SkillFormula.cpp`) copies the field from one
+  of those four. A client caller could pass any int, so every read now
+  goes through `partyEffectBoost` and `partyDurationBoost`
+  (`SkillOutputFormulas.h`), which clamp the size to 0..6: below 0 reads
+  0, above 6 reads 6. On 0..6 nothing changes: master and the new file
+  agree on all 293 formulas over the scratch grid in the branch's first
+  commit (1,655,145,280 comparisons, x86-64 and arm64), and every
+  formula at sizes -2^31, -100, -2, -1, 7, 8, 100 and 2^31-1 gives what
+  it gives at 0 or 6 (46,880,000 comparisons, under AddressSanitizer and
+  UBSan too). Pinned by
+  `SkillOutputFormula.PartySizeOutsideTheTablesReadsTheNearestEnd` in
+  `tests/formula_test.cpp`, and by the `party-*` rows (sizes -2^31, -100,
+  -1, 7, 8, 100 and 2^31-1 beside 0 to 6) and the `bless-*-party-*` rows
+  of `src/domain/vectors/skill_output.tsv`.
+  > **Status:** not a defect (the clamp is defensive, for the client;
+  > feat/vendorable-skill-output)
+- **No party bonus is ever granted.** Because every caller passes 0 or
+  1, both tables read 100 and `getPercentValue(x, 100)` is `x`: the 23
+  party-bonus reads are the identity on the live server, and the larger
+  percentages for a party of 2 to 6 (up to 150% effect and 200%
+  duration) are never applied. The real party size (`Party::getSize`)
+  never reaches `SkillInput`. Passing it would be a balance change for 18
+  skills; until then a client that shows these skills' numbers must pass
+  0 or 1 as the server does, not its party's size.
+  > **Status:** recorded, not fixed (feat/vendorable-skill-output)
+
 ## Shared castle tax (2026-09-29)
 
 The castle tax the shop buy handler adds to a purchase moved from

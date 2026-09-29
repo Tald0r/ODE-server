@@ -846,8 +846,9 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   steal-ratio cast; client: the callers); (4) equip requirements; (5)
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
-  > **Status:** in progress (the client halves of slices 4 and 5; then
-  > slice 6) — slices 1 to 3 are in on both sides
+  > **Status:** in progress (the client halves of slices 4, 5 and 6a;
+  > then the rest of slice 6: skill range, party share, darkness) —
+  > slices 1 to 3 are in on both sides
   > (server PRs #276 to #280, client PRs #285 to #287).
   > Slice 1: `ItemPrice` and `ItemDurability`, with `PriceManager`,
   > `computeMaxDurability`, `ConcreteItem::getMaxDurability` and the skull
@@ -865,8 +866,8 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > protection and min/max damage, `vampireSkillConsumeMP`,
   > `vampireDexHPRegenBonus`) and the three steal ratios, whose cast to a
   > byte goes through `int` (`docs/FIXES.md`). None of these indexes a
-  > table; the unchecked party-table index is in
-  > `SkillOutputFormulas.cpp`, for slice 6.
+  > table; the party tables in `SkillOutputFormulas.cpp` are read
+  > through a clamp since slice 6a.
   > Slice 4's server half: `EquipRequirement` (`requiredStats`,
   > `meetsRequirement`, `genderAllows`) holds the three races' item
   > requirement, its option raises, caps (slayer 200/290 and 300/435,
@@ -890,6 +891,22 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > `applyCastleTax` rows of `src/domain/vectors/price.tsv`, so the
   > client's `decore_tests` must learn that function (total, ratio,
   > expected).
+  > Slice 6a's server half: `SkillOutputFormulas` is in the vendored
+  > subset. Its warnings under `de-core-strict` were cleared without a
+  > change in behaviour: `(void)` for the unused parameters,
+  > `[[fallthrough]]` on HeadShot's deliberate fall-throughs, and an
+  > explicit truncating `(int)` around each double expression that was
+  > converted implicitly. The party tables are read through
+  > `partyEffectBoost` and `partyDurationBoost`, which clamp the size to
+  > 0..6; the server passes only 0 or 1, so no party bonus is granted
+  > (`docs/FIXES.md`), and a client caller must pass the same.
+  > `src/domain/vectors/skill_output.tsv` pins `WillOfLife`, the two
+  > lookups at and past both ends, and `Bless` read through them. The
+  > client's `decore_tests` must learn its row kinds (a skill row: the ten
+  > `SkillInput` fields, the gun by `GunClass` name, the six `SkillOutput`
+  > fields as a comma-separated list; a lookup row: party size, percent),
+  > and its `third_party/decore/CMakeLists.txt` must list
+  > `domain/SkillOutputFormulas.cpp`.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out
@@ -907,7 +924,14 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > wire item-class id it branches on in `decore::itemclass`
   > (`domain/ItemClass.h`, all 90 ids), which the adapter
   > `static_assert`s (`ConcreteItem.cpp` asserts every id and the count); and
-  > compiles without a warning in `de-core-strict`. Moves are verbatim,
+  > compiles without a warning in `de-core-strict`. `SkillOutputFormulas`
+  > (namespace `decore::skillformula`) has three named exceptions, kept so
+  > its bodies stay verbatim moves of the gameserver's: the constant,
+  > read-only party tables `PartyEffectBoost` and `PartyDurationBoost` in
+  > an anonymous namespace; the plain enums `SkillGrade`,
+  > `SkillInput::TargetType` and `SkillInput::TargetRace`, which mirror the
+  > game's integer values; and `SkillOutput`, whose constructor zeroes it
+  > as the gameserver's does, so it is not POD. Moves are verbatim,
   > oddities included (the kept ones are in `docs/FIXES.md`); changing
   > one is a balance decision. A change
   > to a shared rule: edit `src/domain`, re-record with
