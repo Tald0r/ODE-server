@@ -1125,6 +1125,12 @@ public:
         std::vector<int> values;
         if (text == "-")
             return values;
+        // getline yields no token for an empty cell or after a trailing
+        // comma, so either would silently drop an entry.
+        if (text.empty() || text.back() == ',') {
+            fail("not an integer list: \"" + text + "\"");
+            return values;
+        }
         std::stringstream items(text);
         std::string item;
         while (std::getline(items, item, ',')) {
@@ -1522,6 +1528,27 @@ TEST(SharedVectors, AnEmptyNumberIsAnError) {
     EXPECT_EQ(7, ok.integer());
     ok.finish();
     EXPECT_EQ("", ok.error());
+}
+
+// A list is "-" or integers joined by single commas: an empty cell or an
+// empty entry anywhere would otherwise read as one option fewer.
+TEST(SharedVectors, AMalformedListIsAnError) {
+    for (const char* text : {"", "5,", ",5", "5,,6", "5,x"}) {
+        const std::vector<std::string> fields = {"requiredStats", "malformed-list", text, "0"};
+        RowReader in(fields);
+        in.list();
+        EXPECT_EQ("not an integer list: \"" + std::string(text) + "\"", in.error());
+    }
+
+    const std::vector<std::string> none = {"requiredStats", "no-options", "-", "0"};
+    RowReader noOptions(none);
+    EXPECT_TRUE(noOptions.list().empty());
+    EXPECT_EQ("", noOptions.error());
+
+    const std::vector<std::string> two = {"requiredStats", "two-options", "30,40", "0"};
+    RowReader twoOptions(two);
+    EXPECT_EQ((std::vector<int>{30, 40}), twoOptions.list());
+    EXPECT_EQ("", twoOptions.error());
 }
 
 TEST(SharedVectors, Stats) {

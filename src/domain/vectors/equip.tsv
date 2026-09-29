@@ -40,7 +40,7 @@
 # other-race handling is its own, not these functions'.
 #
 # Named rows cover every branch, cap edge and wrap of each race; the grid-*
-# rows are item tables with STR {0, 120, 260} (DEX 10 higher, INT half),
+# rows are item tables with STR/DEX/INT {0/0/0, 120/130/60, 260/270/130},
 # sum {0, 280, 400}, level {0, 90, 130} and a gender cycling 1, 2, 0 for
 # each race, with no option, one option (sum 10, level 10) or two (sums 30
 # and 40, levels 25 and 40) in turn, and four wearers per race against the
