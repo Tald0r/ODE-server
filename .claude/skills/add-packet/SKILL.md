@@ -110,9 +110,11 @@ DE_REGISTER_PACKET_HANDLER_NOPLAYER(<Name>); // static execute(<Name>*)
 DE_REGISTER_PACKET_HANDLER_FN(<Name>, fn);   // a hand-written entry point
 ```
 
-Each macro static-asserts the packet's link against that root's
+Each macro static-asserts the packet against that root's
 `kReceivedDirections`, so registering a handler for a link the server does
-not receive is a compile error.
+not receive is a compile error. So is a handler for a packet a narrowed
+link refuses: the gameserver narrows GC to the GC-named packets its
+client link admits (`src/Core/GameClientLink.h`).
 
 A packet the client may send **before** `GPS_NORMAL` also needs its id in
 the matching `PacketIDSet` in `src/Core/PacketValidator.cpp`. `GPS_NORMAL`
@@ -120,8 +122,8 @@ admits every CG packet the gameserver registers, folded from the factory
 lists while compiling, so an ordinary in-game CG packet needs nothing
 there. It admits nothing else: a GC-named packet the client sends the
 gameserver needs its id in `kClientSentGCPacketIDs`
-(`src/Core/GameClientLink.h`) and a `static_assert` beside its
-registration in `GamePacketDispatch.cpp`, and a CG packet the client
+(`src/Core/GameClientLink.h`), without which its registration in
+`GamePacketDispatch.cpp` does not compile, and a CG packet the client
 sends only as a datagram goes in `kDatagramOnlyCGPacketIDs` there.
 `tests/game_client_link_test.cpp` keeps its own list of the GC names and
 fails until the two agree.

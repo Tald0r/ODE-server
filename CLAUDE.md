@@ -31,7 +31,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | The de-core subset the client vendors computes exactly the parity vectors and compiles without a warning under a GCC/Clang proxy for the client's warning set (MSVC's C4146 and C4805 have no counterpart) | `formula_tests`' `SharedVectors` over `src/domain/vectors/`; `de-core-strict` (`-Werror`, built by `make dev-test`) | the row, named, with its expected and actual value; the warning, as an error |
 | `NDEBUG` is never defined, so `Assert` and `__BEGIN_TRY`/`__END_CATCH` keep one meaning | an `#error` in `src/Core/Assert.h` and `src/Core/Exception.h` | the compile of every project file, in any configuration that defines it |
 | A client's bytes reach a packet's `read()` only through the receive loops' gates, and a malformed body is refused only with a `ProtocolException` | the packet-read fuzz targets in `tests/fuzz/`; their replay ctests `fuzz_replay_game`, `fuzz_replay_login` and `fuzz_replay_game_any_id` run every golden seed and every input in `tests/fuzz/regressions/`, and the targets abort on any other exception; and the gtests in `tests/packet_read_bounds_test.cpp` (`wire_tests`), which pin each fix's refusal or value | the input, named, aborting the replay (a zig Debug UB trap, an assertion, or a non-protocol exception); the gtest, named, with the refusal or value it expected |
-| A client's connection admits only the packets a client sends: the gameserver's `GPS_NORMAL` set is folded from its factory lists (every CG packet but the datagram-only `CGPortCheck`, plus the GC-named packets `src/Core/GameClientLink.h` lists), and no other game or login status admits a registered packet a client does not send | `game_client_link_tests` and `login_client_link_tests` (`tests/*_client_link_test.cpp`, each compiled as its server), which check every id against the factory table's names; `static_assert`s in `GamePacketDispatch.cpp` on each GC handler it registers | the id, named, with the status that admits or refuses it; a GC handler registration the client link would refuse, as a compile error |
+| A client's connection admits only the packets a client sends: the gameserver's `GPS_NORMAL` set is folded from its factory lists (every CG packet but the datagram-only `CGPortCheck`, plus the GC-named packets `src/Core/GameClientLink.h` lists), and no other game or login status admits a registered packet a client does not send | `game_client_link_tests` and `login_client_link_tests` (`tests/*_client_link_test.cpp`, each compiled as its server), which check every id against the factory table's names; the gameserver's `kReceivedDirections`, whose GC link is narrowed to that list (`DirectionSet::narrowed`) and which every `DE_REGISTER_PACKET_HANDLER*` checks with `admits()` | the id, named, with the status that admits or refuses it; a GC handler registration the client link would refuse, as a compile error |
 | Repository SQL behaves against a real MySQL | `make integration-test` (`tests/integration/`, needs docker) | the failing statement |
 
 ## Working in this repository
@@ -316,7 +316,9 @@ The handler is bound to its packet id at the server's composition root —
 `SharedPacketDispatch.cpp` — with `DE_REGISTER_PACKET_HANDLER(Name)`. Each
 root also declares the links it accepts as a `de::packet::DirectionSet`
 (`kReceivedDirections`), so registering a handler for a packet on a link the
-server does not receive is a compile error.
+server does not receive is a compile error. A link can be narrowed to some
+of its packets: the gameserver's GC link admits only the GC-named packets
+its client link admits (`src/Core/GameClientLink.h`).
 
 Every `XFactory` states its packet's id, name and maximum body size as
 `static constexpr kPacketID` / `kName` / `kMaxSize`; the virtual getters
@@ -334,7 +336,7 @@ validator's in-game set on the gameserver is folded from the same lists:
 every CG packet it registers, bar the datagram-only `CGPortCheck`, plus
 the GC-named packets the live client sends, listed in
 `src/Core/GameClientLink.h`; a new client-sent GC packet needs its id
-there.
+there, or its handler registration does not compile.
 `tests/packet_meta_test.cpp` compiles the whole kernel into one list. A new
 packet needs the three constants in its factory or it will not satisfy the
 concept. See `docs/TOOLCHAIN.md` §3 and `.claude/skills/add-packet`.

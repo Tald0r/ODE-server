@@ -10,10 +10,10 @@
 //
 //               A CG or CL case is a body a client can put on the wire,
 //               and every packet a server reads is printed with
-//               toString(). The GC, GS and SG cases are bodies only a
-//               server sends: the gameserver's client link refuses them
-//               before the read, and fuzz_replay_game_any_id reads them
-//               with that gate open.
+//               toString(). The GC cases are bodies only a server
+//               sends: the gameserver's client link refuses them before
+//               the read, and fuzz_replay_game_any_id reads them with
+//               that gate open.
 //
 //////////////////////////////////////////////////////////////////////
 

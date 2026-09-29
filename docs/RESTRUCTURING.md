@@ -433,8 +433,9 @@ visibility can't express.
   > sends but the server does not act on is spelled: the validator's
   > `GPS_NORMAL` set admits every packet a client sends (the GC-named ones
   > are listed in `src/Core/GameClientLink.h`), so a legitimate client would
-  > otherwise be disconnected. The gameserver has three such thunks
-  > (`GCAddStoreItem`, `GCRemoveStoreItem`, `GCCannotUse`), plus explicit
+  > otherwise be disconnected. The gameserver has two such thunks
+  > (`GCAddStoreItem`, `GCRemoveStoreItem`; `GCCannotUse`'s went when the
+  > client link stopped admitting it, since no client sends it), plus explicit
   > ones for `CGPortCheck`'s player-less handler and `CGStashList`'s
   > `__BEGIN_DEBUG` wrapper. Registration macros live in
   > `PacketDispatcher.h`. Composition roots: `GamePacketDispatch.cpp`,
@@ -1199,8 +1200,9 @@ shrink-only work.
   > in `tests/arch/kernel_files.txt` with K1/K2, the per-server
   > `FactoryList` plus regenerating `tests/ratchet/factory_registrations.txt`,
   > the handler at the composition root through
-  > `DE_REGISTER_PACKET_HANDLER` (and the `PacketValidator` set, needed only
-  > before `GPS_NORMAL`), `tests/tools/gen_factory_list.sh`, the golden
+  > `DE_REGISTER_PACKET_HANDLER` (and the `PacketValidator` set for a packet
+  > sent before `GPS_NORMAL`, or `GameClientLink.h` for a client-sent
+  > GC-named packet), `tests/tools/gen_factory_list.sh`, the golden
   > fixture and its recording rule, the per-code goldens a shuffled packet
   > needs, the inventory re-record in this repo and in the client's, and the
   > `wire_inventory_diff.sh` cross-check with the counterpart commit linked
@@ -1323,7 +1325,9 @@ shrink-only work.
     read may refuse a body only with a ProtocolException), the gtests
     in `tests/packet_read_bounds_test.cpp` (each fix's refusal or value)
     and the client-link gtests (each server's client connection admits
-    only what a client sends).
+    only what a client sends); the gameserver's GC link, narrowed to the
+    GC-named packets its client link admits, refuses at compile time a
+    GC handler that link would never deliver.
 
 ---
 

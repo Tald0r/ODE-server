@@ -27,19 +27,22 @@ repo and the client's. Entries below are newest first; the oldest is the
   found the six leaking GC reads and the list reads that lose a record
   when it throws (under "Packet-read fuzzing" below). `GPS_NORMAL` now
   admits exactly the registered packets a game client sends on the game
-  connection, 147 of the 416, folded from the factory table while
+  connection, 146 of the 416, folded from the factory table while
   compiling (`src/Core/GameClientLink.h`, `PacketFactoryManager.cpp`):
   every CG packet but `CGPortCheck`, which the client sends only as a UDP
-  datagram (on the game connection its `read()` refuses the body anyway),
-  plus the four GC-named packets the live client sends server-ward and
-  the gameserver has handlers for: `GCFriendChatting` and the no-op
-  `GCAddStoreItem`, `GCRemoveStoreItem` and `GCCannotUse` (the client
-  repo shows sends of the first three; `GCCannotUse` stays admitted with
-  its thunk). Every other id is refused with the "invalid packet order"
-  disconnect before its read. A new CG packet is admitted once it is
-  registered; a new client-sent GC packet needs its id in
-  `GameClientLink.h`, and `GamePacketDispatch.cpp` static-asserts each GC
-  handler it registers against that list. The store UI's `GCMyStoreInfo`
+  datagram (on the game connection its `read()` refuses the body anyway,
+  so its handler never ran there), plus the three GC-named packets the
+  live client sends server-ward and the gameserver has handlers for:
+  `GCFriendChatting` and the no-op `GCAddStoreItem` and
+  `GCRemoveStoreItem`, each of which the client repo builds and sends.
+  `GCCannotUse`, which the client only receives, is refused too, and its
+  no-op handler registration is gone. Every other id is refused with the
+  "invalid packet order" disconnect before its read. A new CG packet is
+  admitted once it is registered; a new client-sent GC packet needs its
+  id in `GameClientLink.h`. The gameserver's `kReceivedDirections`
+  narrows its GC link to that list (`DirectionSet::narrowed`), so the
+  registration macros refuse to compile a GC handler the client link
+  would never deliver. The store UI's `GCMyStoreInfo`
   and `GCOtherStoreInfo`, which the client does send, were refused unread
   by `GamePlayer` and are now refused by the validator first, with the
   same exception. The other `GPS_*` states already listed only CG ids.
@@ -47,7 +50,9 @@ repo and the client's. Entries below are newest first; the oldest is the
   `game_client_link_tests`, which enumerates the gameserver's factory
   table and checks every id against an oracle written from the packet
   names; on the old validator it failed, `GPS_NORMAL` admitting 269
-  registered ids no client sends.
+  registered ids no client sends (270 counting `GCCannotUse`, which
+  first stayed admitted and was dropped once the client repo showed no
+  send of it).
   The fuzz harness uses the real validator, so `fuzz_replay_game` now
   stops the GC, GS and SG seeds and regression inputs at the gate, and
   `DE_FUZZ_ANY_ID=1` opens it again for `fuzz_replay_game_any_id`, so
@@ -57,12 +62,19 @@ repo and the client's. Entries below are newest first; the oldest is the
   it started at 16,213 covered edges from 1,169 useful seeds and ended at
   17,554 (26,715 features) after 3.6 million inputs; after it, 4,546
   edges from 443 seeds and 5,121 at the end (6,694 features) after 8.6
-  million. Neither run crashed.
+  million. Neither run crashed. Those runs predate dropping
+  `GCCannotUse`, one no-op read, and were not repeated for it.
   > **Status:** fixed (fix/client-link-packet-ids)
 - **The loginserver read a gameserver's `GLKickVerify` from a client.**
-  While a login waits for a gameserver to kick the character already on
-  (`LPS_WAITING_FOR_GL_KICK_VERIFY`), the client's connection skipped
-  everything but `GLKickVerify`, which it read and dispatched. The
+  `CLLoginHandler` for an account whose character is still on a
+  gameserver calls `sendLGKickCharacter`, which sets
+  `LPS_WAITING_FOR_GL_KICK_VERIFY` while `LoginPlayer::processCommand`
+  is still in its read loop. In that status `processCommand` returns
+  before reading anything, so the status's set is consulted only for
+  packets the client pipelined behind that `CLLogin`, in the same pass.
+  The set skipped all of them except `GLKickVerify`, which it read and
+  dispatched. So a client with valid credentials for such an account
+  could send `CLLogin` and `GLKickVerify` in one segment. The
   gameservers send it as a datagram to `GameServerManager`'s socket, so
   only a hostile client sends it on a `LoginPlayer`'s connection. Its
   handler runs there inside `LoginPlayerManager::processCommands`, which
@@ -71,8 +83,10 @@ repo and the client's. Entries below are newest first; the oldest is the
   `catch (Throwable&)` then unlocks the mutex the loop still holds, so
   the rest of that pass runs unlocked against the datagram thread and
   the loop's guard unlocks it a second time. Found by reading the code;
-  not reproduced on a running server. The state now skips everything the
-  client sends, like `LPS_AFTER_SENDING_LG_INCOMING_CONNECTION`; every
+  not reproduced on a running server. The set now admits nothing, like
+  `LPS_AFTER_SENDING_LG_INCOMING_CONNECTION`'s, so the pipelined packets,
+  `GLKickVerify` included, are skipped unread; bytes that arrive later
+  still wait unread until the status changes, as before. Every
   other `LPS_*` state lists only CL ids and `CGConnectSetKey`. Pinned by
   `login_client_link_tests`, which failed on the old set.
   > **Status:** fixed (fix/client-link-packet-ids)

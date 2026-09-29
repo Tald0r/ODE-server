@@ -236,9 +236,11 @@ void PacketValidator::init() {
 
     //----------------------------------------------------------------------
     // LPS_WAITING_FOR_GL_KICK_VERIFY
+    // LoginPlayer::processCommand reads nothing in this status. The set
+    // is consulted only for packets already buffered behind the CLLogin
+    // whose handler entered it, in the same pass; they are skipped unread.
     // The gameserver's GLKickVerify arrives on the datagram socket, never
-    // on the client's connection, so everything the client sends while it
-    // waits is skipped unread.
+    // on the client's connection, so it is not admitted here.
     //----------------------------------------------------------------------
     pPacketIDSet = new PacketIDSet(LPS_WAITING_FOR_GL_KICK_VERIFY, PacketIDSet::PIST_IGNORE_EXCEPT);
     addPacketIDSet(pPacketIDSet->getPlayerStatus(), pPacketIDSet);

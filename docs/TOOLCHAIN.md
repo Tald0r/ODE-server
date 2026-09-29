@@ -535,9 +535,17 @@ than the naive reading — gameserver `CG GC GG LG SG`, loginserver `CG CL GL GM
 sharedserver `GS` — and each is written down beside the registrations it
 governs.
 
+A link can also be narrowed to some of its packets: `narrowed(link, filter)`
+returns a copy whose `admits(meta)` answers true for that link only when the
+filter does, and each macro `static_assert`s `admits()` as its second check.
+The gameserver narrows `GC` with `sentOnGameClientLink`
+(`src/Core/GameClientLink.h`): a GC packet reaches it only on the client link,
+whose `GPS_NORMAL` set admits only the GC-named packets listed there, so a GC
+handler outside that list would never run and does not compile.
+
 `tests/packet_meta_test.cpp` pins the parse of every prefix, that no kernel
 factory is left unclassified, that `DirectionSet` answers only for the links it
-was given, and that an unclassifiable entry is rejected by `validateRegistry`
+was given and a narrowed link only for its filter, and that an unclassifiable entry is rejected by `validateRegistry`
 naming its id. As with the registration lists, the composition roots' sets are
 compiled only under a server macro, so their `static_assert`s fire in the
 production builds, not in `make dev-test`.
