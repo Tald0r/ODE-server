@@ -30,7 +30,8 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Every `src/**/*.cpp` is compiled by some target, every header is included | ratchets R15/R16 | the dead file, listed |
 | The de-core subset the client vendors computes exactly the parity vectors and compiles without a warning under a GCC/Clang proxy for the client's warning set (MSVC's C4146 and C4805 have no counterpart) | `formula_tests`' `SharedVectors` over `src/domain/vectors/`; `de-core-strict` (`-Werror`, built by `make dev-test`) | the row, named, with its expected and actual value; the warning, as an error |
 | `NDEBUG` is never defined, so `Assert` and `__BEGIN_TRY`/`__END_CATCH` keep one meaning | an `#error` in `src/Core/Assert.h` and `src/Core/Exception.h` | the compile of every project file, in any configuration that defines it |
-| A client's bytes reach a packet's `read()` only through the receive loops' gates, and a malformed body is refused only with a `ProtocolException` | the packet-read fuzz targets in `tests/fuzz/`; their replay ctests `fuzz_replay_game`, `fuzz_replay_login` and `fuzz_replay_game_no_store_skip` run every golden seed and every input in `tests/fuzz/regressions/`, and the targets abort on any other exception; and the gtests in `tests/packet_read_bounds_test.cpp` (`wire_tests`), which pin each fix's refusal or value | the input, named, aborting the replay (a zig Debug UB trap, an assertion, or a non-protocol exception); the gtest, named, with the refusal or value it expected |
+| A client's bytes reach a packet's `read()` only through the receive loops' gates, and a malformed body is refused only with a `ProtocolException` | the packet-read fuzz targets in `tests/fuzz/`; their replay ctests `fuzz_replay_game`, `fuzz_replay_login` and `fuzz_replay_game_any_id` run every golden seed and every input in `tests/fuzz/regressions/`, and the targets abort on any other exception; and the gtests in `tests/packet_read_bounds_test.cpp` (`wire_tests`), which pin each fix's refusal or value | the input, named, aborting the replay (a zig Debug UB trap, an assertion, or a non-protocol exception); the gtest, named, with the refusal or value it expected |
+| A client's connection admits only the packets a client sends: the gameserver's `GPS_NORMAL` set is folded from its factory lists (every CG packet but the datagram-only `CGPortCheck`, plus the GC-named packets `src/Core/GameClientLink.h` lists), and no other game or login status admits a registered packet a client does not send | `game_client_link_tests` and `login_client_link_tests` (`tests/*_client_link_test.cpp`, each compiled as its server), which check every id against the factory table's names; `static_assert`s in `GamePacketDispatch.cpp` on each GC handler it registers | the id, named, with the status that admits or refuses it; a GC handler registration the client link would refuse, as a compile error |
 | Repository SQL behaves against a real MySQL | `make integration-test` (`tests/integration/`, needs docker) | the failing statement |
 
 ## Working in this repository
@@ -151,8 +152,13 @@ An input is `[code byte][status byte][raw stream]`; `StreamFuzz.h`
 describes it and the switches. Any exception but a `ProtocolException`
 is a crash unless `DE_FUZZ_ALLOW_EXCEPTIONS=1`; `DE_FUZZ_STRICT_BODY=1`
 makes a read consume exactly its declared size (the server's reads do not
-yet, see `docs/FIXES.md`) and `DE_FUZZ_NO_STORE_SKIP=1` reads the two
-store-info packets the gameserver refuses unread.
+yet, see `docs/FIXES.md`). The game target's validator is the gameserver's,
+so in `GPS_NORMAL` it reads only what a client sends and refuses the rest
+of the factory table before the read; `DE_FUZZ_ANY_ID=1` admits every
+registered id there instead, so the GC, GS and SG reads behind that gate
+are fuzzed too, and `DE_FUZZ_NO_STORE_SKIP=1` reads the two store-info
+packets the gameserver refuses unread (with the gate open, since the
+validator refuses them first).
 
 The zig suite builds the targets as `fuzz_replay_game` and
 `fuzz_replay_login`, a plain `main()` over saved inputs, and ctest runs
@@ -187,12 +193,14 @@ ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 /out/bin/fuzz_game_stream \
 ```
 
 `-close_fd_mask=3` keeps the packets' debug output off the terminal;
-`-fork=N -ignore_crashes=1` keeps going past the first crash. Leak
-detection is off because six gameserver reads, `GCUpdateInfo`'s among
-them, leak the records they allocate (recorded in `docs/FIXES.md`), so
-the runs find no leaks. Replay a crash file with
-`fuzz_replay_game <file>` in either build; in the fuzz build it comes
-with the sanitizer's report and needs the same
+`-fork=N -ignore_crashes=1` keeps going past the first crash; with
+`DE_FUZZ_ANY_ID=1` in the environment the run fuzzes every read in the
+gameserver's table. Leak detection is off because six GC reads,
+`GCUpdateInfo`'s among them, leak the records they allocate (recorded in
+`docs/FIXES.md`). The client link refuses all six, so only an all-ids
+run reaches them, but the documented runs keep it off either way.
+Replay a crash file with `fuzz_replay_game <file>` in either build; in
+the fuzz build it comes with the sanitizer's report and needs the same
 `ASAN_OPTIONS=detect_leaks=0`, which ctest sets itself there
 (`ctest -R fuzz` in `/build` runs the replay tests). Some recorded inputs
 fail only under ASan: the zig Debug build does not trap on every
@@ -321,7 +329,12 @@ such lists — edit the lists, not an `addFactory` sequence: the gameserver
 Each server creates its own factory table and validator and registers them
 on `de::kernelContext()` (`src/Core/KernelContext.h`, a kernel file so the
 kernel's own reader can use it); readers call
-`de::kernelContext().packetFactories()` and `.packetValidator()`.
+`de::kernelContext().packetFactories()` and `.packetValidator()`. The
+validator's in-game set on the gameserver is folded from the same lists:
+every CG packet it registers, bar the datagram-only `CGPortCheck`, plus
+the GC-named packets the live client sends, listed in
+`src/Core/GameClientLink.h`; a new client-sent GC packet needs its id
+there.
 `tests/packet_meta_test.cpp` compiles the whole kernel into one list. A new
 packet needs the three constants in its factory or it will not satisfy the
 concept. See `docs/TOOLCHAIN.md` §3 and `.claude/skills/add-packet`.

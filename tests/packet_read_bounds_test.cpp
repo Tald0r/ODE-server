@@ -8,10 +8,12 @@
 //               are replayed as well, from tests/fuzz/regressions/, by the
 //               fuzz_replay tests.
 //
-//               A case is a body a client can put on the wire (in
-//               GPS_NORMAL the gameserver reads any packet it registers,
-//               and every packet it reads is printed with toString())
-//               unless its comment says otherwise.
+//               A CG or CL case is a body a client can put on the wire,
+//               and every packet a server reads is printed with
+//               toString(). The GC, GS and SG cases are bodies only a
+//               server sends: the gameserver's client link refuses them
+//               before the read, and fuzz_replay_game_any_id reads them
+//               with that gate open.
 //
 //////////////////////////////////////////////////////////////////////
 

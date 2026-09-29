@@ -13,6 +13,70 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## The client links read packets no client sends (2026-09-29)
+
+- **In `GPS_NORMAL` the gameserver read any packet it registers.** The
+  validator's in-game set was `PIST_ANY`, and the gameserver's factory
+  table (`Concat<GameOnlyFactories, ClientLinkFactories,
+  GuildLinkFactories>`, 416 factories) holds the GC packets it sends and
+  the GG, GL, LG, GM, GS and SG packets of its server links as well as
+  the CG packets a client sends. A logged-in client could make
+  `GamePlayer::processCommand` create and `read()` any of them. The
+  gameserver has no handler for most, so the dispatch disconnected the
+  client, but only after the read, and the reads are where the fuzzing
+  found the six leaking GC reads and the list reads that lose a record
+  when it throws (under "Packet-read fuzzing" below). `GPS_NORMAL` now
+  admits exactly the registered packets a game client sends on the game
+  connection, 147 of the 416, folded from the factory table while
+  compiling (`src/Core/GameClientLink.h`, `PacketFactoryManager.cpp`):
+  every CG packet but `CGPortCheck`, which the client sends only as a UDP
+  datagram (on the game connection its `read()` refuses the body anyway),
+  plus the four GC-named packets the live client sends server-ward and
+  the gameserver has handlers for: `GCFriendChatting` and the no-op
+  `GCAddStoreItem`, `GCRemoveStoreItem` and `GCCannotUse` (the client
+  repo shows sends of the first three; `GCCannotUse` stays admitted with
+  its thunk). Every other id is refused with the "invalid packet order"
+  disconnect before its read. A new CG packet is admitted once it is
+  registered; a new client-sent GC packet needs its id in
+  `GameClientLink.h`, and `GamePacketDispatch.cpp` static-asserts each GC
+  handler it registers against that list. The store UI's `GCMyStoreInfo`
+  and `GCOtherStoreInfo`, which the client does send, were refused unread
+  by `GamePlayer` and are now refused by the validator first, with the
+  same exception. The other `GPS_*` states already listed only CG ids.
+  Pinned by
+  `game_client_link_tests`, which enumerates the gameserver's factory
+  table and checks every id against an oracle written from the packet
+  names; on the old validator it failed, `GPS_NORMAL` admitting 269
+  registered ids no client sends.
+  The fuzz harness uses the real validator, so `fuzz_replay_game` now
+  stops the GC, GS and SG seeds and regression inputs at the gate, and
+  `DE_FUZZ_ANY_ID=1` opens it again for `fuzz_replay_game_any_id`, so
+  every recorded input still reaches its read. A five-minute libFuzzer
+  run of the game target from the seed corpus (`-seed=1`, the command in
+  `CLAUDE.md`) shows what a client can still reach: before the change
+  it started at 16,213 covered edges from 1,169 useful seeds and ended at
+  17,554 (26,715 features) after 3.6 million inputs; after it, 4,546
+  edges from 443 seeds and 5,121 at the end (6,694 features) after 8.6
+  million. Neither run crashed.
+  > **Status:** fixed (fix/client-link-packet-ids)
+- **The loginserver read a gameserver's `GLKickVerify` from a client.**
+  While a login waits for a gameserver to kick the character already on
+  (`LPS_WAITING_FOR_GL_KICK_VERIFY`), the client's connection skipped
+  everything but `GLKickVerify`, which it read and dispatched. The
+  gameservers send it as a datagram to `GameServerManager`'s socket, so
+  only a hostile client sends it on a `LoginPlayer`'s connection. Its
+  handler runs there inside `LoginPlayerManager::processCommands`, which
+  holds the manager's mutex: `GLKickVerifyHandler`'s
+  `loginPlayers.lock()` throws on the same-thread relock, and its
+  `catch (Throwable&)` then unlocks the mutex the loop still holds, so
+  the rest of that pass runs unlocked against the datagram thread and
+  the loop's guard unlocks it a second time. Found by reading the code;
+  not reproduced on a running server. The state now skips everything the
+  client sends, like `LPS_AFTER_SENDING_LG_INCOMING_CONNECTION`; every
+  other `LPS_*` state lists only CL ids and `CGConnectSetKey`. Pinned by
+  `login_client_link_tests`, which failed on the old set.
+  > **Status:** fixed (fix/client-link-packet-ids)
+
 ## Packet-read fuzzing (2026-09-29)
 
 The fuzz targets in `tests/fuzz/` feed a client's bytes through the
@@ -34,8 +98,12 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   factory's packets hold no record, so their `read()` throws "no store
   record" before `StoreInfo::read`. So no recorded input reaches the
   bound and `StoreInfoTest` is its only guard; the ctest
-  `fuzz_replay_game_no_store_skip` replays the store-info seeds with the
-  refusal off, which checks that refusal, not the bound. The refusal in
+  `fuzz_replay_game_any_id` replays the store-info seeds with the
+  refusal off, which checks that refusal, not the bound. The gameserver's
+  client link now refuses both packets before `GamePlayer`'s own refusal
+  (see "The client links read packets no client sends"), so
+  `DE_FUZZ_NO_STORE_SKIP=1` reads them only together with
+  `DE_FUZZ_ANY_ID=1`, as that ctest runs. The refusal in
   `GamePlayer` stays for now. The client has the identical loop and reaches it; it is fixed
   there on the client repo's `feat/packet-fuzzing` branch (commit
   0c782d10).
@@ -130,32 +198,42 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   records take 48, 32 and 40 bytes, so a read leaks 80 + 40N bytes
   before those buffers, up to 10,280 at N = 255. (This entry and commit
   c79da7b4 used to count only the first two records, 48 + 32 bytes.)
-  A hostile client reaches it on the gameserver. `GCUpdateInfoFactory`
-  is in the gameserver's table (`GameOnlyFactories`), and `GPS_NORMAL`
-  admits any registered id (`PIST_ANY`, `PacketValidator.cpp`).
-  `GamePlayer::processCommand` reads the body in full and puts the
+  A hostile client reached it on the gameserver until its client link
+  was narrowed to what a client sends (see "The client links read
+  packets no client sends"): `GCUpdateInfoFactory` is in the
+  gameserver's table (`GameOnlyFactories`), and `GPS_NORMAL` admitted
+  any registered id (`PIST_ANY`). The client link now refuses
+  `GCUpdateInfo` before the read. The one other gameserver link that
+  reads any registered id is `SharedServerClient`, whose peer is the
+  sharedserver, so no client input reaches the leak any more; the read
+  keeps it, and a change that admitted the id again would bring it back.
+  The path it
+  took: `GamePlayer::processCommand` reads the body in full and puts the
   packet in its history (`GamePlayer.cpp:394-404`) before it dispatches.
   The gameserver registers no `GCUpdateInfo` handler, so
   `PacketDispatcher::dispatch` throws, and the loop turns that into a
   `DisconnectException` (:433-438). `~GamePlayer` then deletes the
   packet and the records stay behind. A body that fails to read is
   deleted at once instead, by the `unique_ptr` at :394, with the same
-  result. That is one leaking read per game session: a client that has
-  logged in and sent `CGReady` leaks up to 257 records per connection
-  and must reconnect to send the next.
-  ASan's leak check reports it in the fuzz build. The documented fuzz
-  runs and the replay ctests in a `DARKEDEN_BUILD_FUZZERS` tree turn
-  leak detection off (`ASAN_OPTIONS=detect_leaks=0`) for it and for the
-  reads in the next entry. The fix is one ownership rule for the whole
+  result. That was one leaking read per game session: a client that had
+  logged in and sent `CGReady` leaked up to 257 records per connection
+  and had to reconnect to send the next.
+  ASan's leak check reports it in the fuzz build when the gate is open
+  (`DE_FUZZ_ANY_ID=1`). The documented fuzz runs and the replay ctests
+  in a `DARKEDEN_BUILD_FUZZERS` tree turn leak detection off
+  (`ASAN_OPTIONS=detect_leaks=0`) for it and for the reads in the next
+  entry. The fix is one ownership rule for the whole
   set: a written packet borrows its records and a read one owns them.
   `GCNPCInfo` (`m_OwnsNPCInfos`), `GCModifyNickname`
   (`m_bOwnsNicknameInfo`) and `GCBloodBibleSignInfo` (`m_bOwnsInfo`,
   with `clearSignInfo()`, the closest to the leaking sign record)
   already carry an owner flag each.
-  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+  > **Status:** recorded, not fixed (feat/packet-fuzzing) — unreachable
+  > from a client since fix/client-link-packet-ids.
 - **Five more GC reads leak the records they allocate.** With leak
-  detection on, `fuzz_replay_game` over the seed corpus and
-  `tests/fuzz/regressions/game/` reports them beside `GCUpdateInfo`.
+  detection on, the game replay over the seed corpus and
+  `tests/fuzz/regressions/game/` with the gate open (as
+  `fuzz_replay_game_any_id` runs it) reports them beside `GCUpdateInfo`.
   `GCAddSlayer`, `GCAddVampire` and `GCAddOusters` leak
   their `NicknameInfo` on every read, and their `PetInfo` unless its
   type is `PET_NONE`, which the read deletes; their destructors free
@@ -165,7 +243,8 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   `PetInfo` per occupied slot, up to 20: its destructor frees each
   slot's `PetStashItemInfo` but not the pet in it.
   All five are in the gameserver's factory table and have no gameserver
-  handler, so a client reaches them the way it reaches `GCUpdateInfo`.
+  handler, so a client reached them the way it reached `GCUpdateInfo`,
+  and the narrowed client link refuses them the same way.
   The login replay reports no leak. Only the replay inputs have been
   checked. A libFuzzer run with leak detection on has not been done.
   The list is the reads that leak when the read succeeds. A read that
@@ -175,9 +254,12 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   `GCGuildMemberList`, `GCWaitGuildList`, `GCHolyLandBonusInfo`,
   `GCSweeperBonusInfo` and `GCGoodsList`), so a record whose own read
   throws is lost. An ownership rule for the six reads above does not
-  cover that shape; refusing on the gameserver the packet ids a client
-  never sends would close both for client input.
-  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+  cover that shape. Refusing on the gameserver the packet ids a client
+  never sends closes both for client input, and the gameserver now does
+  (all of these are GC packets no client sends); the reads themselves
+  are unchanged.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing) — unreachable
+  > from a client since fix/client-link-packet-ids.
 - **`SocketInputStream::readPacket` is not bounded by the frame.** A
   packet's `read()` consumes what its fields say, not the size its header
   declared, and the receive loops do not check the two agree. A body

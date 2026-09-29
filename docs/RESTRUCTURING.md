@@ -431,8 +431,9 @@ visibility can't express.
   > handler. That is the one intended behaviour change, and it is why an
   > ignore-thunk, not a missing registration, is how a packet the live client
   > sends but the server does not act on is spelled: the validator's
-  > `GPS_NORMAL` set is `PIST_ANY`, so a legitimate client would otherwise be
-  > disconnected. The gameserver has three such thunks
+  > `GPS_NORMAL` set admits every packet a client sends (the GC-named ones
+  > are listed in `src/Core/GameClientLink.h`), so a legitimate client would
+  > otherwise be disconnected. The gameserver has three such thunks
   > (`GCAddStoreItem`, `GCRemoveStoreItem`, `GCCannotUse`), plus explicit
   > ones for `CGPortCheck`'s player-less handler and `CGStashList`'s
   > `__BEGIN_DEBUG` wrapper. Registration macros live in
@@ -1302,10 +1303,16 @@ shrink-only work.
   > them with libFuzzer in `tools/fuzz/Dockerfile.fuzz`, and the replay
   > builds run in the zig suite over the golden seed corpus and
   > `tests/fuzz/regressions/` (ctests `fuzz_replay_game`,
-  > `fuzz_replay_login`, `fuzz_replay_game_no_store_skip`); each fix but
+  > `fuzz_replay_login`, `fuzz_replay_game_any_id`); each fix but
   > the validator's has a gtest in `tests/packet_read_bounds_test.cpp`
-  > (`wire_tests`). Fixed so far:
-  > the validator's status table, name-table lookups in debug strings
+  > (`wire_tests`). The client links admit only what a client sends
+  > (`game_client_link_tests`, `login_client_link_tests`), so the GC, GS
+  > and SG reads, the six leaking ones among them, are behind the
+  > gameserver's gate: `fuzz_replay_game` and a default libFuzzer run
+  > stop them there, and `fuzz_replay_game_any_id` (`DE_FUZZ_ANY_ID=1`)
+  > still reads them. Fixed so far:
+  > the validator's status table, the client links' in-game and
+  > kick-verify sets, name-table lookups in debug strings
   > (including `PCVampireInfo`'s),
   > shop and stash slot indices, wire bools, repeated script parameter
   > names and the store item count. Next reader: a UDP target for the
@@ -1313,8 +1320,10 @@ shrink-only work.
   > and the targets load each input at the start of the stream's buffer,
   > so its wrap-around path is not fuzzed (`StreamFuzz.h`).
   - Owner: the replay ctests (every recorded input replays clean, and a
-    read may refuse a body only with a ProtocolException) and the gtests
-    in `tests/packet_read_bounds_test.cpp` (each fix's refusal or value).
+    read may refuse a body only with a ProtocolException), the gtests
+    in `tests/packet_read_bounds_test.cpp` (each fix's refusal or value)
+    and the client-link gtests (each server's client connection admits
+    only what a client sends).
 
 ---
 
