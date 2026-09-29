@@ -866,8 +866,8 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > protection and min/max damage, `vampireSkillConsumeMP`,
   > `vampireDexHPRegenBonus`) and the three steal ratios, whose cast to a
   > byte goes through `int` (`docs/FIXES.md`). None of these indexes a
-  > table; the unchecked party-table index is in
-  > `SkillOutputFormulas.cpp`, for slice 6.
+  > table; the party tables in `SkillOutputFormulas.cpp` are read
+  > through a clamp since slice 6a.
   > Slice 4's server half: `EquipRequirement` (`requiredStats`,
   > `meetsRequirement`, `genderAllows`) holds the three races' item
   > requirement, its option raises, caps (slayer 200/290 and 300/435,
@@ -896,7 +896,10 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > change in behaviour: `(void)` for the unused parameters,
   > `[[fallthrough]]` on HeadShot's deliberate fall-throughs, and an
   > explicit truncating `(int)` around each double expression that was
-  > converted implicitly.
+  > converted implicitly. The party tables are read through
+  > `partyEffectBoost` and `partyDurationBoost`, which clamp the size to
+  > 0..6; the server passes only 0 or 1, so no party bonus is granted
+  > (`docs/FIXES.md`), and a client caller must pass the same.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out

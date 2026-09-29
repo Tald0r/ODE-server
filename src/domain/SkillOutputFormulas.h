@@ -64,6 +64,9 @@ struct SkillInput {
     int TargetType;
     int Range;
     GunClass Gun;
+    // Every server caller passes 0 (a vampire or a monster) or 1 (a slayer
+    // or an ousters), never the size of the caster's party
+    // (skill/SkillHandler.cpp), so the party bonus is always 100%.
     int PartySize;
 };
 
@@ -78,6 +81,14 @@ struct SkillOutput {
     int Range;
     int Delay;
 };
+
+// The party bonus, in percent, that a party of `partySize` gives a
+// skill's effect (partyEffectBoost) and its duration (partyDurationBoost):
+// 100 for 0 and 1, rising to 150 and 200 for 6. A size outside 0..6 reads
+// the nearest end of the tables, below 0 as 0 and above 6 as 6. The
+// formulas that grant the bonus read input.PartySize through these.
+int partyEffectBoost(int partySize);
+int partyDurationBoost(int partySize);
 
 void DoubleImpact(const SkillInput& input, SkillOutput& output);
 void TripleSlasher(const SkillInput& input, SkillOutput& output);

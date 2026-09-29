@@ -52,7 +52,21 @@ const int PartyDurationBoost[7] = {
     200  // 6
 };
 
+// The index both tables are read at: the party size, clamped to 0..6 so
+// that no size can read outside them.
+int partyTableIndex(int partySize) {
+    return min(max(partySize, 0), 6);
+}
+
 } // namespace
+
+int partyEffectBoost(int partySize) {
+    return PartyEffectBoost[partyTableIndex(partySize)];
+}
+
+int partyDurationBoost(int partySize) {
+    return PartyDurationBoost[partyTableIndex(partySize)];
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // Sword family
@@ -426,7 +440,7 @@ void Revealer(const SkillInput& input, SkillOutput& output) {
 
     // Compute the party bonus.
     // output.Damage   = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void CreateBomb(const SkillInput& input, SkillOutput& output) {
@@ -478,7 +492,7 @@ void Light(const SkillInput& input, SkillOutput& output) {
 
     // Compute the party bonus.
     // output.Damage   = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void DetectHidden(const SkillInput& input, SkillOutput& output) {
@@ -487,7 +501,7 @@ void DetectHidden(const SkillInput& input, SkillOutput& output) {
 
     // Compute the party bonus.
     // output.Damage   = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void AuraBall(const SkillInput& input, SkillOutput& output) {
@@ -513,8 +527,8 @@ void Bless(const SkillInput& input, SkillOutput& output) {
     output.Delay = (7 - input.SkillLevel / 20) * 10;        // 6->3 sec
 
     // Compute the party bonus.
-    output.Damage = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Damage = getPercentValue(output.Damage, partyEffectBoost(input.PartySize));
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void ContinualLight(const SkillInput& input, SkillOutput& output) {
@@ -549,7 +563,7 @@ void Flare(const SkillInput& input, SkillOutput& output) {
 
     // Compute the party bonus.
     // output.Damage   = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void Purify(const SkillInput& input, SkillOutput& output) {
@@ -602,7 +616,7 @@ void Striking(const SkillInput& input, SkillOutput& output) {
     output.Delay = (6 - input.SkillLevel / 33) * 10; // 6->3 sec
 
     // Compute the party bonus.
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void DetectInvisibility(const SkillInput& input, SkillOutput& output) {
@@ -631,7 +645,7 @@ void DetectInvisibility(const SkillInput& input, SkillOutput& output) {
     }
 
     // Compute the party bonus.
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void AuraShield(const SkillInput& input, SkillOutput& output) {
@@ -640,7 +654,7 @@ void AuraShield(const SkillInput& input, SkillOutput& output) {
 
     // Compute the party bonus.
     // output.Damage   = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
     output.Delay = output.Duration; // Delay and Duration are the same. by bezz 2003.3.5
 }
 
@@ -667,7 +681,7 @@ void CureLightWounds(const SkillInput& input, SkillOutput& output) {
     output.Delay = 10; // 1 sec
 
     // Compute the party bonus.
-    output.Damage = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
+    output.Damage = getPercentValue(output.Damage, partyEffectBoost(input.PartySize));
     // output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
 }
 
@@ -681,7 +695,7 @@ void CureAll(const SkillInput& input, SkillOutput& output) {
     output.Delay = 40 - input.SkillLevel / 5; // 4 sec~ 2 sec
 
     // Compute the party bonus.
-    output.Damage = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
+    output.Damage = getPercentValue(output.Damage, partyEffectBoost(input.PartySize));
     // output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
 }
 
@@ -708,8 +722,8 @@ void ProtectionFromPoison(const SkillInput& input, SkillOutput& output) {
     output.Delay = (5 - input.SkillLevel / 33) * 10;                     // 5->2 sec
 
     // Compute the party bonus.
-    output.Damage = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Damage = getPercentValue(output.Damage, partyEffectBoost(input.PartySize));
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void CauseLightWounds(const SkillInput& input, SkillOutput& output) {
@@ -731,7 +745,7 @@ void CureSeriousWounds(const SkillInput& input, SkillOutput& output) {
     output.Delay = 10; // 1 sec
 
     // Compute the party bonus.
-    output.Damage = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
+    output.Damage = getPercentValue(output.Damage, partyEffectBoost(input.PartySize));
     // output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
 }
 
@@ -759,8 +773,8 @@ void ProtectionFromCurse(const SkillInput& input, SkillOutput& output) {
     output.Delay = (5 - input.SkillLevel / 33) * 10;                     // 5->2 sec
 
     // Compute the party bonus.
-    output.Damage = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Damage = getPercentValue(output.Damage, partyEffectBoost(input.PartySize));
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void Resurrect(const SkillInput& input, SkillOutput& output) {
@@ -790,7 +804,7 @@ void CureCriticalWounds(const SkillInput& input, SkillOutput& output) {
     output.Duration = (20 + input.SkillLevel / 5) * 10; // 20 sec~40 sec
 
     // Compute the party bonus.
-    output.Damage = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
+    output.Damage = getPercentValue(output.Damage, partyEffectBoost(input.PartySize));
     // output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
 }
 
@@ -810,8 +824,8 @@ void ProtectionFromAcid(const SkillInput& input, SkillOutput& output) {
     output.Delay = (5 - input.SkillLevel / 33) * 10;                     // 5->2 sec
 
     // Compute the party bonus.
-    output.Damage = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Damage = getPercentValue(output.Damage, partyEffectBoost(input.PartySize));
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void Sacrifice(const SkillInput& input, SkillOutput& output) {
@@ -820,7 +834,7 @@ void Sacrifice(const SkillInput& input, SkillOutput& output) {
 
     // Compute the party bonus.
     // output.Damage   = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void CauseCriticalWounds(const SkillInput& input, SkillOutput& output) {
@@ -871,7 +885,7 @@ void Activation(const SkillInput& input, SkillOutput& output) {
 
     // Compute the party bonus.
     output.Damage = 0;
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void HolyBlast(const SkillInput& input, SkillOutput& output) {
@@ -1849,8 +1863,8 @@ void ProtectionFromBlood(const SkillInput& input, SkillOutput& output) {
     output.Delay = (5 - input.SkillLevel / 33) * 10;                     // 5->2 sec
 
     // Compute the party bonus.
-    output.Damage = getPercentValue(output.Damage, PartyEffectBoost[input.PartySize]);
-    output.Duration = getPercentValue(output.Duration, PartyDurationBoost[input.PartySize]);
+    output.Damage = getPercentValue(output.Damage, partyEffectBoost(input.PartySize));
+    output.Duration = getPercentValue(output.Duration, partyDurationBoost(input.PartySize));
 }
 
 void MoleShot(const SkillInput& input, SkillOutput& output) {

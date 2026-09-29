@@ -638,6 +638,41 @@ TEST(SkillOutputFormula, BlessSelfOtherAndPartyBoosts) {
     EXPECT_EQ(8, out.Damage); // (2 + 2 + 2) = 6, then 6*140/100
 }
 
+// A party size outside the tables' 0..6 reads the nearest end, through the
+// formulas as through the lookups, instead of reading past the tables.
+TEST(SkillOutputFormula, PartySizeOutsideTheTablesReadsTheNearestEnd) {
+    EXPECT_EQ(100, decore::skillformula::partyEffectBoost(0));
+    EXPECT_EQ(150, decore::skillformula::partyEffectBoost(6));
+    EXPECT_EQ(100, decore::skillformula::partyDurationBoost(0));
+    EXPECT_EQ(200, decore::skillformula::partyDurationBoost(6));
+    for (int size : {-1, std::numeric_limits<int>::min()}) {
+        EXPECT_EQ(100, decore::skillformula::partyEffectBoost(size)) << size;
+        EXPECT_EQ(100, decore::skillformula::partyDurationBoost(size)) << size;
+    }
+    for (int size : {7, std::numeric_limits<int>::max()}) {
+        EXPECT_EQ(150, decore::skillformula::partyEffectBoost(size)) << size;
+        EXPECT_EQ(200, decore::skillformula::partyDurationBoost(size)) << size;
+    }
+
+    SFIn in = sfin();
+    in.INTE = 80;
+    in.SkillLevel = 40;
+    for (int size : {7, 100, std::numeric_limits<int>::max()}) {
+        in.PartySize = size;
+        SFOut out;
+        decore::skillformula::Bless(in, out);
+        EXPECT_EQ(12, out.Damage) << size;     // 8 * 150/100, as at 6
+        EXPECT_EQ(1800, out.Duration) << size; // 900 * 200/100, as at 6
+    }
+    for (int size : {-1, std::numeric_limits<int>::min()}) {
+        in.PartySize = size;
+        SFOut out;
+        decore::skillformula::Bless(in, out);
+        EXPECT_EQ(8, out.Damage) << size;     // unboosted, as at 0
+        EXPECT_EQ(900, out.Duration) << size; // unboosted, as at 0
+    }
+}
+
 TEST(SkillOutputFormula, StrikingDurationBoostOnly) {
     SFIn in = sfin();
     in.TargetType = SFIn::TARGET_OTHER;
