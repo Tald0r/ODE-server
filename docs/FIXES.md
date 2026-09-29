@@ -13,6 +13,133 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Shared small rules (2026-09-29)
+
+Three small rules moved into de-core in slice 6b of the shared-rules plan:
+a slayer skill's range (`src/domain/SkillRange.cpp`, which the client
+vendors), the party experience bonus and the dark and light levels a
+player is sent (server-only). The moves are verbatim; what they kept and
+what they changed:
+
+- **The skill range depended on the build machine's CPU.**
+  `computeSkillRange` (`skill/SkillUtil.cpp`) computed
+  `min + (max - min) * (level * 0.01)` in the gameserver, which is built
+  without `-ffp-contract=off`, so Clang fused the multiply and the add
+  wherever the target CPU has a fused multiply-add: every arm64 target, and
+  x86-64 with FMA, which a Zig build without a target gets from the build
+  machine. A fused result within an ulp below an integer truncates one
+  lower: minimum 5, maximum 0 at level 80 was 0 there and 1 elsewhere.
+  `decore::skillRange` is built without contraction, like the rest of
+  de-core, so it gives the unfused value, a baseline x86-64 build's, on
+  every target. It changes nothing a live server computes: for every
+  `SkillBalance` seed range pair at levels 0 to 100, and for every minimum
+  not above the maximum (0 to 255) at levels 0 to 100, the fused and
+  unfused results agree. They differ only when the byte-narrowed maximum
+  is below the minimum, at any level (4,724 of those 3,296,640 inputs at
+  levels 0 to 100; the seed's two such skills, Raising Dead and Summon
+  Servant, are vampire skills and never reach it). The evidence: master's body and the
+  new call, compared over minimum and maximum 0 to 600 and six larger
+  values up to 2^32-1, and levels 0 to 600, 1023 and 65535 (222,174,747
+  inputs), give 0
+  mismatches built without contraction (Apple Clang arm64, -O0 and -O2;
+  Clang 18 x86-64, -O0 and -O2), and 412,797 mismatches, the same inputs
+  on both, built with it (arm64 default, x86-64 `-march=haswell`). Pinned
+  by the `no-fma-*` rows of `src/domain/vectors/skill_range.tsv`, which a
+  fusing toolchain fails.
+  > **Status:** fixed (feat/shared-small-rules)
+- **The skill range's own oddities are kept.** The three inputs and the
+  result are read modulo 256, as the server's 8-bit `Range_t` and
+  `SkillLevel_t` held them, so a level of 300 is 44 and a range past 255
+  wraps; the minimum is added before the truncation, so with a maximum
+  below the minimum a partial step rounds down, away from the minimum
+  (6 to 2 at level 30 is 4); and `level * 0.01` rounds low for some
+  levels, so a span of 50 or more truncates one below the exact answer
+  (0 to 100 at level 29 is 28). No seed skill spans more than 5. Pinned by
+  the `wrap-*`, `max-below-min-*`, `level-29-*` and `level-58-*` rows.
+  `skill/CrossCounter.cpp` writes the same interpolation four times, but
+  for the counter's damage from the skill table's minimum and maximum
+  damage, not for a range; it is a damage rule, left where it is, and
+  whether its result also depends on contraction was not measured.
+  > **Status:** recorded, not fixed (feat/shared-small-rules)
+- **The five party shares split the raised experience three ways.** The
+  five sharing functions in `Party.cpp` raised the experience by the same
+  switch, now `decore::partyExpPool` (the move changes nothing: master's
+  switch and the call agree on 39,908,322 amount and member-count pairs,
+  amounts -100,000 to 1,000,000, 2^k +-3 on both signs, the int limits
+  and 1,000,000 pseudo-random ones, counts -3 to 12, 100 and the int
+  limits; 0 mismatches, also under UBSan). Each then gives a member its
+  share of the pool in proportion to its level, and those splits differ:
+  `shareAttrExp`, `shareVampireExp` and `shareOustersExp` compute
+  `(int)((float)amount * (float)level / (float)LevelSum)`, so a pool past
+  2^24 loses its low bits to the float; `shareRankExp` and
+  `shareAdvancementExp` compute `amount * level / LevelSum` in int, which
+  overflows when `amount * level` passes 2^31-1 (at level 150, a pool of
+  about 14.3 million); and `shareAdvancementExp` sums each member's level
+  plus advancement class level into `LevelSum` but shares by the level
+  alone, so its shares add up to less than the pool. Whether a kill can
+  grant a pool that large was not examined. The splits stayed in
+  `Party.cpp`, unchanged.
+  > **Status:** recorded, not fixed (feat/shared-small-rules)
+- **The weather broadcast sent a vampire a wrapped dark level at night.**
+  When a zone's dark or light level changes with the game clock,
+  `WeatherManager::heartbeat` broadcasts `GCChangeDarkLight`: the zone's
+  levels to each slayer, and to each vampire `DARK_MAX - dark` and
+  `LIGHT_MAX - light` (13 and 15), without the clamps `makeGCUpdateInfo`
+  applies (a dark level of at least 0, a light level of at most 13). The
+  packet's fields are bytes, so a zone dark level above 13 reached a
+  vampire as 256 minus the excess, and a zone light level below 2 as 14
+  or 15. It was reachable with the seed data every game night: its
+  `DarkLightInfo` table has dark level 14 (light 5) at 19:00 and 4:00 and
+  15 (light 4) from 20:00 to 3:50 in every month, so each zone's
+  broadcasts at 19:00, 20:00 and 4:00 sent vampires 255, 254 and 255. The
+  light clamp was not: the seed's lowest light level is 4. The stock
+  client ignores a dark level of 16 or more (`MTopView::SetDarkBits`), so
+  a vampire kept the level it had, 0 from the 18:50 broadcast of dark 13
+  or from the clamped `GCUpdateInfo` of its zone entry, which is what the
+  clamp now sends. For a vampire without Flare nothing it sees changes,
+  only the bytes. A vampire under Flare (`EffectFlare::affect` sends it
+  dark 15) does see a change: the 19:00, 20:00 and 4:00 broadcasts now
+  send dark 0, which the client applies, so Flare's darkness ends at that
+  broadcast instead of lasting to the effect's deadline, as it already
+  did at every other broadcast. The
+  broadcast now calls `decore::darkLightForViewer` for a slayer and a
+  vampire outside a castle and a PK zone (the heartbeat returns early
+  elsewhere). The evidence: over every zone
+  dark and light level 0 to 255, the slayer packet is unchanged and the
+  vampire packet changes on exactly the 61,980 pairs with a dark level
+  above 13 or a light level below 2, and on no other. The
+  `weather-*` and `vampire-dark-*` rows of
+  `src/domain/vectors/server/dark_light.tsv` pin the rule the broadcast
+  now calls, not the broadcast: `WeatherManager::heartbeat` needs a
+  running zone and nothing in `tests/` drives it, so nothing tests the
+  call site.
+  > **Status:** fixed (feat/shared-small-rules)
+- **Not every dark and light message follows the viewer rule.** The rule
+  `makeGCUpdateInfo` applies when a player enters a zone, now
+  `decore::darkLightForViewer`, decides by the zone's type first (a castle
+  shows its own levels, a PK zone 0 and 14) and then by race and effect.
+  The other senders of `GCChangeDarkLight` each decide less:
+  `EffectFlare::unaffect` sends a vampire the inverted levels even in a
+  castle or PK zone (it now calls the rule as a vampire outside both, which
+  is what it computed); the broadcast when a zone's levels change
+  (`WeatherManager::heartbeat` through
+  `CreatureManager::broadcastDarkLightPacket`, which runs only in a normal
+  non-PK field) sends every slayer without Lightness or Yellow Poison the
+  zone's own levels and every vampire the inverted ones, ignoring Flare
+  for a vampire (a gap that predates this branch: a Flared vampire's
+  darkness ends at the next broadcast), and sends an ousters nothing (it
+  now calls the rule as a slayer and a vampire); and
+  `EffectLightness::unaffect` and `EffectYellowPoisonToCreature::unaffect`
+  send the zone's own levels whatever the race and the zone, so an ousters
+  whose Yellow Poison wears off is shown the zone's levels in place of its
+  fixed 13 and 6 until its next zone change, and a slayer in a PK zone the
+  zone's levels in place of 0 and 14. (`EffectBloodDrain`'s ousters
+  recovery sends 13 and the ousters' sight, at most 6, a rule of its own.)
+  Making them all call the rule would change what those players see in
+  castle and PK zones, and making the broadcast honor Flare would change
+  what a Flared vampire sees; those are balance decisions.
+  > **Status:** recorded, not fixed (feat/shared-small-rules)
+
 ## Vendorable skill output formulas (2026-09-29)
 
 `src/domain/SkillOutputFormulas.cpp`, the per-skill `computeOutput`

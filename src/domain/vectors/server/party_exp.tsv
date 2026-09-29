@@ -1,0 +1,127 @@
+# Parity vectors, server only: decore::partyExpPool (src/domain/PartyExp.h),
+# the experience a party shares once the number of members within reach
+# has raised it. The five sharing functions of the server's Party.cpp
+# (shareAttrExp, shareVampireExp, shareOustersExp, shareRankExp and
+# shareAdvancementExp) call it. The client does not compute it and does
+# not copy this directory. Every row is asserted for exact equality by
+# formula_tests. A changed expected value is a balance change: review it
+# as one. UPDATE_GOLDENS=1 formula_tests rewrites the expected column only.
+#
+# Tab-separated, one row per call: function, row name, the inputs, and the
+# expected result last.
+#
+# partyExpPool columns: amount memberCount expected. The server passes the
+#   experience one member earned and the number of party members within 8
+#   tiles of it, itself included; a count of 1 never reaches the call
+#   (that member keeps the experience alone), and a party holds at most 6.
+#   Counts 2 to 6 raise the amount to 150, 195, 225, 250 and 270 percent,
+#   truncated toward zero; every other count leaves it as it is.
+#
+# The size-* rows are each count at 1000. The truncation rows show the
+# division toward zero on both signs. The wrap-* rows are amounts whose
+# raised value leaves the int range and wraps modulo 2^32, as the server's
+# conversion did (no experience the server grants comes near it). The
+# grid-* rows are every combination of amount {0, 1, 7, 99, 100, 101,
+# 12345, 1000000} and count -1 to 8.
+partyExpPool	size-2-at-1000	1000	2	1500
+partyExpPool	size-3-at-1000	1000	3	1950
+partyExpPool	size-4-at-1000	1000	4	2250
+partyExpPool	size-5-at-1000	1000	5	2500
+partyExpPool	size-6-at-1000	1000	6	2700
+partyExpPool	size-1-unchanged	1000	1	1000
+partyExpPool	size-0-unchanged	1000	0	1000
+partyExpPool	size-7-unchanged	1000	7	1000
+partyExpPool	size-minus-1-unchanged	1000	-1	1000
+partyExpPool	size-int-min-unchanged	1000	-2147483648	1000
+partyExpPool	size-int-max-unchanged	1000	2147483647	1000
+partyExpPool	truncation-1-at-2	1	2	1
+partyExpPool	truncation-3-at-3	3	3	5
+partyExpPool	truncation-minus-1-at-2	-1	2	-1
+partyExpPool	truncation-minus-3-at-3	-3	3	-5
+partyExpPool	truncation-7-at-6	7	6	18
+partyExpPool	last-in-int-at-6	795364314	6	2147483647
+partyExpPool	wrap-first-past-int-at-6	795364315	6	-2147483646
+partyExpPool	wrap-int-max-at-6	2147483647	6	1503238550
+partyExpPool	wrap-int-max-at-2	2147483647	2	-1073741826
+partyExpPool	wrap-int-min-at-2	-2147483648	2	1073741824
+partyExpPool	int-min-unchanged-at-1	-2147483648	1	-2147483648
+partyExpPool	grid-0--1	0	-1	0
+partyExpPool	grid-0-0	0	0	0
+partyExpPool	grid-0-1	0	1	0
+partyExpPool	grid-0-2	0	2	0
+partyExpPool	grid-0-3	0	3	0
+partyExpPool	grid-0-4	0	4	0
+partyExpPool	grid-0-5	0	5	0
+partyExpPool	grid-0-6	0	6	0
+partyExpPool	grid-0-7	0	7	0
+partyExpPool	grid-0-8	0	8	0
+partyExpPool	grid-1--1	1	-1	1
+partyExpPool	grid-1-0	1	0	1
+partyExpPool	grid-1-1	1	1	1
+partyExpPool	grid-1-2	1	2	1
+partyExpPool	grid-1-3	1	3	1
+partyExpPool	grid-1-4	1	4	2
+partyExpPool	grid-1-5	1	5	2
+partyExpPool	grid-1-6	1	6	2
+partyExpPool	grid-1-7	1	7	1
+partyExpPool	grid-1-8	1	8	1
+partyExpPool	grid-7--1	7	-1	7
+partyExpPool	grid-7-0	7	0	7
+partyExpPool	grid-7-1	7	1	7
+partyExpPool	grid-7-2	7	2	10
+partyExpPool	grid-7-3	7	3	13
+partyExpPool	grid-7-4	7	4	15
+partyExpPool	grid-7-5	7	5	17
+partyExpPool	grid-7-6	7	6	18
+partyExpPool	grid-7-7	7	7	7
+partyExpPool	grid-7-8	7	8	7
+partyExpPool	grid-99--1	99	-1	99
+partyExpPool	grid-99-0	99	0	99
+partyExpPool	grid-99-1	99	1	99
+partyExpPool	grid-99-2	99	2	148
+partyExpPool	grid-99-3	99	3	193
+partyExpPool	grid-99-4	99	4	222
+partyExpPool	grid-99-5	99	5	247
+partyExpPool	grid-99-6	99	6	267
+partyExpPool	grid-99-7	99	7	99
+partyExpPool	grid-99-8	99	8	99
+partyExpPool	grid-100--1	100	-1	100
+partyExpPool	grid-100-0	100	0	100
+partyExpPool	grid-100-1	100	1	100
+partyExpPool	grid-100-2	100	2	150
+partyExpPool	grid-100-3	100	3	195
+partyExpPool	grid-100-4	100	4	225
+partyExpPool	grid-100-5	100	5	250
+partyExpPool	grid-100-6	100	6	270
+partyExpPool	grid-100-7	100	7	100
+partyExpPool	grid-100-8	100	8	100
+partyExpPool	grid-101--1	101	-1	101
+partyExpPool	grid-101-0	101	0	101
+partyExpPool	grid-101-1	101	1	101
+partyExpPool	grid-101-2	101	2	151
+partyExpPool	grid-101-3	101	3	196
+partyExpPool	grid-101-4	101	4	227
+partyExpPool	grid-101-5	101	5	252
+partyExpPool	grid-101-6	101	6	272
+partyExpPool	grid-101-7	101	7	101
+partyExpPool	grid-101-8	101	8	101
+partyExpPool	grid-12345--1	12345	-1	12345
+partyExpPool	grid-12345-0	12345	0	12345
+partyExpPool	grid-12345-1	12345	1	12345
+partyExpPool	grid-12345-2	12345	2	18517
+partyExpPool	grid-12345-3	12345	3	24072
+partyExpPool	grid-12345-4	12345	4	27776
+partyExpPool	grid-12345-5	12345	5	30862
+partyExpPool	grid-12345-6	12345	6	33331
+partyExpPool	grid-12345-7	12345	7	12345
+partyExpPool	grid-12345-8	12345	8	12345
+partyExpPool	grid-1000000--1	1000000	-1	1000000
+partyExpPool	grid-1000000-0	1000000	0	1000000
+partyExpPool	grid-1000000-1	1000000	1	1000000
+partyExpPool	grid-1000000-2	1000000	2	1500000
+partyExpPool	grid-1000000-3	1000000	3	1950000
+partyExpPool	grid-1000000-4	1000000	4	2250000
+partyExpPool	grid-1000000-5	1000000	5	2500000
+partyExpPool	grid-1000000-6	1000000	6	2700000
+partyExpPool	grid-1000000-7	1000000	7	1000000
+partyExpPool	grid-1000000-8	1000000	8	1000000

@@ -89,7 +89,7 @@ check_ratchet R5 "__BEGIN_TRY sites in gameserver" 5131 "$R5"
 # skill-failure packets and the elemental lookups. Under the 2,000-line phase
 # exit criterion, so the ratchet is a pin rather than a god-file baseline now.
 R6a=$(wc -l < src/server/gameserver/skill/SkillUtil.cpp 2>/dev/null || echo missing)
-check_ratchet R6a "SkillUtil.cpp lines" 684 "$R6a"
+check_ratchet R6a "SkillUtil.cpp lines" 678 "$R6a"
 # R6b shrinks as InitAllStat.cpp's per-race stat code leaves it: the Slayer,
 # Vampire and Ousters members -- the castle skills, the all-stat
 # recalculation and the item, option and blood bible contributions to it --

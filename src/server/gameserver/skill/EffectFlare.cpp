@@ -17,6 +17,7 @@
 #include "MonsterInfo.h"
 #include "Player.h"
 #include "Vampire.h"
+#include "domain/DarkLight.h"
 #include "repository/EffectSaveRepository.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -93,8 +94,15 @@ void EffectFlare::unaffect(Creature* pCreature)
         _GCModifyInformation.addShortData(MODIFY_VISION, NewSight);
         pPlayer->sendPacket(&_GCModifyInformation);
 
-        DarkLevel_t darkLevel = max(0, DARK_MAX - pZone->getDarkLevel());
-        LightLevel_t lightLevel = min(13, LIGHT_MAX - pZone->getLightLevel());
+        // The zone's levels as a vampire sees them. The zone's type is not
+        // consulted here: a vampire in a castle or a PK zone is sent the
+        // same inverted levels as anywhere else.
+        decore::DarkLightViewer viewer = {};
+        viewer.race = decore::DarkLightRace::Vampire;
+        const decore::DarkLight levels =
+            decore::darkLightForViewer(viewer, pZone->getDarkLevel(), pZone->getLightLevel());
+        DarkLevel_t darkLevel = levels.darkLevel;
+        LightLevel_t lightLevel = levels.lightLevel;
 
         GCChangeDarkLight gcChangeDarkLight;
         gcChangeDarkLight.setDarkLevel(darkLevel);

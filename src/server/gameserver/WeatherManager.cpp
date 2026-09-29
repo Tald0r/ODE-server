@@ -18,6 +18,7 @@
 #include "TimeManager.h"
 #include "WeatherInfo.h"
 #include "Zone.h"
+#include "domain/DarkLight.h"
 
 //--------------------------------------------------------------------------------
 //
@@ -217,13 +218,27 @@ void WeatherManager::heartbeat()
             m_pZone->setDarkLevel(darkLevel);
             m_pZone->setLightLevel(lightLevel);
 
+            // The broadcast sends the first packet to each slayer without
+            // Lightness or Yellow Poison and the second to each vampire, and
+            // sends an ousters nothing. heartbeat returns early outside a
+            // normal non-PK field, so these are the levels a slayer and a
+            // vampire see outside a castle and a PK zone. It does not
+            // consult a vampire's Flare.
+            decore::DarkLightViewer slayer = {};
+            slayer.race = decore::DarkLightRace::Slayer;
+            const decore::DarkLight slayerLevels = decore::darkLightForViewer(slayer, darkLevel, lightLevel);
+
+            decore::DarkLightViewer vampire = {};
+            vampire.race = decore::DarkLightRace::Vampire;
+            const decore::DarkLight vampireLevels = decore::darkLightForViewer(vampire, darkLevel, lightLevel);
+
             GCChangeDarkLight gcChangeDarkLight;
-            gcChangeDarkLight.setDarkLevel(darkLevel);
-            gcChangeDarkLight.setLightLevel(lightLevel);
+            gcChangeDarkLight.setDarkLevel(slayerLevels.darkLevel);
+            gcChangeDarkLight.setLightLevel(slayerLevels.lightLevel);
 
             GCChangeDarkLight gcChangeDarkLight2;
-            gcChangeDarkLight2.setDarkLevel(DARK_MAX - darkLevel);
-            gcChangeDarkLight2.setLightLevel(LIGHT_MAX - lightLevel);
+            gcChangeDarkLight2.setDarkLevel(vampireLevels.darkLevel);
+            gcChangeDarkLight2.setLightLevel(vampireLevels.lightLevel);
 
             m_pZone->broadcastDarkLightPacket(&gcChangeDarkLight, &gcChangeDarkLight2, NULL);
 

@@ -21,12 +21,15 @@ set(DECORE_INCLUDE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/..")
 set(DECORE_FP_FLAGS -ffp-contract=off -fno-fast-math)
 
 add_library(de-core STATIC
+    DarkLight.cpp
     EquipRequirement.cpp
     Formulas.cpp
     ItemDurability.cpp
     ItemGrade.cpp
     ItemPrice.cpp
+    PartyExp.cpp
     SkillOutputFormulas.cpp
+    SkillRange.cpp
 )
 
 target_include_directories(de-core PUBLIC ${DECORE_INCLUDE_ROOT})
@@ -48,6 +51,12 @@ target_compile_options(de-core PRIVATE ${DECORE_FP_FLAGS})
 # decides. A warning here would be a warning in every client build, so it
 # is an error. The objects are thrown away; tests/CMakeLists.txt makes
 # wire_tests depend on this target so the suite build compiles it.
+#
+# A de-core source only the server calls stays out of this list, so the
+# client neither copies nor compiles it: DarkLight.cpp and PartyExp.cpp.
+# Their parity rows are in vectors/server/, a directory the client's sync and
+# tests/tools/decore_client_diff.sh do not read (they take the *.tsv files
+# directly in vectors/).
 set(DECORE_VENDORED_SOURCES
     EquipRequirement.cpp
     Formulas.cpp
@@ -55,6 +64,7 @@ set(DECORE_VENDORED_SOURCES
     ItemGrade.cpp
     ItemPrice.cpp
     SkillOutputFormulas.cpp
+    SkillRange.cpp
 )
 add_library(de-core-strict OBJECT EXCLUDE_FROM_ALL ${DECORE_VENDORED_SOURCES})
 set_target_properties(de-core-strict PROPERTIES INCLUDE_DIRECTORIES "${DECORE_INCLUDE_ROOT}")

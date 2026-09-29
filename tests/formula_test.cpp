@@ -13,6 +13,8 @@
 // de-core) are pinned by the vector files in src/domain/vectors, one
 // data-driven TEST per file at the end of this file. The client asserts the
 // same files, so a row there is a contract with every client toolchain.
+// The rows of the de-core functions only the server calls are in
+// src/domain/vectors/server, which the client does not copy.
 
 #include <cstdio>
 #include <cstdlib>
@@ -26,12 +28,15 @@
 
 #include <gtest/gtest.h>
 
+#include "domain/DarkLight.h"
 #include "domain/EquipRequirement.h"
 #include "domain/Formulas.h"
 #include "domain/ItemDurability.h"
 #include "domain/ItemGrade.h"
 #include "domain/ItemPrice.h"
+#include "domain/PartyExp.h"
 #include "domain/SkillOutputFormulas.h"
+#include "domain/SkillRange.h"
 
 using decore::StatAttr;
 using decore::WeaponFamily;
@@ -1053,7 +1058,8 @@ TEST(InitAllStatBonus, BloodBibleSignFameLadders) {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Shared parity vectors (src/domain/vectors/*.tsv)
+// Shared parity vectors (src/domain/vectors/*.tsv, and the server-only
+// rows in src/domain/vectors/server/*.tsv)
 //
 // Each non-comment line is one call: function name, row name, the inputs,
 // and the expected result in the last column. UPDATE_GOLDENS=1 rewrites
@@ -1226,6 +1232,18 @@ public:
             return decore::PriceRace::Ousters;
         fail("not a race: \"" + text + "\"");
         return decore::PriceRace::None;
+    }
+
+    decore::DarkLightRace darkLightRace() {
+        const std::string text = next();
+        if (text == "Slayer")
+            return decore::DarkLightRace::Slayer;
+        if (text == "Vampire")
+            return decore::DarkLightRace::Vampire;
+        if (text == "Ousters")
+            return decore::DarkLightRace::Ousters;
+        fail("not a dark-light race: \"" + text + "\"");
+        return decore::DarkLightRace::Slayer;
     }
 
     decore::EquipRace equipRace() {
@@ -1546,6 +1564,32 @@ std::string evaluateRow(const std::vector<std::string>& fields, std::string& err
         int partySize = in.intInteger();
         in.finish();
         result = decore::skillformula::partyDurationBoost(partySize);
+    } else if (function == "skillRange") {
+        int minRange = in.intInteger();
+        int maxRange = in.intInteger();
+        int expLevel = in.intInteger();
+        in.finish();
+        result = decore::skillRange(minRange, maxRange, expLevel);
+    } else if (function == "darkLightForViewer") {
+        decore::DarkLightViewer viewer = {};
+        viewer.race = in.darkLightRace();
+        viewer.castleZone = in.flag();
+        viewer.pkZone = in.flag();
+        viewer.lightness = in.flag();
+        viewer.yellowPoison = in.flag();
+        int zoneDarkLevel = in.intInteger();
+        int zoneLightLevel = in.intInteger();
+        in.finish();
+        error = in.error();
+        if (!error.empty())
+            return std::string();
+        const decore::DarkLight levels = decore::darkLightForViewer(viewer, zoneDarkLevel, zoneLightLevel);
+        return std::to_string(levels.darkLevel) + "," + std::to_string(levels.lightLevel);
+    } else if (function == "partyExpPool") {
+        int amount = in.intInteger();
+        int memberCount = in.intInteger();
+        in.finish();
+        result = decore::partyExpPool(amount, memberCount);
     } else {
         error = "unknown function \"" + function + "\"";
         return std::string();
@@ -1721,6 +1765,30 @@ TEST(SharedVectors, Equip) {
 
 TEST(SharedVectors, SkillOutput) {
     checkVectorFile("skill_output.tsv", {"WillOfLife", "Bless", "partyEffectBoost", "partyDurationBoost"});
+}
+
+TEST(SharedVectors, SkillRange) {
+    checkVectorFile("skill_range.tsv", {"skillRange"});
+}
+
+// The rows of de-core functions only the server calls, which the client
+// does not copy: they are in vectors/server/.
+TEST(SharedVectors, PartyExp) {
+    checkVectorFile("server/party_exp.tsv", {"partyExpPool"});
+}
+
+TEST(SharedVectors, DarkLight) {
+    checkVectorFile("server/dark_light.tsv", {"darkLightForViewer"});
+}
+
+// A dark-light race is one of the three enumerator names, spelled exactly.
+TEST(SharedVectors, AnUnknownDarkLightRaceIsAnError) {
+    for (const char* text : {"", "slayer", "Monster", "Vampire "}) {
+        const std::vector<std::string> fields = {"darkLightForViewer", "bad-race", text, "0"};
+        RowReader in(fields);
+        in.darkLightRace();
+        EXPECT_EQ("not a dark-light race: \"" + std::string(text) + "\"", in.error()) << text;
+    }
 }
 
 // A gun class is one of the five enumerator names, spelled exactly.

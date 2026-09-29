@@ -8,8 +8,10 @@
 # in src/domain/CMakeLists.txt), every domain header they include, directly
 # or through another header, and the parity vectors, src/domain/vectors/*.tsv.
 # Only .tsv files count as vectors, so a stray editor backup or .DS_Store
-# there is not reported as a vendored file. The client's tools/decore/sync.pl
-# selects the vectors by the same rule.
+# there is not reported as a vendored file, and only those directly in
+# vectors/: src/domain/vectors/server/ holds the rows of the de-core
+# functions only the server calls, which the client does not copy. The
+# client's tools/decore/sync.pl selects the vectors by the same rule.
 #
 # A change to src/domain is done only when this is clean against a client
 # working tree resynced from this checkout (the client's
