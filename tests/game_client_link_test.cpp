@@ -9,7 +9,7 @@
 //               The oracle is written here from the packet names, apart
 //               from the production rule in GameClientLink.h: a
 //               registered packet a client sends on the game connection
-//               is CG-named and not a datagram, or one of the four
+//               is CG-named and not a datagram, or one of the three
 //               GC-named packets the live client sends server-ward.
 //
 //////////////////////////////////////////////////////////////////////
@@ -46,8 +46,7 @@ protected:
     }
 
     bool clientSends(PacketID_t id, const std::string& name) {
-        static const std::set<std::string> kClientSentGC{"GCAddStoreItem", "GCCannotUse", "GCFriendChatting",
-                                                         "GCRemoveStoreItem"};
+        static const std::set<std::string> kClientSentGC{"GCAddStoreItem", "GCFriendChatting", "GCRemoveStoreItem"};
         Datagram datagram;
         if (name.rfind("CG", 0) == 0)
             return !datagram.isDatagram(id);
@@ -96,13 +95,14 @@ TEST_F(GameClientLink, NormalRefusesThePacketsOnlyAServerSends) {
     EXPECT_FALSE(admitted(GPS_NORMAL, Packet::PACKET_LG_KICK_CHARACTER));
     EXPECT_FALSE(admitted(GPS_NORMAL, Packet::PACKET_GL_KICK_VERIFY));
     EXPECT_FALSE(admitted(GPS_NORMAL, Packet::PACKET_CG_PORT_CHECK));
+    // The client only receives GCCannotUse; it has no send of it.
+    EXPECT_FALSE(admitted(GPS_NORMAL, Packet::PACKET_GC_CANNOT_USE));
 }
 
 TEST_F(GameClientLink, NormalAdmitsTheGCPacketsTheClientSends) {
     EXPECT_TRUE(admitted(GPS_NORMAL, Packet::PACKET_GC_FRIEND_CHATTING));
     EXPECT_TRUE(admitted(GPS_NORMAL, Packet::PACKET_GC_ADD_STORE_ITEM));
     EXPECT_TRUE(admitted(GPS_NORMAL, Packet::PACKET_GC_REMOVE_STORE_ITEM));
-    EXPECT_TRUE(admitted(GPS_NORMAL, Packet::PACKET_GC_CANNOT_USE));
     EXPECT_TRUE(admitted(GPS_NORMAL, Packet::PACKET_CG_MOVE));
     EXPECT_TRUE(admitted(GPS_NORMAL, Packet::PACKET_CG_READY));
 }

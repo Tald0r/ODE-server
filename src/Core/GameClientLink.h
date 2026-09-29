@@ -24,7 +24,6 @@
 
 #include "CGPortCheck.h"
 #include "GCAddStoreItem.h"
-#include "GCCannotUse.h"
 #include "GCFriendChatting.h"
 #include "GCRemoveStoreItem.h"
 #include "PacketMeta.h"
@@ -32,14 +31,13 @@
 namespace de::packet {
 
 // GC-named packets the live client sends the gameserver: the friend
-// system's requests ride GCFriendChatting, the personal-store UI sends
-// GCAddStoreItem and GCRemoveStoreItem, and legacy client code could emit
-// GCCannotUse. Each has a gameserver handler (GamePacketDispatch.cpp); the
-// last three are deliberate no-ops. The store UI's GCMyStoreInfo and
-// GCOtherStoreInfo are not here: the gameserver refuses them.
-inline constexpr std::array<PacketID_t, 4> kClientSentGCPacketIDs{
+// system's requests ride GCFriendChatting, and the personal-store UI sends
+// GCAddStoreItem and GCRemoveStoreItem. Each has a gameserver handler
+// (GamePacketDispatch.cpp); the store pair's are deliberate no-ops. The
+// store UI's GCMyStoreInfo and GCOtherStoreInfo are not here: the
+// gameserver refuses them.
+inline constexpr std::array<PacketID_t, 3> kClientSentGCPacketIDs{
     GCAddStoreItemFactory::kPacketID,
-    GCCannotUseFactory::kPacketID,
     GCFriendChattingFactory::kPacketID,
     GCRemoveStoreItemFactory::kPacketID,
 };
