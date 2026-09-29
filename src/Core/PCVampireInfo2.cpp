@@ -235,15 +235,16 @@ string PCVampireInfo2::toString() const {
     StringStream msg;
 
     msg << "PCVampireInfo2(" << "ObjectID:" << m_ObjectID << ",Name:" << m_Name << ",Level:" << m_Level
-        << ",Sex:" << Sex2String[m_Sex] << ",BatColor:" << (int)m_BatColor << ",SkinColor:" << (int)m_SkinColor
-        << ",MasterEffectColor:" << (int)m_MasterEffectColor << ",Alignment:" << (int)m_Alignment
-        << ",STR[CURRENT]:" << (int)m_STR[ATTR_CURRENT] << ",STR[MAX]:" << (int)m_STR[ATTR_MAX]
-        << ",STR[BASIC]:" << (int)m_STR[ATTR_BASIC] << ",DEX[CURRENT]:" << (int)m_DEX[ATTR_CURRENT]
-        << ",DEX[MAX]:" << (int)m_DEX[ATTR_MAX] << ",DEX[BASIC]:" << (int)m_DEX[ATTR_BASIC]
-        << ",INT[CURRENT]:" << (int)m_INT[ATTR_CURRENT] << ",INT[MAX]:" << (int)m_INT[ATTR_MAX]
-        << ",INT[BASIC]:" << (int)m_INT[ATTR_BASIC] << ",HP:" << m_HP[ATTR_CURRENT] << "/" << m_HP[ATTR_MAX]
-        << ",Rank:" << (int)m_Rank << ",RankExp:" << (int)m_RankExp << ",Exp:" << m_Exp << ",Gold:" << m_Gold
-        << ",Fame:" << m_Fame << ",Sight:" << (int)m_Sight << ",Bonus:" << (int)m_Bonus << ",F5:" << (int)m_HotKey[0]
+        << ",Sex:" << nameOrNumber(Sex2String, m_Sex) << ",BatColor:" << (int)m_BatColor
+        << ",SkinColor:" << (int)m_SkinColor << ",MasterEffectColor:" << (int)m_MasterEffectColor
+        << ",Alignment:" << (int)m_Alignment << ",STR[CURRENT]:" << (int)m_STR[ATTR_CURRENT]
+        << ",STR[MAX]:" << (int)m_STR[ATTR_MAX] << ",STR[BASIC]:" << (int)m_STR[ATTR_BASIC]
+        << ",DEX[CURRENT]:" << (int)m_DEX[ATTR_CURRENT] << ",DEX[MAX]:" << (int)m_DEX[ATTR_MAX]
+        << ",DEX[BASIC]:" << (int)m_DEX[ATTR_BASIC] << ",INT[CURRENT]:" << (int)m_INT[ATTR_CURRENT]
+        << ",INT[MAX]:" << (int)m_INT[ATTR_MAX] << ",INT[BASIC]:" << (int)m_INT[ATTR_BASIC]
+        << ",HP:" << m_HP[ATTR_CURRENT] << "/" << m_HP[ATTR_MAX] << ",Rank:" << (int)m_Rank
+        << ",RankExp:" << (int)m_RankExp << ",Exp:" << m_Exp << ",Gold:" << m_Gold << ",Fame:" << m_Fame
+        << ",Sight:" << (int)m_Sight << ",Bonus:" << (int)m_Bonus << ",F5:" << (int)m_HotKey[0]
         << ",F6:" << (int)m_HotKey[1] << ",F7:" << (int)m_HotKey[2] << ",F8:" << (int)m_HotKey[3]
         << ",F9:" << (int)m_HotKey[4] << ",F10:" << (int)m_HotKey[5] << ",F11:" << (int)m_HotKey[6]
         << ",F12:" << (int)m_HotKey[7] << ",SilverDamage:" << (int)m_SilverDamage << ",Competence:" << (int)m_Competence

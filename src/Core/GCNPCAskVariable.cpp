@@ -6,6 +6,8 @@
 
 #include "GCNPCAskVariable.h"
 
+#include <memory>
+
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 GCNPCAskVariable::GCNPCAskVariable()
@@ -43,9 +45,15 @@ void GCNPCAskVariable::read(SocketInputStream& iStream)
     clearScriptParameters();
 
     for (int i = 0; i < szParameters; i++) {
-        ScriptParameter* pParam = new ScriptParameter();
+        std::unique_ptr<ScriptParameter> pParam(new ScriptParameter());
         pParam->read(iStream);
-        addScriptParameter(pParam);
+        // A repeated name is malformed input, refused as a protocol error
+        // like every other one; addScriptParameter's DuplicatedException
+        // is for the server's own fill, and the receive loops let only
+        // protocol errors through as a dropped connection.
+        if (m_ScriptParameters.find(pParam->getName()) != m_ScriptParameters.end())
+            throw InvalidProtocolException("repeated script parameter name");
+        addScriptParameter(pParam.release());
     }
 
     __END_CATCH

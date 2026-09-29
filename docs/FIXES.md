@@ -13,6 +13,181 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Packet-read fuzzing (2026-09-29)
+
+The fuzz targets in `tests/fuzz/` feed a client's bytes through the
+gates of `GamePlayer::processCommand` and `LoginPlayer::processCommand`
+into the packets' `read()`; `CLAUDE.md` says how to build and run them.
+Where a fuzz run found a defect below, its input is replayed by ctest from
+`tests/fuzz/regressions/`, and every fix but the validator's has a gtest
+in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
+
+- **`StoreInfo::read` indexed its item vector with a count off the
+  wire.** The stall record has `MAX_ITEM_NUM` (20) slots and `write()`
+  sends them all, but `read()` looped over a wire BYTE of up to 255,
+  writing `m_Items[i]` past the vector. It now refuses a count past the
+  slots with `InvalidProtocolException` before reading any item
+  (`StoreInfoTest` in `tests/packet_read_bounds_test.cpp`). On the
+  gameserver it was not reachable: `GamePlayer::processCommand` refuses
+  `GCMyStoreInfo` and `GCOtherStoreInfo` unread, and even with that
+  refusal off (`DE_FUZZ_NO_STORE_SKIP=1`, fuzzed for five minutes) the
+  factory's packets hold no record, so their `read()` throws "no store
+  record" before `StoreInfo::read`. So no recorded input reaches the
+  bound and `StoreInfoTest` is its only guard; the ctest
+  `fuzz_replay_game_no_store_skip` replays the store-info seeds with the
+  refusal off, which checks that refusal, not the bound. The refusal in
+  `GamePlayer` stays for now. The client has the identical loop and reaches it; it is fixed
+  there on the client repo's `feat/packet-fuzzing` branch (commit
+  0c782d10).
+  > **Status:** fixed (feat/packet-fuzzing)
+- **`PacketValidator`'s constructor filled a vector it had only
+  reserved.** `m_PacketIDSets.reserve(PLAYER_STATUS_MAX)` followed by
+  `m_PacketIDSets[i] = NULL` wrote into capacity, not elements, and every
+  later lookup read it the same way: undefined behaviour on every
+  server's start-up that happened to work. The fuzz build's
+  `_GLIBCXX_ASSERTIONS` aborted in the constructor. It now assigns
+  `PLAYER_STATUS_MAX` null slots.
+  > **Status:** fixed (feat/packet-fuzzing)
+- **Debug strings indexed name tables with wire values.** Fourteen
+  `toString()` bodies wrote `PCType2String[m_PCType]`,
+  `HelmetType2String[getHelmetType()]` and the like, and
+  `SocketInputStream::readPacket` prints every packet it reads, so one
+  out-of-range byte (CGConnect's character type, CLCreatePC's slot,
+  GCAddSlayerCorpse's helmet) copied a `std::string` that is not there.
+  `PCVampireInfo`'s slot is one of them, reached only through `LCPCList`,
+  which only the loginserver registers and no client status admits.
+  Every lookup by a stored value now goes through `nameOrNumber()` or a
+  range check beside it (`GCChangeWeather`, `GCUpdateInfo`'s weather, and
+  `sex2String()`, `dir2String()`, `modifyType2String()`).
+  `nameOrNumber()` (`src/Core/types/SystemTypes.h`) prints such a value as
+  its number (`DebugNameTest` in `wire_tests`). The zig Debug build does
+  not trap on the old lookup: it reads the neighbouring object and prints
+  what that holds (an empty name for CGConnect's type 3, "FEMALE" for
+  `PCVampireInfo`'s slot 3), so the recorded input
+  (`tests/fuzz/regressions/game/CGConnect-name-table.hex`) fails only
+  under the fuzz build's ASan, and `DebugNameTest` is what guards the fix
+  in the zig suite.
+  > **Status:** fixed (feat/packet-fuzzing)
+- **Shop and stash listings wrote their slots by a wire index.**
+  `GCShopList`, `GCShopListMysterious` and `GCStashList` stored each item
+  at an index byte (and, for the stash, a rack byte) with no bound: 255
+  against 20 slots and 3 racks, a heap overflow past the packet
+  (`RackSlotTest`).
+  > **Status:** fixed (feat/packet-fuzzing)
+- **A wire bool could hold any byte.** `read<bool>` copied the raw byte,
+  so 0x02 became a bool that is neither true nor false; the zig Debug
+  build traps on loading it. It now reads the byte and stores
+  `byte != 0`; writers send 1 for true, so no golden changes
+  (`WireBoolTest`).
+  > **Status:** fixed (feat/packet-fuzzing)
+- **A repeated script parameter name stopped the gameserver.**
+  `GCNPCAskVariable::read` let `addScriptParameter`'s
+  `DuplicatedException` out. The receive loops catch only
+  `ProtocolException`, so it left `ZonePlayerManager`, `ZoneGroupThread`
+  rethrew it and the worker's failure called `ServerShutdown::fail()`. The
+  read now refuses the repeat as an `InvalidProtocolException`
+  (`ScriptParameterTest`).
+  > **Status:** fixed (feat/packet-fuzzing)
+- **Non-protocol exceptions from a read escape the receive loops.** The
+  fix above closes the one the fuzzers found, not the route:
+  `ZonePlayerManager::processCommands` and `IncomingPlayerManager` catch
+  only `ProtocolException`, and the loginserver's `LoginPlayerManager`
+  adds only `ConnectException`, so any other `Throwable` a packet read
+  throws (an `Error`, an `AssertionError`, a `RuntimeException`) leaves
+  the loop that runs it: on the gameserver a zone thread, whose failure
+  calls `ServerShutdown::fail()`; on the loginserver `ClientManager::run`,
+  which catches nothing, on the main thread. The fuzz targets, and so
+  the replay ctests, abort on any other exception, so a recorded input
+  that throws anything else fails them; the loops themselves are
+  unchanged.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+- **Packets cast wire bytes to their enum types.** Reads store a byte
+  straight into an enum (`m_PCType = PCType(pcType)`) and getters build
+  one from bits (`ShieldType((m_Outlook >> n) & mask)`) without checking
+  the enumerators. A value past the enum's range is undefined behaviour to
+  load; the zig Debug build traps on it, so on a Debug server one such
+  byte from a client aborts the process, while the optimized builds carry
+  no check and Clang does not assume enum ranges without
+  `-fstrict-enums`. It is a wave (the fuzz build turns `-fsanitize=enum`
+  off so it does not hide everything else); each field needs its range
+  checked where it is read.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+- **`GCUpdateInfo::read` leaks two records, plus one per NPC record.**
+  Every read allocates one `NicknameInfo` (`GCUpdateInfo.cpp:175`), one
+  `BloodBibleSignInfo` (:184) and one `NPCInfo` for each record its
+  NPCInfoCount byte announces (:159-165). The sender picks that count,
+  0 to 255: the factory's max size budgets all 255 records
+  (`GCUpdateInfoFactory::kMaxSize`), and a nameless one costs one body
+  byte. `~GCUpdateInfo` frees none of them. It only clears the NPC list,
+  because on the writing side `PacketUtil.cpp` installs records that the
+  creature and the zone own. Each record's own heap goes with it: the
+  sign list's buffer, and a custom nickname or an NPC name longer than
+  the string's inline capacity. A record whose read throws is lost as
+  well: an `NPCInfo` that throws never reaches `addNPCInfo`, and the
+  nickname and sign records are installed before they are read. So a
+  read that reaches the end leaks 2 + N records and their buffers, N
+  being the count byte. In the fuzz build (aarch64, libstdc++) the three
+  records take 48, 32 and 40 bytes, so a read leaks 80 + 40N bytes
+  before those buffers, up to 10,280 at N = 255. (This entry and commit
+  c79da7b4 used to count only the first two records, 48 + 32 bytes.)
+  A hostile client reaches it on the gameserver. `GCUpdateInfoFactory`
+  is in the gameserver's table (`GameOnlyFactories`), and `GPS_NORMAL`
+  admits any registered id (`PIST_ANY`, `PacketValidator.cpp`).
+  `GamePlayer::processCommand` reads the body in full and puts the
+  packet in its history (`GamePlayer.cpp:394-404`) before it dispatches.
+  The gameserver registers no `GCUpdateInfo` handler, so
+  `PacketDispatcher::dispatch` throws, and the loop turns that into a
+  `DisconnectException` (:433-438). `~GamePlayer` then deletes the
+  packet and the records stay behind. A body that fails to read is
+  deleted at once instead, by the `unique_ptr` at :394, with the same
+  result. That is one leaking read per game session: a client that has
+  logged in and sent `CGReady` leaks up to 257 records per connection
+  and must reconnect to send the next.
+  ASan's leak check reports it in the fuzz build. The documented fuzz
+  runs and the replay ctests in a `DARKEDEN_BUILD_FUZZERS` tree turn
+  leak detection off (`ASAN_OPTIONS=detect_leaks=0`) for it and for the
+  reads in the next entry. The fix is one ownership rule for the whole
+  set: a written packet borrows its records and a read one owns them.
+  `GCNPCInfo` (`m_OwnsNPCInfos`), `GCModifyNickname`
+  (`m_bOwnsNicknameInfo`) and `GCBloodBibleSignInfo` (`m_bOwnsInfo`,
+  with `clearSignInfo()`, the closest to the leaking sign record)
+  already carry an owner flag each.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+- **Five more GC reads leak the records they allocate.** With leak
+  detection on, `fuzz_replay_game` over the seed corpus and
+  `tests/fuzz/regressions/game/` reports them beside `GCUpdateInfo`.
+  `GCAddSlayer`, `GCAddVampire` and `GCAddOusters` leak
+  their `NicknameInfo` on every read, and their `PetInfo` unless its
+  type is `PET_NONE`, which the read deletes; their destructors free
+  only the effect record and leave both to the creature, as
+  `GCUpdateInfo` does. `GCPetInfo` leaks its `PetInfo` on every read,
+  since its destructor frees nothing. `GCPetStashList` leaks one
+  `PetInfo` per occupied slot, up to 20: its destructor frees each
+  slot's `PetStashItemInfo` but not the pet in it.
+  All five are in the gameserver's factory table and have no gameserver
+  handler, so a client reaches them the way it reaches `GCUpdateInfo`.
+  The login replay reports no leak. Only the replay inputs have been
+  checked. A libFuzzer run with leak detection on has not been done.
+  The list is the reads that leak when the read succeeds. A read that
+  throws part-way leaks more widely: many list reads allocate a record,
+  read it and only then add it to the list (`new X; x->read(); push_back`,
+  e.g. `GCActiveGuildList.cpp:49-51`, and the same shape in
+  `GCGuildMemberList`, `GCWaitGuildList`, `GCHolyLandBonusInfo`,
+  `GCSweeperBonusInfo` and `GCGoodsList`), so a record whose own read
+  throws is lost. An ownership rule for the six reads above does not
+  cover that shape; refusing on the gameserver the packet ids a client
+  never sends would close both for client input.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+- **`SocketInputStream::readPacket` is not bounded by the frame.** A
+  packet's `read()` consumes what its fields say, not the size its header
+  declared, and the receive loops do not check the two agree. A body
+  shorter than declared leaves the rest to be parsed as the next header;
+  a longer one reads into the next frame. `DE_FUZZ_STRICT_BODY=1` shows it
+  on the first seed with a zero-filled body. The client's receive path
+  has a frame-bounded read that refuses both; the server needs the same,
+  checked against every golden.
+  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+
 ## The character list could not carry a cross1, a mace or a mace1 (2026-09-29)
 
 - **A slayer's character-list outlook had four weapon bits for nineteen

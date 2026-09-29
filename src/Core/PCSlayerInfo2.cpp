@@ -192,19 +192,20 @@ void PCSlayerInfo2::write(SocketOutputStream& oStream) const {
 string PCSlayerInfo2::toString() const {
     StringStream msg;
 
-    msg << "PCSlayerInfo2(" << "ObjectID:" << m_ObjectID << ",Name:" << m_Name << ",Sex:" << Sex2String[m_Sex]
-        << ",HairStyle:" << HairStyle2String[m_HairStyle] << ",HairColor:" << (int)m_HairColor
-        << ",SkinColor:" << (int)m_SkinColor << ",MasterEffectColor:" << (int)m_MasterEffectColor
-        << ",Alignment:" << m_Alignment << ",Rank:" << (int)m_Rank << ",RankExp:" << (int)m_RankExp
-        << ",STR[CURRENT]:" << (int)m_STR[ATTR_CURRENT] << ",STR[MAX]:" << (int)m_STR[ATTR_MAX]
-        << ",STR[BASIC]:" << (int)m_STR[ATTR_BASIC] << ",DEX[CURRENT]:" << (int)m_DEX[ATTR_CURRENT]
-        << ",DEX[MAX]:" << (int)m_DEX[ATTR_MAX] << ",DEX[BASIC]:" << (int)m_DEX[ATTR_BASIC]
-        << ",INT[CURRENT]:" << (int)m_INT[ATTR_CURRENT] << ",INT[MAX]:" << (int)m_INT[ATTR_MAX]
-        << ",INT[BASIC]:" << (int)m_INT[ATTR_BASIC] << ",HP:" << m_HP[ATTR_CURRENT] << "/" << m_HP[ATTR_MAX]
-        << ",MP:" << m_MP[ATTR_CURRENT] << "/" << m_MP[ATTR_MAX] << ",Fame:" << m_Fame << ",Gold:" << m_Gold;
+    msg << "PCSlayerInfo2(" << "ObjectID:" << m_ObjectID << ",Name:" << m_Name
+        << ",Sex:" << nameOrNumber(Sex2String, m_Sex) << ",HairStyle:" << nameOrNumber(HairStyle2String, m_HairStyle)
+        << ",HairColor:" << (int)m_HairColor << ",SkinColor:" << (int)m_SkinColor
+        << ",MasterEffectColor:" << (int)m_MasterEffectColor << ",Alignment:" << m_Alignment << ",Rank:" << (int)m_Rank
+        << ",RankExp:" << (int)m_RankExp << ",STR[CURRENT]:" << (int)m_STR[ATTR_CURRENT]
+        << ",STR[MAX]:" << (int)m_STR[ATTR_MAX] << ",STR[BASIC]:" << (int)m_STR[ATTR_BASIC]
+        << ",DEX[CURRENT]:" << (int)m_DEX[ATTR_CURRENT] << ",DEX[MAX]:" << (int)m_DEX[ATTR_MAX]
+        << ",DEX[BASIC]:" << (int)m_DEX[ATTR_BASIC] << ",INT[CURRENT]:" << (int)m_INT[ATTR_CURRENT]
+        << ",INT[MAX]:" << (int)m_INT[ATTR_MAX] << ",INT[BASIC]:" << (int)m_INT[ATTR_BASIC]
+        << ",HP:" << m_HP[ATTR_CURRENT] << "/" << m_HP[ATTR_MAX] << ",MP:" << m_MP[ATTR_CURRENT] << "/"
+        << m_MP[ATTR_MAX] << ",Fame:" << m_Fame << ",Gold:" << m_Gold;
 
     for (uint i = 0; i < SKILL_DOMAIN_VAMPIRE; i++)
-        msg << "," << SkillDomain2String[i] << ":" << (int)m_DomainLevels[i] << "/" << m_DomainExps[i];
+        msg << "," << nameOrNumber(SkillDomain2String, i) << ":" << (int)m_DomainLevels[i] << "/" << m_DomainExps[i];
 
     msg << ",Sight:" << (int)m_Sight << ",F9:" << (int)m_HotKey[0] << ",F10:" << (int)m_HotKey[1]
         << ",F11:" << (int)m_HotKey[2] << ",F12:" << (int)m_HotKey[3] << ",Competence:" << (int)m_Competence

@@ -41,7 +41,8 @@ string GCPartyError::toString() const
     __BEGIN_TRY
 
     StringStream msg;
-    msg << "GCPartyError(" << "CODE:" << GCPartyError2String[m_Code] << "TOID:" << m_TargetObjectID << ")";
+    msg << "GCPartyError(" << "CODE:" << nameOrNumber(GCPartyError2String, m_Code) << "TOID:" << m_TargetObjectID
+        << ")";
     return msg.toString();
 
     __END_CATCH

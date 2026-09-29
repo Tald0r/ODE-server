@@ -56,6 +56,11 @@ void StoreInfo::read(SocketInputStream& iStream, bool toOther) {
     BYTE ItemNum;
     iStream.read(ItemNum);
 
+    // The record has MAX_ITEM_NUM window slots and write() sends them all,
+    // so a count past them is malformed and must not index past the end.
+    if (ItemNum > m_Items.size())
+        throw InvalidProtocolException("store item count out of range");
+
     for (int i = 0; i < ItemNum; ++i) {
         m_Items[i].read(iStream);
     }

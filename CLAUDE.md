@@ -30,6 +30,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Every `src/**/*.cpp` is compiled by some target, every header is included | ratchets R15/R16 | the dead file, listed |
 | The de-core subset the client vendors computes exactly the parity vectors and compiles without a warning under a GCC/Clang proxy for the client's warning set (MSVC's C4146 and C4805 have no counterpart) | `formula_tests`' `SharedVectors` over `src/domain/vectors/`; `de-core-strict` (`-Werror`, built by `make dev-test`) | the row, named, with its expected and actual value; the warning, as an error |
 | `NDEBUG` is never defined, so `Assert` and `__BEGIN_TRY`/`__END_CATCH` keep one meaning | an `#error` in `src/Core/Assert.h` and `src/Core/Exception.h` | the compile of every project file, in any configuration that defines it |
+| A client's bytes reach a packet's `read()` only through the receive loops' gates, and a malformed body is refused only with a `ProtocolException` | the packet-read fuzz targets in `tests/fuzz/`; their replay ctests `fuzz_replay_game`, `fuzz_replay_login` and `fuzz_replay_game_no_store_skip` run every golden seed and every input in `tests/fuzz/regressions/`, and the targets abort on any other exception; and the gtests in `tests/packet_read_bounds_test.cpp` (`wire_tests`), which pin each fix's refusal or value | the input, named, aborting the replay (a zig Debug UB trap, an assertion, or a non-protocol exception); the gtest, named, with the refusal or value it expected |
 | Repository SQL behaves against a real MySQL | `make integration-test` (`tests/integration/`, needs docker) | the failing statement |
 
 ## Working in this repository
@@ -140,6 +141,65 @@ mention server-type macros or `__COMBAT__` (K2), so the wire layer stays
 buildable — and identical — alone. (This is not the client's config, which
 defines `__GAME_CLIENT__=1`.)
 
+#### Packet-read fuzzing
+
+`tests/fuzz/` holds two fuzz targets, one per server a client talks to.
+Each mirrors its receive loop (`GamePlayer::processCommand`,
+`LoginPlayer::processCommand`) up to the packet's `read()`, stops short
+of the handler, and prints the packet with `toString()` as the loop does.
+An input is `[code byte][status byte][raw stream]`; `StreamFuzz.h`
+describes it and the switches. Any exception but a `ProtocolException`
+is a crash unless `DE_FUZZ_ALLOW_EXCEPTIONS=1`; `DE_FUZZ_STRICT_BODY=1`
+makes a read consume exactly its declared size (the server's reads do not
+yet, see `docs/FIXES.md`) and `DE_FUZZ_NO_STORE_SKIP=1` reads the two
+store-info packets the gameserver refuses unread.
+
+The zig suite builds the targets as `fuzz_replay_game` and
+`fuzz_replay_login`, a plain `main()` over saved inputs, and ctest runs
+them over a seed corpus that `tools/fuzz/golden2corpus.pl` writes from
+`tests/golden/` into the build tree, plus `tests/fuzz/regressions/`
+(`.hex` files; every input that ever found a crash goes there with its
+fix). `make dev-test` runs them like any other test.
+
+libFuzzer needs a Clang with compiler-rt, which `zig c++` is not, so the
+fuzzers are a separate configure with `-DDARKEDEN_BUILD_FUZZERS=ON`
+(it refuses zig, AppleClang and a Clang that cannot link a
+`-fsanitize=fuzzer` target, and instruments every target with ASan,
+UBSan and `_GLIBCXX_ASSERTIONS`). `tools/fuzz/Dockerfile.fuzz` is the
+toolchain:
+
+```bash
+docker build -f tools/fuzz/Dockerfile.fuzz -t darkeden-fuzz tools/fuzz
+docker run --rm -it -v "$PWD:/repo:ro" darkeden-fuzz bash
+# in the container: build off a copy of the inputs, never the mount
+mkdir /src && cp -a /repo/CMakeLists.txt /repo/cmake /repo/src /repo/tests \
+    /repo/third_party /repo/tools /src/
+cmake -G Ninja -S /src -B /build -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18 \
+    -DDARKEDEN_BUILD_FUZZERS=ON -DDARKEDEN_OUTPUT_ROOT=/out
+cmake --build /build --target fuzz_game_stream fuzz_login_stream \
+    fuzz_replay_game fuzz_replay_login fuzz_seed_corpus
+# run from a scratch directory: Assert appends to assertion_failed.log there
+mkdir -p /scratch /corpus && cd /scratch
+ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 /out/bin/fuzz_game_stream \
+    -max_total_time=300 -timeout=10 -rss_limit_mb=2048 -max_len=32769 \
+    -close_fd_mask=3 /corpus /build/tests/fuzz/corpus/game /src/tests/fuzz/regressions/game
+```
+
+`-close_fd_mask=3` keeps the packets' debug output off the terminal;
+`-fork=N -ignore_crashes=1` keeps going past the first crash. Leak
+detection is off because six gameserver reads, `GCUpdateInfo`'s among
+them, leak the records they allocate (recorded in `docs/FIXES.md`), so
+the runs find no leaks. Replay a crash file with
+`fuzz_replay_game <file>` in either build; in the fuzz build it comes
+with the sanitizer's report and needs the same
+`ASAN_OPTIONS=detect_leaks=0`, which ctest sets itself there
+(`ctest -R fuzz` in `/build` runs the replay tests). Some recorded inputs
+fail only under ASan: the zig Debug build does not trap on every
+out-of-bounds read (`CGConnect-name-table.hex` is one), so their fixes
+are guarded in the zig suite by the gtests in
+`tests/packet_read_bounds_test.cpp`. There is no CI fuzz job yet.
+
 #### Building in the container
 
 **Do not compile straight off the bind-mounted checkout.** Measured inside
@@ -147,7 +207,7 @@ the container, the Windows mount costs ~160x on `stat` and ~145x on reads
 versus the container's own filesystem, and since every translation unit opens
 dozens of headers the build becomes I/O bound: a full build took ~20 minutes
 at ~20% CPU on 8 cores. `tools/devbuild.sh` syncs the build *inputs*
-(`cmake/`, `src/`, `tests/`, `third_party/`, `data/`, `initdb/`,
+(`cmake/`, `src/`, `tests/`, `third_party/`, `data/`, `initdb/`, `tools/`,
 `docker/start.sh` and the top-level CMakeLists/Makefile) into a container
 volume, builds there with Ninja and ccache, and copies only generated test
 data back (`tests/golden/`, `tests/generated/`, `tests/wire-layout.txt`, and,
@@ -216,6 +276,7 @@ tests/
 ├── arch/                      # kernel_files.txt (de-kernel's source list), check_includes.pl, baseline.txt
 ├── ratchet/                   # ratchets.sh and the files it pins
 ├── tools/                     # generators and audits ctest runs
+├── fuzz/                      # packet-read fuzz targets, replay driver, regressions/
 └── golden/, generated/, support/, integration/  # fixtures, generated lists, fakes, MySQL tier
 docs/
 ├── RESTRUCTURING.md           # the living plan: tasks, statuses, the R1-R18 table

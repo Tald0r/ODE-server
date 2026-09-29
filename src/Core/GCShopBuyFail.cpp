@@ -48,7 +48,7 @@ string GCShopBuyFail::toString() const
     __BEGIN_TRY
 
     StringStream msg;
-    msg << "GCShopBuyFail(" << "ObjectID:" << m_ObjectID << ",CODE:" << GCShopBuyFailCode2String[m_Code]
+    msg << "GCShopBuyFail(" << "ObjectID:" << m_ObjectID << ",CODE:" << nameOrNumber(GCShopBuyFailCode2String, m_Code)
         << ",Amount:" << m_Amount << ")";
     return msg.toString();
 

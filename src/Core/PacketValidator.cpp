@@ -15,11 +15,8 @@
 PacketValidator::PacketValidator() {
     __BEGIN_TRY
 
-    m_PacketIDSets.reserve(PLAYER_STATUS_MAX);
-
-    for (uint i = 0; i < PLAYER_STATUS_MAX; i++) {
-        m_PacketIDSets[i] = NULL;
-    }
+    // One slot per player status, each empty until init() fills it.
+    m_PacketIDSets.assign(PLAYER_STATUS_MAX, nullptr);
 
     __END_CATCH
 }

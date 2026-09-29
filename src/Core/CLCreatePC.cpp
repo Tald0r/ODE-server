@@ -83,8 +83,9 @@ string CLCreatePC::toString() const
     __BEGIN_TRY
 
     StringStream msg;
-    msg << "CLCreatePC(Name: " << m_Name << ",Slot:" << Slot2String[m_Slot] << ",Sex:" << Sex2String[getSex()]
-        << ",HairStyle:" << HairStyle2String[getHairStyle()] << ",HairColor:" << (int)getHairColor()
+    msg << "CLCreatePC(Name: " << m_Name << ",Slot:" << nameOrNumber(Slot2String, m_Slot)
+        << ",Sex:" << nameOrNumber(Sex2String, getSex())
+        << ",HairStyle:" << nameOrNumber(HairStyle2String, getHairStyle()) << ",HairColor:" << (int)getHairColor()
         << ",SkinColor:" << (int)getSkinColor() << ",STR:" << (int)m_STR << ",DEX:" << (int)m_DEX
         << ",INT:" << (int)m_INT << ",Race:" << (int)m_Race << ")";
     return msg.toString();

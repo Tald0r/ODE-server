@@ -49,6 +49,7 @@ add_executable(wire_tests EXCLUDE_FROM_ALL
     packet_movement_test.cpp
     packet_party_test.cpp
     packet_quest_war_test.cpp
+    packet_read_bounds_test.cpp
     packet_session_test.cpp
     packet_skill_test.cpp
     packet_store_test.cpp
@@ -1133,3 +1134,8 @@ target_link_libraries(skill_slot_tests PRIVATE gtest_main Threads::Threads)
 add_dependencies(wire_tests skill_slot_tests)
 add_test(NAME skill_slot_tests COMMAND skill_slot_tests)
 set_tests_properties(skill_slot_tests PROPERTIES TIMEOUT 60)
+
+# --- packet-read fuzz targets ----------------------------------------------
+# The replay builds of the fuzz targets and their ctests over the seed
+# corpus and tests/fuzz/regressions/; see tests/fuzz/CMakeLists.txt.
+add_subdirectory(fuzz)

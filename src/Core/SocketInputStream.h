@@ -26,6 +26,8 @@
 #include <cstring>
 #include <span>
 
+#include <type_traits>
+
 #include "Assert.h"
 #include "Exception.h"
 #include "Socket.h"
@@ -45,6 +47,12 @@ class Packet;
 //////////////////////////////////////////////////////////////////////
 
 class SocketInputStream {
+    // The unit tests and the packet-read fuzz targets load the buffer
+    // directly through this class (tests/support/SocketInputStreamTestAccess.h),
+    // as if fill() had received the bytes, so a packet can be read from
+    // memory without a socket.
+    friend class SocketInputStreamTestAccess;
+
     //////////////////////////////////////////////////
     // constructor/destructor
     //////////////////////////////////////////////////
@@ -236,7 +244,19 @@ inline uint SocketInputStream::read(std::span<std::byte> dst) {
 //
 //////////////////////////////////////////////////////////////////////
 template <de::WireScalar T> uint SocketInputStream::read(T& buf) {
-    return read(std::span<std::byte>(reinterpret_cast<std::byte*>(&buf), sizeof(T)));
+    if constexpr (std::is_same_v<T, bool>) {
+        // A bool holds 0 or 1 and nothing else, and a sender can put any
+        // byte on the wire, so the byte is read as a byte and every
+        // nonzero value is true. Writers put 1 for true, so a well-formed
+        // stream reads exactly as before.
+        static_assert(sizeof(bool) == 1, "a wire bool is one byte");
+        unsigned char byte = 0;
+        const uint n = read(std::span<std::byte>(reinterpret_cast<std::byte*>(&byte), 1));
+        buf = byte != 0;
+        return n;
+    } else {
+        return read(std::span<std::byte>(reinterpret_cast<std::byte*>(&buf), sizeof(T)));
+    }
 }
 
 #endif

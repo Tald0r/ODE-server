@@ -101,18 +101,20 @@ string PCSlayerInfo3::toString() const {
 
     msg << "PCSlayerInfo3(" << "ObjectID:" << m_ObjectID << ",Name:" << m_Name << ",X:" << (int)m_X << ",Y:" << (int)m_Y
         << ",Dir:" << dir2String(m_Dir) << ",Sex:" << sex2String(getSex())
-        << ",HairStyle:" << HairStyle2String[getHairStyle()] << ",HairColor:" << (int)getHairColor()
-        << ",SkinColor:" << (int)getSkinColor() << ",Helmet:" << HelmetType2String[getHelmetType()];
+        << ",HairStyle:" << nameOrNumber(HairStyle2String, getHairStyle()) << ",HairColor:" << (int)getHairColor()
+        << ",SkinColor:" << (int)getSkinColor() << ",Helmet:" << nameOrNumber(HelmetType2String, getHelmetType());
 
     if (getHelmetType() != HELMET_NONE)
         msg << ",HelmetColor:" << (int)getHelmetColor();
 
-    msg << ",Jacket:" << JacketType2String[getJacketType()] << ",JacketColor:" << (int)getJacketColor(MAIN_COLOR) << "/"
-        << (int)getJacketColor(SUB_COLOR) << ",Pants:" << PantsType2String[getPantsType()]
+    msg << ",Jacket:" << nameOrNumber(JacketType2String, getJacketType())
+        << ",JacketColor:" << (int)getJacketColor(MAIN_COLOR) << "/" << (int)getJacketColor(SUB_COLOR)
+        << ",Pants:" << nameOrNumber(PantsType2String, getPantsType())
         << ",PantsColor:" << (int)getPantsColor(MAIN_COLOR) << "/" << (int)getPantsColor(SUB_COLOR)
-        << ",Weapon:" << WeaponType2String[getWeaponType()] << ",WeaponColor:" << (int)getWeaponColor()
-        << ",Shield:" << ShieldType2String[getShieldType()] << ",ShieldColor:" << (int)getShieldColor()
-        << ",Motorcycle:" << MotorcycleType2String[getMotorcycleType()] << ",Shoulder:" << (int)getShoulderType();
+        << ",Weapon:" << nameOrNumber(WeaponType2String, getWeaponType()) << ",WeaponColor:" << (int)getWeaponColor()
+        << ",Shield:" << nameOrNumber(ShieldType2String, getShieldType()) << ",ShieldColor:" << (int)getShieldColor()
+        << ",Motorcycle:" << nameOrNumber(MotorcycleType2String, getMotorcycleType())
+        << ",Shoulder:" << (int)getShoulderType();
 
     if (getMotorcycleType() != MOTORCYCLE_NONE)
         msg << ",MotorcycleColor:" << (int)getMotorcycleColor();

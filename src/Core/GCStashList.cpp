@@ -72,6 +72,8 @@ void GCStashList::read(SocketInputStream& iStream)
     for (i = 0; i < nTotal; i++) {
         iStream.read(rack);
         iStream.read(index);
+        if (rack >= STASH_RACK_MAX || index >= STASH_INDEX_MAX)
+            throw InvalidProtocolException("stash slot out of range");
         _STASHITEM& item = m_pItems[rack][index];
         iStream.read(item.objectID);
         iStream.read(item.itemClass);

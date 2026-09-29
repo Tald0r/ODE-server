@@ -233,7 +233,7 @@ string PCOustersInfo2::toString() const {
     StringStream msg;
 
     msg << "PCOustersInfo2(" << "ObjectID:" << m_ObjectID << ",Name:" << m_Name << ",Level:" << m_Level
-        << ",Sex:" << Sex2String[m_Sex] << ",HairColor:" << (int)m_HairColor
+        << ",Sex:" << nameOrNumber(Sex2String, m_Sex) << ",HairColor:" << (int)m_HairColor
         << ",MasterEffectColor:" << (int)m_MasterEffectColor << ",Alignment:" << (int)m_Alignment
         << ",STR[CURRENT]:" << (int)m_STR[ATTR_CURRENT] << ",STR[MAX]:" << (int)m_STR[ATTR_MAX]
         << ",STR[BASIC]:" << (int)m_STR[ATTR_BASIC] << ",DEX[CURRENT]:" << (int)m_DEX[ATTR_CURRENT]
