@@ -841,13 +841,15 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   and asserts the same parity vectors on every client toolchain. Six
   slices, each a server change followed by the client's: (1) the shop
   buy, sell and repair price and the maximum durability; (2) the per-class
-  grade policy and durability class table; (3) client callers of the
-  existing de-core functions (client only); (4) equip requirements; (5)
+  grade policy and durability class table; (3) the existing de-core
+  functions the client calls (server: their parity vectors and the
+  steal-ratio cast; client: the callers); (4) equip requirements; (5)
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
-  > **Status:** in progress (slice 1's client copy and adapters, on the
-  > client's `feat/shared-price-rules`; slice 2's client half; then slices
-  > 3-6) — slice 1's server half is in:
+  > **Status:** in progress (slice 2's client half, on the client's
+  > `feat/shared-grade-policy`; slice 3's client half; then slices 4-6) —
+  > slice 1 is in on both sides (the client's in its PR #285). Its server
+  > half:
   > `ItemPrice` and `ItemDurability`, with `PriceManager`,
   > `computeMaxDurability`, `ConcreteItem::getMaxDurability` and the skull
   > sale as adapters.
@@ -860,6 +862,20 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > copy. Classes not built on `ConcreteItem` are `None` with no
   > durability, and their maximum durability is 1, not
   > `maxDurabilityBase` — the client's motorcycle must not use it.
+  > Slice 3's server half is in: `src/domain/vectors/stats.tsv` pins every
+  > function the client calls next, all already in `Formulas.cpp` — the
+  > slayer, vampire and ousters to-hit, defense, protection and min/max
+  > damage (its character-select preview), `vampireSkillConsumeMP` and
+  > `vampireDexHPRegenBonus` — and the three steal ratios, whose cast to a
+  > byte now goes through `int` (defined, and what x86-64 always computed;
+  > `docs/FIXES.md`). The client's `decore_tests` must learn its row kinds,
+  > which the stats.tsv header lays out: the six `StatAttr` columns with the
+  > weapon written by its `WeaponFamily` name, an int column after them for
+  > the damage bonus or the steal amount, plain-int rows for the other
+  > steal ratios, `vampireSkillConsumeMP` and `vampireDexHPRegenBonus`, and
+  > the twenty function names. None of these
+  > functions indexes a table; the unchecked party-table index is in
+  > `SkillOutputFormulas.cpp`, for slice 6.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
   > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out

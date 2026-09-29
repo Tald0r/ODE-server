@@ -13,6 +13,39 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Shared stat rules (2026-09-28)
+
+The client is about to call de-core's stat, skill MP and HP regen
+functions, and its test suite asserts `src/domain/vectors/stats.tsv` on
+every client toolchain, so the one piece of undefined behaviour in those
+formulas is defined first:
+
+- **The steal ratio narrowed a negative double to a byte.**
+  `slayerStealRatio`, `vampireStealRatio` and `oustersStealRatio` computed
+  `(Byte)(base - (float)amount * 1.4)`, which truncates below zero from
+  amount 48 on the 65% base (a slayer with a cross, mace, gun or other
+  weapon) and from 65 on the 90% base (bare hands, sword, blade, and every
+  vampire and ousters). Converting such a value straight to an unsigned
+  byte is undefined. x86-64 builds convert through a 32-bit int and keep
+  the low byte, so production returned 255 at 90% and amount 65, 254 at
+  65% and amount 48, and 245 at 90% and amount 255. The arm64 builds did
+  not: a scratch build of the old source returned 0 at -O0 and the
+  negative int itself at -O2, and Zig's checked Debug build traps on every
+  target. The conversion is now `(Byte)(int)(...)`, which is defined and
+  is what x86-64 did, so it is balance-neutral in production. The
+  evidence: the old and new functions, built for x86-64 by the container's
+  Zig at -O0 and -O2 and run under emulation, agree on every weapon family
+  for amounts -300 to 1000 (11,709 calls, 0 mismatches); on arm64 they
+  disagree on 1,787 of the 2,304 calls for amounts 0 to 255.
+  `formula_tests` built at -O2 for x86-64 against the old `Formulas.cpp`
+  passes every new row. The wrap is pinned by the
+  `slayer-steal-<family>-<amount>`, `vampire-steal-<amount>` and
+  `ousters-steal-<amount>` rows of `stats.tsv` and by
+  `StealRatio.RatioBelowZeroWrapsToAByte`. Whether a steal ratio that
+  wraps to 255 should instead be 0 is a balance question this change does
+  not answer.
+  > **Status:** fixed (feat/shared-stat-rules)
+
 ## Review follow-ups (2026-09-28)
 
 Defects a review of the four preceding changes found in them or next to

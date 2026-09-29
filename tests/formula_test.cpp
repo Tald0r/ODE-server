@@ -236,6 +236,20 @@ TEST(StealRatio, WeaponFamilyPicksTheBase) {
     EXPECT_EQ(0, decore::vampireStealRatio(0));
 }
 
+TEST(StealRatio, RatioBelowZeroWrapsToAByte) {
+    // The ratio passes through int before it is narrowed to a byte, so a
+    // ratio below zero wraps on every target, as x86-64's own conversion
+    // does, instead of being undefined. 90 - 65*1.4 is exactly -1.
+    EXPECT_EQ(0, decore::vampireStealRatio(64));
+    EXPECT_EQ(255, decore::vampireStealRatio(65));
+    EXPECT_EQ(255, decore::oustersStealRatio(65));
+    EXPECT_EQ(245, decore::vampireStealRatio(255));
+    // The 65 base: 65 - 47*1.4 truncates to 0, 65 - 48*1.4 to -2.
+    EXPECT_EQ(0, decore::slayerStealRatio(attr(0, 0, 0, 0, WeaponFamily::Mace, 0), 47));
+    EXPECT_EQ(254, decore::slayerStealRatio(attr(0, 0, 0, 0, WeaponFamily::Mace, 0), 48));
+    EXPECT_EQ(255, decore::slayerStealRatio(attr(0, 0, 0, 0, WeaponFamily::Blade, 0), 65));
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Combat / progression
 //////////////////////////////////////////////////////////////////////////
@@ -1052,6 +1066,33 @@ std::string gradePolicyName(decore::GradePolicy policy) {
     return "?";
 }
 
+// The weapon families, and the names the vector files spell them by: the
+// enumerator names.
+std::vector<WeaponFamily> allWeaponFamilies() {
+    return {WeaponFamily::None, WeaponFamily::Sword, WeaponFamily::Blade, WeaponFamily::Cross,
+            WeaponFamily::Mace, WeaponFamily::Arms,  WeaponFamily::Other};
+}
+
+std::string weaponFamilyName(WeaponFamily weapon) {
+    switch (weapon) {
+    case WeaponFamily::None:
+        return "None";
+    case WeaponFamily::Sword:
+        return "Sword";
+    case WeaponFamily::Blade:
+        return "Blade";
+    case WeaponFamily::Cross:
+        return "Cross";
+    case WeaponFamily::Mace:
+        return "Mace";
+    case WeaponFamily::Arms:
+        return "Arms";
+    case WeaponFamily::Other:
+        return "Other";
+    }
+    return "?";
+}
+
 // One row's inputs, read left to right. A malformed field records an error
 // and reads as 0, so the row fails with a message rather than a throw. An
 // empty field is malformed wherever a number is read: a doubled tab or a
@@ -1117,6 +1158,27 @@ public:
         return decore::GradePolicy::None;
     }
 
+    WeaponFamily weaponFamily() {
+        const std::string text = next();
+        for (WeaponFamily weapon : allWeaponFamilies())
+            if (text == weaponFamilyName(weapon))
+                return weapon;
+        fail("not a weapon family: \"" + text + "\"");
+        return WeaponFamily::None;
+    }
+
+    // The six StatAttr fields in declaration order.
+    StatAttr statAttr() {
+        StatAttr a;
+        a.str = (int)integer();
+        a.dex = (int)integer();
+        a.inte = (int)integer();
+        a.level = (int)integer();
+        a.weapon = weaponFamily();
+        a.weaponDomainLevel = (int)integer();
+        return a;
+    }
+
     // Every input consumed, and exactly the expected column left.
     void finish() {
         if (m_Next + 1 != m_Fields.size())
@@ -1159,6 +1221,34 @@ decore::ItemPriceInput readPriceItem(RowReader& in, std::vector<int>& multiplier
     input.curDurability = (unsigned)in.integer();
     input.maxDurability = (unsigned)in.integer();
     return input;
+}
+
+// The stat functions a row names, by the arguments they take after the
+// StatAttr.
+const std::map<std::string, int (*)(const StatAttr&)>& statFunctions() {
+    static const std::map<std::string, int (*)(const StatAttr&)> functions = {
+        {"slayerToHit", decore::slayerToHit},
+        {"vampireToHit", decore::vampireToHit},
+        {"oustersToHit", decore::oustersToHit},
+        {"slayerDefense", decore::slayerDefense},
+        {"vampireDefense", decore::vampireDefense},
+        {"oustersDefense", decore::oustersDefense},
+        {"slayerProtection", decore::slayerProtection},
+        {"vampireProtection", decore::vampireProtection},
+        {"oustersProtection", decore::oustersProtection},
+        {"oustersMinDamage", decore::oustersMinDamage},
+        {"oustersMaxDamage", decore::oustersMaxDamage},
+    };
+    return functions;
+}
+
+const std::map<std::string, int (*)(const StatAttr&, int)>& statFunctionsWithInt() {
+    static const std::map<std::string, int (*)(const StatAttr&, int)> functions = {
+        {"slayerMinDamage", decore::slayerMinDamage},   {"slayerMaxDamage", decore::slayerMaxDamage},
+        {"vampireMinDamage", decore::vampireMinDamage}, {"vampireMaxDamage", decore::vampireMaxDamage},
+        {"slayerStealRatio", decore::slayerStealRatio},
+    };
+    return functions;
 }
 
 // Evaluates one row. Returns the result as the expected column spells it:
@@ -1231,6 +1321,33 @@ std::string evaluateRow(const std::vector<std::string>& fields, std::string& err
         int itemClass = (int)in.integer();
         in.finish();
         result = decore::hasDurability(itemClass) ? 1 : 0;
+    } else if (statFunctions().count(function) != 0) {
+        StatAttr a = in.statAttr();
+        in.finish();
+        result = statFunctions().at(function)(a);
+    } else if (statFunctionsWithInt().count(function) != 0) {
+        StatAttr a = in.statAttr();
+        int value = (int)in.integer();
+        in.finish();
+        result = statFunctionsWithInt().at(function)(a, value);
+    } else if (function == "vampireStealRatio") {
+        int amount = (int)in.integer();
+        in.finish();
+        result = decore::vampireStealRatio(amount);
+    } else if (function == "oustersStealRatio") {
+        int amount = (int)in.integer();
+        in.finish();
+        result = decore::oustersStealRatio(amount);
+    } else if (function == "vampireSkillConsumeMP") {
+        int originalMP = (int)in.integer();
+        int magicLevel = (int)in.integer();
+        int intStat = (int)in.integer();
+        in.finish();
+        result = decore::vampireSkillConsumeMP(originalMP, magicLevel, intStat);
+    } else if (function == "vampireDexHPRegenBonus") {
+        int dexBasic = (int)in.integer();
+        in.finish();
+        result = decore::vampireDexHPRegenBonus(dexBasic);
     } else {
         error = "unknown function \"" + function + "\"";
         return std::string();
@@ -1343,6 +1460,15 @@ TEST(SharedVectors, AnEmptyNumberIsAnError) {
     EXPECT_EQ(7, ok.integer());
     ok.finish();
     EXPECT_EQ("", ok.error());
+}
+
+TEST(SharedVectors, Stats) {
+    checkVectorFile("stats.tsv",
+                    {"slayerToHit",       "vampireToHit",      "oustersToHit",          "slayerDefense",
+                     "vampireDefense",    "oustersDefense",    "slayerProtection",      "vampireProtection",
+                     "oustersProtection", "slayerMinDamage",   "vampireMinDamage",      "oustersMinDamage",
+                     "slayerMaxDamage",   "vampireMaxDamage",  "oustersMaxDamage",      "slayerStealRatio",
+                     "vampireStealRatio", "oustersStealRatio", "vampireSkillConsumeMP", "vampireDexHPRegenBonus"});
 }
 
 } // namespace

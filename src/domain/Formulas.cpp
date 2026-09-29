@@ -518,6 +518,18 @@ int monsterCriticalRatio(const StatAttr& a, int enhancePercent) {
 
 //////////////////////////////////////////////////////////////////////////////
 // Steal ratio
+//
+// The ratio truncates below zero from amount 48 on the 65% base and from 65
+// on the 90% base. It is converted to int before it is narrowed to a byte, so
+// a negative ratio wraps (-1 is 255) on every target, as x86-64's own
+// conversion does. Converting a negative double straight to a byte would be
+// undefined behaviour, which arm64 resolves differently (to 0, or to the
+// negative int left in the register). amount is a BYTE on the server, so the
+// int conversion is always in range. Where amount * 1.4 is a whole number
+// (65, 70, ... on the 90% base; 50, 55, ... on the 65% base) the result also
+// depends on the multiply and the subtraction not being fused, which
+// de-core's -ffp-contract=off guarantees (DECORE_FP_FLAGS in
+// src/domain/CMakeLists.txt; the client's copy builds with the same flag).
 //////////////////////////////////////////////////////////////////////////////
 
 int slayerStealRatio(const StatAttr& a, int amount) {
@@ -533,10 +545,10 @@ int slayerStealRatio(const StatAttr& a, int amount) {
     case WeaponFamily::None:
     case WeaponFamily::Sword:
     case WeaponFamily::Blade:
-        result = (Byte)(90.0 - (float)amount * 1.4);
+        result = (Byte)(int)(90.0 - (float)amount * 1.4);
         break;
     default:
-        result = (Byte)(65.0 - (float)amount * 1.4);
+        result = (Byte)(int)(65.0 - (float)amount * 1.4);
         break;
     }
 
@@ -546,13 +558,13 @@ int slayerStealRatio(const StatAttr& a, int amount) {
 int vampireStealRatio(int amount) {
     if (amount == 0)
         return 0;
-    return (Byte)(90.0 - (float)amount * 1.4);
+    return (Byte)(int)(90.0 - (float)amount * 1.4);
 }
 
 int oustersStealRatio(int amount) {
     if (amount == 0)
         return 0;
-    return (Byte)(90.0 - (float)amount * 1.4);
+    return (Byte)(int)(90.0 - (float)amount * 1.4);
 }
 
 //////////////////////////////////////////////////////////////////////////////
