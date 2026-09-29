@@ -26,6 +26,7 @@ add_library(de-core STATIC
     ItemDurability.cpp
     ItemGrade.cpp
     ItemPrice.cpp
+    PartyExp.cpp
     SkillOutputFormulas.cpp
     SkillRange.cpp
 )
@@ -49,6 +50,12 @@ target_compile_options(de-core PRIVATE ${DECORE_FP_FLAGS})
 # decides. A warning here would be a warning in every client build, so it
 # is an error. The objects are thrown away; tests/CMakeLists.txt makes
 # wire_tests depend on this target so the suite build compiles it.
+#
+# A de-core source only the server calls stays out of this list, so the
+# client neither copies nor compiles it: PartyExp.cpp. Its parity rows are
+# in vectors/server/, a directory the client's sync and
+# tests/tools/decore_client_diff.sh do not read (they take the *.tsv files
+# directly in vectors/).
 set(DECORE_VENDORED_SOURCES
     EquipRequirement.cpp
     Formulas.cpp

@@ -61,6 +61,25 @@ what they changed:
   damage, not for a range; it is a damage rule, left where it is, and
   whether its result also depends on contraction was not measured.
   > **Status:** recorded, not fixed (feat/shared-small-rules)
+- **The five party shares split the raised experience three ways.** The
+  five sharing functions in `Party.cpp` raised the experience by the same
+  switch, now `decore::partyExpPool` (the move changes nothing: master's
+  switch and the call agree on 39,908,322 amount and member-count pairs,
+  amounts -100,000 to 1,000,000, 2^k +-3 on both signs, the int limits
+  and 1,000,000 pseudo-random ones, counts -3 to 12, 100 and the int
+  limits; 0 mismatches, also under UBSan). Each then gives a member its
+  share of the pool in proportion to its level, and those splits differ:
+  `shareAttrExp`, `shareVampireExp` and `shareOustersExp` compute
+  `(int)((float)amount * (float)level / (float)LevelSum)`, so a pool past
+  2^24 loses its low bits to the float; `shareRankExp` and
+  `shareAdvancementExp` compute `amount * level / LevelSum` in int, which
+  overflows when `amount * level` passes 2^31-1 (at level 150, a pool of
+  about 14.3 million); and `shareAdvancementExp` sums each member's level
+  plus advancement class level into `LevelSum` but shares by the level
+  alone, so its shares add up to less than the pool. Whether a kill can
+  grant a pool that large was not examined. The splits stayed in
+  `Party.cpp`, unchanged.
+  > **Status:** recorded, not fixed (feat/shared-small-rules)
 
 ## Vendorable skill output formulas (2026-09-29)
 

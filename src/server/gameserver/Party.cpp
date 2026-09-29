@@ -33,6 +33,7 @@
 #include "StringStream.h"
 #include "Vampire.h"
 #include "Zone.h"
+#include "domain/PartyExp.h"
 #include "skill/EffectActivation.h"
 #include "skill/EffectDetectHidden.h"
 #include "skill/EffectDetectInvisibility.h"
@@ -756,25 +757,7 @@ int Party::shareAttrExp(Creature* pLeader, int amount, int STRMultiplier, int DE
         return 0;
     }
 
-    switch (nMemberSize) {
-    case 2:
-        amount = getPercentValue(amount, 150);
-        break;
-    case 3:
-        amount = getPercentValue(amount, 195);
-        break;
-    case 4:
-        amount = getPercentValue(amount, 225);
-        break;
-    case 5:
-        amount = getPercentValue(amount, 250);
-        break;
-    case 6:
-        amount = getPercentValue(amount, 270);
-        break;
-    default:
-        break;
-    }
+    amount = decore::partyExpPool(amount, nMemberSize);
 
     // cout << "Amplified experience : " << amount << endl;
     // cout << "Level sum of the party members : " << LevelSum << endl;
@@ -907,25 +890,7 @@ int Party::shareVampireExp(Creature* pLeader, int amount, ModifyInfo& LeaderModi
         return 0;
     }
 
-    switch (nMemberSize) {
-    case 2:
-        amount = getPercentValue(amount, 150);
-        break;
-    case 3:
-        amount = getPercentValue(amount, 195);
-        break;
-    case 4:
-        amount = getPercentValue(amount, 225);
-        break;
-    case 5:
-        amount = getPercentValue(amount, 250);
-        break;
-    case 6:
-        amount = getPercentValue(amount, 270);
-        break;
-    default:
-        break;
-    }
+    amount = decore::partyExpPool(amount, nMemberSize);
 
     // cout << "Amplified experience : " << amount << endl;
     // cout << "Level sum of the party members : " << LevelSum << endl;
@@ -1021,25 +986,7 @@ int Party::shareOustersExp(Creature* pLeader, int amount, ModifyInfo& LeaderModi
         return 0;
     }
 
-    switch (nMemberSize) {
-    case 2:
-        amount = getPercentValue(amount, 150);
-        break;
-    case 3:
-        amount = getPercentValue(amount, 195);
-        break;
-    case 4:
-        amount = getPercentValue(amount, 225);
-        break;
-    case 5:
-        amount = getPercentValue(amount, 250);
-        break;
-    case 6:
-        amount = getPercentValue(amount, 270);
-        break;
-    default:
-        break;
-    }
+    amount = decore::partyExpPool(amount, nMemberSize);
 
     // Raise the experience of each party member.
     list<Creature*>::iterator itr = MemberList.begin();
@@ -1146,25 +1093,7 @@ void Party::shareRankExp(Creature* pLeader, int otherLevel)
         return;
     }
 
-    switch (nMemberSize) {
-    case 2:
-        amount = getPercentValue(amount, 150);
-        break;
-    case 3:
-        amount = getPercentValue(amount, 195);
-        break;
-    case 4:
-        amount = getPercentValue(amount, 225);
-        break;
-    case 5:
-        amount = getPercentValue(amount, 250);
-        break;
-    case 6:
-        amount = getPercentValue(amount, 270);
-        break;
-    default:
-        break;
-    }
+    amount = decore::partyExpPool(amount, nMemberSize);
 
     // cout << "Amplified experience : " << amount << endl;
     // cout << "Level sum of the party members : " << LevelSum << endl;
@@ -1257,25 +1186,7 @@ void Party::shareAdvancementExp(Creature* pLeader, int amount)
         return;
     }
 
-    switch (nMemberSize) {
-    case 2:
-        amount = getPercentValue(amount, 150);
-        break;
-    case 3:
-        amount = getPercentValue(amount, 195);
-        break;
-    case 4:
-        amount = getPercentValue(amount, 225);
-        break;
-    case 5:
-        amount = getPercentValue(amount, 250);
-        break;
-    case 6:
-        amount = getPercentValue(amount, 270);
-        break;
-    default:
-        break;
-    }
+    amount = decore::partyExpPool(amount, nMemberSize);
 
     // cout << "Amplified experience : " << amount << endl;
     // cout << "Level sum of the party members : " << LevelSum << endl;

@@ -847,7 +847,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
   > **Status:** in progress (the client halves of slices 4, 5, 6a and
-  > 6b; the rest of 6b's server half: party share, darkness) —
+  > 6b; the rest of 6b's server half: darkness) —
   > slices 1 to 3 are in on both sides
   > (server PRs #276 to #280, client PRs #285 to #287).
   > Slice 1: `ItemPrice` and `ItemDurability`, with `PriceManager`,
@@ -915,10 +915,22 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > (`docs/FIXES.md`). `src/domain/vectors/skill_range.tsv` pins it; the
   > client's `decore_tests` must learn the row (minRange, maxRange,
   > expLevel, expected), and its `third_party/decore/CMakeLists.txt` must
-  > list `domain/SkillRange.cpp`.
+  > list `domain/SkillRange.cpp`. `partyExpPool` (`PartyExp`, server
+  > only, not vendored) is the percentage a party's size adds to the
+  > experience it shares (150 to 270 for 2 to 6 members), which the five
+  > sharing functions of `Party.cpp` each carried as a switch; they keep
+  > their own splits of the pool, three in float and two in int
+  > (`docs/FIXES.md`). The skill experience and fame party bonuses
+  > (`skill/SkillExperience.cpp`) are other tables and stay there.
+  > `src/domain/vectors/server/party_exp.tsv` pins it; the client does not
+  > compute it.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
-  > `src/domain/vectors/*.tsv`; every file under `src/domain` is checked out
+  > `src/domain/vectors/*.tsv`. A de-core source only the server calls
+  > stays out of that list and keeps its rows in `src/domain/vectors/server/`,
+  > which neither the client's sync nor `decore_client_diff.sh` reads, so
+  > the client never sees a row it cannot evaluate; `formula_tests` asserts
+  > them like the others. Every file under `src/domain` is checked out
   > LF (`.gitattributes`), as the client's copy is. Code in it
   > quote-includes only existing
   > `"domain/X.h"` headers and angle-includes only `<algorithm>` and

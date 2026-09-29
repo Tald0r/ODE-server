@@ -13,6 +13,8 @@
 // de-core) are pinned by the vector files in src/domain/vectors, one
 // data-driven TEST per file at the end of this file. The client asserts the
 // same files, so a row there is a contract with every client toolchain.
+// The rows of the de-core functions only the server calls are in
+// src/domain/vectors/server, which the client does not copy.
 
 #include <cstdio>
 #include <cstdlib>
@@ -31,6 +33,7 @@
 #include "domain/ItemDurability.h"
 #include "domain/ItemGrade.h"
 #include "domain/ItemPrice.h"
+#include "domain/PartyExp.h"
 #include "domain/SkillOutputFormulas.h"
 #include "domain/SkillRange.h"
 
@@ -1054,7 +1057,8 @@ TEST(InitAllStatBonus, BloodBibleSignFameLadders) {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Shared parity vectors (src/domain/vectors/*.tsv)
+// Shared parity vectors (src/domain/vectors/*.tsv, and the server-only
+// rows in src/domain/vectors/server/*.tsv)
 //
 // Each non-comment line is one call: function name, row name, the inputs,
 // and the expected result in the last column. UPDATE_GOLDENS=1 rewrites
@@ -1553,6 +1557,11 @@ std::string evaluateRow(const std::vector<std::string>& fields, std::string& err
         int expLevel = in.intInteger();
         in.finish();
         result = decore::skillRange(minRange, maxRange, expLevel);
+    } else if (function == "partyExpPool") {
+        int amount = in.intInteger();
+        int memberCount = in.intInteger();
+        in.finish();
+        result = decore::partyExpPool(amount, memberCount);
     } else {
         error = "unknown function \"" + function + "\"";
         return std::string();
@@ -1732,6 +1741,12 @@ TEST(SharedVectors, SkillOutput) {
 
 TEST(SharedVectors, SkillRange) {
     checkVectorFile("skill_range.tsv", {"skillRange"});
+}
+
+// The rows of de-core functions only the server calls, which the client
+// does not copy: they are in vectors/server/.
+TEST(SharedVectors, PartyExp) {
+    checkVectorFile("server/party_exp.tsv", {"partyExpPool"});
 }
 
 // A gun class is one of the five enumerator names, spelled exactly.
