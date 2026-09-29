@@ -56,6 +56,7 @@
 #include "TimeLimitItemManager.h"
 #include "VariableManager.h"
 #include "WarSystem.h"
+#include "domain/EquipRequirement.h"
 #include "item/AR.h"
 #include "item/Belt.h"
 #include "item/OustersArmsband.h"
@@ -73,8 +74,6 @@
 #include "skill/OustersCastleSkillSlot.h"
 
 const Color_t QUEST_COLOR = 0xFFFE;
-
-const Level_t MAX_OUSTERS_LEVEL = 150;
 
 Ousters::Ousters()
 
@@ -1281,41 +1280,11 @@ bool Ousters::isRealWearing(Item* pItem) const
             return false;
     }
 
-    Level_t ReqLevel = pItemInfo->getReqLevel();
-    Attr_t ReqSTR = pItemInfo->getReqSTR();
-    Attr_t ReqDEX = pItemInfo->getReqDEX();
-    Attr_t ReqINT = pItemInfo->getReqINT();
-    Attr_t ReqSum = pItemInfo->getReqSum();
-
-    const list<OptionType_t>& optionTypes = pItem->getOptionTypeList();
-    list<OptionType_t>::const_iterator itr;
-
-    for (itr = optionTypes.begin(); itr != optionTypes.end(); itr++) {
-        OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(*itr);
-        if (ReqLevel != 0)
-            ReqLevel += pOptionInfo->getReqLevel();
-        if (ReqSTR != 0)
-            ReqSTR += (pOptionInfo->getReqSum() * 2);
-        if (ReqDEX != 0)
-            ReqDEX += (pOptionInfo->getReqSum() * 2);
-        if (ReqINT != 0)
-            ReqINT += (pOptionInfo->getReqSum() * 2);
-        if (ReqSum != 0)
-            ReqSum += pOptionInfo->getReqSum();
-    }
-
-    ReqLevel = min(ReqLevel, MAX_OUSTERS_LEVEL);
-
-    Attr_t CSTR = m_STR[ATTR_CURRENT];
-    Attr_t CDEX = m_DEX[ATTR_CURRENT];
-    Attr_t CINT = m_INT[ATTR_CURRENT];
-    Attr_t CSUM = CSTR + CDEX + CINT;
-
-    if (CSTR < ReqSTR || CDEX < ReqDEX || CINT < ReqINT || CSUM < ReqSum || m_Level < ReqLevel) {
-        return false;
-    }
-
-    return true;
+    // The item's requirement raised by its options and capped, against
+    // the ousters' current STR, DEX, INT and their sum, and level.
+    const decore::EquipRequirement required = computeEquipRequirement(decore::EquipRace::Ousters, pItem, pItemInfo);
+    const decore::EquipStats current = {m_STR[ATTR_CURRENT], m_DEX[ATTR_CURRENT], m_INT[ATTR_CURRENT], m_Level, m_Sex};
+    return decore::meetsRequirement(decore::EquipRace::Ousters, required, current);
 
     __END_CATCH
 }

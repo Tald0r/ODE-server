@@ -57,6 +57,7 @@
 #include "TimeLimitItemManager.h"
 #include "VariableManager.h"
 #include "WarSystem.h"
+#include "domain/EquipRequirement.h"
 #include "item/AR.h"
 #include "item/Belt.h"
 #include "item/PetItem.h"
@@ -72,10 +73,6 @@
 #include "skill/VampireCastleSkillSlot.h"
 
 const Color_t QUEST_COLOR = 0xFFFE;
-
-const Level_t MAX_VAMPIRE_LEVEL = 150;
-const Level_t MAX_VAMPIRE_LEVEL_OLD = 100;
-
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -1336,12 +1333,8 @@ bool Vampire::isRealWearing(Item* pItem) const
             return false;
     }
 
-    if (pItem->isTimeLimitItem()) {
-        Attr_t ReqGender = pItemInfo->getReqGender();
-        if ((m_Sex == MALE && ReqGender == GENDER_FEMALE) || (m_Sex == FEMALE && ReqGender == GENDER_MALE))
-            return false;
-        return true;
-    }
+    if (pItem->isTimeLimitItem())
+        return decore::genderAllows(m_Sex, pItemInfo->getReqGender());
 
     // In a premium zone only paying users get unique/rare items applied.
     // Couple rings are usable only by paying users as well.
@@ -1357,39 +1350,11 @@ bool Vampire::isRealWearing(Item* pItem) const
     if (isCoupleRing(pItem))
         return true;
 
-    Level_t ReqLevel = pItemInfo->getReqLevel();
-    Attr_t ReqGender = pItemInfo->getReqGender();
-
-    // If the base item's requirement is over level 100, the requirement may rise to 150
-    // including options. Otherwise it is capped at 100 even including options.
-    // 2003.3.21 by Sequoia
-    Level_t ReqLevelMax = ((ReqLevel > MAX_VAMPIRE_LEVEL_OLD) ? MAX_VAMPIRE_LEVEL : MAX_VAMPIRE_LEVEL_OLD);
-
-    // If the item has options,
-    // raise the attribute requirement according to the kinds of option.
-    const list<OptionType_t>& optionTypes = pItem->getOptionTypeList();
-    list<OptionType_t>::const_iterator itr;
-
-    for (itr = optionTypes.begin(); itr != optionTypes.end(); itr++) {
-        OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(*itr);
-        ReqLevel += pOptionInfo->getReqLevel();
-    }
-
-    // 2003.1.6 by Sequoia, Bezz
-    ReqLevel = min(ReqLevel, ReqLevelMax);
-
-    // If there is any attribute requirement,
-    // check that the requirement is met.
-    if (ReqLevel > 0 || ReqGender != GENDER_BOTH) {
-        if (ReqLevel > 0 && m_Level < ReqLevel)
-            return false;
-        if (m_Sex == MALE && ReqGender == GENDER_FEMALE)
-            return false;
-        if (m_Sex == FEMALE && ReqGender == GENDER_MALE)
-            return false;
-    }
-
-    return true;
+    // The item's requirement raised by its options and capped, against
+    // the vampire's level and sex.
+    const decore::EquipRequirement required = computeEquipRequirement(decore::EquipRace::Vampire, pItem, pItemInfo);
+    const decore::EquipStats current = {0, 0, 0, m_Level, m_Sex};
+    return decore::meetsRequirement(decore::EquipRace::Vampire, required, current);
 
     __END_CATCH
 }

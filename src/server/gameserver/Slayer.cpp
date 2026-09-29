@@ -93,6 +93,7 @@
 #include "Store.h"
 #include "SystemAvailabilitiesManager.h"
 #include "TimeLimitItemManager.h"
+#include "domain/EquipRequirement.h"
 #include "skill/SkillUtil.h"
 #include "types/ServerType.h"
 
@@ -100,11 +101,6 @@ const Color_t UNIQUE_OPTION = 0xFFFF;
 
 const Color_t QUEST_COLOR = 0xFFFE;
 const Color_t QUEST_OPTION = 0xFFFE;
-
-const Attr_t MAX_SLAYER_ATTR = 290;
-const Attr_t MAX_SLAYER_SUM = 435;
-const Attr_t MAX_SLAYER_ATTR_OLD = 200;
-const Attr_t MAX_SLAYER_SUM_OLD = 300;
 
 Slayer::Slayer()
 
@@ -1654,12 +1650,8 @@ bool Slayer::isRealWearing(Item* pItem) const
     }
 
     // Time-limited items work for free users too, rare or unique.
-    if (pItem->isTimeLimitItem()) {
-        Attr_t ReqGender = pItemInfo->getReqGender();
-        if ((m_Sex == MALE && ReqGender == GENDER_FEMALE) || (m_Sex == FEMALE && ReqGender == GENDER_MALE))
-            return false;
-        return true;
-    }
+    if (pItem->isTimeLimitItem())
+        return decore::genderAllows(m_Sex, pItemInfo->getReqGender());
 
     // In a premium zone only paying users get unique/rare items applied.
     // A couple ring is also only usable by paying users.
@@ -1677,63 +1669,12 @@ bool Slayer::isRealWearing(Item* pItem) const
         return true;
     }
 
-    Attr_t ReqSTR = pItemInfo->getReqSTR();
-    Attr_t ReqDEX = pItemInfo->getReqDEX();
-    Attr_t ReqINT = pItemInfo->getReqINT();
-    Attr_t ReqSum = pItemInfo->getReqSum();
-    Attr_t ReqGender = pItemInfo->getReqGender();
-
-    // If the base item's total attribute requirement is over 300, the requirement including options may
-    // reach 435. If the base requirement is 300 or less, options included it must not exceed 300.
-    // The same applies to the others.
-    Attr_t ReqSumMax = ((ReqSum > MAX_SLAYER_SUM_OLD) ? MAX_SLAYER_SUM : MAX_SLAYER_SUM_OLD);
-    Attr_t ReqSTRMax = ((ReqSTR > MAX_SLAYER_ATTR_OLD) ? MAX_SLAYER_ATTR : MAX_SLAYER_ATTR_OLD);
-    Attr_t ReqDEXMax = ((ReqDEX > MAX_SLAYER_ATTR_OLD) ? MAX_SLAYER_ATTR : MAX_SLAYER_ATTR_OLD);
-    Attr_t ReqINTMax = ((ReqINT > MAX_SLAYER_ATTR_OLD) ? MAX_SLAYER_ATTR : MAX_SLAYER_ATTR_OLD);
-
-    // If the item has options, raise the attribute limits
-    // according to the kinds of option.
-    const list<OptionType_t>& optionTypes = pItem->getOptionTypeList();
-    if (!optionTypes.empty()) {
-        // For every option...
-        list<OptionType_t>::const_iterator itr;
-        for (itr = optionTypes.begin(); itr != optionTypes.end(); itr++) {
-            OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(*itr);
-
-            if (ReqSTR != 0)
-                ReqSTR += (pOptionInfo->getReqSum() * 2);
-            if (ReqDEX != 0)
-                ReqDEX += (pOptionInfo->getReqSum() * 2);
-            if (ReqINT != 0)
-                ReqINT += (pOptionInfo->getReqSum() * 2);
-            if (ReqSum != 0)
-                ReqSum += (pOptionInfo->getReqSum());
-        }
-    }
-
-    // 2003.1.6 by Sequoia, Bezz
-    // The Max values defined above are the ceiling.
-    ReqSTR = min(ReqSTR, ReqSTRMax);
-    ReqDEX = min(ReqDEX, ReqDEXMax);
-    ReqINT = min(ReqINT, ReqINTMax);
-    ReqSum = min(ReqSum, ReqSumMax);
-
-    // If there is any attribute requirement at all, check that
-    // the character meets it.
-    Attr_t CSTR = m_STR[ATTR_CURRENT];
-    Attr_t CDEX = m_DEX[ATTR_CURRENT];
-    Attr_t CINT = m_INT[ATTR_CURRENT];
-    Attr_t CSUM = CSTR + CDEX + CINT;
-
-    if (CSTR < ReqSTR || CDEX < ReqDEX || CINT < ReqINT || CSUM < ReqSum ||
-        (m_Sex == MALE && ReqGender == GENDER_FEMALE) || (m_Sex == FEMALE && ReqGender == GENDER_MALE)) {
-        // cout << "Disable: " << pItem->getItemClassName().c_str() << endl;
-        return false;
-    }
-
-    // cout << "Enable: " << pItem->getItemClassName().c_str() << endl;
-
-    return true;
+    // The item's requirement raised by its options and capped, against
+    // the slayer's current STR, DEX, INT and their sum, and sex. A slayer
+    // has no level requirement.
+    const decore::EquipRequirement required = computeEquipRequirement(decore::EquipRace::Slayer, pItem, pItemInfo);
+    const decore::EquipStats current = {m_STR[ATTR_CURRENT], m_DEX[ATTR_CURRENT], m_INT[ATTR_CURRENT], 0, m_Sex};
+    return decore::meetsRequirement(decore::EquipRace::Slayer, required, current);
 
     __END_CATCH
 }

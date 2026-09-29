@@ -1,0 +1,265 @@
+# Shared parity vectors: decore::requiredStats, meetsRequirement and
+# genderAllows (src/domain/EquipRequirement.h), the three races' item
+# requirement. The server's Slayer, Vampire and Ousters::isRealWearing call
+# them; the client calls them from slice 4 for the requirement its item
+# descriptions show (MItem's GetRequire*) and for whether its character may
+# use an item (MCreature::CheckAffectStatus), in place of its own copies,
+# whose caps and rules differed. Every row is asserted for exact equality by
+# the server's formula_tests and by the client's decore_tests on every
+# client toolchain. A changed expected value is a balance change: review it
+# as one. UPDATE_GOLDENS=1 formula_tests rewrites the expected column only.
+#
+# Tab-separated, one row per call: function, row name, the inputs, and the
+# expected result last. A race is written by its EquipRace enumerator name
+# (Slayer, Vampire, Ousters). An option list is comma-separated in the
+# item's option order, "-" for none; the sum and level lists of a row have
+# one entry per option.
+#
+# requiredStats columns: race, the six EquipRequirement fields of the item
+#   table's requirement (str dex inte sum level gender), optionReqSums,
+#   optionReqLevels, expected: the six fields of the result,
+#   comma-separated. The server passes its ItemInfo's requirement and each
+#   OptionInfo's getReqSum and getReqLevel.
+# meetsRequirement columns: race, the six EquipRequirement fields, the five
+#   EquipStats fields (str dex inte level sex), expected 0 or 1. The server
+#   passes the wearer's current STR, DEX and INT, level and sex.
+# genderAllows columns: sex reqGender expected (0 or 1). Sex is 0 female,
+#   1 male; a gender requirement is 0 both, 1 male, 2 female.
+#
+# The caps: a slayer's STR, DEX and INT at 200, or 290 when the table asks
+# for more than 200 (the client used 295); the sum at 300, or 435 above
+# 300; a vampire's level at 100, or 150 above 100; an ousters' level at 150,
+# its STR, DEX, INT and sum never. Requirements and stats wrap as the
+# server stores them, 16 bits (the gender too) and 8 bits for a level, and
+# each option is added to the wrapped running value: a level of 150 raised
+# by 120 asks for 14, and a slayer's or an ousters' requirement that wraps
+# to 0 is not raised by later options. A vampire's options raise a level
+# requirement of 0; the slayer's and the ousters' leave a requirement of 0
+# alone. A field a race does not read passes through requiredStats as
+# given and is ignored by meetsRequirement. The client's quest-item and
+# other-race handling is its own, not these functions'.
+#
+# Named rows cover every branch, cap edge and wrap of each race; the grid-*
+# rows are item tables with STR/DEX/INT {0/0/0, 120/130/60, 260/270/130},
+# sum {0, 280, 400}, level {0, 90, 130} and a gender cycling 1, 2, 0 for
+# each race, with no option, one option (sum 10, level 10) or two (sums 30
+# and 40, levels 25 and 40) in turn, and four wearers per race against the
+# requirement of an item table 120/130/60/280/90 with one option (10, 10).
+requiredStats	slayer-no-options	Slayer	50	40	30	120	0	0	-	-	50,40,30,120,0,0
+requiredStats	slayer-one-option	Slayer	50	40	30	120	0	0	5	0	60,50,40,125,0,0
+requiredStats	slayer-option-reqsum-0	Slayer	50	40	30	120	0	0	0	0	50,40,30,120,0,0
+requiredStats	slayer-several-options	Slayer	50	40	30	120	0	0	5,10,3	0,0,0	86,76,66,138,0,0
+requiredStats	slayer-zero-str-int-not-raised	Slayer	0	40	0	120	0	0	5	0	0,50,0,125,0,0
+requiredStats	slayer-zero-sum-not-raised	Slayer	50	0	0	0	0	0	5	0	60,0,0,0,0,0
+requiredStats	slayer-all-zero-with-options	Slayer	0	0	0	0	0	0	30,40	0,0	0,0,0,0,0,0
+requiredStats	slayer-attr-at-old-cap-no-options	Slayer	200	200	200	300	0	0	-	-	200,200,200,300,0,0
+requiredStats	slayer-attr-200-keeps-old-cap	Slayer	200	150	100	250	0	0	30	0	200,200,160,280,0,0
+requiredStats	slayer-attr-old-cap-reached-exactly	Slayer	180	180	180	250	0	0	10	0	200,200,200,260,0,0
+requiredStats	slayer-attr-old-cap-passed-by-1	Slayer	181	181	181	250	0	0	10	0	200,200,200,260,0,0
+requiredStats	slayer-attr-201-takes-new-cap	Slayer	201	201	201	250	0	0	50	0	290,290,290,300,0,0
+requiredStats	slayer-attr-new-cap-reached-exactly	Slayer	250	250	250	350	0	0	20	0	290,290,290,370,0,0
+requiredStats	slayer-attr-new-cap-passed-by-2	Slayer	250	250	250	350	0	0	21	0	290,290,290,371,0,0
+requiredStats	slayer-attr-above-new-cap-no-options	Slayer	300	291	500	350	0	0	-	-	290,290,290,350,0,0
+requiredStats	slayer-cap-chosen-per-attr	Slayer	201	200	199	250	0	0	60	0	290,200,200,300,0,0
+requiredStats	slayer-sum-300-keeps-old-cap	Slayer	100	100	100	300	0	0	10	0	120,120,120,300,0,0
+requiredStats	slayer-sum-old-cap-reached-exactly	Slayer	100	100	100	250	0	0	50	0	200,200,200,300,0,0
+requiredStats	slayer-sum-301-takes-new-cap	Slayer	100	100	100	301	0	0	200	0	200,200,200,435,0,0
+requiredStats	slayer-sum-new-cap-reached-exactly	Slayer	100	100	100	434	0	0	1	0	102,102,102,435,0,0
+requiredStats	slayer-sum-new-cap-passed-by-1	Slayer	100	100	100	435	0	0	1	0	102,102,102,435,0,0
+requiredStats	slayer-sum-above-new-cap-no-options	Slayer	100	100	100	500	0	0	-	-	100,100,100,435,0,0
+requiredStats	slayer-option-sum-360	Slayer	150	150	150	350	0	0	360	0	200,200,200,435,0,0
+requiredStats	slayer-level-passes-through	Slayer	50	40	30	120	77	0	5	40	60,50,40,125,77,0
+requiredStats	slayer-gender-male	Slayer	50	40	30	120	0	1	-	-	50,40,30,120,0,1
+requiredStats	slayer-gender-female	Slayer	50	40	30	120	0	2	-	-	50,40,30,120,0,2
+requiredStats	slayer-gender-16-bit	Slayer	50	40	30	120	0	65538	-	-	50,40,30,120,0,2
+requiredStats	slayer-negative-option-lowers	Slayer	50	40	30	120	0	0	-5	0	40,30,20,115,0,0
+requiredStats	slayer-negative-option-wraps-up-to-cap	Slayer	5	5	5	5	0	0	-10	0	200,200,200,300,0,0
+requiredStats	slayer-16-bit-wrap-under-cap	Slayer	65000	65000	65000	65500	0	0	300	0	64,64,64,264,0,0
+requiredStats	slayer-wrap-to-zero-skips-later-options	Slayer	65534	10	65534	65535	0	0	1,5	0,0	0,22,0,0,0,0
+requiredStats	slayer-input-narrowed-to-16-bits	Slayer	65736	65636	65536	65836	0	0	10	0	200,120,0,300,0,0
+requiredStats	vampire-no-options	Vampire	0	0	0	0	50	0	-	-	0,0,0,0,50,0
+requiredStats	vampire-one-option	Vampire	0	0	0	0	50	0	0	10	0,0,0,0,60,0
+requiredStats	vampire-option-reqlevel-0	Vampire	0	0	0	0	50	0	0	0	0,0,0,0,50,0
+requiredStats	vampire-several-options	Vampire	0	0	0	0	20	0	0,0,0	5,10,15	0,0,0,0,50,0
+requiredStats	vampire-zero-level-raised	Vampire	0	0	0	0	0	0	0	10	0,0,0,0,10,0
+requiredStats	vampire-zero-level-raised-by-several	Vampire	0	0	0	0	0	0	0,0	10,25	0,0,0,0,35,0
+requiredStats	vampire-level-100-keeps-old-cap	Vampire	0	0	0	0	100	0	0	5	0,0,0,0,100,0
+requiredStats	vampire-old-cap-reached-exactly	Vampire	0	0	0	0	90	0	0	10	0,0,0,0,100,0
+requiredStats	vampire-old-cap-passed	Vampire	0	0	0	0	90	0	0	20	0,0,0,0,100,0
+requiredStats	vampire-level-101-takes-new-cap	Vampire	0	0	0	0	101	0	0	20	0,0,0,0,121,0
+requiredStats	vampire-new-cap-reached-exactly	Vampire	0	0	0	0	140	0	0	10	0,0,0,0,150,0
+requiredStats	vampire-new-cap-passed	Vampire	0	0	0	0	101	0	0	60	0,0,0,0,150,0
+requiredStats	vampire-above-new-cap-no-options	Vampire	0	0	0	0	200	0	-	-	0,0,0,0,150,0
+requiredStats	vampire-8-bit-wrap-under-cap	Vampire	0	0	0	0	150	0	0	120	0,0,0,0,14,0
+requiredStats	vampire-8-bit-wrap-to-zero	Vampire	0	0	0	0	136	0	0	120	0,0,0,0,0,0
+requiredStats	vampire-wrap-to-zero-still-raised	Vampire	0	0	0	0	136	0	0,0	120,5	0,0,0,0,5,0
+requiredStats	vampire-negative-option-lowers	Vampire	0	0	0	0	50	0	0	-10	0,0,0,0,40,0
+requiredStats	vampire-negative-option-wraps-up-to-cap	Vampire	0	0	0	0	0	0	0	-1	0,0,0,0,100,0
+requiredStats	vampire-attrs-pass-through	Vampire	300	250	65536	500	50	0	30	10	300,250,65536,500,60,0
+requiredStats	vampire-gender-female	Vampire	0	0	0	0	50	2	-	-	0,0,0,0,50,2
+requiredStats	vampire-gender-16-bit	Vampire	0	0	0	0	50	65537	-	-	0,0,0,0,50,1
+requiredStats	vampire-input-narrowed-to-8-bits	Vampire	0	0	0	0	356	0	0	10	0,0,0,0,100,0
+requiredStats	ousters-no-options	Ousters	50	40	30	120	50	0	-	-	50,40,30,120,50,0
+requiredStats	ousters-one-option	Ousters	50	40	30	120	50	0	5	10	60,50,40,125,60,0
+requiredStats	ousters-several-options	Ousters	50	40	30	120	20	0	5,10,3	5,10,15	86,76,66,138,50,0
+requiredStats	ousters-zero-level-not-raised	Ousters	50	40	30	120	0	0	5	10	60,50,40,125,0,0
+requiredStats	ousters-zero-attrs-not-raised	Ousters	0	40	0	0	50	0	5	10	0,50,0,0,60,0
+requiredStats	ousters-all-zero-with-options	Ousters	0	0	0	0	0	0	30,40	10,20	0,0,0,0,0,0
+requiredStats	ousters-no-old-level-cap	Ousters	0	0	0	0	100	0	0	20	0,0,0,0,120,0
+requiredStats	ousters-level-cap-reached-exactly	Ousters	0	0	0	0	140	0	0	10	0,0,0,0,150,0
+requiredStats	ousters-level-cap-passed	Ousters	0	0	0	0	90	0	0	70	0,0,0,0,150,0
+requiredStats	ousters-above-level-cap-no-options	Ousters	0	0	0	0	200	0	-	-	0,0,0,0,150,0
+requiredStats	ousters-attrs-not-capped	Ousters	250	300	201	400	50	0	100	0	450,500,401,500,50,0
+requiredStats	ousters-sum-not-capped	Ousters	100	100	100	435	50	0	360	0	820,820,820,795,50,0
+requiredStats	ousters-8-bit-wrap-under-cap	Ousters	0	0	0	0	150	0	0	120	0,0,0,0,14,0
+requiredStats	ousters-wrap-to-zero-skips-later-options	Ousters	0	0	0	0	136	0	0,0	120,5	0,0,0,0,0,0
+requiredStats	ousters-16-bit-wrap	Ousters	65000	65000	65000	65500	50	0	300	0	64,64,64,264,50,0
+requiredStats	ousters-attr-wrap-to-zero-skips	Ousters	65534	10	0	0	0	0	1,5	0,0	0,22,0,0,0,0
+requiredStats	ousters-negative-option-lowers	Ousters	50	40	30	120	50	0	-5	-10	40,30,20,115,40,0
+requiredStats	ousters-negative-level-option-wraps-up-to-cap	Ousters	0	0	0	0	5	0	0	-10	0,0,0,0,150,0
+requiredStats	ousters-gender-passes-through	Ousters	50	40	30	120	50	65538	-	-	50,40,30,120,50,65538
+requiredStats	ousters-input-narrowed	Ousters	65636	40	30	120	306	0	5	10	110,50,40,125,60,0
+meetsRequirement	slayer-meets-exactly	Slayer	60	50	40	150	0	0	60	50	40	0	1	1
+meetsRequirement	slayer-str-one-short	Slayer	60	50	40	150	0	0	59	51	40	0	1	0
+meetsRequirement	slayer-dex-one-short	Slayer	60	50	40	150	0	0	61	49	40	0	1	0
+meetsRequirement	slayer-int-one-short	Slayer	60	50	40	150	0	0	61	50	39	0	1	0
+meetsRequirement	slayer-sum-one-short	Slayer	60	50	40	151	0	0	60	50	40	0	1	0
+meetsRequirement	slayer-no-requirement	Slayer	0	0	0	0	0	0	0	0	0	0	0	1
+meetsRequirement	slayer-ignores-level	Slayer	10	10	10	30	150	0	10	10	10	0	1	1
+meetsRequirement	slayer-male-wearer-female-item	Slayer	10	10	10	30	0	2	10	10	10	0	1	0
+meetsRequirement	slayer-female-wearer-male-item	Slayer	10	10	10	30	0	1	10	10	10	0	0	0
+meetsRequirement	slayer-male-wearer-male-item	Slayer	10	10	10	30	0	1	10	10	10	0	1	1
+meetsRequirement	slayer-female-wearer-female-item	Slayer	10	10	10	30	0	2	10	10	10	0	0	1
+meetsRequirement	slayer-gender-outside-enum-allows	Slayer	10	10	10	30	0	3	10	10	10	0	1	1
+meetsRequirement	slayer-meets-gender-16-bit	Slayer	10	10	10	30	0	65538	10	10	10	0	1	0
+meetsRequirement	slayer-gender-short-stat-still-fails	Slayer	10	10	10	30	0	1	9	10	10	0	1	0
+meetsRequirement	slayer-current-sum-wraps	Slayer	100	100	100	435	0	0	30000	30000	5536	0	1	0
+meetsRequirement	slayer-current-sum-wraps-past	Slayer	100	100	100	5000	0	0	30000	30000	10000	0	1	0
+meetsRequirement	slayer-current-narrowed	Slayer	100	100	100	300	0	0	65636	100	100	0	1	1
+meetsRequirement	slayer-required-narrowed	Slayer	65636	100	100	300	0	0	100	100	100	0	1	1
+meetsRequirement	vampire-meets-exactly	Vampire	0	0	0	0	60	0	0	0	0	60	1	1
+meetsRequirement	vampire-level-one-short	Vampire	0	0	0	0	60	0	0	0	0	59	1	0
+meetsRequirement	vampire-no-requirement	Vampire	0	0	0	0	0	0	0	0	0	0	0	1
+meetsRequirement	vampire-ignores-attrs	Vampire	300	300	300	435	10	0	0	0	0	10	1	1
+meetsRequirement	vampire-male-wearer-female-item	Vampire	0	0	0	0	10	2	0	0	0	10	1	0
+meetsRequirement	vampire-female-wearer-male-item	Vampire	0	0	0	0	10	1	0	0	0	10	0	0
+meetsRequirement	vampire-female-wearer-female-item	Vampire	0	0	0	0	10	2	0	0	0	10	0	1
+meetsRequirement	vampire-gender-without-level	Vampire	0	0	0	0	0	2	0	0	0	0	1	0
+meetsRequirement	vampire-current-level-narrowed	Vampire	0	0	0	0	60	0	0	0	0	306	1	0
+meetsRequirement	vampire-required-level-narrowed	Vampire	0	0	0	0	256	0	0	0	0	0	1	1
+meetsRequirement	ousters-meets-exactly	Ousters	60	50	40	150	60	0	60	50	40	60	1	1
+meetsRequirement	ousters-str-one-short	Ousters	60	50	40	150	60	0	59	51	40	60	1	0
+meetsRequirement	ousters-dex-one-short	Ousters	60	50	40	150	60	0	61	49	40	60	1	0
+meetsRequirement	ousters-int-one-short	Ousters	60	50	40	150	60	0	61	50	39	60	1	0
+meetsRequirement	ousters-sum-one-short	Ousters	60	50	40	151	60	0	60	50	40	60	1	0
+meetsRequirement	ousters-level-one-short	Ousters	60	50	40	150	60	0	60	50	40	59	1	0
+meetsRequirement	ousters-no-requirement	Ousters	0	0	0	0	0	0	0	0	0	0	0	1
+meetsRequirement	ousters-ignores-gender	Ousters	10	10	10	30	10	2	10	10	10	10	1	1
+meetsRequirement	ousters-current-sum-wraps	Ousters	100	100	100	435	10	0	30000	30000	5536	10	1	0
+meetsRequirement	ousters-current-level-narrowed	Ousters	10	10	10	30	60	0	10	10	10	306	1	0
+genderAllows	gender-sex-0-req-0	0	0	1
+genderAllows	gender-sex-0-req-1	0	1	0
+genderAllows	gender-sex-0-req-2	0	2	1
+genderAllows	gender-sex-0-req-3	0	3	1
+genderAllows	gender-sex-1-req-0	1	0	1
+genderAllows	gender-sex-1-req-1	1	1	1
+genderAllows	gender-sex-1-req-2	1	2	0
+genderAllows	gender-sex-1-req-3	1	3	1
+genderAllows	gender-sex-1-req-65538-narrowed	1	65538	0
+genderAllows	gender-sex-0-req-65537-narrowed	0	65537	0
+genderAllows	gender-sex-2-req-1	2	1	1
+genderAllows	gender-sex-2-req-2	2	2	1
+genderAllows	gender-sex-minus-1-req-1	-1	1	1
+requiredStats	grid-req-slayer-0-0-0-none	Slayer	0	0	0	0	0	1	-	-	0,0,0,0,0,1
+requiredStats	grid-req-slayer-0-0-90-10	Slayer	0	0	0	0	90	2	10	10	0,0,0,0,90,2
+requiredStats	grid-req-slayer-0-0-130-30+40	Slayer	0	0	0	0	130	0	30,40	25,40	0,0,0,0,130,0
+requiredStats	grid-req-slayer-0-280-0-none	Slayer	0	0	0	280	0	1	-	-	0,0,0,280,0,1
+requiredStats	grid-req-slayer-0-280-90-10	Slayer	0	0	0	280	90	2	10	10	0,0,0,290,90,2
+requiredStats	grid-req-slayer-0-280-130-30+40	Slayer	0	0	0	280	130	0	30,40	25,40	0,0,0,300,130,0
+requiredStats	grid-req-slayer-0-400-0-none	Slayer	0	0	0	400	0	1	-	-	0,0,0,400,0,1
+requiredStats	grid-req-slayer-0-400-90-10	Slayer	0	0	0	400	90	2	10	10	0,0,0,410,90,2
+requiredStats	grid-req-slayer-0-400-130-30+40	Slayer	0	0	0	400	130	0	30,40	25,40	0,0,0,435,130,0
+requiredStats	grid-req-slayer-120-0-0-none	Slayer	120	130	60	0	0	1	-	-	120,130,60,0,0,1
+requiredStats	grid-req-slayer-120-0-90-10	Slayer	120	130	60	0	90	2	10	10	140,150,80,0,90,2
+requiredStats	grid-req-slayer-120-0-130-30+40	Slayer	120	130	60	0	130	0	30,40	25,40	200,200,200,0,130,0
+requiredStats	grid-req-slayer-120-280-0-none	Slayer	120	130	60	280	0	1	-	-	120,130,60,280,0,1
+requiredStats	grid-req-slayer-120-280-90-10	Slayer	120	130	60	280	90	2	10	10	140,150,80,290,90,2
+requiredStats	grid-req-slayer-120-280-130-30+40	Slayer	120	130	60	280	130	0	30,40	25,40	200,200,200,300,130,0
+requiredStats	grid-req-slayer-120-400-0-none	Slayer	120	130	60	400	0	1	-	-	120,130,60,400,0,1
+requiredStats	grid-req-slayer-120-400-90-10	Slayer	120	130	60	400	90	2	10	10	140,150,80,410,90,2
+requiredStats	grid-req-slayer-120-400-130-30+40	Slayer	120	130	60	400	130	0	30,40	25,40	200,200,200,435,130,0
+requiredStats	grid-req-slayer-260-0-0-none	Slayer	260	270	130	0	0	1	-	-	260,270,130,0,0,1
+requiredStats	grid-req-slayer-260-0-90-10	Slayer	260	270	130	0	90	2	10	10	280,290,150,0,90,2
+requiredStats	grid-req-slayer-260-0-130-30+40	Slayer	260	270	130	0	130	0	30,40	25,40	290,290,200,0,130,0
+requiredStats	grid-req-slayer-260-280-0-none	Slayer	260	270	130	280	0	1	-	-	260,270,130,280,0,1
+requiredStats	grid-req-slayer-260-280-90-10	Slayer	260	270	130	280	90	2	10	10	280,290,150,290,90,2
+requiredStats	grid-req-slayer-260-280-130-30+40	Slayer	260	270	130	280	130	0	30,40	25,40	290,290,200,300,130,0
+requiredStats	grid-req-slayer-260-400-0-none	Slayer	260	270	130	400	0	1	-	-	260,270,130,400,0,1
+requiredStats	grid-req-slayer-260-400-90-10	Slayer	260	270	130	400	90	2	10	10	280,290,150,410,90,2
+requiredStats	grid-req-slayer-260-400-130-30+40	Slayer	260	270	130	400	130	0	30,40	25,40	290,290,200,435,130,0
+requiredStats	grid-req-vampire-0-0-0-none	Vampire	0	0	0	0	0	1	-	-	0,0,0,0,0,1
+requiredStats	grid-req-vampire-0-0-90-10	Vampire	0	0	0	0	90	2	10	10	0,0,0,0,100,2
+requiredStats	grid-req-vampire-0-0-130-30+40	Vampire	0	0	0	0	130	0	30,40	25,40	0,0,0,0,150,0
+requiredStats	grid-req-vampire-0-280-0-none	Vampire	0	0	0	280	0	1	-	-	0,0,0,280,0,1
+requiredStats	grid-req-vampire-0-280-90-10	Vampire	0	0	0	280	90	2	10	10	0,0,0,280,100,2
+requiredStats	grid-req-vampire-0-280-130-30+40	Vampire	0	0	0	280	130	0	30,40	25,40	0,0,0,280,150,0
+requiredStats	grid-req-vampire-0-400-0-none	Vampire	0	0	0	400	0	1	-	-	0,0,0,400,0,1
+requiredStats	grid-req-vampire-0-400-90-10	Vampire	0	0	0	400	90	2	10	10	0,0,0,400,100,2
+requiredStats	grid-req-vampire-0-400-130-30+40	Vampire	0	0	0	400	130	0	30,40	25,40	0,0,0,400,150,0
+requiredStats	grid-req-vampire-120-0-0-none	Vampire	120	130	60	0	0	1	-	-	120,130,60,0,0,1
+requiredStats	grid-req-vampire-120-0-90-10	Vampire	120	130	60	0	90	2	10	10	120,130,60,0,100,2
+requiredStats	grid-req-vampire-120-0-130-30+40	Vampire	120	130	60	0	130	0	30,40	25,40	120,130,60,0,150,0
+requiredStats	grid-req-vampire-120-280-0-none	Vampire	120	130	60	280	0	1	-	-	120,130,60,280,0,1
+requiredStats	grid-req-vampire-120-280-90-10	Vampire	120	130	60	280	90	2	10	10	120,130,60,280,100,2
+requiredStats	grid-req-vampire-120-280-130-30+40	Vampire	120	130	60	280	130	0	30,40	25,40	120,130,60,280,150,0
+requiredStats	grid-req-vampire-120-400-0-none	Vampire	120	130	60	400	0	1	-	-	120,130,60,400,0,1
+requiredStats	grid-req-vampire-120-400-90-10	Vampire	120	130	60	400	90	2	10	10	120,130,60,400,100,2
+requiredStats	grid-req-vampire-120-400-130-30+40	Vampire	120	130	60	400	130	0	30,40	25,40	120,130,60,400,150,0
+requiredStats	grid-req-vampire-260-0-0-none	Vampire	260	270	130	0	0	1	-	-	260,270,130,0,0,1
+requiredStats	grid-req-vampire-260-0-90-10	Vampire	260	270	130	0	90	2	10	10	260,270,130,0,100,2
+requiredStats	grid-req-vampire-260-0-130-30+40	Vampire	260	270	130	0	130	0	30,40	25,40	260,270,130,0,150,0
+requiredStats	grid-req-vampire-260-280-0-none	Vampire	260	270	130	280	0	1	-	-	260,270,130,280,0,1
+requiredStats	grid-req-vampire-260-280-90-10	Vampire	260	270	130	280	90	2	10	10	260,270,130,280,100,2
+requiredStats	grid-req-vampire-260-280-130-30+40	Vampire	260	270	130	280	130	0	30,40	25,40	260,270,130,280,150,0
+requiredStats	grid-req-vampire-260-400-0-none	Vampire	260	270	130	400	0	1	-	-	260,270,130,400,0,1
+requiredStats	grid-req-vampire-260-400-90-10	Vampire	260	270	130	400	90	2	10	10	260,270,130,400,100,2
+requiredStats	grid-req-vampire-260-400-130-30+40	Vampire	260	270	130	400	130	0	30,40	25,40	260,270,130,400,150,0
+requiredStats	grid-req-ousters-0-0-0-none	Ousters	0	0	0	0	0	1	-	-	0,0,0,0,0,1
+requiredStats	grid-req-ousters-0-0-90-10	Ousters	0	0	0	0	90	2	10	10	0,0,0,0,100,2
+requiredStats	grid-req-ousters-0-0-130-30+40	Ousters	0	0	0	0	130	0	30,40	25,40	0,0,0,0,150,0
+requiredStats	grid-req-ousters-0-280-0-none	Ousters	0	0	0	280	0	1	-	-	0,0,0,280,0,1
+requiredStats	grid-req-ousters-0-280-90-10	Ousters	0	0	0	280	90	2	10	10	0,0,0,290,100,2
+requiredStats	grid-req-ousters-0-280-130-30+40	Ousters	0	0	0	280	130	0	30,40	25,40	0,0,0,350,150,0
+requiredStats	grid-req-ousters-0-400-0-none	Ousters	0	0	0	400	0	1	-	-	0,0,0,400,0,1
+requiredStats	grid-req-ousters-0-400-90-10	Ousters	0	0	0	400	90	2	10	10	0,0,0,410,100,2
+requiredStats	grid-req-ousters-0-400-130-30+40	Ousters	0	0	0	400	130	0	30,40	25,40	0,0,0,470,150,0
+requiredStats	grid-req-ousters-120-0-0-none	Ousters	120	130	60	0	0	1	-	-	120,130,60,0,0,1
+requiredStats	grid-req-ousters-120-0-90-10	Ousters	120	130	60	0	90	2	10	10	140,150,80,0,100,2
+requiredStats	grid-req-ousters-120-0-130-30+40	Ousters	120	130	60	0	130	0	30,40	25,40	260,270,200,0,150,0
+requiredStats	grid-req-ousters-120-280-0-none	Ousters	120	130	60	280	0	1	-	-	120,130,60,280,0,1
+requiredStats	grid-req-ousters-120-280-90-10	Ousters	120	130	60	280	90	2	10	10	140,150,80,290,100,2
+requiredStats	grid-req-ousters-120-280-130-30+40	Ousters	120	130	60	280	130	0	30,40	25,40	260,270,200,350,150,0
+requiredStats	grid-req-ousters-120-400-0-none	Ousters	120	130	60	400	0	1	-	-	120,130,60,400,0,1
+requiredStats	grid-req-ousters-120-400-90-10	Ousters	120	130	60	400	90	2	10	10	140,150,80,410,100,2
+requiredStats	grid-req-ousters-120-400-130-30+40	Ousters	120	130	60	400	130	0	30,40	25,40	260,270,200,470,150,0
+requiredStats	grid-req-ousters-260-0-0-none	Ousters	260	270	130	0	0	1	-	-	260,270,130,0,0,1
+requiredStats	grid-req-ousters-260-0-90-10	Ousters	260	270	130	0	90	2	10	10	280,290,150,0,100,2
+requiredStats	grid-req-ousters-260-0-130-30+40	Ousters	260	270	130	0	130	0	30,40	25,40	400,410,270,0,150,0
+requiredStats	grid-req-ousters-260-280-0-none	Ousters	260	270	130	280	0	1	-	-	260,270,130,280,0,1
+requiredStats	grid-req-ousters-260-280-90-10	Ousters	260	270	130	280	90	2	10	10	280,290,150,290,100,2
+requiredStats	grid-req-ousters-260-280-130-30+40	Ousters	260	270	130	280	130	0	30,40	25,40	400,410,270,350,150,0
+requiredStats	grid-req-ousters-260-400-0-none	Ousters	260	270	130	400	0	1	-	-	260,270,130,400,0,1
+requiredStats	grid-req-ousters-260-400-90-10	Ousters	260	270	130	400	90	2	10	10	280,290,150,410,100,2
+requiredStats	grid-req-ousters-260-400-130-30+40	Ousters	260	270	130	400	130	0	30,40	25,40	400,410,270,470,150,0
+meetsRequirement	grid-meets-slayer-50-20	Slayer	140	150	80	290	90	0	50	60	25	20	0	0
+meetsRequirement	grid-meets-slayer-150-95	Slayer	140	150	80	290	90	1	150	160	75	95	1	0
+meetsRequirement	grid-meets-slayer-200-100	Slayer	140	150	80	290	90	2	200	210	100	100	0	1
+meetsRequirement	grid-meets-slayer-290-150	Slayer	140	150	80	290	90	0	290	300	145	150	1	1
+meetsRequirement	grid-meets-vampire-50-20	Vampire	120	130	60	280	100	0	50	60	25	20	0	0
+meetsRequirement	grid-meets-vampire-150-95	Vampire	120	130	60	280	100	1	150	160	75	95	1	0
+meetsRequirement	grid-meets-vampire-200-100	Vampire	120	130	60	280	100	2	200	210	100	100	0	1
+meetsRequirement	grid-meets-vampire-290-150	Vampire	120	130	60	280	100	0	290	300	145	150	1	1
+meetsRequirement	grid-meets-ousters-50-20	Ousters	140	150	80	290	100	0	50	60	25	20	0	0
+meetsRequirement	grid-meets-ousters-150-95	Ousters	140	150	80	290	100	1	150	160	75	95	1	0
+meetsRequirement	grid-meets-ousters-200-100	Ousters	140	150	80	290	100	2	200	210	100	100	0	1
+meetsRequirement	grid-meets-ousters-290-150	Ousters	140	150	80	290	100	0	290	300	145	150	1	1

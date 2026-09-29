@@ -40,6 +40,7 @@
 #include "Vampire.h"
 #include "VariableManager.h"
 #include "ctf/FlagManager.h"
+#include "domain/EquipRequirement.h"
 #include "domain/ItemDurability.h"
 #include "item/AR.h"
 #include "item/Magazine.h"
@@ -522,6 +523,39 @@ Durability_t computeMaxDurability(Item* pItem) {
     }
 
     return decore::maxDurabilityWithOptions(maxDurability, plusPoints.data(), (int)plusPoints.size());
+}
+
+// de-core names the server's sex and gender restriction numbers.
+static_assert(decore::sex::Female == FEMALE && decore::sex::Male == MALE);
+static_assert(decore::gender::Both == GENDER_BOTH && decore::gender::Male == GENDER_MALE &&
+              decore::gender::Female == GENDER_FEMALE);
+
+//////////////////////////////////////////////////////////////////////////////
+// What an item requires of its wearer.
+//////////////////////////////////////////////////////////////////////////////
+decore::EquipRequirement computeEquipRequirement(decore::EquipRace race, const Item* pItem, const ItemInfo* pItemInfo) {
+    decore::EquipRequirement base = {};
+    base.str = pItemInfo->getReqSTR();
+    base.dex = pItemInfo->getReqDEX();
+    base.inte = pItemInfo->getReqINT();
+    base.sum = pItemInfo->getReqSum();
+    base.level = pItemInfo->getReqLevel();
+    base.gender = pItemInfo->getReqGender();
+
+    // The sum and level requirement of each option, in the order the item
+    // carries them.
+    const list<OptionType_t>& optionTypes = pItem->getOptionTypeList();
+    std::vector<int> optionReqSums;
+    std::vector<int> optionReqLevels;
+
+    list<OptionType_t>::const_iterator itr;
+    for (itr = optionTypes.begin(); itr != optionTypes.end(); itr++) {
+        OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(*itr);
+        optionReqSums.push_back(pOptionInfo->getReqSum());
+        optionReqLevels.push_back(pOptionInfo->getReqLevel());
+    }
+
+    return decore::requiredStats(race, base, optionReqSums.data(), optionReqLevels.data(), (int)optionReqSums.size());
 }
 
 //////////////////////////////////////////////////////////////////////////////

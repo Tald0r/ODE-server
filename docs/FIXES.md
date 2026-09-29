@@ -13,6 +13,37 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Shared equip rules (2026-09-29)
+
+The three races' item requirement (what an item asks of its wearer once
+its options have raised it, and whether the wearer meets it) moved from
+`Slayer`, `Vampire` and `Ousters::isRealWearing` into de-core
+(`src/domain/EquipRequirement.cpp`) so the client can build the same
+source. The move is verbatim, and it kept these:
+
+- **The races raise and cap a requirement differently.** A vampire's
+  options raise its level requirement even when the item table asks for
+  level 0, while the slayer's and the ousters' options raise only a
+  requirement that is not 0. The ousters' STR, DEX, INT and sum are not
+  capped at all, and their level is capped at 150 whatever the table's
+  level, where a vampire's is capped at 100 unless the table's is above
+  100. Pinned by `vampire-zero-level-raised`, `ousters-attrs-not-capped`,
+  `ousters-sum-not-capped` and `ousters-no-old-level-cap` in
+  `src/domain/vectors/equip.tsv`.
+  > **Status:** recorded, not fixed (feat/shared-equip-requirements)
+- **A level requirement wraps at 256, and a requirement that wraps to 0
+  stops rising.** The level is an 8-bit `Level_t` and each option is added
+  to it before the cap, so a level-150 item with an option raising it by
+  120 asks for level 14; STR, DEX, INT and the sum wrap the same way at
+  65536, and a wearer's STR + DEX + INT wraps at 65536 before the
+  comparison. For the slayer and the ousters, whose options skip a
+  requirement of 0, a requirement that wraps to exactly 0 skips every
+  option after it. The seed data reaches the level wrap only with options
+  raising a level-120 item (the largest table level) by 136 or more, and
+  the largest option raise is 50; the 16-bit wraps it does not reach.
+  Pinned by the `*-wrap-*` rows.
+  > **Status:** recorded, not fixed (feat/shared-equip-requirements)
+
 ## Shared stat rules (2026-09-28)
 
 The client is about to call de-core's stat, skill MP and HP regen

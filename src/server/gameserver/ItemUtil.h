@@ -17,6 +17,15 @@
 //////////////////////////////////////////////////////////////////////////////
 class Creature;
 class Inventory;
+class ItemInfo;
+
+// de-core's (domain/EquipRequirement.h), declared here so that the item
+// library, which includes this header without linking de-core, needs no
+// de-core include path.
+namespace decore {
+enum class EquipRace;
+struct EquipRequirement;
+} // namespace decore
 class PlayerCreature;
 class Slayer;
 class Ousters;
@@ -194,6 +203,12 @@ void repairItem(Item* pItem);
 // Get the item's maximum durability.
 //////////////////////////////////////////////////////////////////////////////
 Durability_t computeMaxDurability(Item* pItem);
+
+//////////////////////////////////////////////////////////////////////////////
+// What pItem requires of a wearer of `race`: its item info's requirement
+// raised by each of its options and capped (decore::requiredStats).
+//////////////////////////////////////////////////////////////////////////////
+decore::EquipRequirement computeEquipRequirement(decore::EquipRace race, const Item* pItem, const ItemInfo* pItemInfo);
 
 //////////////////////////////////////////////////////////////////////////////
 // Reload the magazine.

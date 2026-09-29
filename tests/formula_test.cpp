@@ -25,6 +25,7 @@
 
 #include <gtest/gtest.h>
 
+#include "domain/EquipRequirement.h"
 #include "domain/Formulas.h"
 #include "domain/ItemDurability.h"
 #include "domain/ItemGrade.h"
@@ -1124,6 +1125,12 @@ public:
         std::vector<int> values;
         if (text == "-")
             return values;
+        // getline yields no token for an empty cell or after a trailing
+        // comma, so either would silently drop an entry.
+        if (text.empty() || text.back() == ',') {
+            fail("not an integer list: \"" + text + "\"");
+            return values;
+        }
         std::stringstream items(text);
         std::string item;
         while (std::getline(items, item, ',')) {
@@ -1147,6 +1154,41 @@ public:
             return decore::PriceRace::Ousters;
         fail("not a race: \"" + text + "\"");
         return decore::PriceRace::None;
+    }
+
+    decore::EquipRace equipRace() {
+        const std::string text = next();
+        if (text == "Slayer")
+            return decore::EquipRace::Slayer;
+        if (text == "Vampire")
+            return decore::EquipRace::Vampire;
+        if (text == "Ousters")
+            return decore::EquipRace::Ousters;
+        fail("not an equip race: \"" + text + "\"");
+        return decore::EquipRace::Slayer;
+    }
+
+    // The six EquipRequirement fields in declaration order.
+    decore::EquipRequirement equipRequirement() {
+        decore::EquipRequirement r;
+        r.str = (int)integer();
+        r.dex = (int)integer();
+        r.inte = (int)integer();
+        r.sum = (int)integer();
+        r.level = (int)integer();
+        r.gender = (int)integer();
+        return r;
+    }
+
+    // The five EquipStats fields in declaration order.
+    decore::EquipStats equipStats() {
+        decore::EquipStats c;
+        c.str = (int)integer();
+        c.dex = (int)integer();
+        c.inte = (int)integer();
+        c.level = (int)integer();
+        c.sex = (int)integer();
+        return c;
     }
 
     decore::GradePolicy gradePolicy() {
@@ -1321,6 +1363,32 @@ std::string evaluateRow(const std::vector<std::string>& fields, std::string& err
         int itemClass = (int)in.integer();
         in.finish();
         result = decore::hasDurability(itemClass) ? 1 : 0;
+    } else if (function == "requiredStats") {
+        decore::EquipRace race = in.equipRace();
+        decore::EquipRequirement base = in.equipRequirement();
+        std::vector<int> reqSums = in.list();
+        std::vector<int> reqLevels = in.list();
+        in.finish();
+        error = in.error();
+        if (error.empty() && reqSums.size() != reqLevels.size())
+            error = "the option sum and level lists differ in length";
+        if (!error.empty())
+            return std::string();
+        const decore::EquipRequirement r =
+            decore::requiredStats(race, base, reqSums.data(), reqLevels.data(), (int)reqSums.size());
+        return std::to_string(r.str) + "," + std::to_string(r.dex) + "," + std::to_string(r.inte) + "," +
+               std::to_string(r.sum) + "," + std::to_string(r.level) + "," + std::to_string(r.gender);
+    } else if (function == "meetsRequirement") {
+        decore::EquipRace race = in.equipRace();
+        decore::EquipRequirement required = in.equipRequirement();
+        decore::EquipStats current = in.equipStats();
+        in.finish();
+        result = decore::meetsRequirement(race, required, current) ? 1 : 0;
+    } else if (function == "genderAllows") {
+        int sex = (int)in.integer();
+        int reqGender = (int)in.integer();
+        in.finish();
+        result = decore::genderAllows(sex, reqGender) ? 1 : 0;
     } else if (statFunctions().count(function) != 0) {
         StatAttr a = in.statAttr();
         in.finish();
@@ -1462,6 +1530,27 @@ TEST(SharedVectors, AnEmptyNumberIsAnError) {
     EXPECT_EQ("", ok.error());
 }
 
+// A list is "-" or integers joined by single commas: an empty cell or an
+// empty entry anywhere would otherwise read as one option fewer.
+TEST(SharedVectors, AMalformedListIsAnError) {
+    for (const char* text : {"", "5,", ",5", "5,,6", "5,x"}) {
+        const std::vector<std::string> fields = {"requiredStats", "malformed-list", text, "0"};
+        RowReader in(fields);
+        in.list();
+        EXPECT_EQ("not an integer list: \"" + std::string(text) + "\"", in.error());
+    }
+
+    const std::vector<std::string> none = {"requiredStats", "no-options", "-", "0"};
+    RowReader noOptions(none);
+    EXPECT_TRUE(noOptions.list().empty());
+    EXPECT_EQ("", noOptions.error());
+
+    const std::vector<std::string> two = {"requiredStats", "two-options", "30,40", "0"};
+    RowReader twoOptions(two);
+    EXPECT_EQ((std::vector<int>{30, 40}), twoOptions.list());
+    EXPECT_EQ("", twoOptions.error());
+}
+
 TEST(SharedVectors, Stats) {
     checkVectorFile("stats.tsv",
                     {"slayerToHit",       "vampireToHit",      "oustersToHit",          "slayerDefense",
@@ -1469,6 +1558,10 @@ TEST(SharedVectors, Stats) {
                      "oustersProtection", "slayerMinDamage",   "vampireMinDamage",      "oustersMinDamage",
                      "slayerMaxDamage",   "vampireMaxDamage",  "oustersMaxDamage",      "slayerStealRatio",
                      "vampireStealRatio", "oustersStealRatio", "vampireSkillConsumeMP", "vampireDexHPRegenBonus"});
+}
+
+TEST(SharedVectors, Equip) {
+    checkVectorFile("equip.tsv", {"requiredStats", "meetsRequirement", "genderAllows"});
 }
 
 } // namespace
