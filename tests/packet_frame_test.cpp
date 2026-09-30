@@ -515,9 +515,11 @@ TEST(FrameBoundTest, aWrappedFrameCannotBeReadPast) {
 
 namespace {
 
-// Mirrors the loop in GamePlayer::processCommand and its three siblings
-// up to the dispatch: returns the bodies read, in order, and stops when
-// fewer than one whole frame is buffered.
+// Mirrors what the four receive loops do with a frame: peek the header,
+// wait until the whole body is buffered, then readPacket. Returns the
+// bodies read, in order, and stops when fewer than one whole frame is
+// buffered. GamePlayer's sequence gate, which runs before its length
+// check, is not modelled here (docs/FIXES.md).
 std::vector<Bytes> receive(SocketInputStream& in) {
     std::vector<Bytes> bodies;
     while (true) {
