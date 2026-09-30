@@ -771,6 +771,31 @@ add_dependencies(wire_tests speed_hack_decision_tests)
 add_test(NAME speed_hack_decision_tests COMMAND speed_hack_decision_tests)
 set_tests_properties(speed_hack_decision_tests PROPERTIES TIMEOUT 60)
 
+# The gameserver's per-frame receive gate: GameFrameGate decides the frame
+# at the front of a client's input stream (wait, read, skip an ignored
+# frame, or refuse) and counts the client's sequence bytes, so the cases can
+# hand the stream a frame in parts, as TCP may, with no player and no
+# socket. GamePlayer.cpp itself links the whole gameserver, which is why the
+# gate was split out of processCommand. Compiled as the gameserver, like
+# game_client_link_tests, for its factory table and validator. A failing
+# Assert appends to assertion_failed.log in the working directory, hence the
+# build-tree WORKING_DIRECTORY.
+add_executable(game_frame_gate_tests EXCLUDE_FROM_ALL
+    game_frame_gate_test.cpp
+    ${CMAKE_SOURCE_DIR}/src/server/gameserver/GameFrameGate.cpp
+)
+target_compile_definitions(game_frame_gate_tests PRIVATE __GAME_SERVER__ __COMBAT__)
+target_include_directories(game_frame_gate_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/support
+    ${CMAKE_SOURCE_DIR}/src/Core
+    ${CMAKE_SOURCE_DIR}/src/server/gameserver
+)
+target_link_libraries(game_frame_gate_tests PRIVATE GameServerPackets gtest_main Threads::Threads)
+add_dependencies(wire_tests game_frame_gate_tests)
+add_test(NAME game_frame_gate_tests COMMAND game_frame_gate_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(game_frame_gate_tests PROPERTIES TIMEOUT 60)
+
 # The loginserver's account-registration decision (docs/RESTRUCTURING.md
 # 3.1): decideRegisterPlayer() returns Outcome<LoginNewAccount,
 # RegisterPlayerRefusal> over a fake LoginAccountRepository, so every

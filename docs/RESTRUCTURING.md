@@ -1290,11 +1290,12 @@ shrink-only work.
   - Owner: ratchet R7, held at 0.
 
 - [ ] **5.5 Packet-read fuzzing.** Fuzz what clients send: the bytes a
-  client puts on the wire, through the gates of
-  `GamePlayer::processCommand` and `LoginPlayer::processCommand`, into the
-  packets' `read()` and the `toString()` every read packet is printed
-  with. Every crash the fuzzers find is fixed test-first or recorded in
-  `docs/FIXES.md`, and its input is replayed by ctest from then on.
+  client puts on the wire, through the gates of `GameFrameGate::next`
+  (run by `GamePlayer::processCommand`) and
+  `LoginPlayer::processCommand`, into the packets' `read()` and the
+  `toString()` every read packet is printed with. Every crash the fuzzers
+  find is fixed test-first or recorded in `docs/FIXES.md`, and its input
+  is replayed by ctest from then on.
   > **Status:** in progress (the CI fuzz job; the findings recorded, not
   > fixed, in `docs/FIXES.md` under "Packet-read fuzzing": enumerators
   > cast from wire bytes, non-protocol exceptions escaping the receive
@@ -1320,10 +1321,16 @@ shrink-only work.
   > names, the store item count, and the frame bound: `readPacket` holds
   > every read to the body its header declares (`FrameBoundTest` in
   > `tests/packet_frame_test.cpp`), and the targets abort unless it
-  > moves the stream exactly one frame on. Next reader: a UDP target
+  > moves the stream exactly one frame on, and the gameserver's
+  > sequence count, which moves only when a frame is consumed
+  > (`GameFrameGate`, `game_frame_gate_tests`): the targets deliver
+  > each input whole, byte by byte and in hashed chunks and abort
+  > unless the three agree, and the game target delivers each input
+  > byte by byte through `GameFrameGate::next` itself as well, holding
+  > the production gate to its mirror's result. Next reader: a UDP target
   > for the loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is
-  > not written, and the targets load each input at the start of the
-  > stream's buffer, so its wrap-around path is not fuzzed
+  > not written, and the targets deliver each input from the start of
+  > the stream's buffer, so its wrap-around path is not fuzzed
   > (`StreamFuzz.h`).
   - Owner: the replay ctests (every recorded input replays clean, and a
     read may refuse a body only with a ProtocolException), the gtests

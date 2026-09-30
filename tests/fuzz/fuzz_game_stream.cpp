@@ -2,12 +2,13 @@
 //
 // Filename    : fuzz_game_stream.cpp
 // Description : Packet-read fuzz target for the gameserver's client
-//               connection. It mirrors GamePlayer::processCommand
-//               (src/server/gameserver/GamePlayer.cpp) up to the point
-//               where the packet has been read, and stops short of the
-//               handler: every gate that decides whether a client's
-//               bytes reach a packet's read() is here, in production
-//               order, and nothing after it.
+//               connection. It mirrors GameFrameGate::next
+//               (src/server/gameserver/GameFrameGate.cpp), the gate
+//               GamePlayer::processCommand runs each frame through, up to
+//               the point where the packet has been read, and stops short
+//               of the handler: every gate that decides whether a
+//               client's bytes reach a packet's read() is here, in
+//               production order, and nothing after it.
 //
 //               Built with __GAME_SERVER__ and linked with
 //               GameServerPackets, so the factory table is the
@@ -19,10 +20,20 @@
 //               DE_FUZZ_ANY_ID=1 admits every id in GPS_NORMAL instead,
 //               so the reads behind the gate are fuzzed as well.
 //
-//               The input format and the switches are described in
-//               StreamFuzz.h. The loop runs the zone thread's call
-//               (Option == true), so the main-thread stop after CGReady
-//               and the event heartbeat do not apply.
+//               The input format, the three deliveries and the switches
+//               are described in StreamFuzz.h. The loop runs the zone
+//               thread's call (Option == true), so the main-thread stop
+//               after CGReady and the event heartbeat do not apply.
+//
+//               The mirror carries the switches and the body oracle,
+//               which the production gate has no hook for. So that the
+//               fuzzing covers the gate itself too, each input the
+//               switches leave alone is also delivered byte by byte
+//               through GameFrameGate::next, linked from the
+//               gameserver's sources, and must read the same packets and
+//               end the same way as the mirror's whole delivery: a gate
+//               that drifted from the mirror, or that depends on where
+//               the bytes were cut, aborts the target.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -31,6 +42,7 @@
 #include <cstring>
 #include <memory>
 
+#include "GameFrameGate.h"
 #include "Socket.h"
 #include "SocketEncryptInputStream.h"
 #include "SocketImpl.h"
@@ -42,16 +54,30 @@ static_assert(GPS_NORMAL == 3, "the game seed corpus is written for GPS_NORMAL =
 
 namespace {
 
-void receive(SocketInputStream& in, PlayerStatus status) {
+// What the gameserver keeps per connection between two receives.
+struct Session {
+    // The sequence byte the next frame must carry; GameFrameGate starts
+    // at 0.
+    SequenceSize_t expectedSequence = 0;
+    // Frames consumed, read or skipped.
+    int frames = 0;
+};
+
+// Runs the gate over what the stream holds, as processCommand does after
+// each receive: returns when it waits for more bytes, and ends the trace
+// when the gate refuses a frame or kMaxFrames have been consumed.
+void receive(SocketInputStream& in, PlayerStatus status, Session& session, de::fuzz::Trace& trace) {
     PacketFactoryManager& factories = de::kernelContext().packetFactories();
     PacketValidator& validator = de::kernelContext().packetValidator();
 
-    // GamePlayer's m_Sequence starts at 0 (GamePlayer.cpp:78).
-    SequenceSize_t expectedSequence = 0;
+    while (true) {
+        if (session.frames == de::fuzz::kMaxFrames) {
+            trace.end = "frame cap";
+            return;
+        }
 
-    for (int frame = 0; frame < de::fuzz::kMaxFrames; frame++) {
         char header[szPacketHeader];
-        // :314 - fewer than seven bytes buffered: wait for more.
+        // Fewer than seven bytes buffered: wait for more.
         if (!in.peek(&header[0], szPacketHeader))
             return;
 
@@ -62,46 +88,142 @@ void receive(SocketInputStream& in, PlayerStatus status) {
         std::memcpy(&packetSize, &header[szPacketID], szPacketSize);
         std::memcpy(&packetSequence, &header[szPacketID + szPacketSize], szSequenceSize);
 
-        // :336 - a sequence byte out of step disconnects; :342 counts it.
-        if (packetSequence != expectedSequence)
+        if (packetID >= (int)Packet::PACKET_MAX) {
+            trace.end = "too large packet id";
             return;
-        expectedSequence++;
-
-        // :345 - "too large packet id".
-        if (packetID >= (int)Packet::PACKET_MAX)
-            return;
+        }
 
         try {
-            // :356 - "invalid packet order". A PIST_IGNORE_EXCEPT status
-            // throws IgnorePacketException from here instead.
+            // A PIST_IGNORE_EXCEPT status throws IgnorePacketException
+            // from here instead of answering false.
             const bool anyID = de::fuzz::options().anyID && status == GPS_NORMAL;
-            if (!anyID && !validator.isValidPacketID(status, packetID))
+            if (!anyID && !validator.isValidPacketID(status, packetID)) {
+                trace.end = "invalid packet order";
                 return;
+            }
 
-            // :364 - the two store-info packets are refused unread.
+            // The two store-info packets are refused unread.
             if (!de::fuzz::options().noStoreSkip &&
-                (packetID == Packet::PACKET_GC_OTHER_STORE_INFO || packetID == Packet::PACKET_GC_MY_STORE_INFO))
+                (packetID == Packet::PACKET_GC_OTHER_STORE_INFO || packetID == Packet::PACKET_GC_MY_STORE_INFO)) {
+                trace.end = "store info";
                 return;
+            }
 
-            // :372 - "too large packet size"; an id with no factory throws
-            // InvalidProtocolException from getPacketMaxSize itself.
-            if (packetSize > factories.getPacketMaxSize(packetID))
+            // An id with no factory throws InvalidProtocolException from
+            // getPacketMaxSize itself.
+            if (packetSize > factories.getPacketMaxSize(packetID)) {
+                trace.end = "too large packet size";
                 return;
+            }
 
-            // :381 - the body has not all arrived: wait for more.
+            // The body has not all arrived: wait for more.
             if (in.length() < szPacketHeader + packetSize)
                 return;
 
-            // :394 and :399.
+            // The sequence is checked and counted as the frame is
+            // consumed, never while it waits for its body.
+            if (packetSequence != session.expectedSequence) {
+                trace.end = "packet sequence error";
+                return;
+            }
+            session.expectedSequence++;
+            session.frames++;
+            trace.frames.push_back({packetID, packetSize, 'R'});
+
             std::unique_ptr<Packet> pPacket(factories.createPacket(packetID));
             de::fuzz::readPacket(in, *pPacket, packetID, packetSize);
         } catch (IgnorePacketException&) {
-            // :462-482 - an ignored packet is skipped whole, unread.
-            if (packetSize > factories.getPacketMaxSize(packetID))
+            // An ignored packet is skipped whole, unread, and its
+            // sequence counted once it has been.
+            if (packetSize > factories.getPacketMaxSize(packetID)) {
+                trace.end = "too large ignored packet size";
                 return;
+            }
             if (in.length() < szPacketHeader + packetSize)
                 return;
             in.skip(szPacketHeader + packetSize);
+            if (packetSequence != session.expectedSequence) {
+                trace.end = "packet sequence error";
+                return;
+            }
+            session.expectedSequence++;
+            session.frames++;
+            trace.frames.push_back({packetID, packetSize, 'S'});
+        }
+    }
+}
+
+// The mirror's name for each of the production gate's refusals.
+const char* refusalName(de::GameFrameRefusal refusal) {
+    switch (refusal) {
+    case de::GameFrameRefusal::IdOutOfRange:
+        return "too large packet id";
+    case de::GameFrameRefusal::InvalidOrder:
+        return "invalid packet order";
+    case de::GameFrameRefusal::StoreInfo:
+        return "store info";
+    case de::GameFrameRefusal::TooLarge:
+        return "too large packet size";
+    case de::GameFrameRefusal::IgnoredTooLarge:
+        return "too large ignored packet size";
+    case de::GameFrameRefusal::OutOfSequence:
+        return "packet sequence error";
+    case de::GameFrameRefusal::None:
+        break;
+    }
+    return "refused with no refusal";
+}
+
+// As receive, through the production gate: GamePlayer::processCommand's
+// loop, less the handler.
+void receiveThroughGate(SocketInputStream& in, PlayerStatus status, de::GameFrameGate& gate, int& frames,
+                        de::fuzz::Trace& trace) {
+    PacketFactoryManager& factories = de::kernelContext().packetFactories();
+    PacketValidator& validator = de::kernelContext().packetValidator();
+
+    while (true) {
+        if (frames == de::fuzz::kMaxFrames) {
+            trace.end = "frame cap";
+            return;
+        }
+
+        // The mirror records a frame before reading it, so a body the read
+        // refuses is in its trace. The gate throws that refusal from
+        // next(), which has then consumed the frame; a refusal from the
+        // factory table, before any read, consumes nothing.
+        char header[szPacketHeader];
+        const bool peeked = in.peek(&header[0], szPacketHeader);
+        const uint before = in.length();
+        de::GameFrame frame;
+        try {
+            frame = gate.next(in, status, factories, validator);
+        } catch (ProtocolException&) {
+            if (peeked && in.length() != before) {
+                PacketID_t id;
+                PacketSize_t size;
+                std::memcpy(&id, &header[0], szPacketID);
+                std::memcpy(&size, &header[szPacketID], szPacketSize);
+                trace.frames.push_back({id, size, 'R'});
+            }
+            throw;
+        }
+
+        switch (frame.step) {
+        case de::GameFrameStep::AwaitHeader:
+        case de::GameFrameStep::AwaitBody:
+        case de::GameFrameStep::AwaitIgnoredBody:
+            return;
+        case de::GameFrameStep::Read:
+            frames++;
+            trace.frames.push_back({frame.id, frame.size, 'R'});
+            break;
+        case de::GameFrameStep::Skipped:
+            frames++;
+            trace.frames.push_back({frame.id, frame.size, 'S'});
+            break;
+        case de::GameFrameStep::Refused:
+            trace.end = refusalName(frame.refusal);
+            return;
         }
     }
 }
@@ -118,13 +240,30 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
     if (!de::fuzz::parse(data, size, input))
         return 0;
 
-    // GamePlayer reads through a SocketEncryptInputStream (GamePlayer.cpp:86)
-    // whose code comes from the zone the player enters.
-    Socket socket(new SocketImpl());
-    SocketEncryptInputStream in(&socket, (uint)de::fuzz::streamCapacity(input));
-    in.setEncryptCode(input.code);
-    de::fuzz::loadStream(in, input);
+    de::fuzz::run([&] {
+        const de::fuzz::Trace whole =
+            de::fuzz::deliverEveryWay(input, data, size, [&](const de::fuzz::Schedule& cuts, de::fuzz::Trace& trace) {
+                // GamePlayer reads through a SocketEncryptInputStream whose
+                // code comes from the zone the player enters.
+                Socket socket(new SocketImpl());
+                SocketEncryptInputStream in(&socket, (uint)de::fuzz::streamCapacity(input));
+                in.setEncryptCode(input.code);
+                Session session;
+                de::fuzz::deliver(in, input, cuts, trace,
+                                  [&](de::fuzz::Trace& t) { receive(in, input.status, session, t); });
+            });
 
-    de::fuzz::run([&] { receive(in, input.status); });
+        if (de::fuzz::options().anyID || de::fuzz::options().noStoreSkip)
+            return;
+        Socket socket(new SocketImpl());
+        SocketEncryptInputStream in(&socket, (uint)de::fuzz::streamCapacity(input));
+        in.setEncryptCode(input.code);
+        de::GameFrameGate gate;
+        int frames = 0;
+        de::fuzz::Trace gated;
+        de::fuzz::deliver(in, input, de::fuzz::byteSchedule(input), gated,
+                          [&](de::fuzz::Trace& t) { receiveThroughGate(in, input.status, gate, frames, t); });
+        de::fuzz::expectSameTrace(whole, gated, "byte by byte through GameFrameGate");
+    });
     return 0;
 }

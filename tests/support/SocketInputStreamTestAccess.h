@@ -25,6 +25,7 @@
 #ifndef __SOCKET_INPUT_STREAM_TEST_ACCESS_H__
 #define __SOCKET_INPUT_STREAM_TEST_ACCESS_H__
 
+#include <algorithm>
 #include <cstddef>
 #include <cstring>
 
@@ -55,6 +56,28 @@ public:
         stream.m_Head = 0;
         stream.m_Tail = static_cast<uint>(len);
         stream.m_EncryptKey = stream.EncryptData(stream.m_EncryptKey, stream.m_Buffer, static_cast<int>(len));
+        return true;
+    }
+
+    // Adds data[0, len) behind whatever the stream holds, as one fill() that
+    // received them would: the bytes land at the tail, wrapping to the front
+    // of the ring buffer when they reach its end, and each contiguous run
+    // goes through EncryptData(). The buffer never grows here, so when
+    // fewer than len bytes are free (capacity() - 1 - length()) nothing is
+    // added and false is returned.
+    static bool Append(SocketInputStream& stream, const unsigned char* data, std::size_t len) {
+        const std::size_t used = (stream.m_Tail + stream.m_BufferLen - stream.m_Head) % stream.m_BufferLen;
+        if (len > stream.m_BufferLen - 1 - used)
+            return false;
+        std::size_t done = 0;
+        while (done < len) {
+            const std::size_t run = std::min<std::size_t>(len - done, stream.m_BufferLen - stream.m_Tail);
+            char* dst = stream.m_Buffer + stream.m_Tail;
+            std::memcpy(dst, data + done, run);
+            stream.m_EncryptKey = stream.EncryptData(stream.m_EncryptKey, dst, static_cast<int>(run));
+            stream.m_Tail = static_cast<uint>((stream.m_Tail + run) % stream.m_BufferLen);
+            done += run;
+        }
         return true;
     }
 

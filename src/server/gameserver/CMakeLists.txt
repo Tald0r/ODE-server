@@ -437,6 +437,7 @@ set(GAMESERVER_MAIN_SOURCES
     DarkLightInfo.cpp
     Corpse.cpp
     GameContext.cpp
+    GameFrameGate.cpp
     GamePlayer.cpp
     SpeedHackDecision.cpp
     GameServer.cpp
