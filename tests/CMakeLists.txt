@@ -40,6 +40,7 @@ add_executable(wire_tests EXCLUDE_FROM_ALL
     packet_encrypter_test.cpp
     packet_exchange_test.cpp
     packet_field_bounds_test.cpp
+    packet_frame_test.cpp
     packet_gameserver_handshake_test.cpp
     packet_guild_test.cpp
     packet_interserver_test.cpp
@@ -71,6 +72,7 @@ target_include_directories(wire_tests PRIVATE
 target_compile_definitions(wire_tests PRIVATE
     WIRETEST_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/golden"
     WIRETEST_LAYOUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/wire-layout.txt"
+    WIRETEST_REGISTRATIONS_FILE="${CMAKE_CURRENT_SOURCE_DIR}/ratchet/factory_registrations.txt"
     WIRETEST_XML_PARSE_FILE="${CMAKE_CURRENT_SOURCE_DIR}/golden/xml-parse.txt"
     WIRETEST_DATA_DIR="${CMAKE_SOURCE_DIR}/data"
 )
