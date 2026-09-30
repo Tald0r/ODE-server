@@ -345,7 +345,14 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   length) is refused by the server's read before and after the change.
   Pinned by `FrameBoundTest` in `tests/packet_frame_test.cpp`
   (`wire_tests`) and by the fuzz targets' body oracle, which aborts
-  unless `readPacket` moved the stream exactly one frame on.
+  unless `readPacket` moved the stream exactly one frame on. Two
+  libFuzzer runs of 661 seconds each on the bounded read, from the
+  committed seed corpus with strict exceptions (the command in
+  `CLAUDE.md`), found nothing: the game target ran 21,072,354 inputs
+  from 1,454 seeds, from 4,561 covered edges to 5,146 (7,009 features,
+  1,175 corpus units); the login target 7,294,596 inputs from 253 seeds,
+  from 856 edges to 985 (3,967 features, 435 units). The replay ctests
+  pass in that ASan build too.
   > **Status:** fixed (fix/frame-bounded-packet-reads)
 
 ## The character list could not carry a cross1, a mace or a mace1 (2026-09-29)
