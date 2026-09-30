@@ -70,15 +70,12 @@ uint SocketInputStream::read(string& str, uint len) {
     __BEGIN_TRY
 
     if (len == 0)
-        throw InvalidProtocolException("len==0");
+        failRead("len==0");
 
-    // If the buffer does not hold as much data as was asked for, throw an exception.
-    // When read is called after peek() has checked, the if-throw below
-    // is redundant. So it could be commented out.
-    // If the code below is commented out, the if-else just below has to become
-    // an if-else if-else.
+    // Less data buffered, or left in the open frame's body, than was
+    // asked for.
     if (len > length())
-        throw InsufficientDataException(len - length());
+        failUnderflow(len - length());
 
     // Reserve len bytes in the string up front.
     str.reserve(len);
@@ -117,21 +114,107 @@ uint SocketInputStream::read(string& str, uint len) {
 }
 
 //////////////////////////////////////////////////////////////////////
+// refuse a stream operation
+//
+// Inside an open frame the failure is recorded before it is thrown, so
+// readPacket() refuses the frame even when the packet's read() catches
+// the exception and carries on.
+//////////////////////////////////////////////////////////////////////
+void SocketInputStream::failRead(const char* message) {
+    if (m_bFrameBounded)
+        m_bFrameReadFailed = true;
+    throw InvalidProtocolException(message);
+}
+
+void SocketInputStream::failUnderflow(uint missing) {
+    if (m_bFrameBounded)
+        m_bFrameReadFailed = true;
+    throw InsufficientDataException(missing);
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// close the open frame
+//
+// The head moves straight to the end of the body, however much of it
+// the packet read: skip() would refuse the zero-byte remainder of a
+// body read exactly.
+//////////////////////////////////////////////////////////////////////
+void SocketInputStream::finishFrame() noexcept {
+    m_Head = m_FrameEnd;
+    m_Tail = m_FrameTail;
+    m_bFrameBounded = false;
+    m_bFrameReadFailed = false;
+}
+
+
+//////////////////////////////////////////////////////////////////////
 // read packet from input buffer
+//
+// The receive loops pick the packet from the header's id and call this
+// once the whole frame is buffered; it checks that again, so it is safe
+// for any caller. The header's size bounds the packet's read(): m_Tail
+// is pulled in to the end of the body while read() runs, so length(),
+// and with it every read, peek and skip, stops there.
 //////////////////////////////////////////////////////////////////////
 void SocketInputStream::readPacket(Packet* pPacket) {
     __BEGIN_TRY
 
-    // The ID and the Size have already been read further up, and the packet object
-    // matching the ID is handed in as a parameter, so the ID is skipped. The Size is used
-    // to check that the whole binary image arrived; the initialisation does not need it, so it is skipped.
-    skip(szPacketHeader);
+    // A packet read inside another packet's read would take its header
+    // from the outer body. Refused without touching the stream; the
+    // failure is recorded, so the outer frame is refused as well.
+    if (m_bFrameBounded)
+        failRead("nested packet read");
 
-    // From here on the method defined in each packet class is called,
-    // and it initialises itself.
-    // If read() of any packet gets it wrong, everything after that
-    // becomes impossible to parse. So a packet class has to be written with real care.
-    pPacket->read(*this);
+    Assert(pPacket != NULL);
+
+    // Nothing is consumed until the header and the whole declared body
+    // are buffered: a fragmented frame waits whole for the next fill().
+    char header[szPacketHeader];
+    if (!peek(header, szPacketHeader))
+        throw InsufficientDataException(szPacketHeader - length());
+
+    PacketSize_t packetSize = 0;
+    memcpy(&packetSize, &header[szPacketID], szPacketSize);
+    const uint bufferedBody = length() - szPacketHeader;
+    if (packetSize > bufferedBody)
+        throw InsufficientDataException(packetSize - bufferedBody);
+
+    // The id picked the packet and the size bounds it; the sequence byte
+    // is the receive loop's to check. Open the frame over the body.
+    m_Head = (m_Head + szPacketHeader) % m_BufferLen;
+    m_FrameEnd = (m_Head + packetSize) % m_BufferLen;
+    m_FrameTail = m_Tail;
+    m_Tail = m_FrameEnd;
+    m_bFrameBounded = true;
+    m_bFrameReadFailed = false;
+
+    try {
+        pPacket->read(*this);
+    } catch (InsufficientDataException&) {
+        // The whole body was buffered, so a field that runs past it is a
+        // malformed body, not a fragment the receive loop may wait for.
+        finishFrame();
+        throw InvalidProtocolException("packet read ran past its declared body");
+    } catch (IgnorePacketException&) {
+        // A receive loop answers this by skipping the frame, which is
+        // consumed already: it would skip the next one instead.
+        finishFrame();
+        throw InvalidProtocolException("packet read asked for its frame to be ignored");
+    } catch (...) {
+        finishFrame();
+        throw;
+    }
+
+    const uint unread = length();
+    const bool failed = m_bFrameReadFailed;
+    finishFrame();
+
+    if (failed)
+        throw InvalidProtocolException("packet read caught a stream failure");
+    if (unread != 0)
+        throw InvalidProtocolException("packet read left its declared body unread");
+
     cout << "Receive:" << pPacket->toString() << endl;
     __END_CATCH
 }
@@ -147,14 +230,17 @@ bool SocketInputStream::peek(std::span<std::byte> dst) {
     Assert(buf != NULL);
 
     if (len == 0)
-        throw InvalidProtocolException("len==0");
+        failRead("len==0");
 
     // Less data buffered than asked for. Unlike read() that is not an
-    // exception here: "not yet" is peek()'s normal answer.
-    // by sigi. 2002.5.4
-    if (len > length())
-        // throw InsufficientDataException( len - length() );
+    // exception here: "not yet" is peek()'s normal answer. Inside an open
+    // frame the whole body is buffered, so a peek past it is refused
+    // instead: the bytes behind it are the next frame's.
+    if (len > length()) {
+        if (m_bFrameBounded)
+            failRead("packet read peeked past its declared body");
         return false;
+    }
 
     // Copy into buf, but leave m_Head where it is.
     if (m_Head < m_Tail) { // normal order
@@ -208,10 +294,10 @@ void SocketInputStream::skip(uint len) {
     __BEGIN_TRY
 
     if (len == 0)
-        throw InvalidProtocolException("len==0");
+        failRead("len==0");
 
     if (len > length())
-        throw InsufficientDataException(len - length());
+        failUnderflow(len - length());
 
     // Advance m_Head.
     m_Head = (m_Head + len) % m_BufferLen;

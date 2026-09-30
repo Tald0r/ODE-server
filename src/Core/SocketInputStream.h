@@ -80,6 +80,24 @@ public:
     uint read(std::span<std::byte> dst);
     uint read(char* buf, uint len);
     uint read(string& str, uint len);
+
+    // Reads one frame into the packet: the header, then exactly the body
+    // size the header declares, through the packet's read(). The header
+    // and the whole body must already be buffered; otherwise it throws
+    // InsufficientDataException and consumes nothing.
+    //
+    // While the packet's read() runs, every read, peek and skip is
+    // bounded to the declared body: length() reports what is left of
+    // the body, and nothing past it can be seen or consumed. The frame
+    // is refused with InvalidProtocolException when read() leaves a body
+    // byte unread, when a field runs past the body (the body was wholly
+    // buffered, so that is a malformed body, not a fragment to wait
+    // for), when a stream operation failed inside read() even if read()
+    // caught the failure, when read() throws IgnorePacketException (the
+    // receive loops would skip a frame that is already consumed), and
+    // when a readPacket is nested inside another. Whatever read() throws
+    // otherwise is passed on. On every exit the stream stands at the
+    // start of the next frame.
     void readPacket(Packet* p);
 
     // Raw scalar read: copies sizeof(T) bytes of the object
@@ -150,6 +168,28 @@ private:
     // buffer head/tail
     uint m_Head;
     uint m_Tail;
+
+    // While readPacket() has a frame open, m_Tail is the end of that
+    // frame's body, so length() and every bounds check against it stop
+    // there, and m_FrameTail keeps the end of the buffered data, which
+    // finishFrame() restores. m_bFrameReadFailed records a stream
+    // failure inside the frame as it is thrown, so a packet's read()
+    // cannot hide it by catching the exception.
+    bool m_bFrameBounded = false;
+    bool m_bFrameReadFailed = false;
+    uint m_FrameEnd = 0;
+    uint m_FrameTail = 0;
+
+    // The refusals of a stream operation, out of line so the inline
+    // read() keeps its success path unchanged. Each marks an open frame
+    // as failed before throwing.
+    [[noreturn]] void failRead(const char* message);
+    [[noreturn]] void failUnderflow(uint missing);
+
+    // Closes the open frame: the head moves to the end of its body and
+    // the tail back to the end of the buffered data.
+    void finishFrame() noexcept;
+
     // add by viva 2008-12-31
 public:
     WORD m_EncryptKey;
@@ -181,6 +221,11 @@ public:
 // docs/TOOLCHAIN.md section 2 relies on. Every scalar field of every
 // packet goes through here, so keep the definition visible.
 //
+// The frame bound readPacket() sets costs nothing here: it is the
+// `len > length()` check the read makes anyway, since length() stops at
+// the end of the open frame's body. Both refusals are out-of-line calls
+// on the failing branch.
+//
 //////////////////////////////////////////////////////////////////////
 inline uint SocketInputStream::read(std::span<std::byte> dst) {
     char* buf = reinterpret_cast<char*>(dst.data());
@@ -189,12 +234,12 @@ inline uint SocketInputStream::read(std::span<std::byte> dst) {
     Assert(buf != NULL);
 
     if (len == 0)
-        throw InvalidProtocolException("len==0");
+        failRead("len==0");
 
-    // Less data buffered than the caller asked for. (The original
-    // Korean note here did not survive the encoding migration.)
+    // Less data buffered, or left in the open frame's body, than the
+    // caller asked for.
     if (len > length())
-        throw InsufficientDataException(len - length());
+        failUnderflow(len - length());
 
     if (m_Head < m_Tail) { // normal order
 
