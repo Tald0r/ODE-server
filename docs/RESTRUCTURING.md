@@ -1290,11 +1290,12 @@ shrink-only work.
   - Owner: ratchet R7, held at 0.
 
 - [ ] **5.5 Packet-read fuzzing.** Fuzz what clients send: the bytes a
-  client puts on the wire, through the gates of
-  `GamePlayer::processCommand` and `LoginPlayer::processCommand`, into the
-  packets' `read()` and the `toString()` every read packet is printed
-  with. Every crash the fuzzers find is fixed test-first or recorded in
-  `docs/FIXES.md`, and its input is replayed by ctest from then on.
+  client puts on the wire, through the gates of `GameFrameGate::next`
+  (run by `GamePlayer::processCommand`) and
+  `LoginPlayer::processCommand`, into the packets' `read()` and the
+  `toString()` every read packet is printed with. Every crash the fuzzers
+  find is fixed test-first or recorded in `docs/FIXES.md`, and its input
+  is replayed by ctest from then on.
   > **Status:** in progress (the CI fuzz job; the findings recorded, not
   > fixed, in `docs/FIXES.md` under "Packet-read fuzzing": enumerators
   > cast from wire bytes, non-protocol exceptions escaping the receive

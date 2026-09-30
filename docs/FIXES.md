@@ -43,62 +43,66 @@ first recorded.
 - **`GamePlayer` counted a frame's sequence byte before its body had
   arrived.** `GamePlayer::processCommand` peeked the header, checked the
   sequence byte against `m_Sequence` and incremented `m_Sequence`, and
-  only then checked that the whole body was buffered, breaking out of
-  the loop if it was not. The frame stayed in the stream, so the next
-  call peeked the same header, whose sequence was now one behind, and
-  threw `DisconnectException("Packet sequence error")`. The
+  only then checked that the whole body was buffered, breaking out of the
+  loop if it was not. The frame stayed in the stream, so the next call
+  peeked the same header, whose sequence was now one behind, and threw
+  `DisconnectException("Packet sequence error")`. The
   `IgnorePacketException` catch had the same order: the sequence was
-  counted before the validator threw, and a body not yet buffered ended
-  in `InsufficientDataException`, so the ignored frame was re-peeked
-  with a stale sequence too. The client numbers every packet it sends
+  counted before the validator threw, and a body not yet buffered ended in
+  `InsufficientDataException`, so the ignored frame was re-peeked with a
+  stale sequence too. The client numbers every packet it sends
   (`SocketOutputStream::write` increments its `m_Sequence`), so any game
   packet whose header arrived in one receive and its body in a later one
   disconnected the player. The loginserver checks no sequence, and the
   frame bound did not change this: `readPacket` consumes nothing of a
-  frame that is not whole. `fuzz_game_stream.cpp` mirrored the same
-  order but gave each input to the stream whole, so a fragment was only
-  ever the input's end and the fuzzing could not reach this.
-  Now `processCommand` runs each frame through `de::GameFrameGate`
+  frame that is not whole. `fuzz_game_stream.cpp` mirrored the same order
+  but gave each input to the stream whole, so a fragment was only ever the
+  input's end and the fuzzing could not reach this. Now `processCommand`
+  runs each frame through `de::GameFrameGate`
   (`src/server/gameserver/GameFrameGate.{h,cpp}`), which owns the count
   and checks and counts the sequence only where the frame is consumed:
   just before `readPacket`, once the whole body is buffered, and right
-  after the `skip` of an ignored frame, whose sequence is still checked.
-  A wrong sequence on a whole frame is refused as before, with the same
-  log line and exception. The id, validator, store-info and size checks
-  keep their order and now come before the sequence check; a frame they
-  refuse no longer has its sequence counted, and one that is also out
-  of sequence is logged as the header refusal, neither of which matters
-  because every refusal drops the connection. `GamePlayer.cpp` links
-  only into the gameserver executable, which no test links, so the gate
-  was split out to be tested: `game_frame_gate_tests`
-  (`tests/game_frame_gate_test.cpp`) hands it frames in parts (a header
-  and then its body, one byte at a time, the end of one frame with whole
-  ones behind it, an ignored frame split in `GPS_WAITING_FOR_CG_READY`).
-  Against the old gate 6 of its 18 cases fail. Four of them show this
-  bug, the partial body counting the sequence and the whole frame then
-  being refused: the fragmented read, the byte-by-byte delivery, the
-  end of a frame followed by whole frames, and the fragmented ignored
-  frame. The other two pin the new check order and fail on the old gate
-  for that reason: a fragmented frame out of sequence now waits for its
-  body before it is refused, and an id past the table is refused as
-  such rather than for its sequence. The fuzz targets now deliver each
-  input whole, byte by byte and in hashed chunks and abort unless all
-  three read the same packets and end the same way; on the old order
-  the game mirror aborted on the first golden seed, and a libFuzzer run
-  from an empty corpus in 0.7 s on a header declaring a four-byte body
-  of which only the first byte arrives
+  after the `skip` of an ignored frame, whose sequence is still checked. A
+  wrong sequence on a whole frame is refused as before, with the same log
+  line and exception. The log file and the exception each refusal ends in
+  now come from the gate too (`de::refusalLogFile`, `de::throwRefusal`),
+  and `game_frame_gate_tests` checks both for every refusal; each log
+  line's format stays in `GamePlayer::refuseFrame`, since its fields name
+  the player, and is checked by reading only. The id, validator,
+  store-info and size checks keep their order and now come before the
+  sequence check; a frame they refuse no longer has its sequence counted,
+  and one that is also out of sequence is logged as the header refusal,
+  neither of which matters because every refusal drops the connection.
+  `GamePlayer.cpp` links only into the gameserver executable, which no
+  test links, so the gate was split out to be tested:
+  `game_frame_gate_tests` (`tests/game_frame_gate_test.cpp`) hands it
+  frames in parts (a header and then its body, one byte at a time, the end
+  of one frame with whole ones behind it, an ignored frame split in
+  `GPS_WAITING_FOR_CG_READY`). Against the old gate 6 of its 18 frame
+  cases fail (a 19th, which checks each refusal's log file and exception,
+  came later). Four of them show this bug, the partial body counting the
+  sequence and the whole frame then being refused: the fragmented read,
+  the byte-by-byte delivery, the end of a frame followed by whole frames,
+  and the fragmented ignored frame. The other two pin the new check order
+  and fail on the old gate for that reason: a fragmented frame out of
+  sequence now waits for its body before it is refused, and an id past the
+  table is refused as such rather than for its sequence. The fuzz targets
+  now deliver each input whole, byte by byte and in hashed chunks and
+  abort unless all three read the same packets and end the same way; on
+  the old order the game mirror aborted on the first golden seed, and a
+  libFuzzer run from an empty corpus crashed in 0.7 s on a header
+  declaring a four-byte body of which only the first byte arrives
   (`tests/fuzz/regressions/game/sequence-before-body.hex`). The game
   target also delivers every input byte by byte through
-  `GameFrameGate::next` itself and aborts unless it ends as the
-  mirror's whole delivery did, so the fuzzing covers the production
-  gate and not only its mirror (outside `DE_FUZZ_ANY_ID` and
-  `DE_FUZZ_NO_STORE_SKIP`, which the gate has no hook for). With the
-  old gate built in, `fuzz_replay_game` aborts on the first golden seed
-  and libFuzzer crashes in 0.13 s from the seeds. On the fix,
-  661 s of game fuzzing (621,395 runs) and 181 s of login fuzzing found
-  nothing, and with the production gate checked beside the mirror,
-  631 s of game fuzzing (716,961 runs) and 91 s of login fuzzing found
-  nothing either.
+  `GameFrameGate::next` itself and aborts unless it ends as the mirror's
+  whole delivery did, so the fuzzing covers the production gate and not
+  only its mirror (outside `DE_FUZZ_ANY_ID` and `DE_FUZZ_NO_STORE_SKIP`,
+  which the gate has no hook for). With the old gate built in,
+  `fuzz_replay_game` aborts on the first golden seed and libFuzzer crashes
+  in 0.13 s from the seeds. On the fix, 661 s of game fuzzing (621,395
+  runs) and 181 s of login fuzzing found nothing, and with the production
+  gate checked beside the mirror, 631 s of game fuzzing (716,961 runs) and
+  91 s of login fuzzing found nothing either.
   > **Status:** fixed (fix/sequence-after-body)
 
 ## The client links read packets no client sends (2026-09-29)
@@ -182,8 +186,9 @@ first recorded.
 ## Packet-read fuzzing (2026-09-29)
 
 The fuzz targets in `tests/fuzz/` feed a client's bytes through the
-gates of `GamePlayer::processCommand` and `LoginPlayer::processCommand`
-into the packets' `read()`; `CLAUDE.md` says how to build and run them.
+gates of `GameFrameGate::next` (run by `GamePlayer::processCommand`) and
+`LoginPlayer::processCommand` into the packets' `read()`; `CLAUDE.md`
+says how to build and run them.
 Where a fuzz run found a defect below, its input is replayed by ctest from
 `tests/fuzz/regressions/`, and every fix but the validator's has a gtest
 in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
@@ -194,9 +199,10 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   writing `m_Items[i]` past the vector. It now refuses a count past the
   slots with `InvalidProtocolException` before reading any item
   (`StoreInfoTest` in `tests/packet_read_bounds_test.cpp`). On the
-  gameserver it was not reachable: `GamePlayer::processCommand` refuses
-  `GCMyStoreInfo` and `GCOtherStoreInfo` unread, and even with that
-  refusal off (`DE_FUZZ_NO_STORE_SKIP=1`, fuzzed for five minutes) the
+  gameserver it was not reachable: `GameFrameGate::next` (run by
+  `GamePlayer::processCommand`) refuses `GCMyStoreInfo` and
+  `GCOtherStoreInfo` unread, and even with that refusal off
+  (`DE_FUZZ_NO_STORE_SKIP=1`, fuzzed for five minutes) the
   factory's packets hold no record, so their `read()` throws "no store
   record" before `StoreInfo::read`. So no recorded input reaches the
   bound and `StoreInfoTest` is its only guard; the ctest
