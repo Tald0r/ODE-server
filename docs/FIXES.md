@@ -40,6 +40,31 @@ first recorded.
   > **Status:** not a defect (no handler throws it; recorded for the
   > next change to the loops)
 
+- **`GamePlayer` counts a frame's sequence byte before its body has
+  arrived.** `GamePlayer::processCommand` peeks the header, checks the
+  sequence byte against `m_Sequence` and increments `m_Sequence`, and
+  only then checks that the whole body is buffered, breaking out of the
+  loop if it is not. The frame stays in the stream, so the next call
+  peeks the same header, whose sequence is now one behind, and throws
+  `DisconnectException("Packet sequence error")`. The
+  `IgnorePacketException` catch has the same order: the sequence was
+  counted before the validator threw, and a body not yet buffered ends
+  in `InsufficientDataException`, so the ignored frame is re-peeked with
+  a stale sequence too. The client numbers every packet it sends
+  (`SocketOutputStream::write` increments its `m_Sequence`), so any game
+  packet whose header arrives in one receive and its body in a later one
+  disconnects the player. The loginserver checks no sequence, and the
+  frame bound does not change this: `readPacket` consumes nothing of a
+  frame that is not whole. The fix is to count the sequence only where
+  the frame is consumed: just before `readPacket`, after the length
+  check, and after the `skip` in the ignore catch. `fuzz_game_stream.cpp`
+  mirrors the same order but gives each input to the stream whole, so a
+  fragment is only ever the input's end and the fuzzing cannot reach
+  this. Not fixed here because no test drives `processCommand` (it needs
+  a socket and the kernel context) and a fix to a receive loop should
+  come with one.
+  > **Status:** recorded, not fixed (fix/frame-bounded-packet-reads)
+
 ## The client links read packets no client sends (2026-09-29)
 
 - **In `GPS_NORMAL` the gameserver read any packet it registers.** The

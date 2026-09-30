@@ -389,10 +389,26 @@ inlines: on the unwrapped path a scalar field is a `length()` call, a
 compare and a single load. The frame bound
 `readPacket` puts on a packet's `read()` adds nothing to that path, since
 it is the same `len > length()` compare against a tail pulled in to the
-body's end. To check it again, compile a packet with the build's flags and
-`-O2 -S` and count calls of the span overload
-(`_ZN17SocketInputStream4readENSt3__14spanISt4byteLm18446744073709551615EEE`):
-there should be none.
+body's end. No test checks this; to check it again, compile a packet read
+to assembly and count the call instructions to the span overload. There
+should be none:
+
+```sh
+cmake/zig-c++ -std=c++20 -O2 -UNDEBUG -S -D__LINUX__ -D__GAME_SERVER__ \
+    -D__COMBAT__ -Isrc/Core -o CGAttack.s src/Core/CGAttack.cpp
+grep -cE '^[[:space:]]*bl[[:space:]]+_ZN17SocketInputStream4readE(NSt3__1|St)4span' CGAttack.s
+```
+
+`-UNDEBUG` is needed because zig's `-O2` defines `NDEBUG`, which
+`Exception.h` and `Assert.h` refuse with `#error`. The pattern counts only
+`bl` lines (aarch64; `call` on x86-64): a plain count of the symbol also
+hits its definition and the debug strings. It covers both spellings of
+the symbol, `...4readENSt3__14span...` under libc++ (zig) and
+`...4readESt4span...` under libstdc++ (the `darkeden-fuzz` image's
+Clang 18). Measured with zig on aarch64, before and after the frame
+bound: `CGAttack::read` 16 calls to 0, `CGMove` 12 to 0, `GCUpdateInfo`
+21 to 0, `CLLogin` and `CGSay` 1 to 0; `CGAttack` under Clang 18 and
+libstdc++ also went from 16 to 0.
 
 `std::endian` states the deployed byte order once, as a `static_assert` in
 `WireTypes.h`: the wire format is the little-endian in-memory representation,
