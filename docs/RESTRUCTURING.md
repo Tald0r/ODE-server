@@ -1320,10 +1320,14 @@ shrink-only work.
   > names, the store item count, and the frame bound: `readPacket` holds
   > every read to the body its header declares (`FrameBoundTest` in
   > `tests/packet_frame_test.cpp`), and the targets abort unless it
-  > moves the stream exactly one frame on. Next reader: a UDP target
+  > moves the stream exactly one frame on, and the gameserver's
+  > sequence count, which moves only when a frame is consumed
+  > (`GameFrameGate`, `game_frame_gate_tests`): the targets deliver
+  > each input whole, byte by byte and in hashed chunks and abort
+  > unless the three agree. Next reader: a UDP target
   > for the loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is
-  > not written, and the targets load each input at the start of the
-  > stream's buffer, so its wrap-around path is not fuzzed
+  > not written, and the targets deliver each input from the start of
+  > the stream's buffer, so its wrap-around path is not fuzzed
   > (`StreamFuzz.h`).
   - Owner: the replay ctests (every recorded input replays clean, and a
     read may refuse a body only with a ProtocolException), the gtests

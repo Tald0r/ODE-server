@@ -40,30 +40,49 @@ first recorded.
   > **Status:** not a defect (no handler throws it; recorded for the
   > next change to the loops)
 
-- **`GamePlayer` counts a frame's sequence byte before its body has
-  arrived.** `GamePlayer::processCommand` peeks the header, checks the
-  sequence byte against `m_Sequence` and increments `m_Sequence`, and
-  only then checks that the whole body is buffered, breaking out of the
-  loop if it is not. The frame stays in the stream, so the next call
-  peeks the same header, whose sequence is now one behind, and throws
-  `DisconnectException("Packet sequence error")`. The
-  `IgnorePacketException` catch has the same order: the sequence was
-  counted before the validator threw, and a body not yet buffered ends
-  in `InsufficientDataException`, so the ignored frame is re-peeked with
-  a stale sequence too. The client numbers every packet it sends
+- **`GamePlayer` counted a frame's sequence byte before its body had
+  arrived.** `GamePlayer::processCommand` peeked the header, checked the
+  sequence byte against `m_Sequence` and incremented `m_Sequence`, and
+  only then checked that the whole body was buffered, breaking out of
+  the loop if it was not. The frame stayed in the stream, so the next
+  call peeked the same header, whose sequence was now one behind, and
+  threw `DisconnectException("Packet sequence error")`. The
+  `IgnorePacketException` catch had the same order: the sequence was
+  counted before the validator threw, and a body not yet buffered ended
+  in `InsufficientDataException`, so the ignored frame was re-peeked
+  with a stale sequence too. The client numbers every packet it sends
   (`SocketOutputStream::write` increments its `m_Sequence`), so any game
-  packet whose header arrives in one receive and its body in a later one
-  disconnects the player. The loginserver checks no sequence, and the
-  frame bound does not change this: `readPacket` consumes nothing of a
-  frame that is not whole. The fix is to count the sequence only where
-  the frame is consumed: just before `readPacket`, after the length
-  check, and after the `skip` in the ignore catch. `fuzz_game_stream.cpp`
-  mirrors the same order but gives each input to the stream whole, so a
-  fragment is only ever the input's end and the fuzzing cannot reach
-  this. Not fixed here because no test drives `processCommand` (it needs
-  a socket and the kernel context) and a fix to a receive loop should
-  come with one.
-  > **Status:** recorded, not fixed (fix/frame-bounded-packet-reads)
+  packet whose header arrived in one receive and its body in a later one
+  disconnected the player. The loginserver checks no sequence, and the
+  frame bound did not change this: `readPacket` consumes nothing of a
+  frame that is not whole. `fuzz_game_stream.cpp` mirrored the same
+  order but gave each input to the stream whole, so a fragment was only
+  ever the input's end and the fuzzing could not reach this.
+  Now `processCommand` runs each frame through `de::GameFrameGate`
+  (`src/server/gameserver/GameFrameGate.{h,cpp}`), which owns the count
+  and checks and counts the sequence only where the frame is consumed:
+  just before `readPacket`, once the whole body is buffered, and right
+  after the `skip` of an ignored frame, whose sequence is still checked.
+  A wrong sequence on a whole frame is refused as before, with the same
+  log line and exception. The id, validator, store-info and size checks
+  keep their order and now come before the sequence check; a frame they
+  refuse no longer has its sequence counted, and one that is also out
+  of sequence is logged as the header refusal, neither of which matters
+  because every refusal drops the connection. `GamePlayer.cpp` links
+  only into the gameserver executable, which no test links, so the gate
+  was split out to be tested: `game_frame_gate_tests`
+  (`tests/game_frame_gate_test.cpp`) hands it frames in parts (a header
+  and then its body, one byte at a time, the end of one frame with whole
+  ones behind it, an ignored frame split in `GPS_WAITING_FOR_CG_READY`),
+  and against the old order 6 of its 18 cases fail. The fuzz targets
+  now deliver each input whole, byte by byte and in hashed chunks and
+  abort unless all three read the same packets and end the same way;
+  on the old order the game target aborted on the first golden seed,
+  and a libFuzzer run from an empty corpus in 0.7 s
+  (`tests/fuzz/regressions/game/sequence-before-body.hex`). On the fix,
+  661 s of game fuzzing (621,395 runs) and 181 s of login fuzzing found
+  nothing.
+  > **Status:** fixed (fix/sequence-after-body)
 
 ## The client links read packets no client sends (2026-09-29)
 
