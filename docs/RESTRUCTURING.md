@@ -1297,13 +1297,13 @@ shrink-only work.
   `docs/FIXES.md`, and its input is replayed by ctest from then on.
   > **Status:** in progress (the CI fuzz job; the findings recorded, not
   > fixed, in `docs/FIXES.md` under "Packet-read fuzzing": enumerators
-  > cast from wire bytes, the reads not bounded by their frame,
-  > non-protocol exceptions escaping the receive loops, and the records
-  > six GC reads leak, `GCUpdateInfo`'s among them, which is why the fuzz
-  > runs have leak detection off). The targets are
-  > in `tests/fuzz/` (game and login), `DARKEDEN_BUILD_FUZZERS` builds
-  > them with libFuzzer in `tools/fuzz/Dockerfile.fuzz`, and the replay
-  > builds run in the zig suite over the golden seed corpus and
+  > cast from wire bytes, non-protocol exceptions escaping the receive
+  > loops, and the records six GC reads leak, `GCUpdateInfo`'s among
+  > them, which is why the fuzz runs have leak detection off). The
+  > targets are in `tests/fuzz/` (game and login),
+  > `DARKEDEN_BUILD_FUZZERS` builds them with libFuzzer in
+  > `tools/fuzz/Dockerfile.fuzz`, and the replay builds run in the zig
+  > suite over the golden seed corpus and
   > `tests/fuzz/regressions/` (ctests `fuzz_replay_game`,
   > `fuzz_replay_login`, `fuzz_replay_game_any_id`); each fix but
   > the validator's has a gtest in `tests/packet_read_bounds_test.cpp`
@@ -1317,17 +1317,23 @@ shrink-only work.
   > kick-verify sets, name-table lookups in debug strings
   > (including `PCVampireInfo`'s),
   > shop and stash slot indices, wire bools, repeated script parameter
-  > names and the store item count. Next reader: a UDP target for the
-  > loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is not written,
-  > and the targets load each input at the start of the stream's buffer,
-  > so its wrap-around path is not fuzzed (`StreamFuzz.h`).
+  > names, the store item count, and the frame bound: `readPacket` holds
+  > every read to the body its header declares (`FrameBoundTest` in
+  > `tests/packet_frame_test.cpp`), and the targets abort unless it
+  > moves the stream exactly one frame on. Next reader: a UDP target
+  > for the loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is
+  > not written, and the targets load each input at the start of the
+  > stream's buffer, so its wrap-around path is not fuzzed
+  > (`StreamFuzz.h`).
   - Owner: the replay ctests (every recorded input replays clean, and a
     read may refuse a body only with a ProtocolException), the gtests
     in `tests/packet_read_bounds_test.cpp` (each fix's refusal or value)
-    and the client-link gtests (each server's client connection admits
-    only what a client sends); the gameserver's GC link, narrowed to the
-    GC-named packets its client link admits, refuses at compile time a
-    GC handler that link would never deliver.
+    and in `tests/packet_frame_test.cpp` (the frame bound, over every
+    golden a server reads), and the client-link gtests (each server's
+    client connection admits only what a client sends); the
+    gameserver's GC link, narrowed to the GC-named packets its client
+    link admits, refuses at compile time a GC handler that link would
+    never deliver.
 
 ---
 

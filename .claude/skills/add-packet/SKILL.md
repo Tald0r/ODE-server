@@ -171,6 +171,15 @@ passing run — re-run without the variable.
 Nothing fails automatically when a plain packet has no golden, so add it in
 the same commit as the packet.
 
+Every golden of a packet some server registers is also read back through
+`SocketInputStream::readPacket` as one frame by
+`FrameBoundTest.everyGoldenAServerReadsIsConsumedExactlyAsOneFrame`
+(`tests/packet_frame_test.cpp`): the read must consume the body exactly and
+the read packet's `getPacketSize()` must equal its length, or the server
+refuses the frame on the wire. The test ends with the counts it read (frame
+goldens, datagram goldens, packets); a new golden or registration moves
+them, so update the three numbers from the failing run, never by hand.
+
 ## 8. Shuffle branches, if the packet is encrypted
 
 "Shuffled" means the packet's `read()`/`write()` call

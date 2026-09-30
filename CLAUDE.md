@@ -31,6 +31,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | The de-core subset the client vendors computes exactly the parity vectors and compiles without a warning under a GCC/Clang proxy for the client's warning set (MSVC's C4146 and C4805 have no counterpart) | `formula_tests`' `SharedVectors` over `src/domain/vectors/`; `de-core-strict` (`-Werror`, built by `make dev-test`) | the row, named, with its expected and actual value; the warning, as an error |
 | `NDEBUG` is never defined, so `Assert` and `__BEGIN_TRY`/`__END_CATCH` keep one meaning | an `#error` in `src/Core/Assert.h` and `src/Core/Exception.h` | the compile of every project file, in any configuration that defines it |
 | A client's bytes reach a packet's `read()` only through the receive loops' gates, and a malformed body is refused only with a `ProtocolException` | the packet-read fuzz targets in `tests/fuzz/`; their replay ctests `fuzz_replay_game`, `fuzz_replay_login` and `fuzz_replay_game_any_id` run every golden seed and every input in `tests/fuzz/regressions/`, and the targets abort on any other exception; and the gtests in `tests/packet_read_bounds_test.cpp` (`wire_tests`), which pin each fix's refusal or value | the input, named, aborting the replay (a zig Debug UB trap, an assertion, or a non-protocol exception); the gtest, named, with the refusal or value it expected |
+| A packet's `read()` sees exactly the body its header declares: `SocketInputStream::readPacket` bounds every read, peek and skip to it, refuses (with `InvalidProtocolException`) a body left unread, overrun or failed inside `read()`, and leaves the stream at the next frame on every exit | `tests/packet_frame_test.cpp` (`FrameBoundTest` in `wire_tests`), whose golden sweep reads every golden a server reads as one frame; the fuzz targets' body oracle | the case, named; the golden, named, with the bytes declared and consumed; the fuzz input, aborting the replay |
 | A client's connection admits only the packets a client sends: the gameserver's `GPS_NORMAL` set is folded from its factory lists (every CG packet but the datagram-only `CGPortCheck`, plus the GC-named packets `src/Core/GameClientLink.h` lists), and no other game or login status admits a registered packet a client does not send | `game_client_link_tests` and `login_client_link_tests` (`tests/*_client_link_test.cpp`, each compiled as its server), which check every id against the factory table's names; the gameserver's `kReceivedDirections`, whose GC link is narrowed to that list (`DirectionSet::narrowed`) and which every `DE_REGISTER_PACKET_HANDLER*` checks with `admits()` | the id, named, with the status that admits or refuses it; a GC handler registration the client link would refuse, as a compile error of the gameserver's production build (`make dev-build`; CI builds it only on master), since `make dev-test` does not compile `GamePacketDispatch.cpp` and pins only the mechanism (`tests/packet_meta_test.cpp`'s `static_assert`s on `narrowed()` and `admits()`) and the admitted ids (`game_client_link_tests`) |
 | Repository SQL behaves against a real MySQL | `make integration-test` (`tests/integration/`, needs docker) | the failing statement |
 
@@ -150,9 +151,9 @@ Each mirrors its receive loop (`GamePlayer::processCommand`,
 of the handler, and prints the packet with `toString()` as the loop does.
 An input is `[code byte][status byte][raw stream]`; `StreamFuzz.h`
 describes it and the switches. Any exception but a `ProtocolException`
-is a crash unless `DE_FUZZ_ALLOW_EXCEPTIONS=1`; `DE_FUZZ_STRICT_BODY=1`
-makes a read consume exactly its declared size (the server's reads do not
-yet, see `docs/FIXES.md`). The game target's validator is the gameserver's,
+is a crash unless `DE_FUZZ_ALLOW_EXCEPTIONS=1`; a `readPacket` that
+returns or refuses without moving the stream exactly the frame its
+header declared always is. The game target's validator is the gameserver's,
 so in `GPS_NORMAL` it reads only what a client sends and refuses the rest
 of the factory table before the read; `DE_FUZZ_ANY_ID=1` admits every
 registered id there instead, so the GC, GS and SG reads behind that gate

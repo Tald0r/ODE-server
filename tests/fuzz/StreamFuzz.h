@@ -29,15 +29,14 @@
 //               and, on the gameserver, stops the zone thread and the
 //               server with it.
 //
+//               The body oracle aborts too: readPacket() must leave the
+//               stream exactly the 7 + size bytes its header declared
+//               further on, whether it returns or refuses the body with
+//               a ProtocolException, so the next frame is read from its
+//               first byte.
+//
 //               Environment switches, read once at start-up:
 //
-//                 DE_FUZZ_STRICT_BODY=1   abort when a read() consumes
-//                                         anything but the 7 + size
-//                                         bytes its header declared.
-//                                         readPacket() is not bounded by
-//                                         the frame, so a short or long
-//                                         read desynchronises every
-//                                         packet after it.
 //                 DE_FUZZ_ALLOW_EXCEPTIONS=1
 //                                         end an input quietly on any
 //                                         exception instead, to look past
@@ -104,7 +103,6 @@ inline constexpr std::size_t kMaxInput = 64 * 1024;
 inline constexpr std::size_t kSessionBuffer = 1024;
 
 struct Options {
-    bool strictBody = false;
     bool strictExceptions = true;
     bool noStoreSkip = false;
     bool anyID = false;
@@ -125,7 +123,6 @@ inline bool envIsOne(const char* name) {
 // cout off: SocketInputStream::readPacket() prints every packet's
 // toString(), which still runs, but the text goes nowhere.
 inline void initialise() {
-    options().strictBody = envIsOne("DE_FUZZ_STRICT_BODY");
     options().strictExceptions = !envIsOne("DE_FUZZ_ALLOW_EXCEPTIONS");
     options().noStoreSkip = envIsOne("DE_FUZZ_NO_STORE_SKIP");
     options().anyID = envIsOne("DE_FUZZ_ANY_ID");
@@ -173,17 +170,29 @@ inline void loadStream(SocketInputStream& stream, const Input& input) {
     }
 }
 
-// SocketInputStream::readPacket(), as both receive loops call it, with
-// the body oracle around it.
-inline void readPacket(SocketInputStream& stream, Packet& packet, PacketID_t id, PacketSize_t size) {
-    const uint before = stream.length();
-    stream.readPacket(&packet);
-    const uint consumed = before - stream.length();
-    if (options().strictBody && consumed != szPacketHeader + size) {
-        std::fprintf(stderr, "fuzz harness: packet %u declared %u body bytes, read() consumed %u\n", (unsigned)id,
-                     (unsigned)size, consumed - szPacketHeader);
+// Aborts unless readPacket() moved the stream exactly one frame on.
+inline void expectOneFrameConsumed(uint before, uint after, PacketID_t id, PacketSize_t size, const char* outcome) {
+    const uint consumed = before - after;
+    if (consumed != szPacketHeader + size) {
+        std::fprintf(stderr, "fuzz harness: packet %u declared %u body bytes, and readPacket %s after consuming %d\n",
+                     (unsigned)id, (unsigned)size, outcome, (int)consumed - (int)szPacketHeader);
         std::abort();
     }
+}
+
+// SocketInputStream::readPacket(), as the receive loops call it, with the
+// body oracle around it. The loops call it only once the whole frame is
+// buffered, so it consumes exactly that frame, or the next one is parsed
+// from inside this one.
+inline void readPacket(SocketInputStream& stream, Packet& packet, PacketID_t id, PacketSize_t size) {
+    const uint before = stream.length();
+    try {
+        stream.readPacket(&packet);
+    } catch (ProtocolException&) {
+        expectOneFrameConsumed(before, stream.length(), id, size, "refused the body");
+        throw;
+    }
+    expectOneFrameConsumed(before, stream.length(), id, size, "returned");
 }
 
 // Runs one input's receive loop. A ProtocolException is how a server

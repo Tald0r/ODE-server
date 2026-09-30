@@ -57,6 +57,21 @@ public:
         stream.m_EncryptKey = stream.EncryptData(stream.m_EncryptKey, stream.m_Buffer, static_cast<int>(len));
         return true;
     }
+
+    // As Preload(), but the bytes start at offset `head` of the ring buffer
+    // and continue from its front once they reach the end, so the read
+    // takes the wrap-around branches. At most capacity() - 1 bytes fit,
+    // and `head` must lie inside the buffer; otherwise nothing is loaded
+    // and false is returned.
+    static bool PreloadAt(SocketInputStream& stream, std::size_t head, const unsigned char* data, std::size_t len) {
+        if (len >= stream.m_BufferLen || head >= stream.m_BufferLen)
+            return false;
+        for (std::size_t i = 0; i < len; i++)
+            stream.m_Buffer[(head + i) % stream.m_BufferLen] = static_cast<char>(data[i]);
+        stream.m_Head = static_cast<uint>(head);
+        stream.m_Tail = static_cast<uint>((head + len) % stream.m_BufferLen);
+        return true;
+    }
 };
 
 #endif
