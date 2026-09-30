@@ -75,7 +75,7 @@ const int PCRoomLottoMaxAmount = 3; // Maximum number of lottery tickets that ca
 
 GamePlayer::GamePlayer(Socket* pSocket)
     : // Player(pSocket), 	// by sigi. 2002.11.12
-      m_pCreature(NULL), m_PlayerStatus(GPS_NONE), m_pReconnectPacket(NULL), m_Sequence(0) {
+      m_pCreature(NULL), m_PlayerStatus(GPS_NONE), m_pReconnectPacket(NULL) {
     __BEGIN_TRY
 
     Assert(pSocket != NULL);
@@ -278,16 +278,10 @@ GamePlayer::~GamePlayer() noexcept {
 void GamePlayer::processCommand(bool Option) {
     __BEGIN_TRY
 
-    // Buffer that holds the header
-    char header[szPacketHeader];
-    PacketID_t packetID;
-    PacketSize_t packetSize;
-    // add by Coffee. The packet sequence number.
-    SequenceSize_t packetSequence;
-
     Packet* pPacket = NULL;
 
     PacketFactoryManager& packetFactories = de::kernelContext().packetFactories();
+    PacketValidator& packetValidator = de::kernelContext().packetValidator();
 
     try {
         // Handle a user under penalty here.
@@ -307,11 +301,15 @@ void GamePlayer::processCommand(bool Option) {
 
         // Process every complete packet in the input buffer.
         while (true) {
-            // Peek one packet header out of the input stream.
-            // If the stream holds fewer bytes than that,
-            // an Insufficient exception is raised and the loop is left.
-            // NoSuch removed. by sigi. 2002.5.4
-            if (!m_pInputStream->peek(&header[0], szPacketHeader)) {
+            // The gate decides the frame at the front of the input stream
+            // and, once it is whole and admitted, consumes it: an admitted
+            // packet is read, an ignored one skipped.
+            de::GameFrame frame =
+                m_FrameGate.next(*m_pInputStream, getPlayerStatus(), packetFactories, packetValidator);
+
+            // Fewer bytes than a header: wait for more, unless the
+            // connection has been idle too long.
+            if (frame.step == de::GameFrameStep::AwaitHeader) {
                 Timeval currentTime;
                 getCurrentTime(currentTime);
                 if (currentTime >= m_ExpireTime) {
@@ -325,166 +323,89 @@ void GamePlayer::processCommand(bool Option) {
                 break;
             }
 
-            // Read the packet id and the packet size.
-            // The packet size includes the header.
-            memcpy(&packetID, &header[0], szPacketID);
-            memcpy(&packetSize, &header[szPacketID], szPacketSize);
-            // Read the packet sequence
+            // The whole packet body has not arrived yet.
+            if (frame.step == de::GameFrameStep::AwaitBody)
+                break;
 
-            memcpy(&packetSequence, &header[szPacketID + szPacketSize], szSequenceSize);
-            // Check that the packet sequence is valid
-            if (packetSequence != m_Sequence) {
-                filelog("SequenceError.txt", "Timeout Disconnect1. Name[%s],Host[%s]",
-                        ((getCreature() == NULL) ? "NULL" : getCreature()->getName().c_str()),
-                        ((getSocket() == NULL) ? "NULL" : getSocket()->getHost().c_str()));
-                throw DisconnectException("Packet sequence error");
+            // Nor has an ignored packet's; the idle check below applies.
+            if (frame.step == de::GameFrameStep::AwaitIgnoredBody)
+                throw InsufficientDataException();
+
+            if (frame.step == de::GameFrameStep::Refused)
+                refuseFrame(frame);
+
+            // PacketValidator asked for the packet to be ignored, and the
+            // gate dropped it from the input stream unread. An ignored
+            // packet does not push the expire time out, so only valid
+            // packets keep the connection alive. It does not enter the
+            // history either.
+            if (frame.step == de::GameFrameStep::Skipped)
+                continue;
+
+            // Current time
+            getCurrentTime(m_ExpireTime);
+            m_ExpireTime.tv_sec += maxIdleSec;
+
+            // Append the packet to the end of the packet history, which
+            // owns it from here on.
+            m_PacketHistory.push_back(frame.packet.get());
+            pPacket = frame.packet.release();
+
+            // Write the packet file log.
+            if (m_bPacketLog) {
+                Timeval currentTime;
+                getCurrentTime(currentTime);
+
+                if (currentTime >= m_PacketLogEndTime) {
+                    m_bPacketLog = false;
+                } else {
+                    filelog(m_PacketLogFileName.c_str(), "%s", pPacket->toString().c_str());
+                }
             }
-            m_Sequence++;
 
-            // Check that the packet id is valid
-            if (packetID >= (int)Packet::PACKET_MAX) {
-                filelog("GamePlayer.txt", "Packet ID exceed MAX, RECV [%d/%d],ID[%s],Host[%s]", packetID,
-                        Packet::PACKET_MAX, m_ID.c_str(),
-                        //					getCreature()->getName().c_str(),
-                        getSocket()->getHost().c_str());
+            // cout << "[" << (int)Thread::self() << "] execute before : " << pPacket->getPacketName().c_str() <<
+            // endl;
 
-                throw InvalidProtocolException("too large packet id");
-            }
-
+            // Run the packet handler for this packet structure.
+            // A bad packet id is handled inside the packet handler manager.
             try {
-                // Verify that the packet order is correct.
-                if (!de::kernelContext().packetValidator().isValidPacketID(getPlayerStatus(), packetID)) {
-                    filelog("GamePlayer.txt", "Not Valid Packet, RECV [%d],ID[%s],Host[%s]", packetID, m_ID.c_str(),
-                            //						getCreature()->getName().c_str(),
-                            getSocket()->getHost().c_str());
-                    throw InvalidProtocolException("invalid packet order");
-                }
-
-                // The store UI's info packets, which the validator refuses too
-                if (packetID == Packet::PACKET_GC_OTHER_STORE_INFO || packetID == Packet::PACKET_GC_MY_STORE_INFO) {
-                    filelog("GamePlayer.txt", "Not Valid Packet, RECV [%d],ID[%s],Host[%s]", packetID, m_ID.c_str(),
-                            //						getCreature()->getName().c_str(),
-                            getSocket()->getHost().c_str());
-                    throw InvalidProtocolException("invalid packet order");
-                }
-
-                // An over-large packet counts as a protocol error.
-                if (packetSize > packetFactories.getPacketMaxSize(packetID)) {
-                    filelog("GamePlayer.txt", "Too Larget Packet Size, RECV [%d],PacketSize[%d/%d],ID[%s],Host[%s]",
-                            packetID, packetSize, packetFactories.getPacketMaxSize(packetID), m_ID.c_str(),
-                            //						getCreature()->getName().c_str(),
-                            getSocket()->getHost().c_str());
-                    throw InvalidProtocolException("too large packet size");
-                }
-
-                // Check whether the whole packet body has arrived
-                if (m_pInputStream->length() < szPacketHeader + packetSize)
-                    // throw InsufficientDataException();
-                    break;
-
-                // Current time
-                getCurrentTime(m_ExpireTime);
-                m_ExpireTime.tv_sec += maxIdleSec;
-
-                // At this point the input buffer holds at least one complete packet.
-                // The packet factory manager builds the packet structure from the id.
-                // A bad packet id is handled inside the factory manager.
-                // The packet is owned here until the history takes it, so a
-                // read() that throws on a malformed body does not leak it.
-                std::unique_ptr<Packet> pReading(packetFactories.createPacket(packetID));
-
-                // Initialise the packet structure.
-                // The read() defined in the packet subclass is called through the virtual
-                // mechanism, so this happens by itself.
-                m_pInputStream->readPacket(pReading.get());
-
-                // Append the packet to the end of the packet history, which
-                // owns it from here on.
-                m_PacketHistory.push_back(pReading.get());
-                pPacket = pReading.release();
-
-                // Write the packet file log.
-                if (m_bPacketLog) {
-                    Timeval currentTime;
-                    getCurrentTime(currentTime);
-
-                    if (currentTime >= m_PacketLogEndTime) {
-                        m_bPacketLog = false;
-                    } else {
-                        filelog(m_PacketLogFileName.c_str(), "%s", pPacket->toString().c_str());
-                    }
-                }
-
-                // cout << "[" << (int)Thread::self() << "] execute before : " << pPacket->getPacketName().c_str() <<
-                // endl;
-
-                // Run the packet handler for this packet structure.
-                // A bad packet id is handled inside the packet handler manager.
-                try {
 #ifdef __PROFILE_PACKETS__
 
-                    beginProfileEx(pPacket->getPacketName().c_str());
-                    PacketDispatcher::dispatch(pPacket, this);
-                    endProfileEx(pPacket->getPacketName().c_str());
+                beginProfileEx(pPacket->getPacketName().c_str());
+                PacketDispatcher::dispatch(pPacket, this);
+                endProfileEx(pPacket->getPacketName().c_str());
 
 #else
-                    PacketDispatcher::dispatch(pPacket, this);
+                PacketDispatcher::dispatch(pPacket, this);
 #endif
-                } catch (...) {
-                    filelog("GamePlayerError.txt", "Player:[%s], IP:[%s],MAC:[%02x%02x%02x%02x%02x%02x],Packet is:%s",
-                            m_ID.c_str(), getSocket()->getHost().c_str(), m_MacAddress[0], m_MacAddress[1],
-                            m_MacAddress[2], m_MacAddress[3], m_MacAddress[4], m_MacAddress[5],
-                            pPacket->toString().c_str());
-                    throw DisconnectException("GamePlayer Error 2!");
-                }
-                // cout << "[" << (int)Thread::self() << "] execute after : " << pPacket->getPacketName().c_str() <<
-                // endl;
-
-                // Keep only nPacketHistorySize packets.
-                while (m_PacketHistory.size() > nPacketHistorySize) {
-                    Packet* oldPacket = m_PacketHistory.front();
-                    SAFE_DELETE(oldPacket);
-                    m_PacketHistory.pop_front();
-                }
-
-                // CGReady's handler runs on the MAIN thread (this loop, called
-                // from IncomingPlayerManager with Option == false), hands the
-                // player to the zone pipeline and flips the status to
-                // GPS_NORMAL -- which opens PacketValidator's in-game gate.
-                // Packets a client pipelined behind CGReady must not keep
-                // draining here: they would dispatch on the main thread and
-                // reach the Zone mutation gateways with no group mutex held
-                // (a client-triggerable race). Stop;
-                // the zone thread's ZonePlayerManager drains the remainder on
-                // its next tick.
-                if (!Option && getPlayerStatus() == GPS_NORMAL)
-                    break;
-            } catch (IgnorePacketException& igpe) {
-                // PacketValidator asked for the packet to be ignored,
-                // so drop it from the input stream and do not run it.
-
-                // An over-large packet counts as a protocol error.
-                if (packetSize > packetFactories.getPacketMaxSize(packetID)) {
-                    filelog("GamePlayer.txt",
-                            "Too Larget Packet Size[Ignore], RECV [%d],PacketSize[%d],Name[%s],Host[%s]", packetID,
-                            packetSize, ((getCreature() == NULL) ? "NULL" : getCreature()->getName().c_str()),
-                            ((getSocket() == NULL) ? "NULL" : getSocket()->getHost().c_str()));
-                    throw InvalidProtocolException("too large packet sizeIgnore");
-                }
-
-                // Check that the input buffer holds the whole packet body.
-                // An optimisation could break here; for now an exception is used.
-                if (m_pInputStream->length() < szPacketHeader + packetSize)
-                    throw InsufficientDataException();
-
-                // Once all the data has arrived, skip that many bytes
-                // and go on to the next packet.
-                m_pInputStream->skip(szPacketHeader + packetSize);
-
-                // An ignored packet does not push the expire time out,
-                // so only valid packets keep the connection alive.
-                // It does not enter the history either.
+            } catch (...) {
+                filelog("GamePlayerError.txt", "Player:[%s], IP:[%s],MAC:[%02x%02x%02x%02x%02x%02x],Packet is:%s",
+                        m_ID.c_str(), getSocket()->getHost().c_str(), m_MacAddress[0], m_MacAddress[1], m_MacAddress[2],
+                        m_MacAddress[3], m_MacAddress[4], m_MacAddress[5], pPacket->toString().c_str());
+                throw DisconnectException("GamePlayer Error 2!");
             }
+            // cout << "[" << (int)Thread::self() << "] execute after : " << pPacket->getPacketName().c_str() <<
+            // endl;
+
+            // Keep only nPacketHistorySize packets.
+            while (m_PacketHistory.size() > nPacketHistorySize) {
+                Packet* oldPacket = m_PacketHistory.front();
+                SAFE_DELETE(oldPacket);
+                m_PacketHistory.pop_front();
+            }
+
+            // CGReady's handler runs on the MAIN thread (this loop, called
+            // from IncomingPlayerManager with Option == false), hands the
+            // player to the zone pipeline and flips the status to
+            // GPS_NORMAL -- which opens PacketValidator's in-game gate.
+            // Packets a client pipelined behind CGReady must not keep
+            // draining here: they would dispatch on the main thread and
+            // reach the Zone mutation gateways with no group mutex held
+            // (a client-triggerable race). Stop;
+            // the zone thread's ZonePlayerManager drains the remainder on
+            // its next tick.
+            if (!Option && getPlayerStatus() == GPS_NORMAL)
+                break;
         }
     } catch (InsufficientDataException& ide) {
         // Close the connection once the expire time has passed.
@@ -501,6 +422,50 @@ void GamePlayer::processCommand(bool Option) {
     // Commented out. by sigi. 2002.5.14
 
     __END_CATCH
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//
+// log a refused frame and drop the connection
+//
+//////////////////////////////////////////////////////////////////////
+void GamePlayer::refuseFrame(const de::GameFrame& frame) {
+    switch (frame.refusal) {
+    case de::GameFrameRefusal::OutOfSequence:
+        filelog("SequenceError.txt", "Timeout Disconnect1. Name[%s],Host[%s]",
+                ((getCreature() == NULL) ? "NULL" : getCreature()->getName().c_str()),
+                ((getSocket() == NULL) ? "NULL" : getSocket()->getHost().c_str()));
+        throw DisconnectException("Packet sequence error");
+
+    case de::GameFrameRefusal::IdOutOfRange:
+        filelog("GamePlayer.txt", "Packet ID exceed MAX, RECV [%d/%d],ID[%s],Host[%s]", frame.id, Packet::PACKET_MAX,
+                m_ID.c_str(), getSocket()->getHost().c_str());
+        throw InvalidProtocolException("too large packet id");
+
+    case de::GameFrameRefusal::InvalidOrder:
+    case de::GameFrameRefusal::StoreInfo:
+        filelog("GamePlayer.txt", "Not Valid Packet, RECV [%d],ID[%s],Host[%s]", frame.id, m_ID.c_str(),
+                getSocket()->getHost().c_str());
+        throw InvalidProtocolException("invalid packet order");
+
+    case de::GameFrameRefusal::TooLarge: {
+        PacketFactoryManager& packetFactories = de::kernelContext().packetFactories();
+        filelog("GamePlayer.txt", "Too Larget Packet Size, RECV [%d],PacketSize[%d/%d],ID[%s],Host[%s]", frame.id,
+                frame.size, packetFactories.getPacketMaxSize(frame.id), m_ID.c_str(), getSocket()->getHost().c_str());
+        throw InvalidProtocolException("too large packet size");
+    }
+
+    case de::GameFrameRefusal::IgnoredTooLarge:
+        filelog("GamePlayer.txt", "Too Larget Packet Size[Ignore], RECV [%d],PacketSize[%d],Name[%s],Host[%s]",
+                frame.id, frame.size, ((getCreature() == NULL) ? "NULL" : getCreature()->getName().c_str()),
+                ((getSocket() == NULL) ? "NULL" : getSocket()->getHost().c_str()));
+        throw InvalidProtocolException("too large packet sizeIgnore");
+
+    case de::GameFrameRefusal::None:
+        break;
+    }
+    throw InvalidProtocolException("refused frame");
 }
 
 

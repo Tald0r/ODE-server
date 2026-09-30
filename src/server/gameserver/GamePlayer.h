@@ -13,6 +13,7 @@
 #include "EventManager.h"
 #include "Exception.h"
 #include "GCReconnectLogin.h"
+#include "GameFrameGate.h"
 #include "Mutex.h"
 #include "Packet.h"
 #include "PaySystem.h"
@@ -290,9 +291,12 @@ private:
     VSDateTime m_LoginDateTime;
 
 
-    // Packet sequence check.
-private:
-    BYTE m_Sequence;
+    // Logs why the frame gate refused a frame and throws the exception that
+    // drops the connection for it.
+    [[noreturn]] void refuseFrame(const de::GameFrame& frame);
+
+    // Decides each frame the client sends and counts its sequence bytes.
+    de::GameFrameGate m_FrameGate;
 };
 
 //////////////////////////////////////////////////////////////////////////////
