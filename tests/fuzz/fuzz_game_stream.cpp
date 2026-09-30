@@ -25,6 +25,16 @@
 //               thread's call (Option == true), so the main-thread stop
 //               after CGReady and the event heartbeat do not apply.
 //
+//               The mirror carries the switches and the body oracle,
+//               which the production gate has no hook for. So that the
+//               fuzzing covers the gate itself too, each input the
+//               switches leave alone is also delivered byte by byte
+//               through GameFrameGate::next, linked from the
+//               gameserver's sources, and must read the same packets and
+//               end the same way as the mirror's whole delivery: a gate
+//               that drifted from the mirror, or that depends on where
+//               the bytes were cut, aborts the target.
+//
 //////////////////////////////////////////////////////////////////////
 
 #include <cstddef>
@@ -32,6 +42,7 @@
 #include <cstring>
 #include <memory>
 
+#include "GameFrameGate.h"
 #include "Socket.h"
 #include "SocketEncryptInputStream.h"
 #include "SocketImpl.h"
@@ -142,6 +153,81 @@ void receive(SocketInputStream& in, PlayerStatus status, Session& session, de::f
     }
 }
 
+// The mirror's name for each of the production gate's refusals.
+const char* refusalName(de::GameFrameRefusal refusal) {
+    switch (refusal) {
+    case de::GameFrameRefusal::IdOutOfRange:
+        return "too large packet id";
+    case de::GameFrameRefusal::InvalidOrder:
+        return "invalid packet order";
+    case de::GameFrameRefusal::StoreInfo:
+        return "store info";
+    case de::GameFrameRefusal::TooLarge:
+        return "too large packet size";
+    case de::GameFrameRefusal::IgnoredTooLarge:
+        return "too large ignored packet size";
+    case de::GameFrameRefusal::OutOfSequence:
+        return "packet sequence error";
+    case de::GameFrameRefusal::None:
+        break;
+    }
+    return "refused with no refusal";
+}
+
+// As receive, through the production gate: GamePlayer::processCommand's
+// loop, less the handler.
+void receiveThroughGate(SocketInputStream& in, PlayerStatus status, de::GameFrameGate& gate, int& frames,
+                        de::fuzz::Trace& trace) {
+    PacketFactoryManager& factories = de::kernelContext().packetFactories();
+    PacketValidator& validator = de::kernelContext().packetValidator();
+
+    while (true) {
+        if (frames == de::fuzz::kMaxFrames) {
+            trace.end = "frame cap";
+            return;
+        }
+
+        // The mirror records a frame before reading it, so a body the read
+        // refuses is in its trace. The gate throws that refusal from
+        // next(), which has then consumed the frame; a refusal from the
+        // factory table, before any read, consumes nothing.
+        char header[szPacketHeader];
+        const bool peeked = in.peek(&header[0], szPacketHeader);
+        const uint before = in.length();
+        de::GameFrame frame;
+        try {
+            frame = gate.next(in, status, factories, validator);
+        } catch (ProtocolException&) {
+            if (peeked && in.length() != before) {
+                PacketID_t id;
+                PacketSize_t size;
+                std::memcpy(&id, &header[0], szPacketID);
+                std::memcpy(&size, &header[szPacketID], szPacketSize);
+                trace.frames.push_back({id, size, 'R'});
+            }
+            throw;
+        }
+
+        switch (frame.step) {
+        case de::GameFrameStep::AwaitHeader:
+        case de::GameFrameStep::AwaitBody:
+        case de::GameFrameStep::AwaitIgnoredBody:
+            return;
+        case de::GameFrameStep::Read:
+            frames++;
+            trace.frames.push_back({frame.id, frame.size, 'R'});
+            break;
+        case de::GameFrameStep::Skipped:
+            frames++;
+            trace.frames.push_back({frame.id, frame.size, 'S'});
+            break;
+        case de::GameFrameStep::Refused:
+            trace.end = refusalName(frame.refusal);
+            return;
+        }
+    }
+}
+
 } // namespace
 
 extern "C" int LLVMFuzzerInitialize(int*, char***) {
@@ -155,16 +241,29 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
         return 0;
 
     de::fuzz::run([&] {
-        de::fuzz::deliverEveryWay(input, data, size, [&](const de::fuzz::Schedule& cuts, de::fuzz::Trace& trace) {
-            // GamePlayer reads through a SocketEncryptInputStream whose code
-            // comes from the zone the player enters.
-            Socket socket(new SocketImpl());
-            SocketEncryptInputStream in(&socket, (uint)de::fuzz::streamCapacity(input));
-            in.setEncryptCode(input.code);
-            Session session;
-            de::fuzz::deliver(in, input, cuts, trace,
-                              [&](de::fuzz::Trace& t) { receive(in, input.status, session, t); });
-        });
+        const de::fuzz::Trace whole =
+            de::fuzz::deliverEveryWay(input, data, size, [&](const de::fuzz::Schedule& cuts, de::fuzz::Trace& trace) {
+                // GamePlayer reads through a SocketEncryptInputStream whose
+                // code comes from the zone the player enters.
+                Socket socket(new SocketImpl());
+                SocketEncryptInputStream in(&socket, (uint)de::fuzz::streamCapacity(input));
+                in.setEncryptCode(input.code);
+                Session session;
+                de::fuzz::deliver(in, input, cuts, trace,
+                                  [&](de::fuzz::Trace& t) { receive(in, input.status, session, t); });
+            });
+
+        if (de::fuzz::options().anyID || de::fuzz::options().noStoreSkip)
+            return;
+        Socket socket(new SocketImpl());
+        SocketEncryptInputStream in(&socket, (uint)de::fuzz::streamCapacity(input));
+        in.setEncryptCode(input.code);
+        de::GameFrameGate gate;
+        int frames = 0;
+        de::fuzz::Trace gated;
+        de::fuzz::deliver(in, input, de::fuzz::byteSchedule(input), gated,
+                          [&](de::fuzz::Trace& t) { receiveThroughGate(in, input.status, gate, frames, t); });
+        de::fuzz::expectSameTrace(whole, gated, "byte by byte through GameFrameGate");
     });
     return 0;
 }

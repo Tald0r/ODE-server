@@ -1,6 +1,7 @@
 # =====================================================================
 # Packet-read fuzz targets: the bytes a client sends, through the gates
-# GamePlayer::processCommand and LoginPlayer::processCommand apply, into
+# the receive loops apply (GameFrameGate::next, which
+# GamePlayer::processCommand runs, and LoginPlayer::processCommand), into
 # the packets' read(). StreamFuzz.h describes the input format and the
 # environment switches.
 #
@@ -27,6 +28,9 @@ set(DARKEDEN_FUZZ_game_SOURCE fuzz_game_stream.cpp)
 set(DARKEDEN_FUZZ_game_PACKETS GameServerPackets)
 set(DARKEDEN_FUZZ_game_DEFINES __GAME_SERVER__ __COMBAT__)
 set(DARKEDEN_FUZZ_game_SERVER gameserver)
+# The production gate, which the game target runs beside its mirror.
+set(DARKEDEN_FUZZ_game_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/src/server/gameserver/GameFrameGate.cpp)
+set(DARKEDEN_FUZZ_game_EXTRA_INCLUDES ${CMAKE_SOURCE_DIR}/src/server/gameserver)
 # GPS_NORMAL, where every packet a client sends is admitted (and, under
 # DE_FUZZ_ANY_ID, every registered id); the target static_asserts the
 # value.
@@ -68,10 +72,13 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
     set(source ${DARKEDEN_FUZZ_${name}_SOURCE})
     set(packets ${DARKEDEN_FUZZ_${name}_PACKETS})
     set(defines ${DARKEDEN_FUZZ_${name}_DEFINES})
+    set(extra_sources ${DARKEDEN_FUZZ_${name}_EXTRA_SOURCES})
+    set(extra_includes ${DARKEDEN_FUZZ_${name}_EXTRA_INCLUDES})
     set(corpus ${CMAKE_CURRENT_BINARY_DIR}/corpus/${name})
 
-    add_executable(fuzz_replay_${name} EXCLUDE_FROM_ALL ${source} fuzz_replay_main.cpp)
+    add_executable(fuzz_replay_${name} EXCLUDE_FROM_ALL ${source} ${extra_sources} fuzz_replay_main.cpp)
     darkeden_fuzz_configure(fuzz_replay_${name})
+    target_include_directories(fuzz_replay_${name} PRIVATE ${extra_includes})
     target_compile_definitions(fuzz_replay_${name} PRIVATE ${defines})
     target_link_libraries(fuzz_replay_${name} PRIVATE ${packets} Threads::Threads)
 
@@ -111,8 +118,9 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
     endif()
 
     if(DARKEDEN_BUILD_FUZZERS)
-        add_executable(fuzz_${name}_stream ${source})
+        add_executable(fuzz_${name}_stream ${source} ${extra_sources})
         darkeden_fuzz_configure(fuzz_${name}_stream)
+        target_include_directories(fuzz_${name}_stream PRIVATE ${extra_includes})
         target_compile_definitions(fuzz_${name}_stream PRIVATE ${defines})
         target_link_libraries(fuzz_${name}_stream PRIVATE ${packets} Threads::Threads)
         target_link_options(fuzz_${name}_stream PRIVATE -fsanitize=fuzzer)
@@ -125,7 +133,7 @@ endforeach()
 # recorded game inputs (the GC, GS and SG ones) stop at it. This replays
 # them with the gate as it was before it was narrowed: DE_FUZZ_ANY_ID
 # admits every registered id in GPS_NORMAL and DE_FUZZ_NO_STORE_SKIP turns
-# off the store-info refusal (GamePlayer.cpp:364), so every seed and every
+# off the store-info refusal (GameFrameGate::next's), so every seed and every
 # recorded input reaches its read() and the fixes they were recorded for
 # stay replayed. The factory's GCMyStoreInfo and GCOtherStoreInfo hold no
 # stall record, so their read() refuses the body with a ProtocolException

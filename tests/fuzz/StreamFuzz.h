@@ -5,8 +5,9 @@
 //               format, the environment switches, the packet tables,
 //               the in-memory stream, the body oracle and the exception
 //               policy. Each target (fuzz_game_stream.cpp,
-//               fuzz_login_stream.cpp) adds only the loop that mirrors
-//               its server's processCommand.
+//               fuzz_login_stream.cpp) adds the loop that mirrors its
+//               server's receive gate; the game target also runs the
+//               production gate, GameFrameGate, against that mirror.
 //
 //               An input is
 //
@@ -34,7 +35,11 @@
 //               same way (the same refusal, or waiting on the same bytes),
 //               or the target aborts, naming the schedule and the first
 //               difference: a receive loop must not depend on where the
-//               network cut its bytes.
+//               network cut its bytes. The game target, unless
+//               DE_FUZZ_ANY_ID or DE_FUZZ_NO_STORE_SKIP is on (the
+//               production gate has neither), also delivers the input
+//               byte by byte through GameFrameGate::next itself and
+//               aborts unless that too ends as the whole delivery did.
 //
 //               Any exception that is not a ProtocolException aborts the
 //               target: the player managers catch only ProtocolException,
@@ -62,8 +67,8 @@
 //                                         gate stay fuzzed.
 //                 DE_FUZZ_NO_STORE_SKIP=1 (game only) read the two
 //                                         store-info packets that
-//                                         GamePlayer::processCommand
-//                                         refuses unread. The validator
+//                                         GameFrameGate::next refuses
+//                                         unread. The validator
 //                                         refuses them first unless
 //                                         DE_FUZZ_ANY_ID is on too.
 //
@@ -114,8 +119,9 @@ inline constexpr int kMaxFrames = 64;
 inline constexpr std::size_t kMaxInput = 64 * 1024;
 
 // GamePlayer and LoginPlayer both start with a 1024-byte buffer
-// (GamePlayer.cpp:60, LoginPlayer.cpp:34); fill() grows it on demand, so
-// the target sizes its stream to hold the whole input instead.
+// (defaultGamePlayerInputStreamSize, defaultLoginPlayerInputStreamSize);
+// fill() grows it on demand, so the target sizes its stream to hold the
+// whole input instead.
 inline constexpr std::size_t kSessionBuffer = 1024;
 
 struct Options {
@@ -321,9 +327,10 @@ inline void expectSameTrace(const Trace& whole, const Trace& other, const char* 
 // Delivers the input whole, byte by byte and in hashed chunks, each to a
 // fresh session from `session`, and aborts unless the three agree.
 // `session` builds a stream and a receive loop over it and delivers the
-// input to them by the schedule it is given.
-inline void deliverEveryWay(const Input& input, const std::uint8_t* data, std::size_t size,
-                            const std::function<void(const Schedule&, Trace&)>& session) {
+// input to them by the schedule it is given. Returns the whole delivery's
+// trace, for a target that checks another loop against it.
+inline Trace deliverEveryWay(const Input& input, const std::uint8_t* data, std::size_t size,
+                             const std::function<void(const Schedule&, Trace&)>& session) {
     Trace whole;
     session(wholeSchedule(input), whole);
     Trace bytes;
@@ -332,6 +339,7 @@ inline void deliverEveryWay(const Input& input, const std::uint8_t* data, std::s
     Trace chunks;
     session(chunkSchedule(input, data, size), chunks);
     expectSameTrace(whole, chunks, "in hashed chunks");
+    return whole;
 }
 
 // Runs one input's receive loop. A ProtocolException is how a server
