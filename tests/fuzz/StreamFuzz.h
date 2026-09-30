@@ -23,6 +23,19 @@
 //               than kMaxInput is not run; the replay driver refuses one
 //               instead of passing it.
 //
+//               Each input is delivered three times, to a fresh session
+//               each time, the way TCP may hand the same bytes over: whole,
+//               in one receive; one byte per receive, so every frame is
+//               seen cut at every point; and in chunks of 1 to 48 bytes
+//               whose lengths come from a hash of the input, so a receive
+//               can end one frame, hold several whole ones and start the
+//               next. The receive loop runs after every receive. All three
+//               must read the same packets in the same order and end the
+//               same way (the same refusal, or waiting on the same bytes),
+//               or the target aborts, naming the schedule and the first
+//               difference: a receive loop must not depend on where the
+//               network cut its bytes.
+//
 //               Any exception that is not a ProtocolException aborts the
 //               target: the player managers catch only ProtocolException,
 //               so anything else a read() throws leaves the receive loop
@@ -54,8 +67,8 @@
 //                                         refuses them first unless
 //                                         DE_FUZZ_ANY_ID is on too.
 //
-//               Not covered: the stream is loaded with the input at the
-//               start of its buffer and sized to hold all of it, so the
+//               Not covered: the input is delivered from the start of the
+//               stream's buffer, which is sized to hold all of it, so the
 //               ring buffer's wrap-around branches in read(), peek() and
 //               skip() and fill()'s growth never run, although a client
 //               decides where its bytes land in the buffer.
@@ -78,6 +91,8 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <string>
+#include <vector>
 
 #include "Exception.h"
 #include "KernelContext.h"
@@ -90,7 +105,8 @@
 
 namespace de::fuzz {
 
-// Packets read from one input at most; the rest is ignored.
+// Frames a session consumes, read or skipped, at most; the delivery ends
+// there and the rest is ignored.
 inline constexpr int kMaxFrames = 64;
 
 // Inputs longer than this are ignored rather than read, which keeps a run
@@ -163,12 +179,6 @@ inline std::size_t streamCapacity(const Input& input) {
     return input.length + 1 > kSessionBuffer ? input.length + 1 : kSessionBuffer;
 }
 
-inline void loadStream(SocketInputStream& stream, const Input& input) {
-    if (!SocketInputStreamTestAccess::Preload(stream, input.bytes, input.length)) {
-        std::fprintf(stderr, "fuzz harness: the stream refused a %zu-byte input\n", input.length);
-        std::abort();
-    }
-}
 
 // Aborts unless readPacket() moved the stream exactly one frame on.
 inline void expectOneFrameConsumed(uint before, uint after, PacketID_t id, PacketSize_t size, const char* outcome) {
@@ -193,6 +203,135 @@ inline void readPacket(SocketInputStream& stream, Packet& packet, PacketID_t id,
         throw;
     }
     expectOneFrameConsumed(before, stream.length(), id, size, "returned");
+}
+
+// What a receive loop did with one delivery of an input: the frames it
+// consumed, in order, and how the session ended. A session that ran out of
+// input while waiting for more has an empty `end` and `left` bytes still
+// buffered.
+struct Trace {
+    struct Frame {
+        PacketID_t id;
+        PacketSize_t size;
+        // 'R' for a frame handed to readPacket, 'S' for one skipped unread.
+        char how;
+        bool operator==(const Frame& o) const {
+            return id == o.id && size == o.size && how == o.how;
+        }
+    };
+    std::vector<Frame> frames;
+    std::string end;
+    uint left = 0;
+
+    bool ended() const {
+        return !end.empty();
+    }
+};
+
+// Where each receive of a delivery ends, as offsets into the input's
+// stream bytes: ascending, the last one the stream's length.
+typedef std::vector<std::size_t> Schedule;
+
+inline Schedule wholeSchedule(const Input& input) {
+    return Schedule{input.length};
+}
+
+inline Schedule byteSchedule(const Input& input) {
+    Schedule cuts;
+    for (std::size_t at = 1; at <= input.length; at++)
+        cuts.push_back(at);
+    return cuts;
+}
+
+// Chunks of 1 to 48 bytes, their lengths drawn from a generator seeded
+// with a hash of the whole input, so the fuzzer varies the cuts by
+// varying the bytes, and a replay cuts a saved input where the run did.
+inline Schedule chunkSchedule(const Input& input, const std::uint8_t* data, std::size_t size) {
+    std::uint64_t state = 1469598103934665603ULL;
+    for (std::size_t i = 0; i < size; i++)
+        state = (state ^ data[i]) * 1099511628211ULL;
+    Schedule cuts;
+    std::size_t at = 0;
+    while (at < input.length) {
+        state = state * 6364136223846793005ULL + 1442695040888963407ULL;
+        at += 1 + (std::size_t)((state >> 33) % 48);
+        if (at > input.length)
+            at = input.length;
+        cuts.push_back(at);
+    }
+    return cuts;
+}
+
+// Hands the input's stream bytes to `stream` one receive per cut, as
+// fill() would, and runs `receive` after each until the trace ends. A
+// ProtocolException is the server dropping the connection, so it ends the
+// trace; anything else is passed on to run(). `receive` is the target's
+// loop over what is buffered; it keeps its own session state between
+// calls and returns when it waits for more bytes or ends the trace.
+inline void deliver(SocketInputStream& stream, const Input& input, const Schedule& cuts, Trace& trace,
+                    const std::function<void(Trace&)>& receive) {
+    std::size_t at = 0;
+    for (std::size_t cut : cuts) {
+        if (!SocketInputStreamTestAccess::Append(stream, input.bytes + at, cut - at)) {
+            std::fprintf(stderr, "fuzz harness: the stream refused %zu bytes at offset %zu\n", cut - at, at);
+            std::abort();
+        }
+        at = cut;
+        try {
+            receive(trace);
+        } catch (ProtocolException& e) {
+            trace.end = e.getName() + ": " + e.getMessage();
+        }
+        if (trace.ended())
+            break;
+    }
+    trace.left = stream.length();
+}
+
+// Aborts unless `other` read what `whole` read and ended as it did.
+inline void expectSameTrace(const Trace& whole, const Trace& other, const char* schedule) {
+    const std::size_t n = whole.frames.size() < other.frames.size() ? whole.frames.size() : other.frames.size();
+    for (std::size_t i = 0; i < n; i++) {
+        if (!(whole.frames[i] == other.frames[i])) {
+            std::fprintf(stderr,
+                         "fuzz harness: delivered %s, frame %zu was packet %u (%u bytes, %c); whole, packet %u "
+                         "(%u bytes, %c)\n",
+                         schedule, i, (unsigned)other.frames[i].id, (unsigned)other.frames[i].size, other.frames[i].how,
+                         (unsigned)whole.frames[i].id, (unsigned)whole.frames[i].size, whole.frames[i].how);
+            std::abort();
+        }
+    }
+    if (whole.frames.size() != other.frames.size()) {
+        std::fprintf(stderr, "fuzz harness: delivered %s, %zu frames were consumed; whole, %zu\n", schedule,
+                     other.frames.size(), whole.frames.size());
+        std::abort();
+    }
+    if (whole.end != other.end) {
+        std::fprintf(stderr, "fuzz harness: delivered %s, the session ended with \"%s\"; whole, with \"%s\"\n",
+                     schedule, other.end.c_str(), whole.end.c_str());
+        std::abort();
+    }
+    if (!whole.ended() && whole.left != other.left) {
+        std::fprintf(stderr, "fuzz harness: delivered %s, %u bytes were left waiting; whole, %u\n", schedule,
+                     other.left, whole.left);
+        std::abort();
+    }
+}
+
+// Delivers the input whole, byte by byte and in hashed chunks, each to a
+// fresh session from `session`, and aborts unless the three agree.
+// `session` builds a stream and a receive loop over it and delivers the
+// input to them by the schedule it is given.
+inline void deliverEveryWay(const Input& input, const std::uint8_t* data, std::size_t size,
+                            const std::function<void(const Schedule&, Trace&)>& session) {
+    Trace whole;
+    session(wholeSchedule(input), whole);
+    Trace bytes;
+    session(byteSchedule(input), bytes);
+    expectSameTrace(whole, bytes, "byte by byte");
+    Trace chunks;
+    session(chunkSchedule(input, data, size), chunks);
+    expectSameTrace(whole, chunks, "in hashed chunks");
 }
 
 // Runs one input's receive loop. A ProtocolException is how a server
