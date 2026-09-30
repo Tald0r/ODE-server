@@ -208,13 +208,13 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   bound and `StoreInfoTest` is its only guard; the ctest
   `fuzz_replay_game_any_id` replays the store-info seeds with the
   refusal off, which checks that refusal, not the bound. The gameserver's
-  client link now refuses both packets before `GamePlayer`'s own refusal
-  (see "The client links read packets no client sends"), so
+  client link now refuses both packets before the frame gate's own
+  refusal (see "The client links read packets no client sends"), so
   `DE_FUZZ_NO_STORE_SKIP=1` reads them only together with
   `DE_FUZZ_ANY_ID=1`, as that ctest runs. The refusal in
-  `GamePlayer` stays for now. The client has the identical loop and reaches it; it is fixed
-  there on the client repo's `feat/packet-fuzzing` branch (commit
-  0c782d10).
+  `GameFrameGate::next` stays for now. The client has the identical
+  loop and reaches it; it is fixed there on the client repo's
+  `feat/packet-fuzzing` branch (commit 0c782d10).
   > **Status:** fixed (feat/packet-fuzzing)
 - **`PacketValidator`'s constructor filled a vector it had only
   reserved.** `m_PacketIDSets.reserve(PLAYER_STATUS_MAX)` followed by

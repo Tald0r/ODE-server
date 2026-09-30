@@ -77,11 +77,12 @@ struct GameFrame {
     std::unique_ptr<Packet> packet;
 };
 
-// How a refused frame ends the connection. GamePlayer::processCommand
-// writes its log line, whose fields name the player, to
-// refusalLogFile(refusal), then calls throwRefusal(refusal): an
-// out-of-sequence frame throws DisconnectException("Packet sequence
-// error"), every other refusal an InvalidProtocolException naming it.
+// How a refused frame ends the connection. GamePlayer::refuseFrame,
+// which processCommand calls, writes its log line, whose fields name
+// the player, to refusalLogFile(refusal), then calls
+// throwRefusal(refusal): an out-of-sequence frame throws
+// DisconnectException("Packet sequence error"), every other refusal an
+// InvalidProtocolException naming it.
 const char* refusalLogFile(GameFrameRefusal refusal);
 [[noreturn]] void throwRefusal(GameFrameRefusal refusal);
 
