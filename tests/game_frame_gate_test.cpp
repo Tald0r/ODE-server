@@ -14,6 +14,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include <cstring>
+#include <ostream>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -28,6 +29,22 @@
 #include "SocketEncryptInputStream.h"
 #include "SocketImpl.h"
 #include "SocketInputStreamTestAccess.h"
+
+namespace de {
+
+// Names the steps in gtest's failure messages.
+void PrintTo(GameFrameStep step, std::ostream* os) {
+    static const char* const kNames[] = {"AwaitHeader", "AwaitBody", "AwaitIgnoredBody", "Read", "Skipped", "Refused"};
+    *os << kNames[static_cast<int>(step)];
+}
+
+void PrintTo(GameFrameRefusal refusal, std::ostream* os) {
+    static const char* const kNames[] = {"None",     "IdOutOfRange",    "InvalidOrder", "StoreInfo",
+                                         "TooLarge", "IgnoredTooLarge", "OutOfSequence"};
+    *os << kNames[static_cast<int>(refusal)];
+}
+
+} // namespace de
 
 namespace {
 
@@ -85,6 +102,18 @@ protected:
 
     GameFrame next(PlayerStatus status = GPS_NORMAL) {
         return m_Gate.next(m_In, status, m_Factories, m_Validator);
+    }
+
+    // Runs the gate until it waits or refuses, as processCommand's loop
+    // does after a receive, and returns the steps it took.
+    std::vector<GameFrameStep> drain(PlayerStatus status = GPS_NORMAL) {
+        std::vector<GameFrameStep> steps;
+        while (true) {
+            GameFrame frame = next(status);
+            steps.push_back(frame.step);
+            if (frame.step != GameFrameStep::Read && frame.step != GameFrameStep::Skipped)
+                return steps;
+        }
     }
 
     PacketFactoryManager m_Factories;
@@ -232,6 +261,105 @@ TEST_F(GameFrameGateTest, refusesAnIgnoredBodyLargerThanThePacketsMaximum) {
     GameFrame frame = next(GPS_WAITING_FOR_CG_READY);
     EXPECT_EQ(GameFrameStep::Refused, frame.step);
     EXPECT_EQ(GameFrameRefusal::IgnoredTooLarge, frame.refusal);
+}
+
+
+// The frame at the front of the stream stays there until it is whole, so
+// its sequence byte is counted once, when the frame is consumed, however
+// the network cut it.
+TEST_F(GameFrameGateTest, readsAFrameWhoseBodyArrivesInALaterReceive) {
+    const Bytes move = moveFrame(0);
+    deliver(Bytes(move.begin(), move.begin() + szPacketHeader));
+
+    GameFrame waiting = next();
+    EXPECT_EQ(GameFrameStep::AwaitBody, waiting.step);
+    EXPECT_EQ(0u, (unsigned)m_Gate.expectedSequence());
+    EXPECT_EQ(szPacketHeader, m_In.length());
+
+    deliver(Bytes(move.begin() + szPacketHeader, move.end()));
+    GameFrame frame = next();
+    ASSERT_EQ(GameFrameStep::Read, frame.step);
+    EXPECT_EQ(Packet::PACKET_CG_MOVE, frame.packet->getPacketID());
+    EXPECT_EQ(1u, (unsigned)m_Gate.expectedSequence());
+
+    deliver(readyFrame(1));
+    GameFrame following = next();
+    ASSERT_EQ(GameFrameStep::Read, following.step);
+    EXPECT_EQ(Packet::PACKET_CG_READY, following.packet->getPacketID());
+    EXPECT_EQ(2u, (unsigned)m_Gate.expectedSequence());
+}
+
+TEST_F(GameFrameGateTest, readsFramesDeliveredOneByteAtATime) {
+    const Bytes stream = concat({moveFrame(0), moveFrame(1, 30, 40, 7), readyFrame(2)});
+
+    int read = 0;
+    for (unsigned char byte : stream) {
+        deliver(Bytes{byte});
+        for (GameFrameStep step : drain()) {
+            ASSERT_NE(GameFrameStep::Refused, step);
+            if (step == GameFrameStep::Read)
+                read++;
+        }
+    }
+    EXPECT_EQ(3, read);
+    EXPECT_EQ(3u, (unsigned)m_Gate.expectedSequence());
+    EXPECT_EQ(0u, m_In.length());
+}
+
+TEST_F(GameFrameGateTest, readsTheRestOfAFrameAndWholeFramesFromOneReceive) {
+    const Bytes move = moveFrame(0);
+    deliver(Bytes(move.begin(), move.begin() + szPacketHeader + 1));
+    EXPECT_EQ(std::vector<GameFrameStep>{GameFrameStep::AwaitBody}, drain());
+
+    deliver(concat({Bytes(move.begin() + szPacketHeader + 1, move.end()), readyFrame(1), moveFrame(2)}));
+    EXPECT_EQ((std::vector<GameFrameStep>{GameFrameStep::Read, GameFrameStep::Read, GameFrameStep::Read,
+                                          GameFrameStep::AwaitHeader}),
+              drain());
+    EXPECT_EQ(3u, (unsigned)m_Gate.expectedSequence());
+}
+
+TEST_F(GameFrameGateTest, skipsAnIgnoredFrameWhoseBodyArrivesInALaterReceive) {
+    const Bytes move = moveFrame(0);
+    deliver(Bytes(move.begin(), move.begin() + szPacketHeader));
+
+    EXPECT_EQ(GameFrameStep::AwaitIgnoredBody, next(GPS_WAITING_FOR_CG_READY).step);
+    EXPECT_EQ(0u, (unsigned)m_Gate.expectedSequence());
+    EXPECT_EQ(szPacketHeader, m_In.length());
+
+    deliver(Bytes(move.begin() + szPacketHeader, move.end()));
+    EXPECT_EQ(GameFrameStep::Skipped, next(GPS_WAITING_FOR_CG_READY).step);
+    EXPECT_EQ(1u, (unsigned)m_Gate.expectedSequence());
+    EXPECT_EQ(0u, m_In.length());
+
+    deliver(readyFrame(1));
+    GameFrame ready = next(GPS_WAITING_FOR_CG_READY);
+    ASSERT_EQ(GameFrameStep::Read, ready.step);
+    EXPECT_EQ(Packet::PACKET_CG_READY, ready.packet->getPacketID());
+}
+
+// A frame's sequence byte is checked once the frame is whole, so a frame
+// out of sequence waits for its body like any other and is refused then.
+TEST_F(GameFrameGateTest, refusesAFragmentedFrameOutOfSequenceOnceItIsWhole) {
+    const Bytes move = moveFrame(1);
+    deliver(Bytes(move.begin(), move.begin() + szPacketHeader));
+    EXPECT_EQ(GameFrameStep::AwaitBody, next().step);
+
+    deliver(Bytes(move.begin() + szPacketHeader, move.end()));
+    GameFrame frame = next();
+    EXPECT_EQ(GameFrameStep::Refused, frame.step);
+    EXPECT_EQ(GameFrameRefusal::OutOfSequence, frame.refusal);
+}
+
+// The refusals that need only the header come first, whatever the
+// sequence byte says: the connection is dropped either way, and a refused
+// frame's sequence is never counted.
+TEST_F(GameFrameGateTest, refusesAnIdPastTheTableBeforeCheckingTheSequence) {
+    deliver(frameBytes((PacketID_t)Packet::PACKET_MAX, 7, Bytes{}));
+
+    GameFrame frame = next();
+    EXPECT_EQ(GameFrameStep::Refused, frame.step);
+    EXPECT_EQ(GameFrameRefusal::IdOutOfRange, frame.refusal);
+    EXPECT_EQ(0u, (unsigned)m_Gate.expectedSequence());
 }
 
 } // namespace

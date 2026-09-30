@@ -37,11 +37,16 @@ enum class GameFrameStep {
     // A frame the validator ignores in this status, consumed unread.
     Skipped,
     // The frame breaks the protocol and the connection is to be dropped;
-    // GameFrame::refusal says why. The frame is still in the stream.
+    // GameFrame::refusal says why. The frame is left in the stream, but
+    // for an ignored frame refused for its sequence, which was skipped.
     Refused,
 };
 
-// Why the gate refused a frame.
+// Why the gate refused a frame, in the order the gate checks. The header's
+// id, the validator and the declared size are checked as soon as the
+// header has arrived; the sequence byte only once the whole frame has,
+// just before it is consumed. A refused frame's sequence is not counted,
+// which changes nothing, since a refusal drops the connection.
 enum class GameFrameRefusal {
     None,
     // The id is at or past Packet::PACKET_MAX.
@@ -77,6 +82,11 @@ public:
     // Decides the frame at the front of `in` for a player in `status` and,
     // when the frame is admitted and whole, consumes it: an admitted frame
     // is read with SocketInputStream::readPacket, an ignored one skipped.
+    // The sequence byte is checked and counted only then, where the frame
+    // is consumed: a frame that waits for the rest of its body is left in
+    // the stream uncounted and decided afresh on the next call, so the
+    // result does not depend on where the network cut the bytes. An
+    // ignored frame's sequence is checked too, once it has been skipped.
     // A ProtocolException from the factory table (an id with no factory)
     // or from readPacket (a malformed body) is passed on.
     GameFrame next(SocketInputStream& in, PlayerStatus status, PacketFactoryManager& factories,
@@ -88,6 +98,10 @@ public:
     }
 
 private:
+    // Checks a consumed frame's sequence byte and counts it; false when
+    // it is out of step.
+    bool countSequence(SequenceSize_t sequence);
+
     SequenceSize_t m_Sequence = 0;
 };
 

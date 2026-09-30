@@ -23,6 +23,16 @@ GameFrame refused(GameFrame frame, GameFrameRefusal refusal) {
 
 } // namespace
 
+// The client numbers every frame it sends, so the count moves on exactly
+// when a frame is consumed. A frame that waits for its body is peeked
+// again on the next receive and must still carry the byte expected then.
+bool GameFrameGate::countSequence(SequenceSize_t sequence) {
+    if (sequence != m_Sequence)
+        return false;
+    m_Sequence++;
+    return true;
+}
+
 GameFrame GameFrameGate::next(SocketInputStream& in, PlayerStatus status, PacketFactoryManager& factories,
                               PacketValidator& validator) {
     GameFrame frame;
@@ -37,10 +47,6 @@ GameFrame GameFrameGate::next(SocketInputStream& in, PlayerStatus status, Packet
     std::memcpy(&frame.id, &header[0], szPacketID);
     std::memcpy(&frame.size, &header[szPacketID], szPacketSize);
     std::memcpy(&frame.sequence, &header[szPacketID + szPacketSize], szSequenceSize);
-
-    if (frame.sequence != m_Sequence)
-        return refused(std::move(frame), GameFrameRefusal::OutOfSequence);
-    m_Sequence++;
 
     if (frame.id >= (int)Packet::PACKET_MAX)
         return refused(std::move(frame), GameFrameRefusal::IdOutOfRange);
@@ -61,6 +67,8 @@ GameFrame GameFrameGate::next(SocketInputStream& in, PlayerStatus status, Packet
             return frame;
         }
         in.skip(szPacketHeader + frame.size);
+        if (!countSequence(frame.sequence))
+            return refused(std::move(frame), GameFrameRefusal::OutOfSequence);
         frame.step = GameFrameStep::Skipped;
         return frame;
     }
@@ -79,6 +87,9 @@ GameFrame GameFrameGate::next(SocketInputStream& in, PlayerStatus status, Packet
         frame.step = GameFrameStep::AwaitBody;
         return frame;
     }
+
+    if (!countSequence(frame.sequence))
+        return refused(std::move(frame), GameFrameRefusal::OutOfSequence);
 
     frame.packet.reset(factories.createPacket(frame.id));
     in.readPacket(frame.packet.get());
