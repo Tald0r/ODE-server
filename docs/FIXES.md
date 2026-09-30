@@ -13,6 +13,33 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Packet reads bounded by their frame (2026-09-30)
+
+The frame bound itself is under "Packet-read fuzzing" below, where it was
+first recorded.
+
+- **A receive loop's `IgnorePacketException` catch covers the dispatch
+  too.** `SharedServerClient::processCommand` wraps `readPacket` and
+  `PacketDispatcher::dispatch` in one `try` whose
+  `catch (IgnorePacketException&)` skips `szPacketHeader + packetSize`
+  bytes, and `LoginPlayer::processCommand` does the same. After the read
+  that frame is already consumed, so a handler that threw the exception
+  would make the loop skip the next frame instead, or wait on it
+  (`SharedServerClient` breaks out while fewer bytes are buffered).
+  `GamePlayer` is not exposed: its dispatch turns any exception into a
+  `DisconnectException`. Nothing throws it there today:
+  `IgnorePacketException` comes only from `PacketIDSet::hasPacketID` for
+  a `PIST_IGNORE_EXCEPT` status, reached only through
+  `PacketValidator::isValidPacketID`, which only `GamePlayer` and
+  `LoginPlayer` call, before the read, and no handler calls. A
+  `read()` that threw it is refused by `readPacket` as an
+  `InvalidProtocolException`. The catch in `SharedServerClient`, which
+  never consults the validator, cannot be reached at all. Left as it is;
+  a handler that starts to throw `IgnorePacketException` would need the
+  catch narrowed to the checks before the read.
+  > **Status:** not a defect (no handler throws it; recorded for the
+  > next change to the loops)
+
 ## The client links read packets no client sends (2026-09-29)
 
 - **In `GPS_NORMAL` the gameserver read any packet it registers.** The
@@ -274,15 +301,52 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   are unchanged.
   > **Status:** recorded, not fixed (feat/packet-fuzzing) — unreachable
   > from a client since fix/client-link-packet-ids.
-- **`SocketInputStream::readPacket` is not bounded by the frame.** A
-  packet's `read()` consumes what its fields say, not the size its header
-  declared, and the receive loops do not check the two agree. A body
-  shorter than declared leaves the rest to be parsed as the next header;
-  a longer one reads into the next frame. `DE_FUZZ_STRICT_BODY=1` shows it
-  on the first seed with a zero-filled body. The client's receive path
-  has a frame-bounded read that refuses both; the server needs the same,
-  checked against every golden.
-  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+- **`SocketInputStream::readPacket` was not bounded by the frame.** A
+  packet's `read()` consumed what its fields said, not the size its
+  header declared, and nothing checked that the two agree. A body
+  shorter than declared left the rest to be parsed as the next header;
+  a longer one read into the next frame; and a field that ran past the
+  last buffered frame threw `InsufficientDataException`, which the
+  receive loops take to mean "wait for more", with the frame half
+  consumed. The fuzz harness's strict-body switch showed it on the first
+  seed with a zero-filled body. `readPacket` now reads one frame, as the
+  client's `SocketInputStream::read(Packet*)` does: it consumes nothing
+  until the header and the whole declared body are buffered, bounds
+  every read, peek and skip the packet's `read()` makes to that body
+  (the tail is pulled in to the body's end while `read()` runs), and
+  refuses with `InvalidProtocolException` a body left partly unread, a
+  field that runs past it, a stream failure `read()` caught itself, an
+  `IgnorePacketException` from `read()` and a nested `readPacket`. On
+  every exit the stream stands at the next frame. What the refusal does
+  in each receive loop: `GamePlayer::processCommand` lets it out to
+  `ZonePlayerManager` (the player is kicked through `CGLogoutHandler`)
+  or `IncomingPlayerManager` (disconnected and deleted);
+  `LoginPlayer::processCommand` rethrows it from its
+  `catch (InvalidProtocolException&)` and `LoginPlayerManager`
+  disconnects the player; the sharedserver's `GameServerPlayer` lets it
+  out to `GameServerManager`, which disconnects that gameserver; and the
+  gameserver's `SharedServerClient` lets it out to
+  `SharedServerManager`, which deletes the client and reconnects on a
+  later tick. No loop resumes at the next frame. The server's reads
+  were checked against every golden a server reads (653 frame goldens,
+  and the 14 datagram goldens on their `Datagram` path) and consumed
+  each exactly before the change as well; no read swallows a stream
+  exception (no `catch` in any function that takes a
+  `SocketInputStream&`). The live client's `write()` and
+  `getPacketSize()` were compared field by field with the server's
+  `read()` for every packet it sends on the two client links (163 CG and
+  CL packets and the three client-sent GC packets), since a declared size
+  the body does not fill used to pass and is now refused: none differs.
+  Those after which the client hangs up or reconnects elsewhere, where a
+  short read could have gone unnoticed (`CLSelectPC` before the handoff
+  to the gameserver, `CLLogout`, `CGLogout`), match exactly, and so does
+  `CLLogin`'s plain layout, whose golden differs between the repos only
+  in its values. The client's Netmarble `CLLogin` layout (a four-byte
+  length) is refused by the server's read before and after the change.
+  Pinned by `FrameBoundTest` in `tests/packet_frame_test.cpp`
+  (`wire_tests`) and by the fuzz targets' body oracle, which aborts
+  unless `readPacket` moved the stream exactly one frame on.
+  > **Status:** fixed (fix/frame-bounded-packet-reads)
 
 ## The character list could not carry a cross1, a mace or a mace1 (2026-09-29)
 

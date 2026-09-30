@@ -378,6 +378,22 @@ templates forward as well, which removes the hand-copied second version of
 the ring-buffer walk — the copy the misaligned-access fix above had to patch
 separately.
 
+Inline is a request, not a guarantee, and the throw expressions were enough
+to lose it: with `throw InvalidProtocolException(...)` and
+`throw InsufficientDataException(...)` written in `read(std::span)`, Zig
+0.16's Clang at `-O2` kept it out of line in every packet read measured
+(`CGAttack::read` called it sixteen times, `GCUpdateInfo::read` 21, each
+copy a `memcpy` with a runtime length). Both refusals are now out-of-line
+`[[noreturn]]` calls (`failRead`, `failUnderflow`), and the definition
+inlines: on the unwrapped path a scalar field is a `length()` call, a
+compare and a single load. The frame bound
+`readPacket` puts on a packet's `read()` adds nothing to that path, since
+it is the same `len > length()` compare against a tail pulled in to the
+body's end. To check it again, compile a packet with the build's flags and
+`-O2 -S` and count calls of the span overload
+(`_ZN17SocketInputStream4readENSt3__14spanISt4byteLm18446744073709551615EEE`):
+there should be none.
+
 `std::endian` states the deployed byte order once, as a `static_assert` in
 `WireTypes.h`: the wire format is the little-endian in-memory representation,
 no packet swaps bytes, and none is introduced here. `std::bit_cast` is
