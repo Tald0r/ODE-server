@@ -1300,10 +1300,10 @@ shrink-only work.
   > cast from wire bytes, non-protocol exceptions escaping the receive
   > loops, and the records six GC reads leak, `GCUpdateInfo`'s among
   > them, which is why the fuzz runs have leak detection off). The
-  > targets are
-  > in `tests/fuzz/` (game and login), `DARKEDEN_BUILD_FUZZERS` builds
-  > them with libFuzzer in `tools/fuzz/Dockerfile.fuzz`, and the replay
-  > builds run in the zig suite over the golden seed corpus and
+  > targets are in `tests/fuzz/` (game and login),
+  > `DARKEDEN_BUILD_FUZZERS` builds them with libFuzzer in
+  > `tools/fuzz/Dockerfile.fuzz`, and the replay builds run in the zig
+  > suite over the golden seed corpus and
   > `tests/fuzz/regressions/` (ctests `fuzz_replay_game`,
   > `fuzz_replay_login`, `fuzz_replay_game_any_id`); each fix but
   > the validator's has a gtest in `tests/packet_read_bounds_test.cpp`

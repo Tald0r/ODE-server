@@ -396,19 +396,21 @@ should be none:
 ```sh
 cmake/zig-c++ -std=c++20 -O2 -UNDEBUG -S -D__LINUX__ -D__GAME_SERVER__ \
     -D__COMBAT__ -Isrc/Core -o CGAttack.s src/Core/CGAttack.cpp
-grep -cE '^[[:space:]]*bl[[:space:]]+_ZN17SocketInputStream4readE(NSt3__1|St)4span' CGAttack.s
+grep -cE '^[[:space:]]*(bl|callq?)[[:space:]]+_ZN17SocketInputStream4readE(NSt3__1|St)4span' CGAttack.s
 ```
 
 `-UNDEBUG` is needed because zig's `-O2` defines `NDEBUG`, which
 `Exception.h` and `Assert.h` refuse with `#error`. The pattern counts only
-`bl` lines (aarch64; `call` on x86-64): a plain count of the symbol also
-hits its definition and the debug strings. It covers both spellings of
+call instructions (`bl` on aarch64, `call` on x86-64): a plain count of the
+symbol also hits its definition and the debug strings. It covers both spellings of
 the symbol, `...4readENSt3__14span...` under libc++ (zig) and
 `...4readESt4span...` under libstdc++ (the `darkeden-fuzz` image's
 Clang 18). Measured with zig on aarch64, before and after the frame
 bound: `CGAttack::read` 16 calls to 0, `CGMove` 12 to 0, `GCUpdateInfo`
 21 to 0, `CLLogin` and `CGSay` 1 to 0; `CGAttack` under Clang 18 and
-libstdc++ also went from 16 to 0.
+libstdc++ also went from 16 to 0. The loss is target-dependent: for
+x86-64, zig already inlined the span overload into `CGAttack::read`
+before the change, so check on aarch64, where it was lost.
 
 `std::endian` states the deployed byte order once, as a `static_assert` in
 `WireTypes.h`: the wire format is the little-endian in-memory representation,
