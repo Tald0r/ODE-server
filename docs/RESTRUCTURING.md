@@ -1324,7 +1324,9 @@ shrink-only work.
   > sequence count, which moves only when a frame is consumed
   > (`GameFrameGate`, `game_frame_gate_tests`): the targets deliver
   > each input whole, byte by byte and in hashed chunks and abort
-  > unless the three agree. Next reader: a UDP target
+  > unless the three agree, and the game target delivers each input
+  > byte by byte through `GameFrameGate::next` itself as well, holding
+  > the production gate to its mirror's result. Next reader: a UDP target
   > for the loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is
   > not written, and the targets deliver each input from the start of
   > the stream's buffer, so its wrap-around path is not fuzzed

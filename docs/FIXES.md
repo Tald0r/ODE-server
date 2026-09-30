@@ -73,15 +73,32 @@ first recorded.
   was split out to be tested: `game_frame_gate_tests`
   (`tests/game_frame_gate_test.cpp`) hands it frames in parts (a header
   and then its body, one byte at a time, the end of one frame with whole
-  ones behind it, an ignored frame split in `GPS_WAITING_FOR_CG_READY`),
-  and against the old order 6 of its 18 cases fail. The fuzz targets
-  now deliver each input whole, byte by byte and in hashed chunks and
-  abort unless all three read the same packets and end the same way;
-  on the old order the game target aborted on the first golden seed,
-  and a libFuzzer run from an empty corpus in 0.7 s
-  (`tests/fuzz/regressions/game/sequence-before-body.hex`). On the fix,
+  ones behind it, an ignored frame split in `GPS_WAITING_FOR_CG_READY`).
+  Against the old gate 6 of its 18 cases fail. Four of them show this
+  bug, the partial body counting the sequence and the whole frame then
+  being refused: the fragmented read, the byte-by-byte delivery, the
+  end of a frame followed by whole frames, and the fragmented ignored
+  frame. The other two pin the new check order and fail on the old gate
+  for that reason: a fragmented frame out of sequence now waits for its
+  body before it is refused, and an id past the table is refused as
+  such rather than for its sequence. The fuzz targets now deliver each
+  input whole, byte by byte and in hashed chunks and abort unless all
+  three read the same packets and end the same way; on the old order
+  the game mirror aborted on the first golden seed, and a libFuzzer run
+  from an empty corpus in 0.7 s on a header declaring a four-byte body
+  of which only the first byte arrives
+  (`tests/fuzz/regressions/game/sequence-before-body.hex`). The game
+  target also delivers every input byte by byte through
+  `GameFrameGate::next` itself and aborts unless it ends as the
+  mirror's whole delivery did, so the fuzzing covers the production
+  gate and not only its mirror (outside `DE_FUZZ_ANY_ID` and
+  `DE_FUZZ_NO_STORE_SKIP`, which the gate has no hook for). With the
+  old gate built in, `fuzz_replay_game` aborts on the first golden seed
+  and libFuzzer crashes in 0.13 s from the seeds. On the fix,
   661 s of game fuzzing (621,395 runs) and 181 s of login fuzzing found
-  nothing.
+  nothing, and with the production gate checked beside the mirror,
+  631 s of game fuzzing (716,961 runs) and 91 s of login fuzzing found
+  nothing either.
   > **Status:** fixed (fix/sequence-after-body)
 
 ## The client links read packets no client sends (2026-09-29)

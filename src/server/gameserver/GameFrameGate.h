@@ -42,11 +42,14 @@ enum class GameFrameStep {
     Refused,
 };
 
-// Why the gate refused a frame, in the order the gate checks. The header's
+// Why the gate refused a frame. For an admitted frame the kinds are listed
+// in the order the gate checks them, IgnoredTooLarge aside: the header's
 // id, the validator and the declared size are checked as soon as the
-// header has arrived; the sequence byte only once the whole frame has,
-// just before it is consumed. A refused frame's sequence is not counted,
-// which changes nothing, since a refusal drops the connection.
+// header has arrived, the sequence byte only once the whole frame has,
+// just before it is consumed. A frame the validator ignores is checked
+// for IdOutOfRange, then IgnoredTooLarge, then, once it has been skipped,
+// OutOfSequence. A refused frame's sequence is not counted, which changes
+// nothing, since a refusal drops the connection.
 enum class GameFrameRefusal {
     None,
     // The id is at or past Packet::PACKET_MAX.
