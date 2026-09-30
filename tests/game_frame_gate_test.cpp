@@ -15,11 +15,13 @@
 
 #include <cstring>
 #include <ostream>
+#include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "CGMove.h"
+#include "Exception.h"
 #include "GameFrameGate.h"
 #include "Packet.h"
 #include "PacketFactoryManager.h"
@@ -360,6 +362,49 @@ TEST_F(GameFrameGateTest, refusesAnIdPastTheTableBeforeCheckingTheSequence) {
     EXPECT_EQ(GameFrameStep::Refused, frame.step);
     EXPECT_EQ(GameFrameRefusal::IdOutOfRange, frame.refusal);
     EXPECT_EQ(0u, (unsigned)m_Gate.expectedSequence());
+}
+
+
+// What GamePlayer::processCommand does with each refusal: the log file it
+// writes to and the exception that drops the connection. Only a frame out
+// of sequence ends in DisconnectException, logged to SequenceError.txt.
+struct RefusalEnd {
+    GameFrameRefusal refusal;
+    const char* logFile;
+    bool disconnect;
+    const char* message;
+};
+
+const RefusalEnd kRefusalEnds[] = {
+    {GameFrameRefusal::OutOfSequence, "SequenceError.txt", true, "Packet sequence error"},
+    {GameFrameRefusal::IdOutOfRange, "GamePlayer.txt", false, "too large packet id"},
+    {GameFrameRefusal::InvalidOrder, "GamePlayer.txt", false, "invalid packet order"},
+    {GameFrameRefusal::StoreInfo, "GamePlayer.txt", false, "invalid packet order"},
+    {GameFrameRefusal::TooLarge, "GamePlayer.txt", false, "too large packet size"},
+    {GameFrameRefusal::IgnoredTooLarge, "GamePlayer.txt", false, "too large packet sizeIgnore"},
+    {GameFrameRefusal::None, "GamePlayer.txt", false, "refused frame"},
+};
+
+TEST(GameFrameRefusalTest, eachRefusalLogsAndThrowsAsTheReceiveLoopDid) {
+    for (const RefusalEnd& end : kRefusalEnds) {
+        SCOPED_TRACE(::testing::PrintToString(end.refusal));
+        EXPECT_STREQ(end.logFile, de::refusalLogFile(end.refusal));
+
+        std::string thrown;
+        bool disconnect = false;
+        try {
+            de::throwRefusal(end.refusal);
+        } catch (DisconnectException& e) {
+            disconnect = true;
+            thrown = e.getMessage();
+        } catch (InvalidProtocolException& e) {
+            thrown = e.getMessage();
+        } catch (...) {
+            thrown = "an exception of another type";
+        }
+        EXPECT_EQ(end.disconnect, disconnect);
+        EXPECT_EQ(end.message, thrown);
+    }
 }
 
 } // namespace

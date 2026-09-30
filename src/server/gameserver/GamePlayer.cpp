@@ -431,41 +431,42 @@ void GamePlayer::processCommand(bool Option) {
 //
 //////////////////////////////////////////////////////////////////////
 void GamePlayer::refuseFrame(const de::GameFrame& frame) {
+    const char* logFile = de::refusalLogFile(frame.refusal);
     switch (frame.refusal) {
     case de::GameFrameRefusal::OutOfSequence:
-        filelog("SequenceError.txt", "Timeout Disconnect1. Name[%s],Host[%s]",
+        filelog(logFile, "Timeout Disconnect1. Name[%s],Host[%s]",
                 ((getCreature() == NULL) ? "NULL" : getCreature()->getName().c_str()),
                 ((getSocket() == NULL) ? "NULL" : getSocket()->getHost().c_str()));
-        throw DisconnectException("Packet sequence error");
+        break;
 
     case de::GameFrameRefusal::IdOutOfRange:
-        filelog("GamePlayer.txt", "Packet ID exceed MAX, RECV [%d/%d],ID[%s],Host[%s]", frame.id, Packet::PACKET_MAX,
+        filelog(logFile, "Packet ID exceed MAX, RECV [%d/%d],ID[%s],Host[%s]", frame.id, Packet::PACKET_MAX,
                 m_ID.c_str(), getSocket()->getHost().c_str());
-        throw InvalidProtocolException("too large packet id");
+        break;
 
     case de::GameFrameRefusal::InvalidOrder:
     case de::GameFrameRefusal::StoreInfo:
-        filelog("GamePlayer.txt", "Not Valid Packet, RECV [%d],ID[%s],Host[%s]", frame.id, m_ID.c_str(),
+        filelog(logFile, "Not Valid Packet, RECV [%d],ID[%s],Host[%s]", frame.id, m_ID.c_str(),
                 getSocket()->getHost().c_str());
-        throw InvalidProtocolException("invalid packet order");
+        break;
 
     case de::GameFrameRefusal::TooLarge: {
         PacketFactoryManager& packetFactories = de::kernelContext().packetFactories();
-        filelog("GamePlayer.txt", "Too Larget Packet Size, RECV [%d],PacketSize[%d/%d],ID[%s],Host[%s]", frame.id,
-                frame.size, packetFactories.getPacketMaxSize(frame.id), m_ID.c_str(), getSocket()->getHost().c_str());
-        throw InvalidProtocolException("too large packet size");
+        filelog(logFile, "Too Larget Packet Size, RECV [%d],PacketSize[%d/%d],ID[%s],Host[%s]", frame.id, frame.size,
+                packetFactories.getPacketMaxSize(frame.id), m_ID.c_str(), getSocket()->getHost().c_str());
+        break;
     }
 
     case de::GameFrameRefusal::IgnoredTooLarge:
-        filelog("GamePlayer.txt", "Too Larget Packet Size[Ignore], RECV [%d],PacketSize[%d],Name[%s],Host[%s]",
-                frame.id, frame.size, ((getCreature() == NULL) ? "NULL" : getCreature()->getName().c_str()),
+        filelog(logFile, "Too Larget Packet Size[Ignore], RECV [%d],PacketSize[%d],Name[%s],Host[%s]", frame.id,
+                frame.size, ((getCreature() == NULL) ? "NULL" : getCreature()->getName().c_str()),
                 ((getSocket() == NULL) ? "NULL" : getSocket()->getHost().c_str()));
-        throw InvalidProtocolException("too large packet sizeIgnore");
+        break;
 
     case de::GameFrameRefusal::None:
         break;
     }
-    throw InvalidProtocolException("refused frame");
+    de::throwRefusal(frame.refusal);
 }
 
 

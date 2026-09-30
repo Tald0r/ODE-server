@@ -77,6 +77,14 @@ struct GameFrame {
     std::unique_ptr<Packet> packet;
 };
 
+// How a refused frame ends the connection. GamePlayer::processCommand
+// writes its log line, whose fields name the player, to
+// refusalLogFile(refusal), then calls throwRefusal(refusal): an
+// out-of-sequence frame throws DisconnectException("Packet sequence
+// error"), every other refusal an InvalidProtocolException naming it.
+const char* refusalLogFile(GameFrameRefusal refusal);
+[[noreturn]] void throwRefusal(GameFrameRefusal refusal);
+
 // The receive loop's per-connection gate. It owns the count of frames the
 // client has sent, which the client numbers one by one in each header's
 // sequence byte, starting at 0 and wrapping at 256.

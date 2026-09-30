@@ -23,6 +23,31 @@ GameFrame refused(GameFrame frame, GameFrameRefusal refusal) {
 
 } // namespace
 
+const char* refusalLogFile(GameFrameRefusal refusal) {
+    if (refusal == GameFrameRefusal::OutOfSequence)
+        return "SequenceError.txt";
+    return "GamePlayer.txt";
+}
+
+void throwRefusal(GameFrameRefusal refusal) {
+    switch (refusal) {
+    case GameFrameRefusal::OutOfSequence:
+        throw DisconnectException("Packet sequence error");
+    case GameFrameRefusal::IdOutOfRange:
+        throw InvalidProtocolException("too large packet id");
+    case GameFrameRefusal::InvalidOrder:
+    case GameFrameRefusal::StoreInfo:
+        throw InvalidProtocolException("invalid packet order");
+    case GameFrameRefusal::TooLarge:
+        throw InvalidProtocolException("too large packet size");
+    case GameFrameRefusal::IgnoredTooLarge:
+        throw InvalidProtocolException("too large packet sizeIgnore");
+    case GameFrameRefusal::None:
+        break;
+    }
+    throw InvalidProtocolException("refused frame");
+}
+
 // The client numbers every frame it sends, so the count moves on exactly
 // when a frame is consumed. A frame that waits for its body is peeked
 // again on the next receive and must still carry the byte expected then.
