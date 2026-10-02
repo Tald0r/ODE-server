@@ -34,6 +34,7 @@
 #include "RelicUtil.h"
 #include "SharedServerManager.h"
 #include "Slayer.h"
+#include "SocketStreams.h"
 #include "StringPool.h"
 #include "TelephoneCenter.h"
 #include "Thread.h"
@@ -74,30 +75,13 @@ const int PCRoomLottoMaxAmount = 3; // Maximum number of lottery tickets that ca
 //////////////////////////////////////////////////////////////////////////////
 
 GamePlayer::GamePlayer(Socket* pSocket)
-    : // Player(pSocket), 	// by sigi. 2002.11.12
-      m_pCreature(NULL), m_PlayerStatus(GPS_NONE), m_pReconnectPacket(NULL) {
+    : Player(pSocket, 0, 0), m_pCreature(NULL), m_PlayerStatus(GPS_NONE), m_pReconnectPacket(NULL) {
     __BEGIN_TRY
 
-    Assert(pSocket != NULL);
-    m_pSocket = pSocket;
-
-#ifdef __USE_ENCRYPTER__
-    // create socket input stream
-    m_pInputStream = new SocketEncryptInputStream(m_pSocket, defaultGamePlayerInputStreamSize);
-    Assert(m_pInputStream != NULL);
-
-    // create socket output stream
-    m_pOutputStream = new SocketEncryptOutputStream(m_pSocket, defaultGamePlayerOutputStreamSize);
-    Assert(m_pOutputStream != NULL);
-#else
-    // create socket input stream
-    m_pInputStream = new SockettInputStream(m_pSocket, defaultGamePlayerInputStreamSize);
-    Assert(m_pInputStream != NULL);
-
-    // create socket output stream
-    m_pOutputStream = new SockettOutputStream(m_pSocket, defaultGamePlayerOutputStreamSize);
-    Assert(m_pOutputStream != NULL);
-#endif
+    auto streams =
+        de::makeEncryptedSocketStreams(m_pSocket, defaultGamePlayerInputStreamSize, defaultGamePlayerOutputStreamSize);
+    m_pInputStream = streams.input.release();
+    m_pOutputStream = streams.output.release();
 
     m_Mutex.setName("GamePlayer");
 
@@ -134,9 +118,6 @@ GamePlayer::GamePlayer(Socket* pSocket)
 GamePlayer::~GamePlayer() noexcept {
     __BEGIN_TRY
 
-    GuildManager& guilds = de::gameContext().guilds();
-    SharedServerManager& sharedServer = de::gameContext().sharedServer();
-
     //__ENTER_CRITICAL_SECTION(m_Mutex)
 
     // Whatever deletes a player object, its status has to be logged out.
@@ -146,6 +127,8 @@ GamePlayer::~GamePlayer() noexcept {
     try {
         // Delete creature
         if (m_pCreature != NULL) {
+            GuildManager& guilds = de::gameContext().guilds();
+            SharedServerManager& sharedServer = de::gameContext().sharedServer();
             // Drop the relic. A drop that fails (no free tile) is logged and
             // the relic goes with the creature: the session still ends, the
             // finder removal below included, so no name outlives its player.

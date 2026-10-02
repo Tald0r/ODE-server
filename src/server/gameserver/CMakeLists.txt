@@ -438,6 +438,7 @@ set(GAMESERVER_RUNTIME_SOURCES
     GameContext.cpp
     GameFrameGate.cpp
     GamePlayer.cpp
+    GameConnection.cpp
     SpeedHackDecision.cpp
     GameServer.cpp
     IncomingPlayerManager.cpp
@@ -683,6 +684,7 @@ target_link_libraries(GameServerRuntime PUBLIC
     ListenerStartup
     ServerPortSettings
     OutboundServerConnection
+    AcceptedServerConnection
     ServerProcessEnvironment
     GameServerPackets
     Skill

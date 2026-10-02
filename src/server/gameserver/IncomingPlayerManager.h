@@ -7,6 +7,9 @@
 #ifndef __INCOMING_PLAYER_MANAGER_H__
 #define __INCOMING_PLAYER_MANAGER_H__
 
+#include <functional>
+#include <memory>
+
 #include "ConnectionInfoManager.h"
 #include "DatagramSocket.h"
 #include "DescriptorPollSet.h"
@@ -17,6 +20,10 @@
 #include "ProxyAcceptor.h"
 #include "ServerSocket.h"
 #include "Types.h"
+
+namespace de {
+class GameContext;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // class IncomingPlayerManager;
@@ -54,13 +61,18 @@
 // and SharedServerManager locks: a zone thread's pushPlayer(), made under
 // its group mutex, would wait behind that work on every tick, where today
 // it waits only behind the kicked players heartbeat() removes under
-// m_Mutex. clearPlayers() writes without m_Mutex: it runs at shutdown,
-// with every group mutex held.
+// m_Mutex. clearPlayers() and destruction write without m_Mutex and require
+// the caller to stop concurrent walks and queue producers first.
 //////////////////////////////////////////////////////////////////////////////
 
 class IncomingPlayerManager : public PlayerManager {
 public:
     IncomingPlayerManager();
+    // Own the listener and publish connection info for this scope. The context
+    // and its previous binding must outlive it. No database initialization is
+    // performed here; an empty logging predicate disables admission logs.
+    IncomingPlayerManager(std::unique_ptr<ServerSocket> listener, de::GameContext& context,
+                          std::function<bool()> logConnections = {});
     ~IncomingPlayerManager() noexcept(false);
 
 public:
@@ -88,9 +100,8 @@ public:
     void processCommands();
 
     // Accept a connection from the public listener, or admit `forwarded`, a
-    // gateway connection. On every Throwable path either socket ends up
-    // owned by a player or closed; only a std::exception from the player
-    // allocation itself would leak it.
+    // gateway connection. Ownership is retained through authorization and
+    // registration, including if construction or diagnostics throws.
     bool acceptNewConnection(Socket* forwarded = nullptr);
 
     void copyPlayers();
@@ -119,12 +130,13 @@ public:
 
     void deleteQueuePlayer(GamePlayer* pGamePlayer);
 
-    // Clear out every player.
+    // Disconnect and release all owned players, emptying both queues and the
+    // table. The caller must first stop concurrent users and queue producers.
     void clearPlayers();
 
 private:
     // TCP server socket and socket descriptor
-    ServerSocket* m_pServerSocket;
+    std::unique_ptr<ServerSocket> m_pServerSocket;
     std::unique_ptr<de::ProxyAcceptor> m_ProxyAcceptor;
     SOCKET m_SocketID;
 
@@ -151,9 +163,12 @@ private:
 
     mutable Mutex m_MutexOut;
 
-    // Created and deleted here, registered on de::GameContext for the
-    // connect handlers that look a client's IP up.
-    ConnectionInfoManager* m_pConnectionInfoManager = nullptr;
+    void releasePlayers(bool disconnect) noexcept;
+
+    de::GameContext& m_Context;
+    std::function<bool()> m_LogConnections;
+    std::unique_ptr<ConnectionInfoManager> m_pConnectionInfoManager;
+    ConnectionInfoManager* m_PreviousConnectionInfoManager = nullptr;
 };
 
 #endif

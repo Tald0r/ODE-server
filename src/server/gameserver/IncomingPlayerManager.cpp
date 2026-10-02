@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "AcceptedServerConnection.h"
 #include "Assert.h"
 #include "CreatureUtil.h"
 #include "DB.h"
@@ -19,6 +20,7 @@
 #include "GCUpdateInfo.h"
 #include "GLIncomingConnection.h"
 #include "GLKickVerify.h"
+#include "GameConnection.h"
 #include "GameContext.h"
 #include "GamePlayer.h"
 #include "ListenerStartup.h"
@@ -51,55 +53,49 @@
 // Create the sub-managers and data members.
 //////////////////////////////////////////////////////////////////////////////
 
-IncomingPlayerManager::IncomingPlayerManager()
-
-    : m_pServerSocket(NULL), m_SocketID(INVALID_SOCKET), m_PollSet((int)nMaxPlayers), m_TimeoutMilliseconds(0),
-      m_MinFD(-1), m_MaxFD(-1) {
-    __BEGIN_TRY
-
-    m_Mutex.setName("IncomingPlayerManager");
-    m_MutexOut.setName("IncomingPlayerManagerOut");
-    m_PlayerListQueue.clear();
-
+namespace {
+std::unique_ptr<ServerSocket> createIncomingListener() {
     try {
         const auto port = de::readServerPort(de::kernelContext().config(), "TCPPort");
-        de::retryListenerStartup(
-            [&] {
-                auto socket = std::make_unique<ServerSocket>(port);
-                socket->setNonBlocking(true);
-                m_pServerSocket = socket.release();
-            },
-            [&](const BindException& error) {
-                cout << "IncomingPlayerManager(" << port << ") : " << error.toString() << endl;
-            },
-            "TCP");
-
-        // Set the server socket descriptor.
-        m_SocketID = m_pServerSocket->getSOCKET();
-    } catch (NoSuchElementException& nsee) {
-        // No such element in the configuration file
-        throw Error(nsee.toString());
+        std::unique_ptr<ServerSocket> listener;
+        de::retryListenerStartup([&] { listener = std::make_unique<ServerSocket>(port); },
+                                 [&](const BindException& error) {
+                                     cout << "IncomingPlayerManager(" << port << ") : " << error.toString() << endl;
+                                 },
+                                 "TCP");
+        return listener;
+    } catch (NoSuchElementException& error) {
+        throw Error(error.toString());
     }
+}
+} // namespace
 
-    m_pConnectionInfoManager = new ConnectionInfoManager();
-    de::gameContext().setConnectionInfoManager(m_pConnectionInfoManager);
+IncomingPlayerManager::IncomingPlayerManager()
+    : IncomingPlayerManager(createIncomingListener(), de::gameContext(),
+                            [] { return de::gameContext().variables().getVariable(LOG_INCOMING_CONNECTION) != 0; }) {}
 
-    __END_CATCH
+IncomingPlayerManager::IncomingPlayerManager(std::unique_ptr<ServerSocket> listener, de::GameContext& context,
+                                             std::function<bool()> logConnections)
+    : m_pServerSocket(std::move(listener)), m_SocketID(INVALID_SOCKET), m_PollSet((int)nMaxPlayers),
+      m_TimeoutMilliseconds(0), m_MinFD(-1), m_MaxFD(-1), m_CheckValue(0), m_Context(context),
+      m_LogConnections(std::move(logConnections)) {
+    Assert(m_pServerSocket != nullptr);
+    m_Mutex.setName("IncomingPlayerManager");
+    m_MutexOut.setName("IncomingPlayerManagerOut");
+    m_pServerSocket->setNonBlocking(true);
+    m_SocketID = m_pServerSocket->getSOCKET();
+    if (!de::fitsDescriptorTable((int)m_SocketID, (int)nMaxPlayers))
+        throw Error("listening socket descriptor does not fit the player table");
+    m_PollSet.watch(m_SocketID, de::DescriptorPollSet::kRead | de::DescriptorPollSet::kUrgent);
+    m_MinFD = m_MaxFD = m_SocketID;
+    m_pConnectionInfoManager = std::make_unique<ConnectionInfoManager>();
+    m_PreviousConnectionInfoManager = m_Context.exchangeConnectionInfoManager(m_pConnectionInfoManager.get());
 }
 
-
-//////////////////////////////////////////////////////////////////////////////
-// destructor
-//////////////////////////////////////////////////////////////////////////////
-
-IncomingPlayerManager::~IncomingPlayerManager() noexcept(false)
-
-{
-    __BEGIN_TRY
-
-    SAFE_DELETE(m_pConnectionInfoManager);
-
-    __END_CATCH_NO_RETHROW
+// All users and queue producers must have stopped before the manager's scope ends.
+IncomingPlayerManager::~IncomingPlayerManager() noexcept(false) {
+    releasePlayers(false);
+    m_Context.setConnectionInfoManager(m_PreviousConnectionInfoManager);
 }
 
 
@@ -115,24 +111,6 @@ void IncomingPlayerManager::init()
     Properties& config = de::kernelContext().config();
 
     m_ProxyAcceptor = de::ProxyAcceptor::fromConfig(config);
-
-    // The player table is indexed by descriptor and every walk over it is
-    // clamped to it, so a listener the table cannot hold would be skipped by
-    // all of them and no connection could ever be accepted. There is nothing
-    // to serve from in that state.
-    if (!de::fitsDescriptorTable((int)m_SocketID, (int)nMaxPlayers))
-        throw Error("listening socket descriptor does not fit the player table");
-
-    // Watch the server socket for an arriving connection and for out-of-band
-    // data. (Writing to it is never checked.)
-    m_PollSet.watch(m_SocketID, de::DescriptorPollSet::kRead | de::DescriptorPollSet::kUrgent);
-
-    // set min/max fd
-    m_MinFD = m_MaxFD = m_SocketID;
-
-    // How long a poll waits. This period should become an option later as
-    // well. It may be longer than the one in ZonePlayerManager.
-    m_TimeoutMilliseconds = 0;
 
     string dist_host = config.getProperty("UI_DB_HOST");
     string dist_db = "DARKEDEN";
@@ -671,158 +649,87 @@ void IncomingPlayerManager::processExceptions() {
 //////////////////////////////////////////////////////////////////////////////
 // The socket the poll reported ready is accepted here.
 //////////////////////////////////////////////////////////////////////////////
-bool IncomingPlayerManager::acceptNewConnection(Socket* forwarded)
-
-{
+bool IncomingPlayerManager::acceptNewConnection(Socket* forwarded) {
     __BEGIN_TRY
 
+    std::unique_ptr<Socket> client(forwarded);
+    de::GameConnection player;
+    std::string peerHost;
     m_CheckValue = 0;
-
     int fd = -9999;
-    int MinFD = (int)m_MinFD;
-    int MaxFD = (int)m_MaxFD;
-
-    // When a connection is awaited in blocking mode,
-    // the returned value can never be NULL.
-    // A NonBlockingIOException cannot occur either.
-    Socket* client = forwarded;
+    const int minFD = (int)m_MinFD;
+    const int maxFD = (int)m_MaxFD;
+    const auto logEnabled = [&] { return m_LogConnections && m_LogConnections(); };
 
     try {
         m_CheckValue = 1;
         if (!client)
-            client = m_pServerSocket->accept();
+            client.reset(m_pServerSocket->accept());
         m_CheckValue = 2;
-    } catch (Throwable& t) {
+    } catch (Throwable&) {
         m_CheckValue += 10000;
     }
-
-    if (client == NULL) {
+    if (!client) {
         m_CheckValue = 50;
         return false;
     }
 
     try {
         fd = (int)client->getSOCKET();
-        FILELOG_INCOMING_CONNECTION("acceptNewConnection.log", "Accept FD : %d ( MinFD : %d , MaxFD : %d ) %s", fd,
-                                    MinFD, MaxFD, client->getHost().c_str());
-
+        // Diagnostics must not borrow the socket after player construction:
+        // a failed constructor can already have destroyed its adopted socket.
+        peerHost = client->getHost();
+        if (logEnabled())
+            filelog("acceptNewConnection.log", "Accept FD : %d ( MinFD : %d , MaxFD : %d ) %s", fd, minFD, maxFD,
+                    peerHost.c_str());
         if (fd <= 0 || fd >= nMaxPlayers) {
-            FILELOG_INCOMING_CONNECTION("acceptNewConnectionError.log", "Accept FD : %d ( MinFD : %d , MaxFD : %d ) %s",
-                                        fd, MinFD, MaxFD, client->getHost().c_str());
-
+            if (logEnabled())
+                filelog("acceptNewConnectionError.log", "Accept FD : %d ( MinFD : %d , MaxFD : %d ) %s", fd, minFD,
+                        maxFD, peerHost.c_str());
             throw Error();
         }
 
-        // Added for error handling; the cause still has to be found.
-        // It is probably a problem in the Thread's socket management.
-        // Temporary until the Thread related work is finished.
-        if (client->getSockError()) {
-            m_CheckValue = 4;
-            throw Error();
-        }
-
-        m_CheckValue = 5;
-        client->setNonBlocking(true);
-        m_CheckValue = 6;
-
-        // Added for error handling; the cause still has to be found.
-        // It is probably a problem in the Thread's socket management.
-        // Temporary until the Thread related work is finished.
-        if (client->getSockError()) {
-            m_CheckValue = 7;
-            throw Error();
-        }
-        // set socket option (!NonBlocking, NoLinger)
-        m_CheckValue = 8;
-        client->setLinger(0);
-        m_CheckValue = 9;
-
+        m_CheckValue = 4; // Socket preparation is one owned stage.
+        client = de::prepareAcceptedServerConnection(std::move(client));
         m_CheckValue = 10;
-
-        //----------------------------------------------------------------------
-        // Verify that it is in the Incoming List.
-        //----------------------------------------------------------------------
-        // toString() sometimes hits CI == NULL. Beware.
-
-        // If an exception is thrown in here, the connection is cut.
-        m_pConnectionInfoManager->getConnectionInfo(client->getHost());
+        m_pConnectionInfoManager->getConnectionInfo(peerHost);
         m_CheckValue = 11;
-
-        // Create the player object using the client socket as a parameter.
-        GamePlayer* pGamePlayer = new GamePlayer(client);
-        m_CheckValue = 12;
-
-        // set player status to GPS_BEGIN_SESSION
-        pGamePlayer->setPlayerStatus(GPS_BEGIN_SESSION);
+        player = de::makeGameConnection(std::move(client));
         m_CheckValue = 13;
-
-        // Register it with the IPM.
-        // addPlayer_NOBLOCKED(pGamePlayer);
         try {
             m_CheckValue = 14;
-            addPlayer(pGamePlayer);
+            addPlayer(player.get());
+            player.release();
             m_CheckValue = 15;
-
-            // by sigi. 2002.12.30
-            //			UserGateway::getInstance()->passUser( UserGateway::USER_IN_NORMAL );
-        } catch (DuplicatedException& de) {
-            FILELOG_INCOMING_CONNECTION("ancDupExcept.log", "[Output] %s, FD : %d ( MinFD : %d , MaxFD : %d ) %s",
-                                        de.toString().c_str(), fd, MinFD, MaxFD, client->getHost().c_str());
-
-            // The player owns the socket now, and deleting it closes and
-            // deletes the socket; the session never began.
+        } catch (DuplicatedException& error) {
+            if (logEnabled())
+                filelog("ancDupExcept.log", "[Output] %s, FD : %d ( MinFD : %d , MaxFD : %d ) %s",
+                        error.toString().c_str(), fd, minFD, maxFD, peerHost.c_str());
             m_CheckValue += 3000;
-            pGamePlayer->setPlayerStatus(GPS_END_SESSION);
-            SAFE_DELETE(pGamePlayer);
+            player.reset();
             m_CheckValue += 1000;
         }
     } catch (NoSuchElementException&) {
-        FILELOG_INCOMING_CONNECTION("ancNoSuch.log", "FD : %d ( MinFD : %d , MaxFD : %d ) %s", fd, MinFD, MaxFD,
-                                    client->getHost().c_str());
-
-        m_CheckValue += 20000;
-        m_CheckValue += 1000;
-
-        m_CheckValue += 1000;
-
-        //----------------------------------------acceptNewConnection core!!!
-        // The connection is not authenticated, so it is cut.
-        // client->send("Error : Unauthorized access",27);
-
-        m_CheckValue += 1000;
-        client->close();
-        m_CheckValue += 1000;
-        SAFE_DELETE(client);
-        m_CheckValue += 1000;
-    } catch (Throwable& t) {
-        FILELOG_INCOMING_CONNECTION("ancThrowable.log", "FD : %d ( MinFD : %d , MaxFD : %d ) %s checkValue : %d", fd,
-                                    MinFD, MaxFD, client->getHost().c_str(), m_CheckValue);
+        if (logEnabled())
+            filelog("ancNoSuch.log", "FD : %d ( MinFD : %d , MaxFD : %d ) %s", fd, minFD, maxFD, peerHost.c_str());
+        m_CheckValue += 25000;
+    } catch (Throwable&) {
+        if (logEnabled())
+            filelog("ancThrowable.log", "FD : %d ( MinFD : %d , MaxFD : %d ) %s checkValue : %d", fd, minFD, maxFD,
+                    peerHost.c_str(), m_CheckValue);
         m_CheckValue += 30000;
-        try {
-            m_CheckValue = 25;
-            if (client != NULL) {
-                client->close();
-                m_CheckValue = 26;
-                SAFE_DELETE(client);
-                m_CheckValue = 27;
-            }
-            m_CheckValue = 28;
-        } catch (Throwable& t) {
-            m_CheckValue += 1000;
-        } catch (...) {
-            m_CheckValue += 2000;
-        }
-    } catch (exception& e) {
+    } catch (const std::exception&) {
         m_CheckValue += 40000;
-        FILELOG_INCOMING_CONNECTION("ancException.log", "FD : %d ( MinFD : %d , MaxFD : %d ) %s checkValue : %d", fd,
-                                    MinFD, MaxFD, client->getHost().c_str(), m_CheckValue);
+        if (logEnabled())
+            filelog("ancException.log", "FD : %d ( MinFD : %d , MaxFD : %d ) %s checkValue : %d", fd, minFD, maxFD,
+                    peerHost.c_str(), m_CheckValue);
     } catch (...) {
         m_CheckValue += 50000;
-        FILELOG_INCOMING_CONNECTION("ancEtc.log", "FD : %d ( MinFD : %d , MaxFD : %d ) %s checkValue : %d", fd, MinFD,
-                                    MaxFD, client->getHost().c_str(), m_CheckValue);
+        if (logEnabled())
+            filelog("ancEtc.log", "FD : %d ( MinFD : %d , MaxFD : %d ) %s checkValue : %d", fd, minFD, maxFD,
+                    peerHost.c_str(), m_CheckValue);
     }
     m_CheckValue = 33;
-
     return true;
 
     __END_CATCH
@@ -1296,66 +1203,42 @@ void IncomingPlayerManager::deleteQueuePlayer(GamePlayer* pGamePlayer) {
 ////////////////////////////////////////////////////////////////////////
 // Clean up every user in the IncomingPlayerManager.
 ////////////////////////////////////////////////////////////////////////
-void IncomingPlayerManager::clearPlayers()
+void IncomingPlayerManager::clearPlayers() {
+    releasePlayers(true);
+}
 
-{
-    __BEGIN_TRY
-
-    // Clean up the entries in PlayerListQueue.
-    while (!m_PlayerListQueue.empty()) {
-        GamePlayer* pGamePlayer = m_PlayerListQueue.front();
-
-        m_PlayerListQueue.pop_front();
-
-        if (pGamePlayer != NULL) {
+void IncomingPlayerManager::releasePlayers(bool disconnect) noexcept {
+    // Handoff normally gives each player one table or queue owner. Remove all
+    // references before destruction so cleanup also tolerates repeated queue
+    // entries, and a later clear or the base destructor sees an empty table.
+    const auto release = [&](GamePlayer* raw) {
+        m_PlayerListQueue.remove(raw);
+        m_PlayerOutListQueue.remove(raw);
+        if (!raw)
+            return;
+        for (uint fd = 0; fd < nMaxPlayers; ++fd) {
+            if (m_pPlayers[fd] == raw) {
+                m_pPlayers[fd] = nullptr;
+                m_PollSet.unwatch(fd);
+            }
+        }
+        de::GameConnection player(raw);
+        if (disconnect) {
             try {
-                pGamePlayer->disconnect();
-            } catch (Throwable& t) {
-                // Ignored
-            }
-
-            SAFE_DELETE(pGamePlayer);
-        }
-    }
-
-    // Clean up the entries in PlayerOutListQueue.
-    while (!m_PlayerOutListQueue.empty()) {
-        GamePlayer* pGamePlayer = m_PlayerOutListQueue.front();
-
-        m_PlayerOutListQueue.pop_front();
-
-        if (pGamePlayer != NULL) {
-            try {
-                pGamePlayer->disconnect();
-            } catch (Throwable& t) {
-                // Ignored
-            }
-
-            SAFE_DELETE(pGamePlayer);
-        }
-    }
-
-
-    if (m_MinFD == -1 && m_MaxFD == -1)
-        return;
-
-    // Clean up the players.
-    const de::DescriptorRange walk = de::descriptorRange((int)m_MinFD, (int)m_MaxFD, (int)nMaxPlayers);
-    for (int i = walk.first; i <= walk.last; i++) {
-        if (i != m_SocketID && m_pPlayers[i] != NULL) {
-            GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(m_pPlayers[i]);
-
-            if (pGamePlayer != NULL) {
-                try {
-                    pGamePlayer->disconnect();
-                } catch (Throwable& t) {
-                    // Ignored
-                }
-
-                SAFE_DELETE(pGamePlayer);
+                player->disconnect();
+            } catch (...) {
+                // Continue releasing other owners even if account/zone logout fails.
             }
         }
-    }
-
-    __END_CATCH
+    };
+    for (auto* player : m_pPlayers)
+        if (player)
+            release(static_cast<GamePlayer*>(player));
+    while (!m_PlayerListQueue.empty())
+        release(m_PlayerListQueue.front());
+    while (!m_PlayerOutListQueue.empty())
+        release(m_PlayerOutListQueue.front());
+    std::fill(std::begin(m_pCopyPlayers), std::end(m_pCopyPlayers), nullptr);
+    m_nPlayers = 0;
+    m_MinFD = m_MaxFD = m_SocketID;
 }
