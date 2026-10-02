@@ -5,8 +5,13 @@
 
 #include "GuildManager.h"
 
+#include <algorithm>
+#include <charconv>
 #include <memory>
 #include <utility>
+
+#include <string_view>
+#include <system_error>
 
 #include "Guild.h"
 #include "Properties.h"
@@ -23,6 +28,48 @@
 #include "GCActiveGuildList.h"
 #include "GCWaitGuildList.h"
 #include "KernelContext.h"
+
+namespace {
+
+template <typename ID> ID checkedStartupID(long long value) {
+    if (!std::in_range<ID>(value))
+        throw Error("shared guild startup ID is outside its storage range");
+    return static_cast<ID>(value);
+}
+
+unsigned int readIDComponent(const Properties& config, const char* key) {
+    const std::string value = config.getProperty(key);
+    std::string_view text(value);
+    const auto first = text.find_first_not_of(" \t\r\n\f\v");
+    if (first == std::string_view::npos)
+        text = {};
+    else
+        text = text.substr(first, text.find_last_not_of(" \t\r\n\f\v") - first + 1);
+    if (!text.empty() && text.front() == '+')
+        text.remove_prefix(1);
+
+    const auto invalid = [&] { return Error(std::string(key) + " must be a nonnegative decimal guild ID component"); };
+    if (text.empty())
+        throw invalid();
+    unsigned int component = 0;
+    const auto parsed = std::from_chars(text.data(), text.data() + text.size(), component);
+    if (parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size())
+        throw invalid();
+    return component;
+}
+
+ZoneID_t prepareZoneMaximum(SharedGuildRepository& repo, int race, ZoneID_t previous) {
+    const int count = repo.countGuildsOfRace(race);
+    if (count < 0)
+        throw Error("invalid shared guild race count");
+    const auto next = checkedStartupID<ZoneID_t>(static_cast<long long>(previous) + 1);
+    if (count == 0)
+        return next; // MAX over an empty table would yield NULL.
+    const auto stored = checkedStartupID<ZoneID_t>(repo.loadMaxGuildZoneIDOfRace(race));
+    return std::max(stored, next);
+}
+
+} // namespace
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -55,51 +102,38 @@ GuildManager::~GuildManager() noexcept {
 
 void GuildManager::init() noexcept(false) {
 #ifdef __SHARED_SERVER__
+    init(defaultSharedGuildRepository(), de::kernelContext().config());
+#endif
+}
 
-    __BEGIN_TRY
-
-    SharedGuildRepository& repo = defaultSharedGuildRepository();
-
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+void GuildManager::init(SharedGuildRepository& repo, const Properties& config) {
+    CriticalSection lock{m_Mutex};
 
     // New guild ids are handed out above the largest one in the table, so
     // the manager reads that maximum once at startup. An empty table starts
     // the numbering from the configured dimension and world.
-    if (repo.countGuilds() == 0) {
-        Guild::setMaxGuildID(de::kernelContext().config().getPropertyInt("Dimension") * 10000 +
-                             de::kernelContext().config().getPropertyInt("WorldID") * 3000 + 100);
+    const int count = repo.countGuilds();
+    if (count < 0)
+        throw Error("invalid shared guild count");
+    GuildID_t guildID;
+    if (count == 0) {
+        const auto dimension = readIDComponent(config, "Dimension");
+        const auto world = readIDComponent(config, "WorldID");
+        guildID = checkedStartupID<GuildID_t>(dimension * 10000LL + world * 3000LL + 100);
     } else {
-        Guild::setMaxGuildID(repo.loadMaxGuildID());
+        guildID = checkedStartupID<GuildID_t>(repo.loadMaxGuildID());
     }
+    const auto slayerZone = prepareZoneMaximum(repo, Guild::GUILD_RACE_SLAYER, Guild::getMaxSlayerZoneID());
+    const auto vampireZone = prepareZoneMaximum(repo, Guild::GUILD_RACE_VAMPIRE, Guild::getMaxVampireZoneID());
+    const auto oustersZone = prepareZoneMaximum(repo, Guild::GUILD_RACE_OUSTERS, Guild::getMaxOustersZoneID());
 
-    if (repo.countGuildsOfRace(Guild::GUILD_RACE_SLAYER) == 0) {
-        Guild::setMaxSlayerZoneID(Guild::getMaxSlayerZoneID() + 1);
-    } else {
-        Guild::setMaxSlayerZoneID(
-            max(repo.loadMaxGuildZoneIDOfRace(Guild::GUILD_RACE_SLAYER), Guild::getMaxSlayerZoneID() + 1));
-    }
-
-    if (repo.countGuildsOfRace(Guild::GUILD_RACE_VAMPIRE) == 0) {
-        Guild::setMaxVampireZoneID(Guild::getMaxVampireZoneID() + 1);
-    } else {
-        Guild::setMaxVampireZoneID(
-            max(repo.loadMaxGuildZoneIDOfRace(Guild::GUILD_RACE_VAMPIRE), Guild::getMaxVampireZoneID() + 1));
-    }
-
-    if (repo.countGuildsOfRace(Guild::GUILD_RACE_OUSTERS) == 0) {
-        Guild::setMaxOustersZoneID(Guild::getMaxOustersZoneID() + 1);
-    } else {
-        Guild::setMaxOustersZoneID(
-            max(repo.loadMaxGuildZoneIDOfRace(Guild::GUILD_RACE_OUSTERS), Guild::getMaxOustersZoneID() + 1));
-    }
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    load();
-
-    __END_CATCH
-
-#endif
+    // Loading retains the old graph on failure. Once it publishes, only
+    // nonthrowing counter assignments remain, still under the table lock.
+    loadUnderLock(repo);
+    Guild::setMaxGuildID(guildID);
+    Guild::setMaxSlayerZoneID(slayerZone);
+    Guild::setMaxVampireZoneID(vampireZone);
+    Guild::setMaxOustersZoneID(oustersZone);
 }
 
 
@@ -109,6 +143,10 @@ void GuildManager::load() noexcept(false) {
 
 void GuildManager::load(SharedGuildRepository& repo) {
     CriticalSection lock{m_Mutex};
+    loadUnderLock(repo);
+}
+
+void GuildManager::loadUnderLock(SharedGuildRepository& repo) {
     std::unordered_map<GuildID_t, std::unique_ptr<Guild>> replacement;
 
     for (const auto& row : repo.loadGuildsInStates(Guild::GUILD_STATE_WAIT, Guild::GUILD_STATE_ACTIVE)) {

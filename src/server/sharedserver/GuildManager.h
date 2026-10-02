@@ -22,6 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 class Guild;
+class Properties;
 class SharedGuildRepository;
 
 typedef unordered_map<GuildID_t, Guild*> HashMapGuild;
@@ -45,7 +46,10 @@ public: // constructor & destructor
 
 
 public: // initializing related methods
+    // Initialize with quiescent counter and borrowed-row users. Failure
+    // preserves both the previous counters and the guild/member graph.
     void init() noexcept(false);
+    void init(SharedGuildRepository& repository, const Properties& config);
     // Load with quiescent users of borrowed guild/member pointers. Failure
     // retains the previous graph; successful replacement invalidates those pointers.
     void load() noexcept(false);
@@ -112,6 +116,10 @@ public:
 public: // debug
     string toString(void) const noexcept;
 
+
+private:
+    // The caller holds m_Mutex through preparation and publication.
+    void loadUnderLock(SharedGuildRepository& repository);
 
     ///// Member data /////
 
