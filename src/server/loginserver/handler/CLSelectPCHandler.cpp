@@ -19,34 +19,14 @@
 #include "LCReconnect.h"
 #include "LCSelectPCError.h"
 #include "LGIncomingConnection.h"
+#include "LoginCharacterTopology.h"
 #include "LoginContext.h"
 #include "LoginPlayer.h"
 #include "Properties.h"
 #include "ServerContext.h"
-#include "ZoneGroupInfoManager.h"
-#include "ZoneInfoManager.h"
 #include "repository/LoginAccountRepository.h"
 #include "repository/LoginCharacterRepository.h"
 
-namespace {
-
-// The decision's view of the server tables the login server loaded at
-// startup.
-class GlobalSelectPCTopology : public SelectPCTopology {
-public:
-    bool isNonPKServer(WorldID_t worldID, ServerGroupID_t serverGroupID) override {
-        return de::serverContext().serverInfos().getGameServerInfo(1, serverGroupID, worldID)->isNonPKServer();
-    }
-
-    ServerID_t zoneServerID(ZoneID_t zoneID) override {
-        const ZoneInfo* pZoneInfo = de::loginContext().zoneInfos().getZoneInfo(zoneID);
-        const ZoneGroupInfo* pZoneGroupInfo =
-            de::loginContext().zoneGroupInfos().getZoneGroupInfo(pZoneInfo->getZoneGroupID());
-        return pZoneGroupInfo->getServerID();
-    }
-};
-
-} // namespace
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -84,7 +64,8 @@ void CLSelectPCHandler::execute(CLSelectPC* pPacket, Player* pPlayer)
     // SELECT_PC_NOT_BILLING_CHECK is switched off, so nothing produces those
     // two codes and no account state is checked here.
 
-    GlobalSelectPCTopology topology;
+    LoginCharacterTopology topology(de::serverContext().serverInfos(), de::loginContext().zoneInfos(),
+                                    de::loginContext().zoneGroupInfos());
 
     try {
         Outcome<SelectedCharacter, SelectPCRejection> outcome =

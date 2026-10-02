@@ -169,6 +169,10 @@ Login zone/group routing catalogues accept explicit repositories and replace
 owned maps only after successful preparation. Runtime tests cover immutable
 borrowed lookups, failed-load preservation, stale-row removal, duplicate and
 allocation cleanup/retry, empty loads and existing ID widths/error translation.
+Character selection uses an explicit adapter over the server and routing
+catalogues. Runtime tests compose it with the production decision for all races,
+sparse/boundary IDs, non-PK limits, quest-zone routing, missing references and
+quiescent reloads, without publishing process contexts or starting a server.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
