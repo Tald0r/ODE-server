@@ -127,6 +127,9 @@ runtimes. Smaller rule tests remain available as individual CMake targets.
 The shared runtime also constructs and destroys the real server graph with an
 owned listener, without database initialization. Construction faults, nested
 context bindings, allocation retry and cleanup of accepted sockets are covered.
+Its server/group catalogue loaders also accept explicit repository inputs.
+The tests cover complete replacement, preservation after invalid data or
+allocation failures, reload cleanup and ID bounds without MySQL or `main`.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
