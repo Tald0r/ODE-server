@@ -626,11 +626,13 @@ visibility can't express.
 - [x] **2.10 Extract application orchestration from the entry points.**
   > **Status:** done (2026-10-02) —
   > All three entry points use `ServerApplication` to compose startup loading
-  > with lifecycle execution and final diagnostics. The library links only
-  > `ServerStartup`, `ServerLifecycle` and their `de-kernel` dependency. The
-  > application takes an explicit `KernelContext`, lifecycle actions and output
+  > with lifecycle execution and final diagnostics. The library links
+  > `ServerStartup`, `ServerPortSettings`, `ServerLifecycle` and their kernel
+  > dependency. The application takes an explicit `KernelContext`, lifecycle
+  > actions and output
   > streams; it requires no runtime, database, signal handlers or process exit.
-  > Configuration is published only after a successful load and login override.
+  > Configuration is published only after a successful load, login override
+  > and listener-port validation (2.15).
   > Argument, file, parse and override errors report failure without invoking
   > any lifecycle action. The application owns the configuration through
   > initialization, start, stop and the returned result, including failed
@@ -731,6 +733,27 @@ visibility can't express.
     exceptions, intervals, shutdown during waits and retained failure state;
     subprocess regressions over occupied TCP/UDP ports and descriptor reuse;
     all three runtime and production executable links.
+
+- [x] **2.15 Extract and validate required listener-port settings.**
+  > **Status:** done (2026-10-02) —
+  > `ServerPortSettings` reads complete decimal ports in 1..65535 with only a
+  > kernel dependency. The five listener paths use it before retrying binds,
+  > replacing `getPropertyInt`/`atoi` values that could accept junk, become
+  > ephemeral port zero or wrap during network conversion (`docs/FIXES.md`).
+  > Leading plus/zeroes, surrounding spaces/tabs and trailing CR from CRLF
+  > configuration remain accepted; malformed input names its property.
+  > `ServerApplication` checks the current server's required ports after all
+  > login offsets and before publishing configuration or invoking lifecycle
+  > actions. Rejection preserves the previous context binding through scope
+  > exit. Game requires `TCPPort`/`GameServerUDPPort`, login requires
+  > `LoginServerPort`/`LoginServerUDPPort`, and shared requires `TCPPort`.
+  > Generic integers, optional proxy settings and outbound destinations keep
+  > their existing policies; low-level sockets still support ephemeral ports.
+  - Owner: `server_port_settings_tests` for grammar, boundaries and each
+    server's required keys; `server_application_tests` for failed publication,
+    missing ports, CRLF input and effective login overrides;
+    `server_startup_cli` for rejection by all three production executables;
+    production runtime links for the five consumers of the same reader.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

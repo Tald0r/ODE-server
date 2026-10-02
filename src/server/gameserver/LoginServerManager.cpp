@@ -24,6 +24,7 @@
 #include "PacketDispatcher.h"
 #include "Properties.h"
 #include "ServerContext.h"
+#include "ServerPortSettings.h"
 #include "ThreadManager.h"
 #include "ThreadPool.h"
 #include "TimeChecker.h"
@@ -39,15 +40,15 @@ LoginServerManager::LoginServerManager() : m_pDatagramSocket(NULL) {
 
     m_Mutex.setName("LoginServerManager");
 
+    const auto port = de::readServerPort(config, "GameServerUDPPort");
     de::retryListenerStartup(
         [&] {
-            auto socket = std::make_unique<DatagramSocket>(config.getPropertyInt("GameServerUDPPort"));
+            auto socket = std::make_unique<DatagramSocket>(port);
             SocketAPI::setsocketnonblocking_ex(socket->getSOCKET(), true);
             m_pDatagramSocket = socket.release();
         },
         [&](const BindException& error) {
-            cout << "LoginServerManager(" << config.getPropertyInt("GameServerUDPPort") << ") : " << error.toString()
-                 << endl;
+            cout << "LoginServerManager(" << port << ") : " << error.toString() << endl;
         },
         "UDP");
 

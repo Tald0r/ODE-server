@@ -140,6 +140,13 @@ check fatal diagnostics, failure status and handler restoration without a server
 game signal policy in subprocesses that cannot alter the runner's environment.
 `listener_startup_tests` exercises bind retries, diagnostics and shutdown during
 retry waits, including real TCP/UDP bind failures without leaked descriptors.
+`server_port_settings_tests` covers required listener ports without opening
+sockets. Startup validates complete decimal ports in 1..65535 before publishing
+configuration: `TCPPort`/`GameServerUDPPort` for game, `LoginServerPort`/
+`LoginServerUDPPort` for login (after `-i` offsets), and `TCPPort` for shared.
+Missing values, malformed text and out-of-range ports fail before manager
+construction; leading plus/zeroes, surrounding spaces/tabs and trailing CR remain
+accepted. The application and executable CLI tests also cover this boundary.
 `server_application_tests` runs configuration loading through lifecycle cleanup
 and final reporting using an explicit context and controlled actions. It checks
 configuration lifetime and restoration, rejected input and failure status without

@@ -36,6 +36,11 @@ add_library(ServerStartup STATIC ServerStartup.cpp)
 target_include_directories(ServerStartup PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ServerStartup PUBLIC de-kernel)
 
+# Required listener-port policy, independent of binding sockets or managers.
+add_library(ServerPortSettings STATIC ServerPortSettings.cpp)
+target_include_directories(ServerPortSettings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ServerPortSettings PUBLIC de-kernel)
+
 # Shared lifecycle control without a concrete server, listeners or database.
 add_library(ServerLifecycle STATIC ServerLifecycle.cpp)
 target_include_directories(ServerLifecycle PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -44,7 +49,7 @@ target_link_libraries(ServerLifecycle PUBLIC de-kernel)
 # Application orchestration with an owned configuration and an explicit context.
 add_library(ServerApplication STATIC ServerApplication.cpp)
 target_include_directories(ServerApplication PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(ServerApplication PUBLIC ServerStartup ServerLifecycle)
+target_link_libraries(ServerApplication PUBLIC ServerStartup ServerPortSettings ServerLifecycle)
 
 # Shared worker drain order and diagnostics, without a server runtime or database.
 add_library(ServerWorkerShutdown STATIC ServerWorkerShutdown.cpp)

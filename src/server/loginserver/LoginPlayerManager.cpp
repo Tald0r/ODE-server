@@ -22,6 +22,7 @@
 #include "LoginPlayer.h"
 #include "Properties.h"
 #include "ReconnectLoginInfoManager.h"
+#include "ServerPortSettings.h"
 #include "Socket.h"
 #include "SocketAPI.h"
 #include "repository/LoginAccountRepository.h"
@@ -84,11 +85,12 @@ LoginPlayerManager::~LoginPlayerManager() noexcept {
 void LoginPlayerManager::init() {
     __BEGIN_TRY
 
+    const auto port = de::readServerPort(de::kernelContext().config(), "LoginServerPort");
     m_ProxyAcceptor = de::ProxyAcceptor::fromConfig(de::kernelContext().config());
 
-    de::retryListenerStartup(
-        [&] { m_pServerSocket = new ServerSocket(de::kernelContext().config().getPropertyInt("LoginServerPort")); },
-        [](const BindException& error) { cout << error.toString() << endl; }, "TCP", std::chrono::milliseconds(1));
+    de::retryListenerStartup([&] { m_pServerSocket = new ServerSocket(port); },
+                             [](const BindException& error) { cout << error.toString() << endl; }, "TCP",
+                             std::chrono::milliseconds(1));
 
     // Set the server socket descriptor.
     m_ServerFD = m_pServerSocket->getSOCKET();

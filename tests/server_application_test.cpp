@@ -17,6 +17,9 @@
 
 namespace {
 
+constexpr const char* validConfiguration =
+    "Marker : ready\nTCPPort : 9998\nGameServerUDPPort : 9997\nLoginServerPort : 9999\nLoginServerUDPPort : 9996\n";
+
 class ServerApplicationFixture : public ::testing::Test {
 protected:
     void SetUp() override {
@@ -32,7 +35,7 @@ protected:
         directory = pattern;
         filename = directory + "/server.conf";
         instantLog = directory + "/instant.log";
-        writeConfig("Marker : ready\n");
+        writeConfig(validConfiguration);
         actions = {
             .initialize =
                 [&] {
@@ -138,7 +141,7 @@ TEST_P(ServerApplicationTest, ConfigurationLivesThroughTheLifecycleAndUntilTheAp
         EXPECT_FALSE(ServerShutdown::failed.load());
         const std::string prefix = GetParam().kind == de::ServerKind::Game
                                        ? ">>> COMMAND-LINE PARAMETER READING SUCCESS...\n"
-                                       : "Marker : ready\n\n";
+                                       : context.config().toString() + "\n";
         EXPECT_EQ(prefix + GetParam().stopped + "\n", output.str());
         EXPECT_TRUE(errors.str().empty());
     }
@@ -237,6 +240,16 @@ TEST_P(ServerApplicationTest, AnExistingShutdownRequestSkipsStartWithoutLosingCl
     EXPECT_NE(std::string::npos, output.str().find(GetParam().stopped));
 }
 
+TEST_P(ServerApplicationTest, PortsInACrlfConfigurationRemainValid) {
+    writeConfig("Marker : ready\nTCPPort : 9998\r\nGameServerUDPPort : 9997\r\n"
+                "LoginServerPort : 9999\r\nLoginServerUDPPort : 9996\r\n");
+    de::ServerApplication application(context);
+    const auto result = run(application, GetParam().kind);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(EXIT_SUCCESS, result->exitCode);
+    EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
+}
+
 INSTANTIATE_TEST_SUITE_P(
     Servers, ServerApplicationTest,
     ::testing::Values(ServerCase{de::ServerKind::Game, "gameserver", ">>> ALL GAME WORKERS STOPPED."},
@@ -244,11 +257,54 @@ INSTANTIATE_TEST_SUITE_P(
                       ServerCase{de::ServerKind::Shared, "sharedserver", ">>> ALL SHARED WORKERS STOPPED."}),
     [](const ::testing::TestParamInfo<ServerCase>& info) { return info.param.name; });
 
+struct ListenerPortCase {
+    de::ServerKind kind;
+    const char* key;
+};
+
+class ListenerPortApplicationTest : public ServerApplicationFixture,
+                                    public ::testing::WithParamInterface<ListenerPortCase> {};
+
+TEST_P(ListenerPortApplicationTest, AnInvalidListenerPortNeverPublishesOrInvokesTheLifecycle) {
+    const std::string contents = std::string(validConfiguration) + GetParam().key + " : 65536\n";
+    writeConfig(contents.c_str());
+    {
+        de::ServerApplication application(context);
+        EXPECT_FALSE(run(application, GetParam().kind));
+        expectNoLifecycle();
+        EXPECT_NE(std::string::npos, errors.str().find(GetParam().key));
+        EXPECT_NE(std::string::npos, errors.str().find("1 to 65535"));
+    }
+    expectUntouchedConfiguration();
+}
+
+TEST_P(ListenerPortApplicationTest, AMissingListenerPortNeverPublishesOrInvokesTheLifecycle) {
+    std::string contents = validConfiguration;
+    const auto begin = contents.find(std::string(GetParam().key) + " :");
+    ASSERT_NE(std::string::npos, begin);
+    contents.erase(begin, contents.find('\n', begin) - begin + 1);
+    writeConfig(contents.c_str());
+    {
+        de::ServerApplication application(context);
+        EXPECT_FALSE(run(application, GetParam().kind));
+        expectNoLifecycle();
+        EXPECT_NE(std::string::npos, errors.str().find(GetParam().key));
+    }
+    expectUntouchedConfiguration();
+}
+
+INSTANTIATE_TEST_SUITE_P(Listeners, ListenerPortApplicationTest,
+                         ::testing::Values(ListenerPortCase{de::ServerKind::Game, "TCPPort"},
+                                           ListenerPortCase{de::ServerKind::Game, "GameServerUDPPort"},
+                                           ListenerPortCase{de::ServerKind::Login, "LoginServerPort"},
+                                           ListenerPortCase{de::ServerKind::Login, "LoginServerUDPPort"},
+                                           ListenerPortCase{de::ServerKind::Shared, "TCPPort"}));
+
 class LoginApplicationOffsetTest : public ServerApplicationFixture, public ::testing::WithParamInterface<int> {};
 
 TEST_P(LoginApplicationOffsetTest, PublishesAndPrintsEffectiveOverridesIncludingZero) {
     writeConfig("Marker : ready\nLoginServerBasePort : 9900\nLoginServerBaseUDPPort : 9800\nLoginServerBaseID : 10\n"
-                "LoginServerPort : 1\nLoginServerUDPPort : 2\nLoginServerID : 3\n");
+                "LoginServerPort : replaced\nLoginServerUDPPort : replaced\nLoginServerID : 3\n");
     const auto offset = std::to_string(GetParam());
     actions.initialize = [&, original = actions.initialize] {
         original();
@@ -278,6 +334,38 @@ TEST_F(ServerApplicationFixture, AnInvalidLoginOverrideNeverPublishesOrInvokesTh
     expectNoLifecycle();
     EXPECT_NE(std::string::npos, errors.str().find("LoginServerBaseID plus -i offset"));
 }
+
+struct InvalidPortOffset {
+    int tcpBase;
+    int udpBase;
+    int offset;
+    const char* key;
+};
+
+class LoginPortOffsetTest : public ServerApplicationFixture, public ::testing::WithParamInterface<InvalidPortOffset> {};
+
+TEST_P(LoginPortOffsetTest, ValidIntegersCannotPublishAnEffectivePortOutsideTheNetworkRange) {
+    const auto test = GetParam();
+    const std::string contents =
+        std::string(validConfiguration) + "LoginServerBasePort : " + std::to_string(test.tcpBase) +
+        "\nLoginServerBaseUDPPort : " + std::to_string(test.udpBase) + "\nLoginServerBaseID : 10\n";
+    writeConfig(contents.c_str());
+    const auto offset = std::to_string(test.offset);
+    {
+        de::ServerApplication application(context);
+        EXPECT_FALSE(run(application, de::ServerKind::Login, {"-f", filename.c_str(), "-i", offset.c_str()}));
+        expectNoLifecycle();
+        EXPECT_NE(std::string::npos,
+                  errors.str().find(std::string(test.key) + " must be a decimal port from 1 to 65535"));
+    }
+    expectUntouchedConfiguration();
+}
+
+INSTANTIATE_TEST_SUITE_P(EffectivePorts, LoginPortOffsetTest,
+                         ::testing::Values(InvalidPortOffset{9900, 10000, -9900, "LoginServerPort"},
+                                           InvalidPortOffset{10000, 9900, -9900, "LoginServerUDPPort"},
+                                           InvalidPortOffset{65530, 65520, 6, "LoginServerPort"},
+                                           InvalidPortOffset{65520, 65530, 6, "LoginServerUDPPort"}));
 
 TEST_F(ServerApplicationFixture, AnOriginallyEmptyContextIsRestoredAfterTheApplicationLeavesScope) {
     context.setConfig(nullptr);

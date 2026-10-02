@@ -28,6 +28,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Fatal allocation handlers report failure without C++ heap allocation or normal process teardown | `server_fatal_handler_tests`, over the shared `ServerFatalHandlers` guard, with allocation faults confined to subprocesses | a successful allocation-failure exit, recursive allocation while reporting, an exit callback running, a lost diagnostic or a handler left installed after its scope |
 | Core-dump setup respects the inherited hard limit; game process initialization seeds rand and ignores only its three legacy signals | `server_process_environment_tests`, over `ServerProcessEnvironment`, with process mutations confined to subprocesses | a failed soft-limit raise under a finite cap, a changed hard limit or unrelated resource, an incorrect seeded sequence, or damaged shutdown handlers/state |
 | Listener startup retries only bind failures, observes shutdown during waits and releases each failed attempt's socket | `listener_startup_tests`, over `ListenerStartup` and real TCP/UDP sockets in subprocesses | an unreported or retried non-bind failure, a bind after shutdown, an uninterruptible retry wait, lost failure state or a leaked descriptor |
+| Required listener ports are complete decimal values in 1..65535, validated after login offsets and before publication or manager construction | `server_port_settings_tests`, `server_application_tests` and `server_startup_cli`, over `ServerPortSettings` shared by application startup and all five listeners | a malformed, missing or wrapped port accepted, the wrong server's keys required, a rejected configuration published, or a lifecycle action run after invalid input |
 | Application configuration is published only after a successful load, stays alive through cleanup and the result, and restores its previous context binding on scope exit | `server_application_tests`, over the shared `ServerApplication` used by all three entry points | actions running after a configuration error, an incorrect effective login override, a lost binding or failure status, an incorrect drain diagnostic, or unflushed final output |
 | Server shutdown requests every auxiliary worker's stop before draining game zones or joining any auxiliary worker; retained worker failures remain visible after all joins | `server_worker_shutdown_tests`, over `ServerWorkerShutdown` used by all three runtimes | a join before all stop requests, a lost or incorrectly named failure, skipped joins after a retained run failure, or a successful lifecycle exit after worker failure |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
@@ -291,6 +292,16 @@ owned configuration, including loginserver's optional ID offset, without
 publishing it. `server_startup_tests` exercises this without linking a server
 runtime.
 
+`ServerPortSettings` reads required TCP/UDP listener ports without sockets or
+runtime dependencies. Values must be complete decimal integers in 1..65535;
+leading plus/zeroes, spaces/tabs and trailing CR from CRLF files remain valid.
+`ServerApplication` validates the current server's effective ports after login
+offsets and before publishing configuration. All five listener paths use the
+same reader before retrying binds, so direct manager construction also refuses
+malformed values. Generic integer properties, optional proxy configuration and
+outbound ports keep their existing readers. Pure settings tests, application
+tests and executable CLI failures own this boundary.
+
 `Properties::load` opens the file and delegates to `de::readProperties` in
 `PropertiesParser`. The parser accepts a borrowed stream and merges into a
 destination `Properties`, so grammar and read failures are tested in memory.
@@ -308,9 +319,10 @@ keeps the configuration and server graph alive.
 `server_lifecycle_tests` runs the shared control flow with controlled actions
 and isolated diagnostics, without starting a server or a deadline thread.
 
-The entry points link `ServerApplication`, which composes these two libraries.
-It owns the completed configuration, publishes it to an explicit
-`KernelContext`, runs the supplied lifecycle actions, reports the drain result
+The entry points link `ServerApplication`, which composes startup loading,
+listener-port validation and lifecycle control. It owns the completed
+configuration, publishes it to an explicit `KernelContext`, runs the supplied
+lifecycle actions, reports the drain result
 and flushes diagnostics. A configuration error returns an empty result before
 any action runs. The object permits one run and retains its configuration
 after the result, including a failed drain; destruction restores the previous

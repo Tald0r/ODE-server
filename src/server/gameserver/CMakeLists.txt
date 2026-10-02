@@ -680,6 +680,7 @@ target_link_libraries(GameServerRuntime PUBLIC
     ServerCore
     ServerWorkerShutdown
     ListenerStartup
+    ServerPortSettings
     ServerProcessEnvironment
     GameServerPackets
     Skill

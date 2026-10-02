@@ -23,6 +23,7 @@
 #include "Packet.h"
 #include "Properties.h"
 #include "ServerContext.h"
+#include "ServerPortSettings.h"
 #include "ServerShutdown.h"
 #include "SharedContext.h"
 #include "Socket.h"
@@ -42,15 +43,15 @@ GameServerManager::GameServerManager()
     m_Mutex.setName("GameServerManager");
 
     try {
+        const auto port = de::readServerPort(de::kernelContext().config(), "TCPPort");
         de::retryListenerStartup(
             [&] {
-                auto socket = std::make_unique<ServerSocket>(de::kernelContext().config().getPropertyInt("TCPPort"));
+                auto socket = std::make_unique<ServerSocket>(port);
                 socket->setNonBlocking();
                 m_pServerSocket = socket.release();
             },
             [&](const BindException& error) {
-                cout << "GameServerManager(" << de::kernelContext().config().getPropertyInt("TCPPort")
-                     << ") : " << error.toString() << endl;
+                cout << "GameServerManager(" << port << ") : " << error.toString() << endl;
             },
             "TCP");
 
