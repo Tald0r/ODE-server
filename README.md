@@ -130,6 +130,9 @@ context bindings, allocation retry and cleanup of accepted sockets are covered.
 Its server/group catalogue loaders also accept explicit repository inputs.
 The tests cover complete replacement, preservation after invalid data or
 allocation failures, reload cleanup and ID bounds without MySQL or `main`.
+Resurrection and shared-string loaders use the same boundary: tests exercise
+paired race locations, exact text, complete reloads and preservation after
+repository, validation, duplicate, allocation or diagnostic failure.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
