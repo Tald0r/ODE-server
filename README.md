@@ -161,6 +161,10 @@ range. Decision tests retain the separate world-closed and group-down policies.
 Server-list reply assembly also runs with supplied topology, account and player
 inputs. Tests preserve both account-query paths, default/saved group selection,
 packet limits and truncation, with allocation, lookup and send failure cleanup.
+Login zone/group routing catalogues accept explicit repositories and replace
+owned maps only after successful preparation. Runtime tests cover immutable
+borrowed lookups, failed-load preservation, stale-row removal, duplicate and
+allocation cleanup/retry, empty loads and existing ID widths/error translation.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

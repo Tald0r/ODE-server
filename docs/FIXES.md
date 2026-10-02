@@ -420,10 +420,32 @@ the default repository and insert each freshly allocated row into the live map.
 A duplicate or map allocation failure can leak the incoming row after earlier
 rows have already become visible. Loading again does not replace the previous
 catalogue: existing IDs cause duplicate refusal and absent old rows remain.
-Task 2.43 tracks explicit repositories, owned replacement and preservation of
-borrowed rows after failure, with allocation, duplicate and reload regressions.
+Six regressions reproduced changed/empty reload failure, partial duplicate
+publication and allocation leaks. Both loaders now accept explicit repositories,
+prepare value-owned maps before swapping, expose const borrowed rows and remove
+unused raw mutation APIs. Thirteen cases cover complete replacement, failed-load
+preservation, duplicate cleanup, word-sized fields, exception identity/translation,
+diagnostics, repeated destruction and four allocation sweeps with retry. Loads
+remain quiescent and independent across the two managers; this does not provide
+a combined routing transaction or move final init reporting into publication.
 
-> **Status:** recorded, not fixed (refactor/login-server-list-replies)
+> **Status:** fixed (refactor/login-routing-catalogues)
+
+## Common game-server catalogue publication and lifetime are not owned (2026-10-02)
+
+`GameServerInfoManager` initializes its dimensions but leaves the raw table
+pointer unset, and cold destruction reads it. Loading publishes dimensions
+and partially allocated arrays before fetching/building rows; world zero's
+array slot is never allocated, and a repeated load overwrites the old pointer.
+Unchecked MAX arithmetic and row-field narrowing can also admit invalid storage
+bounds. Non-PK and castle-following overlays mutate the live catalogue after the
+base rows, so failures in later queries, lookups or reporting leave partial
+state. `clear` retains dimensions after releasing arrays, making subsequent
+cleanup/lookups unsafe. Task 2.44 tracks explicit repository inputs and complete
+owned preparation, with an audit of the raw traversal APIs used by game/login
+readers before changing their representation.
+
+> **Status:** recorded, not fixed (refactor/login-routing-catalogues)
 
 ## Normalized server-selection worlds do not reach character lookup (2026-10-02)
 

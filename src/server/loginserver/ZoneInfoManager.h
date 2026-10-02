@@ -1,68 +1,33 @@
-//----------------------------------------------------------------------
-//
-// Filename    : ZoneInfoManager.h
-// Written By  : Reiot
-// Description :
-//
-//----------------------------------------------------------------------
-
+// The login server's zone-to-group routing catalogue.
 #ifndef __LOGIN_SERVER_ZONE_INFO_MANAGER_H__
 #define __LOGIN_SERVER_ZONE_INFO_MANAGER_H__
 
-// include files
 #include <unordered_map>
 
-#include "Exception.h"
-#include "Types.h"
 #include "ZoneInfo.h"
 
-typedef unordered_map<ZoneID_t, ZoneInfo*> HashMapZoneInfo;
+class LoginConfigRepository;
 
-//----------------------------------------------------------------------
-//
-// class ZoneInfoManager;
-//
-// Holds an unordered_map of zone information keyed by the zone id.
-//
-//----------------------------------------------------------------------
-
+// Load with quiescent readers. Failure preserves borrowed row pointers;
+// successful replacement invalidates them and releases removed routes.
 class ZoneInfoManager {
 public:
-    // constructor
-    ZoneInfoManager();
+    ZoneInfoManager() = default;
+    ZoneInfoManager(const ZoneInfoManager&) = delete;
+    ZoneInfoManager& operator=(const ZoneInfoManager&) = delete;
 
-    // destructor
-    ~ZoneInfoManager();
-
-    // initialize manager
     void init();
-
-    // load from database
     void load();
+    void load(LoginConfigRepository& repository);
 
-    // add info
-    void addZoneInfo(ZoneInfo* pZoneInfo);
-
-    // delete info
-    void deleteZoneInfo(ZoneID_t zoneID);
-
-    // get info
-    ZoneInfo* getZoneInfo(ZoneID_t zoneID);
-
-    // get count of info
-    uint getSize() const {
+    const ZoneInfo* getZoneInfo(ZoneID_t zoneID) const;
+    uint getSize() const noexcept {
         return m_ZoneInfos.size();
     }
-
-    // get debug string
     string toString() const;
 
 private:
-    // hash map of ZoneInfo
-    // key   : ZoneID_t
-    // value : ZoneInfo *
-    HashMapZoneInfo m_ZoneInfos;
+    std::unordered_map<ZoneID_t, ZoneInfo> m_ZoneInfos;
 };
-
 
 #endif

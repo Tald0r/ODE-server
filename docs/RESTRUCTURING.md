@@ -1230,16 +1230,35 @@ visibility can't express.
     two 64-position allocation sweeps, exception identity and retry at five
     failure stages, repeated cleanup and packet clear/pop/count-refusal ownership.
 
-- [ ] **2.43 Extract owned login routing catalogues.**
-  > **Status:** not started — login `ZoneInfoManager` and `ZoneGroupInfoManager`
-  > append raw rows directly into live maps through default repositories. A
-  > duplicate or insertion failure can leak the current row and leave a prefix
-  > published; repeated loads retain stale rows or fail on existing IDs. Supply
-  > repositories explicitly and prepare complete owned replacement maps with
-  > preserved borrowed lookups on failure. Audit raw mutation callers before
-  > removing unused APIs; retain database-error translation and stored ID widths.
-  - Planned owner: login runtime tests over production loaders, duplicate/fetch/
-    allocation failures, successful and empty replacement, cleanup and retry.
+- [x] **2.43 Extract owned login routing catalogues.**
+  > **Status:** done (this commit) — both loaders accept explicit repositories
+  > and prepare value-owned maps before swapping. Duplicate, repository and
+  > allocation failures retain previous rows and borrowed pointers; successful
+  > replacement removes stale routes, including on empty loads. The managers
+  > are noncopyable with const borrowed row access; unused raw add/delete APIs
+  > are removed and the character-selection reader uses const pointers. Word
+  > widths, missing-row/duplicate diagnostics and database-error translation are
+  > preserved. Loads require quiescent readers and the two managers still load
+  > separately, without a transaction spanning them. Final init reporting remains
+  > outside load publication.
+  - Owner: 13 `LoginRoutingCatalogue` cases in `login_server_runtime_tests`.
+    Six regressions failed before the fix. Coverage includes empty and changed
+    reloads, duplicate rollback/cleanup, immutable borrowed rows, IDs 0/65535,
+    exception identity/translation, repeated destruction and four 32-position
+    allocation sweeps over empty/populated tables with retry.
+
+- [ ] **2.44 Extract owned common game-server catalogue loading.**
+  > **Status:** not started — `GameServerInfoManager` reads a default repository,
+  > stores an uninitialized table pointer before loading, publishes dimensions
+  > and raw arrays before preparation finishes, and never allocates world zero's
+  > group table. Non-PK and castle-following flags are applied after base rows
+  > become live. Supply explicit repository input, validate dimensions/fields
+  > and prepare complete owned rows plus overlays before publication. Preserve
+  > required traversal APIs after auditing their game/login callers; keep failed
+  > loads, cold destruction and repeated cleanup safe. This enables an explicit
+  > production character-selection topology alongside the login routing maps.
+  - Planned owner: standalone ServerCore catalogue tests covering staged query,
+    overlay, validation, allocation/reporting failure, borrowed rows and retry.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

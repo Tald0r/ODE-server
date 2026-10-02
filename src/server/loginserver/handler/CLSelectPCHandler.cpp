@@ -39,8 +39,8 @@ public:
     }
 
     ServerID_t zoneServerID(ZoneID_t zoneID) override {
-        ZoneInfo* pZoneInfo = de::loginContext().zoneInfos().getZoneInfo(zoneID);
-        ZoneGroupInfo* pZoneGroupInfo =
+        const ZoneInfo* pZoneInfo = de::loginContext().zoneInfos().getZoneInfo(zoneID);
+        const ZoneGroupInfo* pZoneGroupInfo =
             de::loginContext().zoneGroupInfos().getZoneGroupInfo(pZoneInfo->getZoneGroupID());
         return pZoneGroupInfo->getServerID();
     }
