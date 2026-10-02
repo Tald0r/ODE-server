@@ -113,6 +113,10 @@ public:
     void setKey(WORD EncryptKey, WORD HashKey);
 
 protected:
+    // Adopt before derived members are constructed, using their buffer sizes.
+    // A zero size omits that stream; the socket is owned even on failure.
+    Player(Socket* pSocket, uint inputBufferSize, uint outputBufferSize);
+
     // player id
     string m_ID;
 

@@ -51,22 +51,9 @@ void addLoginPlayerData(const string& ID, const string& ip, const string& SSN, c
 //
 //////////////////////////////////////////////////////////////////////
 LoginPlayer::LoginPlayer(Socket* pSocket)
-    : // Player(pSocket),
-      m_PlayerStatus(LPS_NONE), m_FailureCount(0) {
+    : Player(pSocket, defaultLoginPlayerInputStreamSize, defaultLoginPlayerOutputStreamSize), m_PlayerStatus(LPS_NONE),
+      m_FailureCount(0) {
     __BEGIN_TRY
-
-    Assert(pSocket != NULL);
-    m_pSocket = pSocket;
-
-    // create socket input stream
-    m_pInputStream = new SocketInputStream(m_pSocket, defaultLoginPlayerInputStreamSize);
-
-    Assert(m_pInputStream != NULL);
-
-    // create socket output stream
-    m_pOutputStream = new SocketOutputStream(m_pSocket, defaultLoginPlayerOutputStreamSize);
-    Assert(m_pOutputStream != NULL);
-
 
     m_Mutex.setName("LoginPlayer");
 

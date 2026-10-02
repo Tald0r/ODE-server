@@ -13,6 +13,52 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Player connection-key storage has no defined owner (2026-10-02)
+
+The login-admission audit reached `Player::setKey`: the player constructors
+leave `pHashTable` uninitialized, key installation reads that pointer and then
+overwrites it with a new 512-byte allocation, and player destruction never
+releases it. Repeated installation also abandons the previous table. The
+streams borrow this storage, so replacement and destruction need an explicit
+lifetime boundary. The special key-pair `exit(0)` branch also needs a behavior
+audit before the real login handshake can safely be exercised in process.
+These are source findings, not yet isolated by regression tests.
+
+> **Status:** recorded, not fixed (refactor/login-connection-adoption)
+
+## Login registration leaked rejected connections and teardown skipped session cleanup (2026-10-02)
+
+`LoginPlayerManager::acceptNewConnection` held a completed player raw while
+calling `addPlayer_NOLOCKED`. An occupied descriptor slot threw without freeing
+the new player or closing its socket. `LoginConnection` now retains ownership
+until registration succeeds and sets `LPS_END_SESSION` before destruction.
+Socket preparation reuses `AcceptedServerConnection`; setup errors refuse the
+connection quietly, while allocation and registration failures propagate with
+their resources released.
+
+`LoginPlayer` previously adopted its socket in the constructor body, after its
+deque and mutex members. It now uses a sized `Player` base constructor, so
+member-construction failures also have an owner, preserving the 1,024/4,096-byte
+buffers. Allocation sweeps cover construction and forwarded admission; the
+earlier native construction sweep passed, so the pre-body concern is a source
+lifetime gap rather than a reproduced native leak.
+
+Manager destruction also left a dangling reconnect-context binding and deleted
+active players through the base manager. Their terminal-state assertion skipped
+packet-history cleanup. Teardown now ends each local session before deletion and
+restores the previous reconnect binding. It retains the existing resource-only
+teardown policy: account logout still belongs to explicit disconnect, with no
+database calls added to destruction. Scoped managers can use an injected
+`LoginContext`; nested bindings must be destroyed in reverse creation order.
+
+Four regressions failed before the fixes: duplicate admission ownership,
+terminal session state, reconnect binding restoration and packet-history
+destruction. Login runtime tests also cover allocation failures and retry,
+constructor failure without context publication, nonblocking/linger options,
+pending peer errors and real input/output without database/listener startup.
+
+> **Status:** fixed (refactor/login-connection-adoption)
+
 ## Socket error queries ignored pending network errors (2026-10-02)
 
 `SocketImpl::isSockError` returned false whenever `getsockopt(SO_ERROR)`

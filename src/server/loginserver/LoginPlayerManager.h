@@ -19,6 +19,9 @@
 
 class LoginPlayer;
 class ReconnectLoginInfoManager;
+namespace de {
+class LoginContext;
+}
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -32,6 +35,8 @@ class LoginPlayerManager : public PlayerManager {
 public:
     // constructor
     LoginPlayerManager();
+    // The context and its previous reconnect binding must outlive this scope.
+    explicit LoginPlayerManager(de::LoginContext& context);
 
     // destructor
     ~LoginPlayerManager() noexcept;
@@ -119,9 +124,10 @@ private:
     // likely.
     mutable Mutex m_Mutex;
 
-    // Owned here and registered on de::loginContext(), which is how the
-    // packet handlers reach it.
-    ReconnectLoginInfoManager* m_pReconnectLoginInfoManager = nullptr;
+    // Published only after construction; restore the enclosing scope on exit.
+    de::LoginContext& m_Context;
+    std::unique_ptr<ReconnectLoginInfoManager> m_pReconnectLoginInfoManager;
+    ReconnectLoginInfoManager* m_PreviousReconnectLoginInfoManager = nullptr;
 };
 
 #endif
