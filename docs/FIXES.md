@@ -250,16 +250,49 @@ repository exceptions and throwing diagnostics at each load stage.
 
 ## Shared guild loading leaves refused or unattached rows unowned (2026-10-02)
 
-Shared `GuildManager::load` constructs raw guild/member objects before setters
-and insertion finish. An active-member row whose guild was not loaded is
+Shared `GuildManager::load` constructed raw guild/member objects before setters
+and insertion finished. An active-member row whose guild was not loaded was
 never attached or deleted, and failures after partial guild/member insertion
-leave the live catalogue partly updated. Several string setters/getters on
-`Guild` and `GuildMember` are also declared `noexcept` despite allocating, so
-allocation failure terminates instead of unwinding. These are source findings;
-task 2.36 tracks owned preparation and repository-driven failure tests,
-including unattached members and retry.
+left the live catalogue partly updated. Several string setters/getters on
+`Guild` and `GuildMember` were also declared `noexcept` despite allocating, so
+allocation failure terminated instead of unwinding. Seven regressions
+reproduced failed reloads, partial publication, leaked unattached members and
+both accessor allocation aborts.
 
-> **Status:** recorded, not fixed (refactor/shared-startup-data-loading)
+The explicit repository loader now prepares an owned replacement graph and
+runtime index before publication under the table lock. Members retain an
+owner until attachment succeeds; unloaded guilds' members are skipped before
+allocation. IDs/enums are checked before narrowing. Failure preserves the
+previous graph and its borrowed pointers; successful reload releases it.
+The ten copying string getter/setter declarations allow exceptions to unwind.
+Twenty tests cover the regressions, 128-position allocation sweeps for empty
+and populated graphs, cleanup/retry, duplicate/invalid data, repository errors,
+preserved roster semantics and the production guild-info reply from loaded rows.
+
+> **Status:** fixed (refactor/shared-guild-loading)
+
+## Shared guild initialization publishes unchecked ID maxima before success (2026-10-02)
+
+`GuildManager::init` updates process-wide guild/race-zone maxima after each
+repository probe, before later probes and roster loading complete. Failed
+initialization can therefore leave only some counters changed. Queried maxima,
+configured dimension/world arithmetic and prior zone maxima plus one also narrow
+to word-sized IDs without validation. These are source findings; task 2.37
+tracks explicit inputs, checked preparation and publication after successful
+initialization, with failure and retry coverage.
+
+> **Status:** recorded, not fixed (refactor/shared-guild-loading)
+
+## Shared guild reply assembly leaves partial records unowned (2026-10-02)
+
+`GuildManager::makeSGGuildInfo` allocates raw guild-info records before filling
+and attaching them to the reply, and `Guild::makeInfo(GuildInfo2*)` does the
+same for member records. Throwing setters or list insertion can leave those
+records unowned. This is a source finding from the guild-loader reply audit;
+the successful reply path is covered, while allocation-failure ownership still
+needs its own extraction and tests.
+
+> **Status:** recorded, not fixed (refactor/shared-guild-loading)
 
 ## Login world-list assembly leaves partial reply rows unowned (2026-10-02)
 

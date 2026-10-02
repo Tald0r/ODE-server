@@ -22,6 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 class Guild;
+class SharedGuildRepository;
 
 typedef unordered_map<GuildID_t, Guild*> HashMapGuild;
 typedef unordered_map<GuildID_t, Guild*>::iterator HashMapGuildItor;
@@ -45,7 +46,10 @@ public: // constructor & destructor
 
 public: // initializing related methods
     void init() noexcept(false);
+    // Load with quiescent users of borrowed guild/member pointers. Failure
+    // retains the previous graph; successful replacement invalidates those pointers.
     void load() noexcept(false);
+    void load(SharedGuildRepository& repository);
 
 
 public: // memory related methods

@@ -109,10 +109,10 @@ public: // identity methods
         m_GuildID = guildID;
     }
 
-    string getName() const noexcept {
+    string getName() const {
         return m_Name;
     }
-    void setName(const string& name) noexcept {
+    void setName(const string& name) {
         m_Name = name;
     }
 
@@ -234,10 +234,10 @@ public: // identity methods
         m_ID = id;
     }
 
-    string getName() const noexcept {
+    string getName() const {
         return m_Name;
     }
-    void setName(const string& name) noexcept {
+    void setName(const string& name) {
         m_Name = name;
     }
 
@@ -276,24 +276,24 @@ public: // identity methods
         m_ZoneID = zoneID;
     }
 
-    string getMaster() const noexcept {
+    string getMaster() const {
         return m_Master;
     }
-    void setMaster(const string& master) noexcept {
+    void setMaster(const string& master) {
         m_Master = master;
     }
 
-    string getDate() const noexcept {
+    string getDate() const {
         return m_Date;
     }
-    void setDate(const string& Date) noexcept {
+    void setDate(const string& Date) {
         m_Date = Date;
     }
 
-    string getIntro() const noexcept {
+    string getIntro() const {
         return m_Intro;
     }
-    void setIntro(const string& intro) noexcept {
+    void setIntro(const string& intro) {
         m_Intro = intro;
     }
 
