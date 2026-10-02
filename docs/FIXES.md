@@ -151,13 +151,31 @@ outcome, retaining failed exit status even when diagnostics fail. The original
 
 ## Final application reporting can hide the drain result (2026-10-02)
 
-After `runServerLifecycle` returns, `ServerApplication::run` writes its stopped
-message and flushes both streams without isolating exceptions. A rejected
-write/flush hides the result already obtained; a failed output flush also skips
-the remaining error flush. This is a source finding; task 2.31 tracks the final
-reporting boundary, failed status and configuration lifetime after stop.
+After `runServerLifecycle` returned, `ServerApplication::run` wrote its stopped
+message and flushed both streams without isolating exceptions. A rejected
+write/flush hid the result already obtained; a failed output flush also skipped
+the remaining error flush. Streams with exceptions disabled could instead
+lose output and still return success. Fifteen regressions reproduced these
+failures across all three server kinds, with faults armed only after stop.
 
-> **Status:** recorded, not fixed (refactor/lifecycle-diagnostics)
+Completion reporting and each final flush are now isolated. Exceptions and
+stream error flags mark process failure and force failed exit status without
+changing the drain result; the other stream is still attempted. Configuration
+stays bound through the result and restores on scope exit. The original 48
+application cases and all 15 reporting regressions pass.
+
+> **Status:** fixed (refactor/application-final-reporting)
+
+## Shared-server construction loses managers and context bindings on failure (2026-10-02)
+
+`SharedServer` constructs and registers raw manager pointers incrementally.
+A later allocation or listener failure leaves earlier managers allocated,
+because the incomplete server's destructor cannot run. Contexts retain those
+registrations; successful destruction also leaves dangling registrations.
+This is a source finding. Task 2.32 tracks scoped construction ownership,
+context restoration and failure/retry coverage without database initialization.
+
+> **Status:** recorded, not fixed (refactor/application-final-reporting)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 

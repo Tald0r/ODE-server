@@ -645,6 +645,9 @@ visibility can't express.
   > an initially empty context without exposing a nullable accessor.
   > Successful drains print the server's existing stopped-workers diagnostic;
   > final output and errors are flushed before returning the lifecycle result.
+  > Task 2.31 isolates completion reporting and each final flush: exceptions or
+  > stream error flags mark process failure and force failed exit status while
+  > preserving the drain result and attempting the other stream.
   > Each `main()` keeps the application and legacy server graph alive through
   > `_Exit` after lifecycle execution, even if workers could not stop. Process
   > setup, dispatch registration, concrete server actions and `_Exit` remain
@@ -1029,14 +1032,28 @@ visibility can't express.
     destinations, flags before reporting, dependency lifetime through cleanup,
     and failed shutdown reporting for all retained exception categories.
 
-- [ ] **2.31 Preserve the application result through final reporting failure.**
-  > **Status:** not started — `ServerApplication::run` writes its completion
-  > message and flushes output/errors after the lifecycle returns. An exception
-  > there hides the completed drain result, and a failed output flush skips
-  > the error flush. Test and isolate this final reporting boundary while
-  > preserving configuration lifetime and failed exit status.
-  - Planned owner: `server_application_tests` with faults enabled after stop,
-    successful/failed drain results, independent flushes and context lifetime.
+- [x] **2.31 Preserve the application result through final reporting failure.**
+  > **Status:** done (this commit) — `ServerApplication::run` isolates the
+  > completion message and each final flush. Exceptions and stream error flags
+  > mark process failure and force failed exit status, preserving the completed
+  > drain result and configuration lifetime. Both flushes are attempted even
+  > after rejected output. Pre-lifecycle exception/restoration behavior stays
+  > owned by the existing tests.
+  - Owner: 63 `server_application_tests` cases. Fifteen regressions failed
+    before the change across all three server kinds, with faults armed after
+    stop: completion-write and flush exceptions, unthrown stream failures,
+    independent flushes, successful/failed drain results and context lifetime.
+
+- [ ] **2.32 Make shared-server construction an owned, testable scope.**
+  > **Status:** not started — `SharedServer` allocates and registers raw manager
+  > pointers as construction advances. If a later allocation or listener setup
+  > fails, the incomplete server has no destructor to release earlier managers
+  > or restore their context bindings. Successful destruction also leaves
+  > bindings pointing to the former managers. Give the graph scoped ownership
+  > and cover construction, failure/retry and quiescent teardown without main
+  > or database initialization.
+  - Planned owner: shared runtime construction cases with allocation faults,
+    real listener ownership and context lifetime/restoration checks.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

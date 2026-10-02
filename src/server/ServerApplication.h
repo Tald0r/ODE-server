@@ -30,8 +30,10 @@ public:
     // Load, apply offsets and validate required listener ports before publishing
     // the configuration or invoking any action.
     // An empty result means configuration failed; no lifecycle action has run.
-    // Otherwise return the lifecycle result after reporting and flushing its
-    // diagnostics. Does not install process handlers, exit or destroy servers.
+    // Otherwise return the drain result after best-effort completion reporting
+    // and independent final flushes. Report exceptions or stream error flags
+    // mark process failure and force a failed exit status without changing the
+    // drain result. Does not install process handlers, exit or destroy servers.
     // A second call is a programming error and throws Error.
     [[nodiscard]] std::optional<ServerLifecycleResult> run(ServerKind server, int argc, const char* const argv[],
                                                            const ServerLifecycleActions& actions, std::ostream& output,
