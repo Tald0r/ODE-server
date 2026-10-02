@@ -58,6 +58,8 @@ src/Core/SocketInputStream.h
 src/Core/SocketInputStream.cpp
 src/Core/SocketOutputStream.h
 src/Core/SocketOutputStream.cpp
+src/Core/SocketStreams.h
+src/Core/SocketStreams.cpp
 src/Core/SocketEncryptInputStream.h
 src/Core/SocketEncryptInputStream.cpp
 src/Core/SocketEncryptOutputStream.h

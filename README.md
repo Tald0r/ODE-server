@@ -155,6 +155,12 @@ complete Mofus connection publication. Shared-server and Mofus ports use the
 same checked reader when those features connect.
 Socket construction coverage also checks accepted-socket adoption and failed
 reconnects, including descriptor reuse and successful retries after failure.
+`socket_stream_setup_tests` exercises plain buffered-stream construction in
+`de-kernel` with explicit sizes and a borrowed socket. Allocation faults verify
+partial cleanup and atomic player socket replacement, preserving old buffers
+on failure. The same replacement cases run against `GameServerPlayer` in the
+shared runtime; successful replacement closes the previous socket, while
+same-socket replacement retains it. Absent input/output streams stay absent.
 `server_application_tests` runs configuration loading through lifecycle cleanup
 and final reporting using an explicit context and controlled actions. It checks
 configuration lifetime and restoration, rejected input and failure status without

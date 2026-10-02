@@ -118,6 +118,7 @@ add_server_runtime_test(game_server_runtime_tests game_server_runtime_test.cpp G
 target_sources(game_server_runtime_tests PRIVATE game_connection_test.cpp support/AllocationProbe.cpp)
 add_server_runtime_test(login_server_runtime_tests login_server_runtime_test.cpp LoginServerRuntime)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
+target_sources(shared_server_runtime_tests PRIVATE player_socket_replacement_test.cpp support/AllocationProbe.cpp)
 
 add_executable(server_startup_tests EXCLUDE_FROM_ALL server_startup_test.cpp)
 target_link_libraries(server_startup_tests PRIVATE ServerStartup gtest_main)
@@ -195,6 +196,14 @@ add_dependencies(wire_tests socket_construction_tests)
 add_test(NAME socket_construction_tests COMMAND socket_construction_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(socket_construction_tests PROPERTIES TIMEOUT 30)
+
+add_executable(socket_stream_setup_tests EXCLUDE_FROM_ALL
+    socket_stream_setup_test.cpp player_socket_replacement_test.cpp support/AllocationProbe.cpp)
+target_link_libraries(socket_stream_setup_tests PRIVATE de-kernel gtest_main)
+add_dependencies(wire_tests socket_stream_setup_tests)
+add_test(NAME socket_stream_setup_tests COMMAND socket_stream_setup_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(socket_stream_setup_tests PROPERTIES TIMEOUT 30)
 
 add_executable(outbound_server_connection_tests EXCLUDE_FROM_ALL
     outbound_server_connection_test.cpp support/AllocationProbe.cpp)

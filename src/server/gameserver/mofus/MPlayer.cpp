@@ -18,6 +18,7 @@
 #include "Socket.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
+#include "SocketStreams.h"
 
 // include packet header
 #include <unistd.h>
@@ -145,16 +146,16 @@ void MPlayer::connect() {
 
     try {
         auto socket = de::connectOutboundServer(MofusIP, MofusPort);
-        auto input = std::make_unique<SocketInputStream>(socket.get(), defaultMPlayerInputStreamSize);
-        auto output = std::make_unique<SocketOutputStream>(socket.get(), defaultMPlayerOutputStreamSize);
+        auto streams =
+            de::makeSocketStreams(socket.get(), defaultMPlayerInputStreamSize, defaultMPlayerOutputStreamSize);
 
         cout << "connection to Mofus server established - " << MofusIP.c_str() << ":" << MofusPort << endl;
         filelog(MOFUS_LOG_FILE, "----- connection extablished(%s:%u) -----", MofusIP.c_str(), MofusPort);
         // Publishing cannot throw. Retain ownership through diagnostics too,
         // so any exception leaves an empty connection ready for a retry.
         m_pSocket = socket.release();
-        m_pInputStream = input.release();
-        m_pOutputStream = output.release();
+        m_pInputStream = streams.input.release();
+        m_pOutputStream = streams.output.release();
     } catch (Throwable& t) {
         cout << "connect to Mofus server fail - " << MofusIP.c_str() << ":" << MofusPort << endl;
         filelog(MOFUS_LOG_FILE, "----- connecti fail(%s:%u) -----", MofusIP.c_str(), MofusPort);

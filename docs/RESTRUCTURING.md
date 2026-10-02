@@ -796,6 +796,26 @@ visibility can't express.
     descriptor reuse, successful retries, old-peer EOF and new-peer byte exchange;
     wire and all three runtime/production links.
 
+- [x] **2.18 Extract buffered socket-stream setup and safe replacement.**
+  > **Status:** done (this commit) — `SocketStreams` in `de-kernel` prepares
+  > plain input/output streams over an explicit borrowed socket, with caller
+  > sizes and zero meaning an omitted stream. `Player` construction uses its
+  > 81,920-byte defaults; Mofus keeps 10,240-byte buffers and publishes only
+  > after setup and diagnostics. `Player::setSocket` adopts a different socket
+  > even on failure, retaining the old socket and buffered bytes until all
+  > replacement streams are ready. Success deletes the old socket; passing
+  > the same socket keeps it alive. As before, only existing streams are
+  > rebuilt, empty and plain at default sizes. Null remains valid for bare
+  > players and output-only memory buffers, but fails before mutation when
+  > input exists. `GameServerPlayer` inherits this setter instead of hiding it
+  > with a failing `noexcept` copy. No production setter callers existed when
+  > the ownership contract was clarified; `getSocket()` remains borrowed.
+  - Owner: `socket_stream_setup_tests` for sizes, stream modes, borrowed
+    socket lifetime, allocation sweeps, buffered failure/retry and peer byte
+    exchange; the same replacement tests against `GameServerPlayer` in the
+    shared runtime; existing player/shared-client/Mofus construction sweeps
+    (including Mofus buffer sizes), wire and all three production links.
+
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
 `execute()`; all three servers boot and pass a manual smoke test against the

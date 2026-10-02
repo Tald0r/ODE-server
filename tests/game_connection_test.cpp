@@ -8,6 +8,8 @@
 #include "Properties.h"
 #include "SharedServerClient.h"
 #include "Socket.h"
+#include "SocketInputStream.h"
+#include "SocketOutputStream.h"
 #include "mofus/MJob.h"
 #include "mofus/MPlayer.h"
 #include "support/AllocationProbe.h"
@@ -21,6 +23,11 @@ public:
     bool hasPartialConnection() const {
         const int parts = (m_pSocket != nullptr) + (m_pInputStream != nullptr) + (m_pOutputStream != nullptr);
         return parts != 0 && parts != 3;
+    }
+
+    bool hasExpectedBufferSizes() const {
+        return m_pInputStream && m_pOutputStream && m_pInputStream->capacity() == 10240 &&
+               m_pOutputStream->capacity() == 10240;
     }
 };
 
@@ -51,7 +58,7 @@ TEST(GameConnection, MofusPublishesAllConnectionPartsTogetherAndCanRetryAfterAll
                 const bool complete = !player->hasPartialConnection() && (!threw || !player->getSocket());
                 if (complete && !player->getSocket())
                     player->connect();
-                const bool connected = player->getSocket() != nullptr;
+                const bool connected = player->getSocket() != nullptr && player->hasExpectedBufferSizes();
                 player.reset();
                 const bool intact = complete && connected && probe.outstanding() == 0 &&
                                     nextSocketDescriptor() == available && (failAt != 32 || !probe.rejected());

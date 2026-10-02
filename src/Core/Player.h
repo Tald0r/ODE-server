@@ -76,6 +76,10 @@ public:
     Socket* getSocket() {
         return m_pSocket;
     }
+    // Adopts a different socket even on failure; success closes the old one.
+    // Rebuilds only existing streams as empty plain streams of default size.
+    // Failure preserves the current socket/streams, including for same-socket
+    // replacement. Null is allowed only when no input stream is present.
     void setSocket(Socket* pSocket);
 
     // get/set player ID

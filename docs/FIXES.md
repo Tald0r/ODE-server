@@ -13,6 +13,33 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Player socket replacement destroyed live state before allocation succeeded (2026-10-02)
+
+`Player::setSocket` published its incoming socket and deleted each old stream
+before allocating a replacement. Allocation failure left dangling stream
+members or a partially replaced connection; success also lost the old socket
+without closing or deleting it. `GameServerPlayer` had the same implementation
+declared `noexcept`, so allocation failure terminated the process.
+
+Both public player types now use the base setter. The extracted `SocketStreams`
+helper prepares requested plain streams with temporary ownership and borrows
+the supplied socket. A different incoming socket is adopted even on failure;
+the old connection and buffered bytes survive until setup succeeds. Success
+destroys the old streams and socket. Same-socket replacement never creates a
+second owner, and failure leaves that socket open. The setter keeps its legacy
+stream selection and default sizes, including bare and output-only/null modes.
+There were no production setter callers; the ownership contract is explicit
+in `Player.h` for future callers.
+
+The replacement regressions failed in 11 cases for each public type before
+the fix. They sweep allocation failures across all stream modes and same/new
+socket replacement, check retained bytes, released allocations/descriptors,
+safe null handling and retry, and exchange bytes with a real replacement peer.
+Direct helper tests cover explicit buffer sizes and borrowed ownership. The
+existing Mofus tests also pin its custom sizes and publication after diagnostics.
+
+> **Status:** fixed (refactor/socket-stream-setup)
+
 ## Socket acceptance and reconnect lost ownership during failures (2026-10-02)
 
 `SocketImpl::accept` received a descriptor before allocating its implementation,
@@ -73,13 +100,11 @@ production fatal-handler policy remains unchanged.
 
 > **Status:** fixed (refactor/outbound-server-connection)
 
-The accepted-socket and `Socket::reconnect` ownership issues found here are
-fixed above. `Player::setSocket` still deletes a stream before allocating its
-replacement, leaving a dangling stream pointer if allocation throws. That
-remaining path needs allocation-failure regressions and explicit ownership;
-it has not yet been fixed or validated by fault injection.
+The accepted-socket, `Socket::reconnect` and player socket replacement issues
+found here are fixed above, with allocation-failure regressions and explicit
+ownership contracts.
 
-> **Status:** recorded, not fixed (refactor/outbound-server-connection)
+> **Status:** fixed (refactor/socket-stream-setup)
 
 ## Listener configuration accepted malformed or wrapped ports (2026-10-02)
 
