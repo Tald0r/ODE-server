@@ -202,6 +202,12 @@ startup. Coverage includes launch allocation failure/retry, identity/status
 publication, concurrent metadata reads, self-join failure retention and the
 existing stop/join contracts. Every production worker uses this backend; the
 unused native creation/detachment backend and thread attributes are removed.
+`ThreadPool` is part of the same library and consumes unique worker owners.
+Its standalone cases cover failed registration and retry, rollback, stop/join
+ordering and failures, and cleanup despite throwing diagnostics. Registration
+closes at start/stop, completed drains are not replayed, and the zone thread
+manager owns its pool by value. Destruction requires quiescent callers outside
+the owned workers.
 `player_connection_key_tests` exercises pure key-table calculation and owned
 installation in `Player`. Allocation faults verify atomic replacement and
 cleanup; fixed vectors and real socket I/O preserve existing table and stream

@@ -86,15 +86,44 @@ failure leaves ready state and an empty identity, followed by a successful retry
 
 > **Status:** fixed (refactor/server-workers)
 
-## Zone worker registration loses ownership when pool insertion fails (2026-10-02)
+## Zone worker registration and pool teardown lose ownership on failure (2026-10-02)
 
 `ThreadManager::init` passes a newly allocated `ZoneGroupThread` raw to
 `ThreadPool::addThread`. The pool allocates its list node before taking any
 scoped ownership, so failure leaves that worker outside the pool without an
-owner. This is a source finding; task 2.28 tracks explicit pool ownership,
-allocation-failure regressions and independently testable cleanup/rollback.
+owner. An isolated registration regression now reproduces the missing worker
+destruction after failed list-node allocation.
 
-> **Status:** recorded, not fixed (refactor/server-workers)
+Pool destruction also calls `stop`, which reports retained worker failures.
+If a diagnostic such as `Throwable::toString` throws `std::bad_alloc`, it escapes
+the destructor's `Throwable`-only catch and terminates before worker objects
+are released. A second regression reproduces that termination with a real
+managed worker. Both regressions failed before the extraction.
+
+`ThreadPool` now lives in `ServerWorkers` and consumes unique worker owners.
+Rejected/failed registration destroys the incoming worker and retains the
+existing pool; the zone manager owns its pool by value. Start/stop freezes
+registration, and unused raw lookup/deletion APIs are removed. Drain attempts
+all stops, joins and diagnostics, retaining the first error; throwing overrides
+fall back to managed cancellation/join. Startup rollback preserves its original
+error. Joined workers are released despite diagnostic failure, while repeated
+stop does not replay completed callbacks/reports. Destruction requires quiescent
+callers outside its workers and terminates if native join cannot complete,
+rather than freeing state still in use. Allocation sweeps, real workers and
+injected stop/join/diagnostic failures pin ownership, ordering, retry and cleanup.
+
+> **Status:** fixed (refactor/worker-pool-ownership)
+
+## Shared worker shutdown skips later joins after a failure (2026-10-02)
+
+`stopServerWorkers` calls virtual stops, the optional pre-join action and joins
+without retaining their errors. A thrown operation leaves later workers
+undrained; even failure formatting can interrupt the join loop. The worker-pool
+extraction now handles these phases independently, but the shared helper used
+by the three server stop methods still needs the same progress guarantee.
+Task 2.29 tracks this source finding and standalone failure/ordering coverage.
+
+> **Status:** recorded, not fixed (refactor/worker-pool-ownership)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 

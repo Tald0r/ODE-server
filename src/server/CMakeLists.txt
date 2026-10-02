@@ -33,7 +33,7 @@ target_link_libraries(ServerSynchronization PUBLIC de-kernel Threads::Threads)
 target_link_libraries(ServerCore PUBLIC ServerSynchronization)
 
 # Production worker lifecycle, independently linkable without server managers.
-add_library(ServerWorkers STATIC Thread.cpp ManagedThread.cpp)
+add_library(ServerWorkers STATIC Thread.cpp ManagedThread.cpp ThreadPool.cpp)
 target_include_directories(ServerWorkers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ServerWorkers PUBLIC de-kernel Threads::Threads)
 target_link_libraries(ServerCore PUBLIC ServerWorkers)

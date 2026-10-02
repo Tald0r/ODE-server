@@ -8,7 +8,7 @@
 #include <system_error>
 
 #include "ManagedThread.h"
-#include "gameserver/ThreadPool.h"
+#include "ThreadPool.h"
 
 using namespace std::chrono_literals;
 
@@ -149,11 +149,13 @@ TEST_F(ManagedThreadTest, WorkerFailureRequestsShutdownAndIsRetained) {
 
 TEST_F(ManagedThreadTest, FailedPoolStartupJoinsPrefixAndReleasesPoolLock) {
     ThreadPool pool;
-    auto* first = new Worker;
-    auto* second = new Worker;
+    auto firstOwner = std::make_unique<Worker>();
+    auto secondOwner = std::make_unique<Worker>();
+    auto* first = firstOwner.get();
+    auto* second = secondOwner.get();
     second->failStart = true;
-    pool.addThread(first);
-    pool.addThread(second);
+    pool.addThread(std::move(firstOwner));
+    pool.addThread(std::move(secondOwner));
     EXPECT_THROW(pool.start(), std::system_error);
     EXPECT_TRUE(ServerShutdown::isRequested());
     EXPECT_TRUE(ServerShutdown::failed.load());
@@ -182,8 +184,8 @@ TEST_F(ManagedThreadTest, PoolRequestsEveryStopBeforeAnyJoin) {
     };
     int count = 0;
     ThreadPool pool;
-    pool.addThread(new OrderedWorker(count));
-    pool.addThread(new OrderedWorker(count));
+    pool.addThread(std::make_unique<OrderedWorker>(count));
+    pool.addThread(std::make_unique<OrderedWorker>(count));
     pool.start();
     pool.stop();
 }
@@ -208,9 +210,10 @@ TEST_F(ManagedThreadTest, OwningPoolJoinsBeforeExternalDependencyIsDestroyed) {
     };
     {
         ThreadPool pool;
-        auto* worker = new DependentWorker(dependencyAlive, sawLiveDependency);
+        auto owner = std::make_unique<DependentWorker>(dependencyAlive, sawLiveDependency);
+        auto* worker = owner.get();
         auto entered = worker->entered.get_future();
-        pool.addThread(worker);
+        pool.addThread(std::move(owner));
         pool.start();
         ASSERT_EQ(entered.wait_for(1s), std::future_status::ready);
     }
