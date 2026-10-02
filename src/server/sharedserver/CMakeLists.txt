@@ -66,4 +66,4 @@ target_link_libraries(SharedServerRuntime PUBLIC
 )
 
 add_executable(sharedserver main.cpp)
-target_link_libraries(sharedserver PRIVATE SharedServerRuntime)
+target_link_libraries(sharedserver PRIVATE SharedServerRuntime ServerStartup)

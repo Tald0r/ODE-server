@@ -13,6 +13,42 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Startup configuration could fall through into server construction (2026-10-02)
+
+All three entry points caught an invalid `-f` flag's `Error` and continued
+into server construction with no registered configuration. They published
+the `Properties` pointer before loading it, and configuration-file errors
+outside the `Error` hierarchy escaped the loading block. Loginserver could
+also dereference a null configuration while applying `-i`, or continue with
+the original values after a rejected override.
+
+`ServerStartup` now parses the supported arguments and returns a completed,
+owned configuration. Each entry point reports any `Throwable` from that
+stage and returns `EXIT_FAILURE` before constructing managers. Only a
+successful load and override is published to `KernelContext`. The allocated
+copy of `argv` is gone, and usage messages describe the actual options
+(`-f` for every server, `-i` for loginserver; the advertised `-p` and `-t`
+were not implemented).
+
+The login offset and its three bases used `atoi`, silently accepting
+non-numbers and trailing junk, and their addition could overflow a signed
+`int`. They now require complete decimal integers, accepting signs and
+leading zeroes, and every sum is checked before any override is written.
+Extra command-line arguments are rejected instead of ignored. Successful
+login startup prints the effective configuration, including its overrides.
+`server_startup_tests` covers the argument grammar, signed offsets, boundary
+values, failed reads and preservation of the published configuration.
+`server_startup_cli` invokes all three real executables with invalid inputs
+and requires exit status 1 with a diagnostic on standard error.
+
+> **Status:** fixed (refactor/server-startup-configuration)
+
+The existing `Properties::load` parser still ignores a final line without a
+newline: it checks `eof()` immediately after `getline`, before processing
+that line. This extraction does not change the file grammar or parser.
+
+> **Status:** recorded, not fixed (refactor/server-startup-configuration)
+
 ## Packet reads bounded by their frame (2026-09-30)
 
 The frame bound itself is under "Packet-read fuzzing" below, where it was

@@ -118,6 +118,20 @@ add_server_runtime_test(game_server_runtime_tests game_server_runtime_test.cpp G
 add_server_runtime_test(login_server_runtime_tests login_server_runtime_test.cpp LoginServerRuntime)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 
+add_executable(server_startup_tests EXCLUDE_FROM_ALL server_startup_test.cpp)
+target_link_libraries(server_startup_tests PRIVATE ServerStartup gtest_main)
+add_dependencies(wire_tests server_startup_tests)
+add_test(NAME server_startup_tests COMMAND server_startup_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(server_startup_tests PROPERTIES TIMEOUT 30)
+
+# Verify that every real main returns failure for invalid startup input,
+# instead of aborting, falling through into managers, or starting workers.
+add_dependencies(wire_tests gameserver loginserver sharedserver)
+add_test(NAME server_startup_cli COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/server_startup_cli_test.sh
+    $<TARGET_FILE:gameserver> $<TARGET_FILE:loginserver> $<TARGET_FILE:sharedserver>)
+set_tests_properties(server_startup_cli PROPERTIES TIMEOUT 30)
+
 add_executable(proxy_acceptor_tests EXCLUDE_FROM_ALL
     proxy_acceptor_test.cpp
     socket_close_test.cpp

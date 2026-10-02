@@ -11,6 +11,7 @@
 
 #include <chrono>
 #include <exception>
+#include <memory>
 #include <new>
 
 #include <sys/resource.h>
@@ -19,6 +20,7 @@
 #include "KernelContext.h"
 #include "Properties.h"
 #include "ServerShutdown.h"
+#include "ServerStartup.h"
 #include "SharedPacketDispatch.h"
 #include "SharedServer.h"
 #include "StringStream.h"
@@ -52,36 +54,17 @@ int main(int argc, char* argv[]) {
     // any thread can receive one.
     registerSharedServerPacketHandlers();
 
-    if (argc < 3) {
-        cout << "Usage : sharedserver -f <config file>" << endl;
-        exit(1);
-    }
-
-    // Convert the command-line parameters into strings.
-    string* Argv;
-
-    Argv = new string[argc];
-    for (int i = 0; i < argc; i++)
-        Argv[i] = argv[i];
-
-    // Read the configuration file.
-    // The executable must live in $VSHOME/bin and the configuration file in $VSHOME/conf.
-    // Allow the configuration file to be given on the command line.
-
+    // Keep the completed configuration alive until every worker has stopped.
+    // Parsing and loading never publish a partial configuration to the context.
+    std::unique_ptr<Properties> pConfig;
     try {
-        if (Argv[1] != "-f") {
-            throw Error("Usage : sharedserver -f config-file");
-        }
-
-        // When the first parameter is -f, the second is the path of the configuration file.
-        Properties* pConfig = new Properties();
-        de::kernelContext().setConfig(pConfig);
-        pConfig->load(Argv[2]);
-
+        const auto options = de::parseServerOptions(de::ServerKind::Shared, argc, argv);
+        pConfig = de::loadServerConfiguration(options);
+        de::kernelContext().setConfig(pConfig.get());
         cout << pConfig->toString() << endl;
-
-    } catch (Error& e) {
-        cout << e.toString() << endl;
+    } catch (const Throwable& error) {
+        cerr << error.toString() << endl;
+        return EXIT_FAILURE;
     }
 
     //

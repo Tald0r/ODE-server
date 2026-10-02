@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <memory>
 #include <new>
 #include <stdexcept>
 
@@ -23,6 +24,7 @@
 #include "KernelContext.h"
 #include "Properties.h"
 #include "ServerShutdown.h"
+#include "ServerStartup.h"
 #include "StringStream.h"
 #include "Types.h"
 
@@ -85,37 +87,17 @@ int main(int argc, char* argv[]) {
     registerGameServerPacketHandlers();
     cout << ">>> PACKET DISPATCH TABLE REGISTERED..." << endl;
 
-    if (argc < 3) {
-        // cout << "Usage : gameserver -f config-file" << endl;
-        exit(1);
-    }
-
-    // Convert the command-line parameters into strings.
-    string* Argv;
-
-    Argv = new string[argc];
-    for (int i = 0; i < argc; i++)
-        Argv[i] = argv[i];
-
-    cout << ">>> COMMAND-LINE PARAMETER READING SUCCESS..." << endl;
-
-    // Read the config file.
-    // The executable has to live in $VSHOME/bin and the config file in $VSHOME/conf.
-    // The config file can be given on the command line.
-
+    // Keep the completed configuration alive until every worker has stopped.
+    // Parsing and loading never publish a partial configuration to the context.
+    std::unique_ptr<Properties> pConfig;
     try {
-        if (Argv[1] != "-f") {
-            throw Error("Usage : gameserver -f config-file -t test-config-file");
-        }
-
-        // When the first parameter is -f, the second is the path of the config file.
-        Properties* pConfig = new Properties();
-        de::kernelContext().setConfig(pConfig);
-        pConfig->load(Argv[2]);
-
-        // cout << pConfig->toString() << endl;
-    } catch (Error& e) {
-        // cout << e.toString() << endl;
+        const auto options = de::parseServerOptions(de::ServerKind::Game, argc, argv);
+        cout << ">>> COMMAND-LINE PARAMETER READING SUCCESS..." << endl;
+        pConfig = de::loadServerConfiguration(options);
+        de::kernelContext().setConfig(pConfig.get());
+    } catch (const Throwable& error) {
+        cerr << error.toString() << endl;
+        return EXIT_FAILURE;
     }
 
     //
