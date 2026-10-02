@@ -29,6 +29,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Core-dump setup respects the inherited hard limit; game process initialization seeds rand and ignores only its three legacy signals | `server_process_environment_tests`, over `ServerProcessEnvironment`, with process mutations confined to subprocesses | a failed soft-limit raise under a finite cap, a changed hard limit or unrelated resource, an incorrect seeded sequence, or damaged shutdown handlers/state |
 | Listener startup retries only bind failures, observes shutdown during waits and releases each failed attempt's socket | `listener_startup_tests`, over `ListenerStartup` and real TCP/UDP sockets in subprocesses | an unreported or retried non-bind failure, a bind after shutdown, an uninterruptible retry wait, lost failure state or a leaked descriptor |
 | Required listener ports are complete decimal values in 1..65535, validated after login offsets and before publication or manager construction | `server_port_settings_tests`, `server_application_tests` and `server_startup_cli`, over `ServerPortSettings` shared by application startup and all five listeners | a malformed, missing or wrapped port accepted, the wrong server's keys required, a rejected configuration published, or a lifecycle action run after invalid input |
+| Outbound connections return owned sockets only after connect and option setup; player adoption and Mofus stream setup release partial resources on failure | `outbound_server_connection_tests`, `socket_construction_tests` and the game runtime's `GameConnection` tests | incorrect socket options, a leaked descriptor/allocation, partial Mofus publication, failed retry after allocation failure or lost ownership while constructing a player |
 | Application configuration is published only after a successful load, stays alive through cleanup and the result, and restores its previous context binding on scope exit | `server_application_tests`, over the shared `ServerApplication` used by all three entry points | actions running after a configuration error, an incorrect effective login override, a lost binding or failure status, an incorrect drain diagnostic, or unflushed final output |
 | Server shutdown requests every auxiliary worker's stop before draining game zones or joining any auxiliary worker; retained worker failures remain visible after all joins | `server_worker_shutdown_tests`, over `ServerWorkerShutdown` used by all three runtimes | a join before all stop requests, a lost or incorrectly named failure, skipped joins after a retained run failure, or a successful lifecycle exit after worker failure |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
@@ -299,7 +300,8 @@ leading plus/zeroes, spaces/tabs and trailing CR from CRLF files remain valid.
 offsets and before publishing configuration. All five listener paths use the
 same reader before retrying binds, so direct manager construction also refuses
 malformed values. Generic integer properties, optional proxy configuration and
-outbound ports keep their existing readers. Pure settings tests, application
+other outbound ports keep their existing readers; shared-server and Mofus
+connections also use this reader when their features connect. Pure settings tests, application
 tests and executable CLI failures own this boundary.
 
 `Properties::load` opens the file and delegates to `de::readProperties` in
@@ -372,6 +374,18 @@ most every 10 ms; other exceptions propagate. Socket constructors release their
 resources if setup throws, and managers keep temporary ownership through socket
 configuration. `listener_startup_tests` checks the retry policy and real occupied
 ports, including descriptor reuse after failed TCP and UDP construction.
+
+`OutboundServerConnection` owns the shared-server and Mofus clients' common
+socket setup. `connectOutboundServer` takes an explicit numeric IPv4 endpoint,
+makes one blocking connection attempt, configures nonblocking I/O and disables
+linger, then returns `unique_ptr<Socket>`. Retry delays, shutdown policy and
+protocol work stay with each caller. Their port settings use `readServerPort`
+when connecting; optional services are not required by application startup.
+Socket constructors retain temporary implementation ownership through creation.
+`Player(Socket*)` adopts even on failed stream construction, and Mofus publishes
+socket/input/output together after complete setup. The focused connection tests
+use real loopback peers; isolated allocation probes verify resource cleanup in
+the kernel and the production game runtime without starting a server or database.
 
 `ServerWorkerShutdown` provides `stopServerWorkers` for all three servers'
 auxiliary workers. After stopping the foreground loop, each server supplies

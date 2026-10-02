@@ -13,6 +13,51 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Outbound setup could leak resources or publish a partial connection (2026-10-02)
+
+The default and endpoint `Socket` constructors allocated a raw `SocketImpl`
+before calling `create`; descriptor exhaustion threw before the destructor
+could free the implementation. `Player(Socket*)` similarly adopted a raw socket
+and published its input stream before allocating its output stream. A failed
+constructor could leave both the socket and partial streams without an owner.
+Mofus published each part of its connection separately; an allocation failure
+could leave a socket without complete streams, preventing a clean retry.
+
+`OutboundServerConnection` now owns the shared-server and Mofus clients' common
+connect/nonblocking/no-linger sequence and returns an owned socket only after
+setup. Both callers use checked decimal ports when connecting. Each socket
+constructor retains local implementation ownership through `create`.
+`Player(Socket*)` takes ownership even if stream construction fails, allowing
+the shared client caller to transfer its socket without retaining an ambiguous
+second owner. Mofus publishes socket/input/output together after setup and
+diagnostics succeed, so a reporting exception also leaves an empty connection.
+Retries, connection diagnostics and protocol work remain in the callers.
+
+Subprocess regressions reproduced both constructor leaks with `RLIMIT_NOFILE`
+exhaustion and failures during player/shared-client adoption and Mofus setup.
+Allocation sweeps now verify no surviving heap allocations or descriptors, and
+Mofus can retry after failed construction. Loopback tests exercise the extracted
+helper's actual socket options, bidirectional bytes, refusal and ownership
+transfer. These tests install allocation probes only in their own executables;
+production fatal-handler policy remains unchanged.
+
+> **Status:** fixed (refactor/outbound-server-connection)
+
+Further source inspection found pending adoption/replacement paths:
+
+- `SocketImpl::accept` accepts a descriptor before allocating its implementation,
+  then assigns host metadata without temporary ownership. Allocation failures
+  can abandon the descriptor or implementation. `ServerSocket::accept` likewise
+  holds the accepted implementation as a raw pointer while allocating `Socket`.
+- `Player::setSocket` deletes a stream before allocating its replacement, leaving
+  a dangling stream pointer if allocation throws. The related
+  `Socket::reconnect` replacement issue is recorded below.
+
+These remaining paths need allocation-failure regressions and explicit
+ownership. They have not yet been fixed or validated by fault injection.
+
+> **Status:** recorded, not fixed (refactor/outbound-server-connection)
+
 ## Listener configuration accepted malformed or wrapped ports (2026-10-02)
 
 The five TCP/UDP listeners read ports through `Properties::getPropertyInt`,
@@ -66,12 +111,12 @@ bind retries that stop without leaks when shutdown is requested.
 
 > **Status:** fixed (refactor/server-listener-startup)
 
-The related outbound `Socket` constructors still assign a raw `SocketImpl`
-before calling `create`; a socket-creation exception leaks that allocation.
-`Socket::reconnect` also deletes its old implementation before allocating the
-replacement, leaving a dangling member if replacement construction throws.
-These paths were identified by source inspection and remain outside the
-listener change; they need failure-injection coverage and explicit ownership.
+The related outbound `Socket` constructor leak is fixed by the outbound setup
+extraction above, with descriptor-exhaustion regressions. `Socket::reconnect`
+still deletes its old implementation before allocating the replacement,
+leaving a dangling member if replacement construction throws. This path was
+identified by source inspection and needs failure-injection coverage and
+explicit ownership.
 
 > **Status:** recorded, not fixed (refactor/server-listener-startup)
 

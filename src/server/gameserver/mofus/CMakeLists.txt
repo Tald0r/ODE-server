@@ -18,6 +18,7 @@ SET(LIBMOFUS_SRC
 	PKTSError.cpp)
 
 add_library(Mofus STATIC ${LIBMOFUS_SRC})
+target_link_libraries(Mofus PRIVATE OutboundServerConnection ServerPortSettings)
 
 target_compile_definitions(Mofus PRIVATE __GAME_SERVER__)
 

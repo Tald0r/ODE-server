@@ -44,6 +44,7 @@ class Player {
 public:
     // constructor
     Player();
+    // Takes ownership of the socket, including if stream construction fails.
     Player(Socket* pSocket);
 
     // destructor

@@ -12,7 +12,9 @@
 #include "MPacket.h"
 #include "MPacketManager.h"
 #include "Mofus.h"
+#include "OutboundServerConnection.h"
 #include "Properties.h"
+#include "ServerPortSettings.h"
 #include "Socket.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
@@ -139,37 +141,23 @@ void MPlayer::connect() {
 
     // Load Mofus host/port from configuration.
     const string MofusIP = de::kernelContext().config().getProperty("MofusIP");
-    uint MofusPort = de::kernelContext().config().getPropertyInt("MofusPort");
+    const uint MofusPort = de::readServerPort(de::kernelContext().config(), "MofusPort");
 
     try {
-        // create socket
-        m_pSocket = new Socket(MofusIP, MofusPort);
-
-        // connect
-        m_pSocket->connect();
-
-        // make nonblocking socket
-        m_pSocket->setNonBlocking(true);
-
-        // make no-linger socket
-        m_pSocket->setLinger(0);
-
-        // Prepare buffered read/write streams on the socket.
-        m_pInputStream = new SocketInputStream(m_pSocket, defaultMPlayerInputStreamSize);
-        m_pOutputStream = new SocketOutputStream(m_pSocket, defaultMPlayerOutputStreamSize);
+        auto socket = de::connectOutboundServer(MofusIP, MofusPort);
+        auto input = std::make_unique<SocketInputStream>(socket.get(), defaultMPlayerInputStreamSize);
+        auto output = std::make_unique<SocketOutputStream>(socket.get(), defaultMPlayerOutputStreamSize);
 
         cout << "connection to Mofus server established - " << MofusIP.c_str() << ":" << MofusPort << endl;
         filelog(MOFUS_LOG_FILE, "----- connection extablished(%s:%u) -----", MofusIP.c_str(), MofusPort);
+        // Publishing cannot throw. Retain ownership through diagnostics too,
+        // so any exception leaves an empty connection ready for a retry.
+        m_pSocket = socket.release();
+        m_pInputStream = input.release();
+        m_pOutputStream = output.release();
     } catch (Throwable& t) {
         cout << "connect to Mofus server fail - " << MofusIP.c_str() << ":" << MofusPort << endl;
         filelog(MOFUS_LOG_FILE, "----- connecti fail(%s:%u) -----", MofusIP.c_str(), MofusPort);
-
-        // Release socket resources on failure.
-        try {
-            SAFE_DELETE(m_pSocket);
-        } catch (Throwable& t) {
-            filelog(MOFUS_ERROR_FILE, "[socket release error] %s", t.toString().c_str());
-        }
 
         // Back off briefly before retrying.
         usleep(1000000); // 1 second

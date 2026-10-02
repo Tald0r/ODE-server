@@ -747,13 +747,36 @@ visibility can't express.
   > actions. Rejection preserves the previous context binding through scope
   > exit. Game requires `TCPPort`/`GameServerUDPPort`, login requires
   > `LoginServerPort`/`LoginServerUDPPort`, and shared requires `TCPPort`.
-  > Generic integers, optional proxy settings and outbound destinations keep
-  > their existing policies; low-level sockets still support ephemeral ports.
+  > Generic integers and optional proxy settings keep their existing policies;
+  > low-level sockets still support ephemeral ports. Shared-server and Mofus
+  > destinations also use this port reader when connecting (2.16).
   - Owner: `server_port_settings_tests` for grammar, boundaries and each
     server's required keys; `server_application_tests` for failed publication,
     missing ports, CRLF input and effective login overrides;
     `server_startup_cli` for rejection by all three production executables;
     production runtime links for the five consumers of the same reader.
+
+- [x] **2.16 Extract outbound server-connection setup.**
+  > **Status:** done (2026-10-02) —
+  > `SharedServerManager::run` and `MPlayer::connect` use
+  > `OutboundServerConnection` for socket creation, blocking connection,
+  > nonblocking I/O and disabled linger. The kernel-only library takes explicit
+  > numeric IPv4 endpoint inputs and returns an owned socket after all setup
+  > succeeds. Retry delays, shutdown policy and protocol work stay in the
+  > callers. Their configured ports use `ServerPortSettings` on demand; startup
+  > does not require optional services to be configured or reachable.
+  > Socket constructors own their implementation through creation, and
+  > `Player(Socket*)` owns an adopted socket even if stream setup throws.
+  > Shared client construction transfers ownership once allocation succeeds.
+  > Mofus retains temporary socket/stream ownership until setup and diagnostics
+  > succeed, so failures leave a retryable empty connection.
+  > The constructor/adoption defects and remaining accept/reconnect work are
+  > recorded in `docs/FIXES.md`.
+  - Owner: `outbound_server_connection_tests` for real loopback connections,
+    refused attempts, socket options, byte exchange and ownership transfer;
+    `socket_construction_tests` for descriptor exhaustion and allocation faults;
+    game runtime `GameConnection` tests for real shared-client adoption and
+    Mofus allocation failures/retries; production runtime and Mofus links.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

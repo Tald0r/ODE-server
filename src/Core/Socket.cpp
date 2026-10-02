@@ -8,13 +8,16 @@
 
 #include "Socket.h"
 
+#include <memory>
+
 #include "Assert.h"
 
 Socket::Socket() : m_pSocketImpl(NULL) {
     __BEGIN_TRY
 
-    m_pSocketImpl = new SocketImpl();
-    m_pSocketImpl->create();
+    auto impl = std::make_unique<SocketImpl>();
+    impl->create();
+    m_pSocketImpl = impl.release();
 
     __END_CATCH
 }
@@ -22,8 +25,9 @@ Socket::Socket() : m_pSocketImpl(NULL) {
 Socket::Socket(const string& host, uint port) : m_pSocketImpl(NULL) {
     __BEGIN_TRY
 
-    m_pSocketImpl = new SocketImpl(host, port);
-    m_pSocketImpl->create();
+    auto impl = std::make_unique<SocketImpl>(host, port);
+    impl->create();
+    m_pSocketImpl = impl.release();
 
     __END_CATCH
 }

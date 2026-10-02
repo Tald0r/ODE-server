@@ -16,8 +16,10 @@
 #include "GSRequestGuildInfo.h"
 #include "KeepAlive.h"
 #include "KernelContext.h"
+#include "OutboundServerConnection.h"
 #include "Properties.h"
 #include "ServerContext.h"
+#include "ServerPortSettings.h"
 #include "SharedServerClient.h"
 #include "ThreadManager.h"
 #include "ThreadPool.h"
@@ -97,29 +99,16 @@ void SharedServerManager::run()
 
             // Try to connect if not connected.
             if (m_pSharedServerClient == NULL) {
-                Socket* pSocket = NULL;
-
                 try {
                     string SharedServerIP = config.getProperty("SharedServerIP");
-                    uint SharedServerPort = config.getPropertyInt("SharedServerPort");
-
-                    // create socket
-                    pSocket = new Socket(SharedServerIP, SharedServerPort);
-
-                    // connect
-                    pSocket->connect();
-
-                    // make nonblocking socket
-                    pSocket->setNonBlocking(true);
-
-                    // make no-linger socket
-                    pSocket->setLinger(0);
+                    const auto SharedServerPort = de::readServerPort(config, "SharedServerPort");
+                    auto socket = de::connectOutboundServer(SharedServerIP, SharedServerPort);
 
                     __ENTER_CRITICAL_SECTION(m_Mutex)
-                    m_pSharedServerClient = new SharedServerClient(pSocket);
+                    // Allocation happens before release; Player owns the socket
+                    // once construction starts, including failed stream setup.
+                    m_pSharedServerClient = new SharedServerClient(socket.release());
                     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-                    pSocket = NULL;
 
                     cout << "connection to sharedserver established" << endl;
 
@@ -128,12 +117,6 @@ void SharedServerManager::run()
                     m_pSharedServerClient->sendPacket(&gsRequestGuildInfo);
                 } catch (Throwable& t) {
                     cout << "connect to sharedserver fail" << endl;
-
-                    try {
-                        SAFE_DELETE(pSocket);
-                    } catch (Throwable& t) {
-                        filelog("sharedServerClient.txt", "[0]%s", t.toString().c_str());
-                    }
 
                     __ENTER_CRITICAL_SECTION(m_Mutex)
 

@@ -74,6 +74,11 @@ add_library(ListenerStartup STATIC ListenerStartup.cpp)
 target_include_directories(ListenerStartup PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ListenerStartup PUBLIC de-kernel Threads::Threads)
 
+# Outbound socket setup is independent of retry loops and protocol sessions.
+add_library(OutboundServerConnection STATIC OutboundServerConnection.cpp)
+target_include_directories(OutboundServerConnection PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(OutboundServerConnection PUBLIC de-kernel)
+
 # ============================================================================
 # 子目录
 # ============================================================================
