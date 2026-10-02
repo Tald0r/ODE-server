@@ -265,6 +265,31 @@ TEST_F(LoginCharacterTopologyTest, ExistingSlotLengthRefusalPrecedesZoneRouting)
     EXPECT_EQ(selected.rejection(), SelectPCRejection::NoSlot);
 }
 
+TEST_F(LoginCharacterTopologyTest, MalformedFiveByteSlotsAreRefusedBeforeMissingZoneLookup) {
+    for (const auto* slot : {"WRNG2", "SLOT0", "SLOT4", "SLOTa"}) {
+        SCOPED_TRACE(slot);
+        Characters characters;
+        characters.addSelectableCharacter(LOGIN_RACE_TABLE_SLAYER, "account", "Rowan", 9999, slot, 30, 1);
+        const auto selected = decideSelectPC(request(), characters, topology);
+        ASSERT_TRUE(selected.isRejected());
+        EXPECT_EQ(selected.rejection(), SelectPCRejection::NoSlot);
+    }
+}
+
+TEST_F(LoginCharacterTopologyTest, QuestRoutingDoesNotBypassStoredSlotValidation) {
+    ZoneInfoManager emptyZones;
+    ZoneGroupInfoManager emptyGroups;
+    LoginCharacterTopology questTopology(servers, emptyZones, emptyGroups);
+    for (const auto* slot : {"WRNG2", "SLOT0", "SLOT4", "SLOTa"}) {
+        SCOPED_TRACE(slot);
+        Characters characters;
+        characters.addSelectableCharacter(LOGIN_RACE_TABLE_SLAYER, "account", "Rowan", 20000, slot, 30, 1);
+        const auto selected = decideSelectPC(request(), characters, questTopology);
+        ASSERT_TRUE(selected.isRejected());
+        EXPECT_EQ(selected.rejection(), SelectPCRejection::NoSlot);
+    }
+}
+
 TEST_F(LoginCharacterTopologyTest, MissingCatalogueReferencesPropagateThroughTheDecision) {
     Characters characters;
     characters.addSelectableCharacter(LOGIN_RACE_TABLE_SLAYER, "account", "Rowan", 40000, "SLOT1", 30, 1);

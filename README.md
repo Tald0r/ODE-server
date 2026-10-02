@@ -173,6 +173,9 @@ Character selection uses an explicit adapter over the server and routing
 catalogues. Runtime tests compose it with the production decision for all races,
 sparse/boundary IDs, non-PK limits, quest-zone routing, missing references and
 quiescent reloads, without publishing process contexts or starting a server.
+Selection accepts only the creation system's canonical `SLOT1`–`SLOT3` text,
+keeps account slot values at 1–3 and refuses malformed rows before routing.
+Tests cover all suffix bytes, malformed prefixes and earlier rejection gates.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

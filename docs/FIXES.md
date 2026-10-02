@@ -483,14 +483,34 @@ world refusal or update policy.
 
 ## Character selection checks slot length without checking the stored slot format (2026-10-02)
 
-`decideSelectPC` rejects slot text only when its length differs from five, then
-subtracts `'0'` from the last character. A five-character value with a wrong
-prefix or a nondigit therefore reaches routing with an invalid last-slot value.
-Existing tests cover wrong lengths and normal `SLOT1`/`SLOT2`/`SLOT3` rows but
-not these cases. Task 2.46 tracks format validation and an audit of the supported
-slot range across creation/listing before pinning its rejection contract.
+`decideSelectPC` checked only the five-character length before subtracting
+`'0'` from the last byte. Wrong prefixes, nondigits and unsupported indices
+therefore reached routing with an invalid account slot. Four regressions
+reproduced accepted malformed rows, a missing-zone lookup instead of refusal
+and quest routing bypassing slot validation.
 
-> **Status:** recorded, not fixed (refactor/common-server-catalogue)
+Selection now matches the same `Slot2String` names creation writes:
+`SLOT1`–`SLOT3`. The account still receives 1–3; the enum creation and `LCPCList`
+use is zero-based with three entries. `NoSlot` precedes routing and retains the
+earlier terms/status/character/free-play/non-PK gates. Decision and production
+topology tests cover all 256 suffix bytes, malformed/embedded-NUL prefixes,
+every race, valid slots, quest routes and missing zone records. No SQL or packet
+layout changes were needed.
+
+> **Status:** fixed (fix/character-selection-slots)
+
+## Login kick lookup can use uninitialized location fields (2026-10-02)
+
+`LoginPlayer::sendLGKickCharacter` declares local world/server/slot values
+without initialization. A missing `loadLastLocation` row leaves them unset
+before character/server lookup. When the session already has cached location
+fields, the branch copies the world/group but never assigns `lastSlot` from
+`getLastSlot()`; an empty cached character name then passes that uninitialized
+slot to `loadSlayerNameInSlot`. Found during the slot-contract audit; these paths
+need an explicit location/character decision with missing-row and cached-slot
+tests before changing the kick flow.
+
+> **Status:** recorded, not fixed (fix/character-selection-slots)
 
 ## Login group and population catalogues lack safe scoped ownership (2026-10-02)
 
