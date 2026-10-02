@@ -37,9 +37,10 @@ TEST_F(GameServerRuntimeTest, AcceptsLegacyRemoveStoreItem) {
     EXPECT_NO_THROW(PacketDispatcher::dispatch(&packet, nullptr));
 }
 
-TEST_F(GameServerRuntimeTest, AcceptsLegacyCannotUse) {
+// GCCannotUse is a server reply, excluded from the current client link.
+TEST_F(GameServerRuntimeTest, RejectsServerOnlyCannotUse) {
     GCCannotUse packet;
-    EXPECT_NO_THROW(PacketDispatcher::dispatch(&packet, nullptr));
+    EXPECT_THROW(PacketDispatcher::dispatch(&packet, nullptr), InvalidProtocolException);
 }
 
 TEST_F(GameServerRuntimeTest, RejectsLoginRequests) {

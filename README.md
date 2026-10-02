@@ -172,9 +172,9 @@ cmake --build build-tests --target wire_tests -j"$(sysctl -n hw.ncpu)"
 (cd build-tests && ctest --output-on-failure)
 ```
 
-53 of the 56 tests pass, including the wire goldens and all three runtime
-targets. `ratchets`, `proxy_acceptor_tests` and `shutdown_supervisor` fail because of the
-platform rather than the code; `docs/FIXES.md` records each one.
+The native suite has three known platform-specific failures: `ratchets`,
+`proxy_acceptor_tests` and `shutdown_supervisor`. `docs/FIXES.md` records
+each one; the pinned container remains the reference run.
 
 ## Howto
 
