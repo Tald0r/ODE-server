@@ -1299,15 +1299,38 @@ visibility can't express.
     all races, every canonical slot, ordinary/quest routes, missing zones and
     earlier-gate precedence.
 
-- [ ] **2.47 Extract login character-list assembly.**
-  > **Status:** not started — `LoginPlayer::makePCList` reads the default
-  > character repository and builds race-specific packet records inside the
-  > session object. Supply world/account/repository inputs explicitly, audit
-  > partial-record ownership and slot handling, and exercise production assembly
-  > without executable startup. Keep the normalized server-selection world issue
-  > recorded in `docs/FIXES.md` visible at the session/query boundary.
-  - Planned owner: login runtime assembly cases over supplied repository rows,
-    real packet records and failure/retry paths.
+- [x] **2.47 Extract login character-list assembly.**
+  > **Status:** done (this commit) — `de::makeLoginCharacterList` takes explicit
+  > world/account/repository inputs and returns a complete owned packet. Each
+  > partial race record stays owned until `LCPCList::setPCInfo` accepts it.
+  > All four handlers retain the reply through sending; `LoginPlayer::makePCList`
+  > is removed. Query order, race fallback, field mappings, truncation and
+  > database/missing-row error policy are retained. Normalized session worlds,
+  > HP/MP column ordering and decoder ownership remain recorded follow-ups.
+  - Owner: 21 `LoginCharacterList` runtime cases using real packet records and
+    supplied rows. Four regressions reproduced leaked invalid/duplicate records
+    and allocation failures before the ownership fix. Coverage includes all
+    races/slots, boundary worlds and exact account inputs, field mappings, query
+    order, empty/maximal replies, exception identity/translation, independent
+    replies, repeated cleanup and two 64-position allocation sweeps with retry.
+
+- [ ] **2.48 Extract the server-selection session/reply flow.**
+  > **Status:** not started — `CLSelectServerHandler` applies the decision's
+  > group but ignores its normalized world before querying character rows.
+  > Compose selection, explicit character-list assembly and session changes in
+  > a testable flow; ensure the selected world/group and query world agree while
+  > preserving refusal and successful-send ordering.
+  - Planned owner: login runtime flow cases covering sparse-world normalization,
+    refusal, query/send failure and the session observed by each collaborator.
+
+- [ ] **2.49 Extract login kick location/character resolution.**
+  > **Status:** not started — `LoginPlayer::sendLGKickCharacter` combines
+  > repository/context reads, cached session fields and datagram sending. A
+  > missing location leaves local fields unset; the cached-location path does
+  > not initialize the slot used for an unnamed character. Resolve these inputs
+  > explicitly and pin missing/cached-row policy before applying kick effects.
+  - Planned owner: decision/runtime cases over supplied account/character rows,
+    cached locations, missing names and repository failures.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

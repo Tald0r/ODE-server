@@ -176,6 +176,10 @@ quiescent reloads, without publishing process contexts or starting a server.
 Selection accepts only the creation system's canonical `SLOT1`–`SLOT3` text,
 keeps account slot values at 1–3 and refuses malformed rows before routing.
 Tests cover all suffix bytes, malformed prefixes and earlier rejection gates.
+Character-list assembly takes explicit world, account and repository inputs and
+returns an owned `LCPCList` for the handlers to send. Runtime tests cover every
+race and slot, field/query mappings, reply independence and cleanup/retry after
+validation, duplicate, repository, allocation and error-reporting failures.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
