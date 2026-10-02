@@ -158,6 +158,9 @@ Login world/server selection borrows these managers explicitly. Runtime tests
 exercise actual sparse membership, ascending group lists, missing-ID fallback,
 empty-table refusals, reloads and live populations across the full stored ID
 range. Decision tests retain the separate world-closed and group-down policies.
+Server-list reply assembly also runs with supplied topology, account and player
+inputs. Tests preserve both account-query paths, default/saved group selection,
+packet limits and truncation, with allocation, lookup and send failure cleanup.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

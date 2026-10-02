@@ -7,15 +7,12 @@
 #include "CLSelectWorld.h"
 
 #ifdef __LOGIN_SERVER__
-#include <vector>
-
 #include "Assert1.h"
-#include "LCServerList.h"
 #include "LoginContext.h"
 #include "LoginPlayer.h"
+#include "LoginServerList.h"
 #include "LoginWorldTopology.h"
 #include "ServerContext.h"
-#include "ServerGroupInfo.h"
 #include "WorldSelection.h"
 #include "repository/LoginAccountRepository.h"
 
@@ -41,8 +38,6 @@ void CLSelectWorldHandler::execute(CLSelectWorld* pPacket, Player* pPlayer)
     LoginWorldTopology topology(de::serverContext().worldInfos(), de::loginContext().gameServerGroups(),
                                 de::loginContext().userInfos());
 
-    ServerLoadThresholds thresholds;
-
     Outcome<void, SelectWorldRejection> outcome = decideSelectWorld(WorldID, topology);
 
     if (outcome.isRejected()) {
@@ -62,26 +57,8 @@ void CLSelectWorldHandler::execute(CLSelectWorld* pPacket, Player* pPlayer)
     pLoginPlayer->setWorldID(WorldID);
 
     try {
-        const std::vector<ServerListEntry> groups = serverListFor(WorldID, thresholds, topology);
-
-        LCServerList lcServerList;
-
-        int currentServerGroupID = 0;
-        if (defaultLoginAccountRepository().loadCurrentServerGroup(pLoginPlayer->getID(), currentServerGroupID)) {
-            lcServerList.setCurrentServerGroupID(currentServerGroupID);
-        }
-
-        for (std::vector<ServerListEntry>::const_iterator itr = groups.begin(); itr != groups.end(); ++itr) {
-            ServerGroupInfo* pServerGroupInfo = new ServerGroupInfo();
-            pServerGroupInfo->setGroupID(itr->groupID);
-            pServerGroupInfo->setGroupName(itr->groupName);
-            pServerGroupInfo->setStat(itr->stat);
-
-            lcServerList.addListElement(pServerGroupInfo);
-        }
-
-        pLoginPlayer->sendPacket(&lcServerList);
-
+        de::sendLoginServerList(*pLoginPlayer, WorldID, topology, defaultLoginAccountRepository(),
+                                de::LoginServerListQuery::CurrentGroup);
     } catch (Throwable&) {
         // A group the tables do not describe, or more groups than the list
         // packet holds, leaves the client without a server list.
