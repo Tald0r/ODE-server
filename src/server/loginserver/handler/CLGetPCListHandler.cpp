@@ -11,8 +11,10 @@
 #include "DB.h"
 #include "GameServerInfoManager.h"
 #include "LCPCList.h"
+#include "LoginCharacterList.h"
 #include "LoginPlayer.h"
 #include "OptionInfo.h"
+#include "repository/LoginCharacterRepository.h"
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -37,9 +39,9 @@ void CLGetPCListHandler::execute(CLGetPCList* pPacket, Player* pPlayer)
     //----------------------------------------------------------------------
     // Now build and send the LCPCList packet
     //----------------------------------------------------------------------
-    LCPCList lcPCList;
-    pLoginPlayer->makePCList(lcPCList);
-    pLoginPlayer->sendPacket(&lcPCList);
+    auto lcPCList = de::makeLoginCharacterList(pLoginPlayer->getWorldID(), pLoginPlayer->getID(),
+                                               defaultLoginCharacterRepository());
+    pLoginPlayer->sendPacket(lcPCList.get());
     pLoginPlayer->setPlayerStatus(LPS_PC_MANAGEMENT);
 
 

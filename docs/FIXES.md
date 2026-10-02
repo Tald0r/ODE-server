@@ -472,9 +472,10 @@ and clear remain quiescent; final init reporting still follows publication.
 
 `decideSelectServer` reports the normalized world used to look up a group, but
 `CLSelectServerHandler` writes only the selected group to the session.
-`LoginPlayer::makePCList` reads the session's existing world for its character
-repository queries. A stale/missing session world can therefore normalize to
-an existing world's group while the next lookup still uses the stale world.
+The handler passes the session's existing world to `makeLoginCharacterList`
+for its character repository queries. A stale/missing session world can
+therefore normalize to an existing world's group while the next lookup still
+uses the stale world.
 This pre-existing handler behavior is retained by the topology extraction;
 the session/character-query boundary needs its own tests and consistent
 world refusal or update policy.
@@ -511,6 +512,49 @@ need an explicit location/character decision with missing-row and cached-slot
 tests before changing the kick flow.
 
 > **Status:** recorded, not fixed (fix/character-selection-slots)
+
+## Character-list assembly leaks records before packet attachment (2026-10-02)
+
+`LoginPlayer::makePCList` allocated each race's `PCInfo` as a raw pointer before
+setting names, slots, sex, attributes and shape. A throwing setter or duplicate
+slot in `LCPCList::setPCInfo` abandoned the incoming record. Four regressions
+over the extracted production body reproduced invalid-slot/sex, duplicate and
+allocation-failure leaks.
+
+`de::makeLoginCharacterList` now receives world/account/repository inputs
+explicitly and returns an owned complete reply. Each record remains in a
+`unique_ptr` until attachment succeeds; the reply owns all previously attached
+records while later queries or construction can fail. Four handlers hold the
+reply through sending, and the session's old assembly method is removed.
+Twenty-one runtime tests cover field/query mappings, all races/slots, malformed
+records, missing rows, exception identity and database-error translation,
+duplicate refusal, repeated cleanup and allocation failure/retry.
+
+> **Status:** fixed (refactor/login-character-list)
+
+## Character-list HP/MP fields use reversed database-column arguments (2026-10-02)
+
+The list assembler passes each race's `(HP, CurrentHP)` columns to
+`setHP(curHP, maxHP)` and the Slayer's `(MP, CurrentMP)` to
+`setMP(curMP, maxMP)`. Those setters store the first argument in `ATTR_CURRENT`
+and the second in `ATTR_MAX`; `write()` emits those fields in that order.
+Distinct-value assembly tests reproduce this mapping. The ownership extraction
+preserves it; correcting the displayed current/maximum values needs a separate
+behavior change with the repository and client field expectations checked.
+
+> **Status:** recorded, not fixed (refactor/login-character-list)
+
+## Character-list decoding does not own partial or replaced records (2026-10-02)
+
+`LCPCList::read` allocates raw race records before calling their throwing
+`read()` methods. Failure before attachment loses the incoming record, and
+successful attachment writes directly into the slot array without releasing an
+existing entry. Duplicate slots or reuse of a populated packet can therefore
+leak earlier records. Found while auditing outgoing list ownership; the new
+assembler's ownership fix does not change decoding. Decoder failure/reuse tests
+and a prepared replacement policy remain to be added.
+
+> **Status:** recorded, not fixed (refactor/login-character-list)
 
 ## Login group and population catalogues lack safe scoped ownership (2026-10-02)
 

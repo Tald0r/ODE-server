@@ -15,6 +15,7 @@
 #include "GameServerInfoManager.h"
 #include "KernelContext.h"
 #include "LCPCList.h"
+#include "LoginCharacterList.h"
 #include "LoginContext.h"
 #include "LoginPlayer.h"
 #include "OptionInfo.h"
@@ -22,6 +23,7 @@
 #include "ReconnectDecision.h"
 #include "ReconnectLoginInfoManager.h"
 #include "repository/LoginAccountRepository.h"
+#include "repository/LoginCharacterRepository.h"
 
 #endif
 
@@ -202,10 +204,9 @@ void CLReconnectLoginHandler::execute(CLReconnectLogin* pPacket, Player* pPlayer
     //----------------------------------------------------------------------
     // Answer with the PC list.
     //----------------------------------------------------------------------
-    LCPCList lcPCList;
-
-    pLoginPlayer->makePCList(lcPCList);
-    pLoginPlayer->sendPacket(&lcPCList);
+    auto lcPCList = de::makeLoginCharacterList(pLoginPlayer->getWorldID(), pLoginPlayer->getID(),
+                                               defaultLoginCharacterRepository());
+    pLoginPlayer->sendPacket(lcPCList.get());
     pLoginPlayer->setPlayerStatus(LPS_PC_MANAGEMENT);
 
 

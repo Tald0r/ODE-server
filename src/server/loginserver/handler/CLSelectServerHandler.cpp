@@ -11,11 +11,13 @@
 
 #include "Assert1.h"
 #include "LCPCList.h"
+#include "LoginCharacterList.h"
 #include "LoginContext.h"
 #include "LoginPlayer.h"
 #include "LoginWorldTopology.h"
 #include "ServerContext.h"
 #include "WorldSelection.h"
+#include "repository/LoginCharacterRepository.h"
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -65,10 +67,10 @@ void CLSelectServerHandler::execute(CLSelectServer* pPacket, Player* pPlayer)
     //----------------------------------------------------------------------
     // Answer with the account's characters.
     //----------------------------------------------------------------------
-    LCPCList lcPCList;
-    pLoginPlayer->makePCList(lcPCList);
+    auto lcPCList = de::makeLoginCharacterList(pLoginPlayer->getWorldID(), pLoginPlayer->getID(),
+                                               defaultLoginCharacterRepository());
 
-    pLoginPlayer->sendPacket(&lcPCList);
+    pLoginPlayer->sendPacket(lcPCList.get());
     pLoginPlayer->setPlayerStatus(LPS_PC_MANAGEMENT);
 
     // The selected group is not written back here; CLChangeServerHandler

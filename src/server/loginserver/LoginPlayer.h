@@ -20,8 +20,6 @@
 #include "PlayerStatus.h"
 #include "Timeval.h"
 
-class LCPCList;
-
 //////////////////////////////////////////////////////////////////////
 //
 // class LoginPlayer
@@ -176,8 +174,6 @@ public:
     void setWebLogin(bool bWebLogin = true) {
         m_bWebLogin = bWebLogin;
     }
-
-    void makePCList(LCPCList& lcPCList);
 
 public:
     void sendLGKickCharacter();

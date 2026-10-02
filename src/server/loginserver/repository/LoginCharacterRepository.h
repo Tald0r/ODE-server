@@ -64,7 +64,7 @@ struct LoginSelectRow {
     int competence;
 };
 
-// The character list (LoginPlayer::makePCList): one ACTIVE Slayer row.
+// The character-list builder: one ACTIVE Slayer row.
 // hairColor .. rank are read for every row; the caller uses them only
 // when race is "SLAYER".
 struct LoginSlayerListRow {
@@ -259,7 +259,7 @@ public:
     // statements on one Statement, in Slayer / Vampire / Ousters order.
     virtual void setCharacterServerGroup(WorldID_t worldID, int serverGroupID, const std::string& name) = 0;
 
-    // --- the character list (LoginPlayer::makePCList) ----------------------------
+    // --- the character list ---------------------------------------------------
     virtual std::vector<LoginSlayerListRow> loadSlayerList(WorldID_t worldID, const std::string& playerID) = 0;
     // The ACTIVE Vampire / Ousters row of that account AND name. False when
     // there is none; row is untouched then.
