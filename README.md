@@ -150,6 +150,10 @@ Login world-list replies use explicit catalogue, account repository and player
 inputs. Tests run the production assembler without sockets or database startup,
 covering sparse world IDs, ordered rows, saved-selection bounds, packet limits,
 and cleanup/retry after lookup, allocation or send failures.
+Login group and population catalogues also load from supplied repositories.
+Tests cover scoped construction/destruction, checked owned replacement,
+preservation of live counters and borrowed rows after failures, world-zero
+cleanup, boundary worlds, allocation retry and throwing load diagnostics.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

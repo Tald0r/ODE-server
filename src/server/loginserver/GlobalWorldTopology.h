@@ -31,7 +31,7 @@ public:
     }
 
     ServerGroupRow serverGroup(ServerGroupID_t groupID, WorldID_t worldID) override {
-        GameServerGroupInfo* pGameServerGroupInfo =
+        const GameServerGroupInfo* pGameServerGroupInfo =
             de::loginContext().gameServerGroups().getGameServerGroupInfo(groupID, worldID);
 
         ServerGroupRow row;
