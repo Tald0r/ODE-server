@@ -59,17 +59,47 @@ shutdown coordination and pending broadcasts are separate work.
 
 > **Status:** fixed (refactor/game-player-handoffs)
 
-## Zone broadcast queues retain raw allocations after flush (2026-10-02)
+## Legacy mutex ownership bookkeeping races with acquisition (2026-10-02)
+
+`Mutex::lock` and `trylock` read the plain `m_LockTID` before acquiring the
+native mutex. `unlock` writes it after releasing that mutex, so the previous
+owner can overwrite the next owner's record; even making the integer atomic
+would leave this ordering defect. Narrowing `pthread_t` to `int` also cannot
+establish thread identity portably. The broadcast queue now uses `std::mutex`,
+but other server users retain the legacy implementation. Task 2.26 tracks a
+standalone behavior/ownership test boundary and the attribute/native-handle
+audit needed before changing those users' synchronization contract.
+
+> **Status:** recorded, not fixed (refactor/game-broadcast-queue)
+
+## Zone broadcast queues leak allocations and replay dispatched messages (2026-10-02)
 
 The zone-manager audit found `pushBroadcastPacket` holding a raw stream through
 packet encoding, filter cloning and list insertion. Failure can leave those
 allocations unowned; its default-null filter is also dereferenced by `Clone`.
 `flushBroadcastPacket` clears the list without deleting the cloned filters or
-streams, and manager destruction does not release pending broadcasts. These
-are source findings; a separate broadcast ownership extraction and regression
-coverage remain.
+streams, and manager destruction does not release pending broadcasts. Five
+isolated runtime regressions reproduced the null-filter crash and leaks after
+flush, manager destruction, failed packet encoding and failed cloning.
 
-> **Status:** recorded, not fixed (refactor/game-player-handoffs)
+The flush loop also leaves the whole list pending when a predicate or an
+uncaught send/reporting exception escapes; a retry can replay entries already
+delivered before that failure. A sixth regression reproduced replay after an
+uncaught send allocation failure. Heartbeat also read queue emptiness without
+the producer's lock.
+
+`GameBroadcast` now owns preparation and queued resources. A null filter is
+unfiltered delivery. A flush removes each message before dispatch, releasing
+it even after partial delivery fails; later messages remain queued for retry.
+Caught `Throwable` send errors still report and continue to other recipients.
+All queue access uses a standard mutex, while the zone thread owns recipients.
+Allocation sweeps verify failed publication leaves existing entries intact.
+Additional tests pin literal framing, cloned selection and borrowed-input
+lifetime, all failure/retry paths, actual race-filtered socket delivery and
+concurrent producers through heartbeat without world or database startup.
+Manager destruction releases pending broadcasts after producers have stopped.
+
+> **Status:** fixed (refactor/game-broadcast-queue)
 
 ## Game admission leaked refused connections and left teardown resources dangling (2026-10-02)
 
@@ -1803,9 +1833,10 @@ do.
   write that throws leaves the function with the stream neither queued nor
   freed.** No player receives anything of the refused packet, since the
   stream is the packet's own; the cost is one buffer, sized from the
-  packet, leaked per refusal. Closing it means holding the stream in a
-  `std::unique_ptr` until it is queued.
-  > **Status:** recorded, not fixed (fix/db-lookups-stream)
+  packet, leaked per refusal. `GameBroadcast` now holds the stream and filter
+  clone in scoped owners through encoding and queue insertion; the game
+  runtime's throwing-write regression and allocation sweep pin cleanup.
+  > **Status:** fixed (refactor/game-broadcast-queue)
 
 ## A packet whose write() throws leaves its first bytes in the player's stream (2026-09-25)
 

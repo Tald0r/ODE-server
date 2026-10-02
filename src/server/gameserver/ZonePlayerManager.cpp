@@ -62,7 +62,6 @@ ZonePlayerManager::ZonePlayerManager()
     __BEGIN_TRY
 
     m_Mutex.setName("ZonePlayerManager");
-    m_MutexBroadcast.setName("ZonePlayerManagerBroadcast");
     m_PlayerListQueue.clear();
     m_BroadcastQueue.clear();
 
@@ -110,70 +109,17 @@ void ZonePlayerManager::broadcastPacket_NOBLOCKED(Packet* pPacket)
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-void ZonePlayerManager::pushBroadcastPacket(Packet* pPacket, BroadcastFilter* pFilter)
-
-{
-    __BEGIN_TRY
-
-    __ENTER_CRITICAL_SECTION(m_MutexBroadcast)
-
-    // This assumes the packets written here do not use an Encrypter.
-    // To use packets that need an Encrypter, the BroadcastQueue would have to live
-    // in the Zone and be used from there.
-
-    // Put the filter and the packet into the queue.
-    // The filter is stored as a newly created clone.
-    // The packet is written to a stream and the stream is queued.
-    SocketOutputStream* pStream = new SocketOutputStream(NULL, szPacketHeader + pPacket->getPacketSize());
-    pPacket->writeHeaderNBody(*pStream);
-
-    m_BroadcastQueue.push_back(PairFilterStream(pFilter->Clone(), pStream));
-
-    __LEAVE_CRITICAL_SECTION(m_MutexBroadcast)
-
-    __END_CATCH
+void ZonePlayerManager::pushBroadcastPacket(Packet* pPacket, BroadcastFilter* pFilter) {
+    std::lock_guard queueLock(m_MutexBroadcast);
+    Assert(pPacket != nullptr);
+    m_BroadcastQueue.push_back(de::makeGameBroadcast(*pPacket, pFilter));
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-void ZonePlayerManager::flushBroadcastPacket()
-
-{
-    __BEGIN_TRY
-
-    __ENTER_CRITICAL_SECTION(m_MutexBroadcast)
-
-    list<PairFilterStream>::iterator itr = m_BroadcastQueue.begin();
-    list<PairFilterStream>::iterator endItr = m_BroadcastQueue.end();
-
-    for (; itr != endItr; ++itr) {
-        BroadcastFilter* pFilter = itr->first;
-        SocketOutputStream* pStream = itr->second;
-
-        if (pStream == NULL) {
-            filelog("ZoneBug.txt", "%s : %s", "Zone::flushBroadcastPacket", "pStream is NULL.");
-            continue;
-        }
-
-        for (uint i = 0; i < nMaxPlayers; ++i) {
-            if (m_pPlayers[i] != NULL) {
-                GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(m_pPlayers[i]);
-                if (pFilter == NULL || pFilter->isSatisfy(pGamePlayer)) {
-                    try {
-                        pGamePlayer->sendStream(pStream);
-                    } catch (Throwable& t) {
-                        filelog("ZonePlayerManager.log", "broadcastPacket: %s", t.toString().c_str());
-                    }
-                }
-            }
-        }
-    }
-
-    m_BroadcastQueue.clear();
-
-    __LEAVE_CRITICAL_SECTION(m_MutexBroadcast)
-
-    __END_CATCH
+void ZonePlayerManager::flushBroadcastPacket() {
+    std::lock_guard queueLock(m_MutexBroadcast);
+    de::flushGameBroadcasts(m_BroadcastQueue, m_pPlayers, [](const Throwable& error) {
+        filelog("ZonePlayerManager.log", "broadcastPacket: %s", error.toString().c_str());
+    });
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -900,9 +846,8 @@ void ZonePlayerManager::heartbeat()
                                     [](GamePlayer* player) { de::gameContext().incomingPlayers().pushPlayer(player); });
     }
 
-    // Process the broadcast packet queue.
-    if (!m_BroadcastQueue.empty())
-        flushBroadcastPacket();
+    // Even the empty check belongs under the producer's broadcast mutex.
+    flushBroadcastPacket();
 
     __END_CATCH
 }

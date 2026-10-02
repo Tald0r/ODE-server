@@ -440,6 +440,7 @@ set(GAMESERVER_RUNTIME_SOURCES
     GamePlayer.cpp
     GameConnection.cpp
     GamePlayerHandoff.cpp
+    GameBroadcast.cpp
     SpeedHackDecision.cpp
     GameServer.cpp
     IncomingPlayerManager.cpp

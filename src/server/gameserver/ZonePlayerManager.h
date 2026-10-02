@@ -9,10 +9,13 @@
 #ifndef __ZONE_PLAYER_MANAGER_H__
 #define __ZONE_PLAYER_MANAGER_H__
 
+#include <mutex>
+
 // include files
 #include "DescriptorPollSet.h"
 #include "Effect.h"
 #include "Exception.h"
+#include "GameBroadcast.h"
 #include "Mutex.h"
 #include "Player.h"
 #include "PlayerManager.h"
@@ -31,9 +34,6 @@ class BroadcastFilter;
 //////////////////////////////////////////////////////////////////////
 
 class ZonePlayerManager : public PlayerManager {
-public:
-    typedef pair<BroadcastFilter*, SocketOutputStream*> PairFilterStream;
-
 public:
     // constructor
     ZonePlayerManager();
@@ -59,6 +59,9 @@ public:
     // broadcast packet
     void broadcastPacket(Packet* pPacket);
     void broadcastPacket_NOBLOCKED(Packet* pPacket);
+    // Snapshot the borrowed packet and optional filter before returning. Queue
+    // access is synchronized; flush runs on the zone's owning thread. Dispatch
+    // consumes each started message, retaining only later messages on failure.
     void pushBroadcastPacket(Packet* pPacket, BroadcastFilter* pFilter = NULL);
     void flushBroadcastPacket();
 
@@ -139,11 +142,11 @@ private:
     // mutex
     mutable Mutex m_Mutex;
     mutable Mutex m_Mutex2;
-    mutable Mutex m_MutexBroadcast;
+    std::mutex m_MutexBroadcast;
 
     list<GamePlayer*> m_PlayerListQueue;
     list<GamePlayer*> m_PlayerOutListQueue;
-    list<PairFilterStream> m_BroadcastQueue;
+    std::list<de::GameBroadcast> m_BroadcastQueue;
 
     ZoneGroupID_t m_ZGID;
 };
