@@ -130,6 +130,8 @@ login-server port/ID overrides without linking a server runtime.
 `server_lifecycle_tests` exercises the shared initialization, start and stop
 sequence, including partial startup, shutdown requests, exception reporting
 and worker failure status. It also links without a server runtime or database.
+`server_process_shutdown_tests` checks the shared signal handlers and deadline,
+including signals on worker threads and blocked startup/cleanup in subprocesses.
 
 ## Build natively on macOS
 
