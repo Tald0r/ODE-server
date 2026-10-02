@@ -24,8 +24,10 @@ struct ServerLifecycleResult {
 // Run once on the main thread. Initialize, start unless shutdown is already
 // requested, then request shutdown and attempt stop even after a failure.
 // Uses the same ServerShutdown state as workers; never clears a request or
-// failure. Reports exceptions before continuing teardown and returns its
-// outcome without destroying the server, installing signals or exiting.
+// failure. Marks process failure before attempting diagnostics. Reporting is
+// best effort and cannot bypass stop or prevent the drain result from returning.
+// Startup log/console reports are attempted independently before teardown.
+// Returns without destroying the server, installing signals or exiting.
 [[nodiscard]] ServerLifecycleResult runServerLifecycle(const ServerLifecycleActions& actions, std::ostream& output,
                                                        std::ostream& errors,
                                                        const std::string& instantLogPath = "../log/instant.log");

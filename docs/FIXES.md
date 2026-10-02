@@ -134,14 +134,30 @@ exit/drain status.
 
 ## Lifecycle diagnostics can bypass cleanup or its result (2026-10-02)
 
-`runServerLifecycle` formats and writes startup failure diagnostics before
+`runServerLifecycle` formatted and wrote startup failure diagnostics before
 marking process failure and calling stop. A thrown formatter or output
-operation escapes the catch, skipping cleanup and potentially leaving the
-shutdown flags clear. A thrown shutdown diagnostic similarly hides the drain
-result. This is a source finding; task 2.30 tracks reporting isolation and
-standalone cleanup/failure-status regressions.
+operation escaped the catch, skipping cleanup and potentially leaving the
+shutdown flags clear. A thrown shutdown diagnostic similarly hid the drain
+result. Twelve standalone regressions reproduced these failures.
 
-> **Status:** recorded, not fixed (refactor/server-worker-drain)
+Process failure is now marked before any diagnostic. Each startup destination
+is attempted independently inside a reporting boundary that catches formatter,
+file and stream exceptions. Shutdown reporting uses the same boundary. Cleanup
+still runs once with dependencies alive; the result reflects the actual stop
+outcome, retaining failed exit status even when diagnostics fail. The original
+23 lifecycle cases and the 12 new regressions pass.
+
+> **Status:** fixed (refactor/lifecycle-diagnostics)
+
+## Final application reporting can hide the drain result (2026-10-02)
+
+After `runServerLifecycle` returns, `ServerApplication::run` writes its stopped
+message and flushes both streams without isolating exceptions. A rejected
+write/flush hides the result already obtained; a failed output flush also skips
+the remaining error flush. This is a source finding; task 2.31 tracks the final
+reporting boundary, failed status and configuration lifetime after stop.
+
+> **Status:** recorded, not fixed (refactor/lifecycle-diagnostics)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 

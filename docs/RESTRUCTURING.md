@@ -572,6 +572,9 @@ visibility can't express.
   > Startup `Throwable` diagnostics still reach stdout and `../log/instant.log`
   > before cleanup; other startup exceptions keep the existing unknown-error
   > diagnostic. Stop failures reach stderr and mark the result undrained.
+  > Task 2.30 isolates failed reporting: process failure is marked first, each
+  > startup destination is attempted independently, and diagnostic exceptions
+  > cannot skip stop or replace the returned result.
   > A worker failure remains a failed exit even when stop returns normally.
   > The function returns its drain result and exit status. Signal/deadline
   > setup and fatal handlers are shared by 2.8 and 2.9 below; resource-limit
@@ -1013,14 +1016,27 @@ visibility can't express.
     stop/action/join progress, formatter/name/output failures, reporting after
     all joins, exact first-error preservation and lifecycle failure status.
 
-- [ ] **2.30 Preserve lifecycle cleanup when diagnostics fail.**
-  > **Status:** not started — `runServerLifecycle` formats/writes startup
-  > diagnostics before marking process failure and reaching stop. A formatter
-  > or stream exception can skip both; shutdown diagnostics can also prevent
-  > the result from being returned. Isolate reporting failure from lifecycle
-  > progress while preserving existing output and failed-drain semantics.
-  - Planned owner: standalone lifecycle regressions over throwing formatters,
-    rejected output, cleanup ordering and retained failure status.
+- [x] **2.30 Preserve lifecycle cleanup when diagnostics fail.**
+  > **Status:** done (this commit) — `runServerLifecycle` marks process failure
+  > before reporting, arming the existing process deadline before a diagnostic
+  > can block. Startup log and console reports are attempted independently;
+  > formatter/file/stream exceptions remain within their reporting boundary.
+  > Stop still runs once after failed startup, with dependencies alive, and
+  > shutdown diagnostic errors cannot prevent the drain result from returning.
+  > Existing diagnostic text and failed-drain semantics are preserved.
+  - Owner: 35 cases in `server_lifecycle_tests`, including 12 regressions that
+    failed before the change: startup formatter and output errors, separate
+    destinations, flags before reporting, dependency lifetime through cleanup,
+    and failed shutdown reporting for all retained exception categories.
+
+- [ ] **2.31 Preserve the application result through final reporting failure.**
+  > **Status:** not started — `ServerApplication::run` writes its completion
+  > message and flushes output/errors after the lifecycle returns. An exception
+  > there hides the completed drain result, and a failed output flush skips
+  > the error flush. Test and isolate this final reporting boundary while
+  > preserving configuration lifetime and failed exit status.
+  - Planned owner: `server_application_tests` with faults enabled after stop,
+    successful/failed drain results, independent flushes and context lifetime.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
