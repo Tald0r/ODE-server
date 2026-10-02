@@ -132,6 +132,12 @@ public:
     void setConnectionInfoManager(ConnectionInfoManager* pConnectionInfoManager) {
         m_pConnectionInfoManager = pConnectionInfoManager;
     }
+    // Scoped publishers restore the returned binding in reverse scope order.
+    ConnectionInfoManager* exchangeConnectionInfoManager(ConnectionInfoManager* manager) noexcept {
+        auto* previous = m_pConnectionInfoManager;
+        m_pConnectionInfoManager = manager;
+        return previous;
+    }
     void setCoupleManager(CoupleManager* pCoupleManager) {
         m_pCoupleManager = pCoupleManager;
     }

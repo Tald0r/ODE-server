@@ -13,6 +13,40 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Game admission leaked refused connections and left teardown resources dangling (2026-10-02)
+
+`IncomingPlayerManager::acceptNewConnection` kept its incoming socket raw
+through option setup, authorization and player construction. A failed player
+allocation left it unowned, while constructor-body failure could free it before
+enabled refusal diagnostics read the raw pointer. `AcceptedServerConnection`
+and `GameConnection` now retain ownership through registration and diagnostic
+failures; diagnostics use captured peer metadata. `GamePlayer` adopts in its
+base before derived members can fail, then prepares its encrypted streams with
+the existing 1,024/20,480-byte buffers.
+
+The manager destructor also leaked its listener and left a dangling connection
+info binding. Unattached `GamePlayer` destruction requested world managers
+before packet cleanup, and `clearPlayers` freed table entries without removing
+their pointers or resetting the player count. Five regressions reproduced the
+listener leak, context lifetime, skipped reconnect-packet cleanup, stale table
+after clear and failed-allocation socket leak.
+
+The manager now owns its listener and connection-info manager, restores the
+previous context binding and ends every local player before deletion. Teardown
+empties table and queues before release, tolerating duplicate bookkeeping and
+repeated cleanup. Destruction retains the resource-only policy; explicit clear
+attempts all disconnects even if one throws. Callers must stop concurrent users
+and queue producers before either operation; this does not add shutdown
+coordination or change the authenticated zone handoff path.
+
+Injected listener/context/logging inputs let runtime tests drive real admission
+without database startup. Allocation sweeps cover construction, registration,
+diagnostics and retry. Additional tests cover authorization, duplicate slots,
+descriptor bounds, pending peer errors, live logging selection, socket I/O,
+nested context restoration and cleanup of table/queue owners and local packets.
+
+> **Status:** fixed (refactor/game-connection-adoption)
+
 ## Player connection-key setup leaked memory and could exit the server (2026-10-02)
 
 `Player::setKey` read an uninitialized pointer, overwrote it with each new

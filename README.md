@@ -168,12 +168,20 @@ its session before cleanup; allocation sweeps, duplicate refusal, real socket
 I/O and packet-history destruction cover that ownership. An injected
 `LoginContext` supports scoped managers and restores the previous reconnect
 binding. Manager teardown releases local resources without database logout.
+The game runtime tests exercise owned game admission with an injected listener
+and context, without database initialization. Sockets stay owned through
+authorization; `GameConnection` retains players through registration and ends
+their local session on cleanup.
+Allocation faults, refusal diagnostics, descriptor limits, real socket I/O and
+retry cover admission; scoped teardown restores the connection-info binding and
+releases the listener, player table and both queues. Explicit `clearPlayers`
+also attempts each disconnect. Cleanup requires stopped users and queue producers.
 `player_connection_key_tests` exercises pure key-table calculation and owned
 installation in `Player`. Allocation faults verify atomic replacement and
 cleanup; fixed vectors and real socket I/O preserve existing table and stream
 bytes. The game and login runtimes also exercise their production handshake
 handlers, including repeated keys and retries, without running `main()`.
-`socket_stream_setup_tests` exercises plain buffered-stream construction in
+`socket_stream_setup_tests` exercises plain and encrypted buffered streams in
 `de-kernel` with explicit sizes and a borrowed socket. Allocation faults verify
 partial cleanup and atomic player socket replacement, preserving old buffers
 on failure. The same replacement cases run against `GameServerPlayer` in the

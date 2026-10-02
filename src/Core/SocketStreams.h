@@ -17,6 +17,8 @@ struct SocketStreams {
 // sizes are passed through unchanged. Input requires a non-null socket;
 // output alone can be a memory buffer with a null socket, as before.
 SocketStreams makeSocketStreams(Socket* socket, uint inputBufferSize, uint outputBufferSize);
+// The same ownership and size contract, using the encrypted stream subclasses.
+SocketStreams makeEncryptedSocketStreams(Socket* socket, uint inputBufferSize, uint outputBufferSize);
 } // namespace de
 
 #endif
