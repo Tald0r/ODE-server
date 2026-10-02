@@ -439,6 +439,7 @@ set(GAMESERVER_RUNTIME_SOURCES
     GameFrameGate.cpp
     GamePlayer.cpp
     GameConnection.cpp
+    GamePlayerHandoff.cpp
     SpeedHackDecision.cpp
     GameServer.cpp
     IncomingPlayerManager.cpp

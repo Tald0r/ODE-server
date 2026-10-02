@@ -143,15 +143,9 @@ void CGLogoutHandler::execute(CGLogout* pPacket, Player* pPlayer)
         pZone->deleteCreature(pCreature, pCreature->getX(), pCreature->getY());
 
 
-        // Delete the player from the zone group's ZPM.
-        // This runs inside ZonePlayerManager's ProcessCommand, so it must be deleted NoBlocked.
-        pZone->getZoneGroup()->getZonePlayerManager()->deletePlayer(pGamePlayer->getSocket()->getSOCKET());
-
-        // Move the player to the IPM.
-
-        // With the Core structure changed, to act independently of the thread and handle it all at once later,
-        // it goes into the OutList.
-        pZone->getZoneGroup()->getZonePlayerManager()->pushOutPlayer(pGamePlayer);
+        // Keep the table owner until the outgoing entry exists. Heartbeat
+        // later hands it to the incoming manager under the existing locks.
+        pZone->getZoneGroup()->getZonePlayerManager()->moveToOutgoing(pGamePlayer);
     } catch (NoSuchElementException& nsee) {
         throw DisconnectException();
     }

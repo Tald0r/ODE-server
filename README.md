@@ -176,6 +176,13 @@ Allocation faults, refusal diagnostics, descriptor limits, real socket I/O and
 retry cover admission; scoped teardown restores the connection-info binding and
 releases the listener, player table and both queues. Explicit `clearPlayers`
 also attempts each disconnect. Cleanup requires stopped users and queue producers.
+`GamePlayerHandoff` keeps the sending table or queue owner until destination
+insertion succeeds. Runtime tests cover failed handoffs and retry through the
+real `CGReady` handler and heartbeat paths, plus socket service after refusal.
+Batch transfer tests cover ordering, failed destinations and throwing diagnostics.
+Incoming and zone managers share player cleanup, with terminal session state,
+duplicate references, failing logout and repeated clear covered without world
+or database startup. Zone/account side effects remain in their existing callers.
 `player_connection_key_tests` exercises pure key-table calculation and owned
 installation in `Player`. Allocation faults verify atomic replacement and
 cleanup; fixed vectors and real socket I/O preserve existing table and stream

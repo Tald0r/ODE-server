@@ -102,15 +102,11 @@ void EventTransport::activate()
     pCreature->setNewXY(m_X, m_Y);
 
     try {
-        // Delete the player from the zone group's ZPM.
-        pOldZone->getZoneGroup()->getZonePlayerManager()->deletePlayer(m_pGamePlayer->getSocket()->getSOCKET());
+        // Reserve its outgoing entry before releasing the zone's table owner.
+        pOldZone->getZoneGroup()->getZonePlayerManager()->moveToOutgoing(m_pGamePlayer);
 
         // Setting this here keeps the Save event from running in the IPM.
         m_pGamePlayer->setPlayerStatus(GPS_WAITING_FOR_CG_READY);
-
-        // Move the player to the IPM.
-        // g_pIncomingPlayerManager->pushPlayer(m_pGamePlayer);
-        pOldZone->getZoneGroup()->getZonePlayerManager()->pushOutPlayer(m_pGamePlayer);
 
     } catch (NoSuchElementException& t) {
         filelog("eventTransport.txt", "%s", t.toString().c_str());

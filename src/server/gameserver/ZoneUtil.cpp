@@ -2038,14 +2038,11 @@ void transportCreature(Creature* pCreature, ZoneID_t TargetZoneID, ZoneCoord_t T
         // So the coordinates must be set correctly before calling this method.
         pZone->deleteCreature(pCreature, pCreature->getX(), pCreature->getY());
 
-        // Delete the player from the zone group's ZPM.
-        pZone->getZoneGroup()->getZonePlayerManager()->deletePlayer(pGamePlayer->getSocket()->getSOCKET());
+        // Reserve its outgoing entry before releasing the zone's table owner.
+        pZone->getZoneGroup()->getZonePlayerManager()->moveToOutgoing(pGamePlayer);
 
         // The creature's new coordinates are the portal's destination.
         cout << "ZoneUtil.cpp step 9" << endl;
-
-        // Move the player to the IPM.
-        pZone->getZoneGroup()->getZonePlayerManager()->pushOutPlayer(pGamePlayer);
     } catch (NoSuchElementException& nsee) {
         filelog("zoneUtilError.txt", "[ZoneUtil::transportCreature2] %s", nsee.toString().c_str());
         throw Error(nsee.toString());

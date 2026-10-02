@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <mutex>
 
 #include "AcceptedServerConnection.h"
 #include "Assert.h"
@@ -23,6 +24,7 @@
 #include "GameConnection.h"
 #include "GameContext.h"
 #include "GamePlayer.h"
+#include "GamePlayerHandoff.h"
 #include "ListenerStartup.h"
 #include "LogDef.h"
 #include "LoginServerManager.h"
@@ -925,6 +927,7 @@ void IncomingPlayerManager::pushPlayer(GamePlayer* pGamePlayer)
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
+    Assert(pGamePlayer != nullptr);
     m_PlayerListQueue.push_back(pGamePlayer);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
@@ -939,11 +942,24 @@ void IncomingPlayerManager::pushOutPlayer(GamePlayer* pGamePlayer)
 
     __ENTER_CRITICAL_SECTION(m_MutexOut)
 
+    Assert(pGamePlayer != nullptr);
     m_PlayerOutListQueue.push_back(pGamePlayer);
 
     __LEAVE_CRITICAL_SECTION(m_MutexOut)
 
     __END_CATCH
+}
+
+void IncomingPlayerManager::moveToOutgoing(GamePlayer* player) {
+    std::lock_guard tableLock(m_Mutex);
+    std::lock_guard queueLock(m_MutexOut);
+    Assert(player != nullptr);
+    const auto descriptor = de::enqueueRegisteredGamePlayer(m_pPlayers, m_PlayerOutListQueue, *player);
+    --m_nPlayers;
+    m_PollSet.unwatch(descriptor);
+    const auto range = de::gamePlayerDescriptorRange(m_pPlayers, m_SocketID);
+    m_MinFD = range.empty() ? -1 : range.first;
+    m_MaxFD = range.empty() ? -1 : range.last;
 }
 
 void IncomingPlayerManager::heartbeat()
@@ -967,11 +983,10 @@ void IncomingPlayerManager::heartbeat()
         GamePlayer* pGamePlayer = m_PlayerListQueue.front();
 
         if (pGamePlayer == NULL) {
+            m_PlayerListQueue.pop_front();
             filelog("ZoneBug.txt", "%s : %s", "Zone::heartbeat(1)", "pGamePlayer is NULL.");
             continue;
         }
-
-        m_PlayerListQueue.pop_front();
 
         //-----------------------------------------------------------------------------
         // * elcastle 's Note
@@ -987,6 +1002,7 @@ void IncomingPlayerManager::heartbeat()
         // In practice unstable behaviour does show up.
         //-----------------------------------------------------------------------------
         if (pGamePlayer->isPenaltyFlag(PENALTY_TYPE_KICKED)) {
+            auto endingPlayer = de::takeFirstGamePlayer(m_PlayerListQueue);
             // The connection is already closed, so the output buffer must not be flushed.
             int fd = -1;
             Socket* pSocket = pGamePlayer->getSocket();
@@ -1030,13 +1046,11 @@ void IncomingPlayerManager::heartbeat()
             Creature* pCreature = pGamePlayer->getCreature();
             if (pCreature != NULL)
                 pCreature->setValue(9);
-            SAFE_DELETE(pGamePlayer);
-
             continue;
         }
 
 
-        addPlayer_NOBLOCKED(pGamePlayer);
+        de::transferFirstGamePlayer(m_PlayerListQueue, [&](GamePlayer* player) { addPlayer_NOBLOCKED(player); });
 
         // filelog("ZoneHeartbeatTrace.txt", "Added Player[%s]", pGamePlayer->getID().c_str());
 
@@ -1138,12 +1152,9 @@ void IncomingPlayerManager::heartbeat()
     // by sigi. 2002.12.10
     __ENTER_CRITICAL_SECTION(m_MutexOut)
 
-    while (!m_PlayerOutListQueue.empty()) {
-        GamePlayer* pGamePlayer = m_PlayerOutListQueue.front();
-
-        m_PlayerOutListQueue.pop_front();
-
-        try {
+    de::transferGamePlayerBatch(
+        m_PlayerOutListQueue,
+        [](GamePlayer* pGamePlayer) {
             Assert(pGamePlayer != NULL);
 
             Creature* pCreature = pGamePlayer->getCreature();
@@ -1167,10 +1178,10 @@ void IncomingPlayerManager::heartbeat()
 
             // Push.
             pZonePlayerManager->pushPlayer(pGamePlayer);
-        } catch (...) {
+        },
+        [](std::exception_ptr) {
             filelog("IncomingPlayerManager.txt", "AssertionError! IncomingPlayManager.cpp line 1594");
-        }
-    }
+        });
 
     __LEAVE_CRITICAL_SECTION(m_MutexOut)
 
@@ -1208,36 +1219,7 @@ void IncomingPlayerManager::clearPlayers() {
 }
 
 void IncomingPlayerManager::releasePlayers(bool disconnect) noexcept {
-    // Handoff normally gives each player one table or queue owner. Remove all
-    // references before destruction so cleanup also tolerates repeated queue
-    // entries, and a later clear or the base destructor sees an empty table.
-    const auto release = [&](GamePlayer* raw) {
-        m_PlayerListQueue.remove(raw);
-        m_PlayerOutListQueue.remove(raw);
-        if (!raw)
-            return;
-        for (uint fd = 0; fd < nMaxPlayers; ++fd) {
-            if (m_pPlayers[fd] == raw) {
-                m_pPlayers[fd] = nullptr;
-                m_PollSet.unwatch(fd);
-            }
-        }
-        de::GameConnection player(raw);
-        if (disconnect) {
-            try {
-                player->disconnect();
-            } catch (...) {
-                // Continue releasing other owners even if account/zone logout fails.
-            }
-        }
-    };
-    for (auto* player : m_pPlayers)
-        if (player)
-            release(static_cast<GamePlayer*>(player));
-    while (!m_PlayerListQueue.empty())
-        release(m_PlayerListQueue.front());
-    while (!m_PlayerOutListQueue.empty())
-        release(m_PlayerOutListQueue.front());
+    de::releaseGamePlayers(m_pPlayers, m_PlayerListQueue, m_PlayerOutListQueue, m_PollSet, disconnect);
     std::fill(std::begin(m_pCopyPlayers), std::end(m_pCopyPlayers), nullptr);
     m_nPlayers = 0;
     m_MinFD = m_MaxFD = m_SocketID;
