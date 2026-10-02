@@ -12,7 +12,7 @@
 //
 //               The context does NOT own the managers: each is still created
 //               and destroyed by the startup code that holds it (each
-//               server's main() for the configuration, its server object for
+//               server's application for the configuration, its server object for
 //               the packet factory table and the validator), and registers
 //               itself here as soon as it exists. A manager is therefore null
 //               until its creation point is reached, and an accessor asserts
@@ -42,6 +42,13 @@ public:
 
     void setConfig(Properties* pConfig) {
         m_pConfig = pConfig;
+    }
+    // Return the previous binding so a scoped configuration owner can restore
+    // it, including the initially empty context, without a nullable accessor.
+    Properties* exchangeConfig(Properties* pConfig) noexcept {
+        Properties* previous = m_pConfig;
+        m_pConfig = pConfig;
+        return previous;
     }
     void setPacketFactoryManager(PacketFactoryManager* pPacketFactoryManager) {
         m_pPacketFactoryManager = pPacketFactoryManager;

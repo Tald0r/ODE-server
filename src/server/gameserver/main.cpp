@@ -10,20 +10,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <memory>
-
 #include <sys/resource.h>
 #include <sys/time.h>
 
-#include "Exception.h"
 #include "GamePacketDispatch.h"
 #include "GameServer.h"
 #include "KernelContext.h"
-#include "Properties.h"
+#include "ServerApplication.h"
 #include "ServerFatalHandlers.h"
-#include "ServerLifecycle.h"
 #include "ServerProcessShutdown.h"
-#include "ServerStartup.h"
 #include "StringStream.h"
 #include "Types.h"
 
@@ -51,19 +46,6 @@ int main(int argc, char* argv[]) {
     registerGameServerPacketHandlers();
     cout << ">>> PACKET DISPATCH TABLE REGISTERED..." << endl;
 
-    // Keep the completed configuration alive until every worker has stopped.
-    // Parsing and loading never publish a partial configuration to the context.
-    std::unique_ptr<Properties> pConfig;
-    try {
-        const auto options = de::parseServerOptions(de::ServerKind::Game, argc, argv);
-        cout << ">>> COMMAND-LINE PARAMETER READING SUCCESS..." << endl;
-        pConfig = de::loadServerConfiguration(options);
-        de::kernelContext().setConfig(pConfig.get());
-    } catch (const Throwable& error) {
-        cerr << error.toString() << endl;
-        return EXIT_FAILURE;
-    }
-
     GameServer* pGameServer = nullptr;
     const de::ServerLifecycleActions lifecycle{
         .initialize =
@@ -85,12 +67,10 @@ int main(int argc, char* argv[]) {
                     pGameServer->stop();
             },
     };
-    const auto result = de::runServerLifecycle(lifecycle, cout, cerr);
-    // Legacy singleton destructors do not have a complete dependency order.
-    // After every worker has joined, let the OS reclaim the process graph;
-    // do not introduce untested singleton destruction on the signal path.
-    if (result.drained)
-        cout << ">>> ALL GAME WORKERS STOPPED." << endl;
-    cerr.flush();
-    std::_Exit(result.exitCode);
+    de::ServerApplication application(de::kernelContext());
+    const auto result = application.run(de::ServerKind::Game, argc, argv, lifecycle, cout, cerr);
+    if (!result)
+        return EXIT_FAILURE;
+    // Keep the configuration and legacy server graph alive through process exit.
+    std::_Exit(result->exitCode);
 }
