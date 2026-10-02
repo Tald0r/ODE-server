@@ -11,17 +11,13 @@
 
 #include <chrono>
 #include <exception>
-#include <memory>
 
 #include <sys/resource.h>
 
-#include "Exception.h"
 #include "KernelContext.h"
-#include "Properties.h"
+#include "ServerApplication.h"
 #include "ServerFatalHandlers.h"
-#include "ServerLifecycle.h"
 #include "ServerProcessShutdown.h"
-#include "ServerStartup.h"
 #include "SharedPacketDispatch.h"
 #include "SharedServer.h"
 #include "StringStream.h"
@@ -43,19 +39,6 @@ int main(int argc, char* argv[]) {
     // any thread can receive one.
     registerSharedServerPacketHandlers();
 
-    // Keep the completed configuration alive until every worker has stopped.
-    // Parsing and loading never publish a partial configuration to the context.
-    std::unique_ptr<Properties> pConfig;
-    try {
-        const auto options = de::parseServerOptions(de::ServerKind::Shared, argc, argv);
-        pConfig = de::loadServerConfiguration(options);
-        de::kernelContext().setConfig(pConfig.get());
-        cout << pConfig->toString() << endl;
-    } catch (const Throwable& error) {
-        cerr << error.toString() << endl;
-        return EXIT_FAILURE;
-    }
-
     SharedServer* pSharedServer = nullptr;
     const de::ServerLifecycleActions lifecycle{
         .initialize =
@@ -75,12 +58,10 @@ int main(int argc, char* argv[]) {
                     pSharedServer->stop();
             },
     };
-    const auto result = de::runServerLifecycle(lifecycle, cout, cerr);
-    // The legacy singleton graph has no audited destruction order, so let the
-    // OS reclaim it once every worker has joined.
-    if (result.drained)
-        cout << ">>> ALL SHARED WORKERS STOPPED." << endl;
-    cout.flush();
-    cerr.flush();
-    std::_Exit(result.exitCode);
+    de::ServerApplication application(de::kernelContext());
+    const auto result = application.run(de::ServerKind::Shared, argc, argv, lifecycle, cout, cerr);
+    if (!result)
+        return EXIT_FAILURE;
+    // Keep the configuration and legacy server graph alive through process exit.
+    std::_Exit(result->exitCode);
 }

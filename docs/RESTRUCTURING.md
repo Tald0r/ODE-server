@@ -542,10 +542,11 @@ visibility can't express.
   > `-i <signed decimal offset>` for loginserver; `loadServerConfiguration`
   > returns an owned `Properties` only after loading and applying the optional
   > login overrides. Neither function publishes anything to `KernelContext`.
-  > Each `main()` owns and registers the completed configuration, and returns
-  > failure on an argument, file, parse or override error before constructing
-  > its server. Lifecycle control and process shutdown setup are shared by
-  > 2.7 and 2.8 below; fatal-error handlers are shared by 2.9.
+  > `ServerApplication` (2.10 below) owns and registers the completed
+  > configuration; argument, file, parse or override errors still return
+  > failure from `main()` before constructing its server. Lifecycle control
+  > and process shutdown setup are shared by 2.7 and 2.8 below; fatal-error
+  > handlers are shared by 2.9.
   > `applyLoginServerOffset` validates the three decimal bases and checks all
   > sums before writing the port, UDP port and ID. Signed offsets, including
   > zero, retain their meaning; malformed numbers, overflow and trailing
@@ -557,8 +558,9 @@ visibility can't express.
 
 - [x] **2.7 Extract lifecycle control from the entry points.**
   > **Status:** done (2026-10-02) —
-  > Each entry point calls `runServerLifecycle` with construction/initialization,
-  > start and stop actions. The shared `ServerLifecycle` library links only
+  > Each entry point supplies construction/initialization, start and stop
+  > actions to `ServerApplication`, which calls `runServerLifecycle` (2.10
+  > below). The shared `ServerLifecycle` library links only
   > `de-kernel`, so its production exception handling and cleanup sequence run
   > in tests without a server runtime, listeners or database.
   > Initialization still runs when shutdown was already requested; start is
@@ -619,6 +621,33 @@ visibility can't express.
     faults only inside subprocesses, covering main/worker failures, failure
     status, diagnostics, append logging, unavailable output, absence of exit
     callbacks, and restoration of previous handlers on return or unwinding.
+
+- [x] **2.10 Extract application orchestration from the entry points.**
+  > **Status:** done (2026-10-02) —
+  > All three entry points use `ServerApplication` to compose startup loading
+  > with lifecycle execution and final diagnostics. The library links only
+  > `ServerStartup`, `ServerLifecycle` and their `de-kernel` dependency. The
+  > application takes an explicit `KernelContext`, lifecycle actions and output
+  > streams; it requires no runtime, database, signal handlers or process exit.
+  > Configuration is published only after a successful load and login override.
+  > Argument, file, parse and override errors report failure without invoking
+  > any lifecycle action. The application owns the configuration through
+  > initialization, start, stop and the returned result, including failed
+  > cleanup. It permits only one run, so a second call cannot replace a live
+  > configuration. Leaving scope restores the previous context binding before
+  > releasing the configuration; `KernelContext::exchangeConfig` also supports
+  > an initially empty context without exposing a nullable accessor.
+  > Successful drains print the server's existing stopped-workers diagnostic;
+  > final output and errors are flushed before returning the lifecycle result.
+  > Each `main()` keeps the application and legacy server graph alive through
+  > `_Exit` after lifecycle execution, even if workers could not stop. Process
+  > setup, dispatch registration, concrete server actions and `_Exit` remain
+  > in the entry points.
+  - Owner: `server_application_tests`, covering all three servers' publication,
+    configuration errors, lifecycle order, partial startup and failed cleanup,
+    retained failure status, login overrides, context restoration on return or
+    unwinding, one-run ownership and final diagnostics; the executable links
+    and `server_startup_cli` cover the entry points.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

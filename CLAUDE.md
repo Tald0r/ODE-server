@@ -25,6 +25,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Every server requests shutdown before stopping, attempts cleanup after failed startup, and preserves worker failures in its exit status | `server_lifecycle_tests`, over the shared `ServerLifecycle` library used by all three entry points | starting after a shutdown request, missing or repeated cleanup, lost failure diagnostics, an incorrect drain result or a successful exit after failure |
 | SIGTERM/SIGINT request shutdown from any thread, and the process deadline bounds blocked initialization and cleanup | `server_process_shutdown_tests`, over the `ServerProcessShutdown` guard used by all three entry points and the shared lifecycle runner | a missed signal, a clean exit after the deadline, a deadline firing before any request or after guard destruction, or signal handlers left installed after the guard's scope |
 | Fatal allocation handlers report failure without C++ heap allocation or normal process teardown | `server_fatal_handler_tests`, over the shared `ServerFatalHandlers` guard, with allocation faults confined to subprocesses | a successful allocation-failure exit, recursive allocation while reporting, an exit callback running, a lost diagnostic or a handler left installed after its scope |
+| Application configuration is published only after a successful load, stays alive through cleanup and the result, and restores its previous context binding on scope exit | `server_application_tests`, over the shared `ServerApplication` used by all three entry points | actions running after a configuration error, an incorrect effective login override, a lost binding or failure status, an incorrect drain diagnostic, or unflushed final output |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
 | A critical section is never unlocked by hand | `tests/tools/critical_section_audit.pl`, ctest `critical_section_audit` | the file and line of the hand-written `unlock()` |
 | Zone-group state is touched only under that group's mutex | `ZoneGroup::assertOwned()` under `DE_OWNERSHIP_CHECKS` (Debug builds only) | `abort()` at the gateway |
@@ -281,21 +282,31 @@ dependencies. Keep different runtimes in separate executables: several
 classes share names across servers, and packet registration is process-wide.
 The existing isolated rule tests remain the faster choice for pure logic.
 
-The entry points also link `ServerStartup`, which depends only on `de-kernel`.
-It parses arguments and loads an owned configuration, including loginserver's
-optional ID offset. Only `main()` publishes that completed configuration to
-`KernelContext`; it reports a startup configuration error and returns failure
-before constructing a server. `server_startup_tests` exercises this without
-linking a server runtime.
+`ServerStartup` depends only on `de-kernel`. It parses arguments and loads an
+owned configuration, including loginserver's optional ID offset, without
+publishing it. `server_startup_tests` exercises this without linking a server
+runtime.
 
-`ServerLifecycle` also depends only on `de-kernel`. Each entry point supplies
-construction/initialization, start and stop actions to `runServerLifecycle`,
-which handles exceptions, requests shutdown before cleanup and returns the
-drain result and exit status. It uses the workers' `ServerShutdown` flags and
-never resets them. The caller keeps the configuration and server graph alive;
-the drain message and `_Exit` remain in `main()`.
+`ServerLifecycle` also depends only on `de-kernel`. `runServerLifecycle` takes
+construction/initialization, start and stop actions, handles exceptions,
+requests shutdown before cleanup and returns the drain result and exit status.
+It uses the workers' `ServerShutdown` flags and never resets them. The caller
+keeps the configuration and server graph alive.
 `server_lifecycle_tests` runs the shared control flow with controlled actions
 and isolated diagnostics, without starting a server or a deadline thread.
+
+The entry points link `ServerApplication`, which composes these two libraries.
+It owns the completed configuration, publishes it to an explicit
+`KernelContext`, runs the supplied lifecycle actions, reports the drain result
+and flushes diagnostics. A configuration error returns an empty result before
+any action runs. The object permits one run and retains its configuration
+after the result, including a failed drain; destruction restores the previous
+context binding before freeing it. Each `main()` keeps it alive through
+`_Exit` once lifecycle execution has begun, preserving the legacy server
+graph's configuration even if workers could not stop. Tests use a local
+context and controlled actions; `server_application_tests` covers publication,
+lifetime, failure paths, effective login overrides and final reporting without
+linking a runtime or database.
 
 `ServerProcessShutdown` owns the SIGTERM/SIGINT handlers and the deadline.
 Each `main()` constructs it before initialization and checks `ready()` before

@@ -13,20 +13,16 @@
 
 #include <chrono>
 #include <exception>
-#include <memory>
 
 #include <sys/resource.h>
 #include <sys/time.h>
 
-#include "Exception.h"
 #include "KernelContext.h"
 #include "LoginPacketDispatch.h"
 #include "LoginServer.h"
-#include "Properties.h"
+#include "ServerApplication.h"
 #include "ServerFatalHandlers.h"
-#include "ServerLifecycle.h"
 #include "ServerProcessShutdown.h"
-#include "ServerStartup.h"
 #include "StringStream.h"
 #include "Types.h"
 
@@ -45,24 +41,6 @@ int main(int argc, char* argv[]) {
     // Bind every packet id the loginserver receives to its handler before
     // any thread can receive one.
     registerLoginServerPacketHandlers();
-
-    // Keep the completed configuration alive until every worker has stopped.
-    // Parsing and loading never publish a partial configuration to the context.
-    std::unique_ptr<Properties> pConfig;
-    try {
-        const auto options = de::parseServerOptions(de::ServerKind::Login, argc, argv);
-        pConfig = de::loadServerConfiguration(options);
-        de::kernelContext().setConfig(pConfig.get());
-        cout << pConfig->toString() << endl;
-        if (options.loginIDOffset) {
-            cout << "LoginServerPort : " << pConfig->getProperty("LoginServerPort") << endl;
-            cout << "LoginServerUDPPort : " << pConfig->getProperty("LoginServerUDPPort") << endl;
-            cout << "LoginServerID : " << pConfig->getProperty("LoginServerID") << endl;
-        }
-    } catch (const Throwable& error) {
-        cerr << error.toString() << endl;
-        return EXIT_FAILURE;
-    }
 
     LoginServer* pLoginServer = nullptr;
     const de::ServerLifecycleActions lifecycle{
@@ -83,12 +61,10 @@ int main(int argc, char* argv[]) {
                     pLoginServer->stop();
             },
     };
-    const auto result = de::runServerLifecycle(lifecycle, cout, cerr);
-    // The legacy singleton graph has no audited destruction order, so let the
-    // OS reclaim it once every worker has joined.
-    if (result.drained)
-        cout << ">>> ALL LOGIN WORKERS STOPPED." << endl;
-    cout.flush();
-    cerr.flush();
-    std::_Exit(result.exitCode);
+    de::ServerApplication application(de::kernelContext());
+    const auto result = application.run(de::ServerKind::Login, argc, argv, lifecycle, cout, cerr);
+    if (!result)
+        return EXIT_FAILURE;
+    // Keep the configuration and legacy server graph alive through process exit.
+    std::_Exit(result->exitCode);
 }
