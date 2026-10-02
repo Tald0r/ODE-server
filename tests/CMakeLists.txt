@@ -117,7 +117,8 @@ endfunction()
 add_server_runtime_test(game_server_runtime_tests game_server_runtime_test.cpp GameServerRuntime)
 target_sources(game_server_runtime_tests PRIVATE
     game_connection_test.cpp incoming_game_connection_test.cpp game_connection_admission_test.cpp
-    game_player_handoff_test.cpp game_player_transfer_test.cpp support/AllocationProbe.cpp)
+    game_player_handoff_test.cpp game_player_transfer_test.cpp game_broadcast_queue_test.cpp
+    game_broadcast_delivery_test.cpp support/AllocationProbe.cpp)
 add_server_runtime_test(login_server_runtime_tests login_server_runtime_test.cpp LoginServerRuntime)
 target_sources(login_server_runtime_tests PRIVATE login_connection_test.cpp support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)

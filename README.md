@@ -183,6 +183,12 @@ Batch transfer tests cover ordering, failed destinations and throwing diagnostic
 Incoming and zone managers share player cleanup, with terminal session state,
 duplicate references, failing logout and repeated clear covered without world
 or database startup. Zone/account side effects remain in their existing callers.
+`GameBroadcast` owns queued packet bytes and optional filter clones. Runtime
+tests cover preparation failures, borrowed-input lifetime, real race-filtered
+socket delivery and concurrent producers through heartbeat. Dispatch consumes
+each started message; an uncaught failure retains only later entries for retry.
+Queue access is synchronized, and quiescent manager destruction releases pending
+messages. Literal broadcast framing stays unchanged.
 `player_connection_key_tests` exercises pure key-table calculation and owned
 installation in `Player`. Allocation faults verify atomic replacement and
 cleanup; fixed vectors and real socket I/O preserve existing table and stream
