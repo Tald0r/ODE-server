@@ -38,7 +38,7 @@ public:
     // constructor
     ZonePlayerManager();
 
-    // destructor
+    // All users and queue producers must stop before destruction.
     ~ZonePlayerManager() noexcept;
 
     // Ask the kernel which of this manager's descriptors are ready.
@@ -85,9 +85,13 @@ public:
 
     void copyPlayers();
 
-    // push Player to queue
+    // Adopt an unregistered player on success; the caller retains ownership if
+    // queue allocation fails. Registered players use moveToOutgoing instead.
     void pushPlayer(GamePlayer* pGamePlayer);
     void pushOutPlayer(GamePlayer* pGamePlayer);
+    // Called by this zone's owning thread under its group mutex. Failure keeps
+    // the table owner; success removes its table/poll entry before returning.
+    void moveToOutgoing(GamePlayer* player);
     void processPlayerListQueue();
 
     // Queue's Player Add Manager
@@ -105,7 +109,8 @@ public:
         m_Mutex.unlock();
     }
 
-    // Clear out every player.
+    // Disconnect and release every player. Requires stopped concurrent users
+    // and queue producers, just like destruction; repeated clear is safe.
     void clearPlayers();
 
     void setZGID(ZoneGroupID_t id) {
@@ -116,6 +121,8 @@ public:
     }
 
 private:
+    void releasePlayers(bool disconnect) noexcept;
+
     // The socket descriptors of the players in this group, with what each one
     // was last reported ready for. It has a slot per player table slot, so
     // every descriptor the table can hold can be watched.

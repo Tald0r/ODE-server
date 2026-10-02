@@ -13,6 +13,64 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Game-player handoffs lose ownership on failed destination insertion (2026-10-02)
+
+`ZonePlayerManager::heartbeat` removes a player from its outgoing queue before
+`IncomingPlayerManager::pushPlayer` allocates the destination list node. If
+that allocation fails, retry sees an empty source queue. Incoming heartbeat
+likewise removes its input entry before descriptor-table registration; a
+duplicate slot leaves the pending player without an owner. Two isolated
+runtime regressions reproduced these failed retries without database startup;
+a third failed through the real `CGReady` handler after outgoing-node allocation
+failed with its player already removed from the table.
+
+`GamePlayerHandoff` now retains each source until destination insertion succeeds.
+Incoming and zone `moveToOutgoing` validate identity and reserve the outgoing
+entry before releasing the table slot; `CGReady` and all zone logout/transport
+callers use this operation. Heartbeat transfers retain failed queue entries for
+retry. An incoming outgoing batch rotates failed entries without allocating and
+tries the remaining players once, including when one destination is invalid.
+Throwing diagnostics preserve both failed and unattempted owners. A kicked
+incoming player has a local `GameConnection` through fallible logout/reporting.
+
+Fault tests cover insertion, retry and reporting, while real loopback broadcasts
+verify a failed table transfer leaves socket service intact and successful
+transfer removes only that player's table/poll membership. The ownership
+transaction preserves existing lock order and world/account work; it does not
+roll back earlier creature or database side effects.
+
+> **Status:** fixed (refactor/game-player-handoffs)
+
+## Zone-manager teardown leaked queued players and left stale table entries (2026-10-02)
+
+`ZonePlayerManager` destruction left players in both queues unowned and
+deleted table players through the base manager without ending their sessions.
+Its explicit `clearPlayers` deleted table players without clearing the slots
+or player count, leaving later access/destruction unsafe. Two runtime
+regressions reproduced incomplete resource teardown and the stale table after
+clear. Incoming and zone managers now share `releaseGamePlayers`: it removes
+table and queue references before deleting each terminal player and tolerates
+duplicate bookkeeping. Explicit clear attempts every disconnect even if one
+throws; destruction retains resource-only cleanup. Both empty counts, copied
+tables and descriptor ranges for repeated cleanup. Tests verify terminal state,
+local packet destruction, descriptor/heap release and throwing logout without
+database startup. Users and queue producers must be stopped before cleanup;
+shutdown coordination and pending broadcasts are separate work.
+
+> **Status:** fixed (refactor/game-player-handoffs)
+
+## Zone broadcast queues retain raw allocations after flush (2026-10-02)
+
+The zone-manager audit found `pushBroadcastPacket` holding a raw stream through
+packet encoding, filter cloning and list insertion. Failure can leave those
+allocations unowned; its default-null filter is also dereferenced by `Clone`.
+`flushBroadcastPacket` clears the list without deleting the cloned filters or
+streams, and manager destruction does not release pending broadcasts. These
+are source findings; a separate broadcast ownership extraction and regression
+coverage remain.
+
+> **Status:** recorded, not fixed (refactor/game-player-handoffs)
+
 ## Game admission leaked refused connections and left teardown resources dangling (2026-10-02)
 
 `IncomingPlayerManager::acceptNewConnection` kept its incoming socket raw

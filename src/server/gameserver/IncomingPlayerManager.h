@@ -120,10 +120,15 @@ public:
         m_Mutex.unlock();
     }
 
-    // push Player to queue
+    // Adopt an unregistered player on success; the caller retains ownership if
+    // queue allocation fails. Registered players use moveToOutgoing instead.
     void pushPlayer(GamePlayer* pGamePlayer);
 
     void pushOutPlayer(GamePlayer* pGamePlayer);
+
+    // Main-thread table-to-queue handoff. Allocation failure keeps the player
+    // registered; success removes its table/poll entry before returning.
+    void moveToOutgoing(GamePlayer* player);
 
     // Queue's Player Add Manager
     void heartbeat();

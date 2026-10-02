@@ -9,12 +9,14 @@
 #include <stdio.h>
 
 #include <algorithm>
+#include <mutex>
 
 #include "Assert.h"
 #include "CGLogout.h"
 #include "DescriptorTable.h"
 #include "GameContext.h"
 #include "GamePlayer.h"
+#include "GamePlayerHandoff.h"
 #include "IncomingPlayerManager.h"
 #include "PaySystem.h"
 #include "PlayerCreature.h"
@@ -73,14 +75,8 @@ ZonePlayerManager::ZonePlayerManager()
 //////////////////////////////////////////////////////////////////////////////
 // destructor
 //////////////////////////////////////////////////////////////////////////////
-ZonePlayerManager::~ZonePlayerManager() noexcept
-
-{
-    __BEGIN_TRY
-
-    // Player deletion happens at the PlayerManager level, so nothing to do here.
-
-    __END_CATCH_NO_RETHROW
+ZonePlayerManager::~ZonePlayerManager() noexcept {
+    releasePlayers(false);
 }
 
 
@@ -259,8 +255,7 @@ void ZonePlayerManager::processInputs() {
                     try {
                         CGLogoutHandler::execute(NULL, pTempPlayer);
                     } catch (DisconnectException& de) {
-                        deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                        pushOutPlayer(pTempPlayer);
+                        moveToOutgoing(pTempPlayer);
                     }
                 } else if (pTempPlayer->getSocket()->getSockError()) {
                     pTempPlayer->setPenaltyFlag(PENALTY_TYPE_KICKED);
@@ -270,8 +265,7 @@ void ZonePlayerManager::processInputs() {
                         CGLogoutHandler::execute(NULL, pTempPlayer);
                     } catch (DisconnectException& de) {
                         filelog("DIFF_ZG.log", "%s ZPM+PI+SOCKERR", de.toString().c_str());
-                        deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                        pushOutPlayer(pTempPlayer);
+                        moveToOutgoing(pTempPlayer);
                     }
 
 
@@ -286,8 +280,7 @@ void ZonePlayerManager::processInputs() {
                             CGLogoutHandler::execute(NULL, pTempPlayer);
                         } catch (DisconnectException& de) {
                             filelog("DIFF_ZG.log", "%s ZPM+PI+CE", de.toString().c_str());
-                            deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                            pushOutPlayer(pTempPlayer);
+                            moveToOutgoing(pTempPlayer);
                         }
 
 
@@ -299,8 +292,7 @@ void ZonePlayerManager::processInputs() {
                             CGLogoutHandler::execute(NULL, pTempPlayer);
                         } catch (DisconnectException& de) {
                             filelog("DIFF_ZG.log", "%s ZPM+PI+IOE", de.toString().c_str());
-                            deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                            pushOutPlayer(pTempPlayer);
+                            moveToOutgoing(pTempPlayer);
                         }
                     }
                 }
@@ -347,8 +339,7 @@ void ZonePlayerManager::processCommands() {
                     CGLogoutHandler::execute(NULL, pTempPlayer);
                 } catch (DisconnectException& de) {
                     filelog("DIFF_ZG.log", "%s ZPM+PC+SOCKERR", de.toString().c_str());
-                    deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                    pushOutPlayer(pTempPlayer);
+                    moveToOutgoing(pTempPlayer);
                 }
 
 
@@ -370,8 +361,7 @@ void ZonePlayerManager::processCommands() {
                         try {
                             CGLogoutHandler::execute(NULL, pTempPlayer);
                         } catch (DisconnectException& de) {
-                            deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                            pushOutPlayer(pTempPlayer);
+                            moveToOutgoing(pTempPlayer);
                         }
                     }
 
@@ -439,8 +429,7 @@ void ZonePlayerManager::processCommands() {
                         CGLogoutHandler::execute(NULL, pTempPlayer);
                     } catch (DisconnectException& de) {
                         filelog("DIFF_ZG.log", "%s ZPM+PC+PE", de.toString().c_str());
-                        deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                        pushOutPlayer(pTempPlayer);
+                        moveToOutgoing(pTempPlayer);
                     }
 
                     // by sigi. 2002.12.30
@@ -488,8 +477,7 @@ void ZonePlayerManager::processOutputs() {
                         CGLogoutHandler::execute(NULL, pTempPlayer);
                     } catch (DisconnectException& de) {
                         filelog("DIFF_ZG.log", "%s ZPM+PO+SOCKERR", de.toString().c_str());
-                        deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                        pushOutPlayer(pTempPlayer);
+                        moveToOutgoing(pTempPlayer);
                     }
 
                 } else {
@@ -503,8 +491,7 @@ void ZonePlayerManager::processOutputs() {
                             CGLogoutHandler::execute(NULL, pTempPlayer);
                         } catch (DisconnectException& de) {
                             filelog("DIFF_ZG.log", "%s ZPM+PO+CE", de.toString().c_str());
-                            deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                            pushOutPlayer(pTempPlayer);
+                            moveToOutgoing(pTempPlayer);
                         }
 
 
@@ -516,8 +503,7 @@ void ZonePlayerManager::processOutputs() {
                             CGLogoutHandler::execute(NULL, pTempPlayer);
                         } catch (DisconnectException& de) {
                             filelog("DIFF_ZG.log", "%s ZPM+PO+PE", de.toString().c_str());
-                            deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                            pushOutPlayer(pTempPlayer);
+                            moveToOutgoing(pTempPlayer);
                         }
                     }
                 }
@@ -562,8 +548,7 @@ void ZonePlayerManager::processExceptions() {
                     CGLogoutHandler::execute(NULL, pTempPlayer);
                 } catch (DisconnectException& de) {
                     filelog("DIFF_ZG.log", "%s ZPM+PE", de.toString().c_str());
-                    deletePlayer(pTempPlayer->getSocket()->getSOCKET());
-                    pushOutPlayer(pTempPlayer);
+                    moveToOutgoing(pTempPlayer);
                 }
             }
         }
@@ -835,6 +820,7 @@ void ZonePlayerManager::pushPlayer(GamePlayer* pGamePlayer)
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
+    Assert(pGamePlayer != nullptr);
     m_PlayerListQueue.push_back(pGamePlayer);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
@@ -847,9 +833,21 @@ void ZonePlayerManager::pushOutPlayer(GamePlayer* pGamePlayer)
 {
     __BEGIN_TRY
 
+    Assert(pGamePlayer != nullptr);
     m_PlayerOutListQueue.push_back(pGamePlayer);
 
     __END_CATCH
+}
+
+void ZonePlayerManager::moveToOutgoing(GamePlayer* player) {
+    std::lock_guard tableLock(m_Mutex);
+    Assert(player != nullptr);
+    const auto descriptor = de::enqueueRegisteredGamePlayer(m_pPlayers, m_PlayerOutListQueue, *player);
+    --m_nPlayers;
+    m_PollSet.unwatch(descriptor);
+    const auto range = de::gamePlayerDescriptorRange(m_pPlayers);
+    m_MinFD = range.empty() ? -1 : range.first;
+    m_MaxFD = range.empty() ? -1 : range.last;
 }
 
 void ZonePlayerManager::processPlayerListQueue()
@@ -862,13 +860,12 @@ void ZonePlayerManager::processPlayerListQueue()
         GamePlayer* pGamePlayer = m_PlayerListQueue.front();
 
         if (pGamePlayer == NULL) {
+            m_PlayerListQueue.pop_front();
             filelog("ZoneBug.txt", "%s : %s", "Zone::heartbeat(1)", "pGamePlayer is NULL.");
             continue;
         }
 
-        addPlayer_NOBLOCKED(pGamePlayer);
-
-        m_PlayerListQueue.pop_front();
+        de::transferFirstGamePlayer(m_PlayerListQueue, [&](GamePlayer* player) { addPlayer_NOBLOCKED(player); });
 
         Creature* pCreature = pGamePlayer->getCreature();
 
@@ -899,13 +896,8 @@ void ZonePlayerManager::heartbeat()
     // Process the players waiting to leave.
     // They are simply pushed to the IPM.
     while (!m_PlayerOutListQueue.empty()) {
-        GamePlayer* pGamePlayer = m_PlayerOutListQueue.front();
-
-        m_PlayerOutListQueue.pop_front();
-
-        Assert(pGamePlayer != NULL);
-
-        de::gameContext().incomingPlayers().pushPlayer(pGamePlayer);
+        de::transferFirstGamePlayer(m_PlayerOutListQueue,
+                                    [](GamePlayer* player) { de::gameContext().incomingPlayers().pushPlayer(player); });
     }
 
     // Process the broadcast packet queue.
@@ -962,67 +954,15 @@ void ZonePlayerManager::removeFlag(Effect::EffectClass EC)
 ////////////////////////////////////////////////////////////////////////
 // Clean up every player held by the ZonePlayerManager.
 ////////////////////////////////////////////////////////////////////////
-void ZonePlayerManager::clearPlayers()
+void ZonePlayerManager::clearPlayers() {
+    releasePlayers(true);
+}
 
-{
-    __BEGIN_TRY
-
-    // Clean up the entries in PlayerListQueue.
-    while (!m_PlayerListQueue.empty()) {
-        GamePlayer* pGamePlayer = m_PlayerListQueue.front();
-
-        m_PlayerListQueue.pop_front();
-
-        if (pGamePlayer != NULL) {
-            try {
-                pGamePlayer->disconnect();
-            } catch (Throwable& t) {
-                // Ignore.
-            }
-
-            SAFE_DELETE(pGamePlayer);
-        }
-    }
-
-    // Clean up the entries in PlayerOutListQueue.
-    while (!m_PlayerOutListQueue.empty()) {
-        GamePlayer* pGamePlayer = m_PlayerOutListQueue.front();
-
-        m_PlayerOutListQueue.pop_front();
-
-        if (pGamePlayer != NULL) {
-            try {
-                pGamePlayer->disconnect();
-            } catch (Throwable& t) {
-                // Ignore.
-            }
-
-            SAFE_DELETE(pGamePlayer);
-        }
-    }
-
-    if (m_MinFD == -1 && m_MaxFD == -1)
-        return;
-
-    // Clean up the players.
-    const de::DescriptorRange walk = de::descriptorRange((int)m_MinFD, (int)m_MaxFD, (int)nMaxPlayers);
-    for (int i = walk.first; i <= walk.last; i++) {
-        if (m_pPlayers[i] != NULL) {
-            GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(m_pPlayers[i]);
-
-            if (pGamePlayer != NULL) {
-                try {
-                    pGamePlayer->disconnect();
-                } catch (Throwable& t) {
-                    // Ignore.
-                }
-
-                SAFE_DELETE(pGamePlayer);
-            }
-        }
-    }
-
-    __END_CATCH
+void ZonePlayerManager::releasePlayers(bool disconnect) noexcept {
+    de::releaseGamePlayers(m_pPlayers, m_PlayerListQueue, m_PlayerOutListQueue, m_PollSet, disconnect);
+    std::fill(std::begin(m_pCopyPlayers), std::end(m_pCopyPlayers), nullptr);
+    m_nPlayers = 0;
+    m_MinFD = m_MaxFD = -1;
 }
 
 bool checkZonePlayerManager(GamePlayer* pGamePlayer, ZonePlayerManager* pZPM, const string& str) {

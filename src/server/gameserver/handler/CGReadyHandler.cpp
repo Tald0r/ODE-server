@@ -42,10 +42,9 @@ void CGReadyHandler::execute(CGReady* pPacket, Player* pPlayer)
     // Delete the player from the IPM and move it to the ZPM.
     //--------------------------------------------------------------------------------
     try {
-        de::gameContext().incomingPlayers().deletePlayer(pGamePlayer->getSocket()->getSOCKET());
-
-        // With the Core structure changed, the heartbeat sends them all at once to keep the threads from interfering.
-        de::gameContext().incomingPlayers().pushOutPlayer(pGamePlayer);
+        // Queue allocation must succeed before releasing the table owner.
+        // Heartbeat later hands the player to its zone's incoming queue.
+        de::gameContext().incomingPlayers().moveToOutgoing(pGamePlayer);
     } catch (NoSuchElementException& nsee) {
         StringStream msg;
         msg << "Critical Error : the player is not in the IPM. What happened..  - -;\n" << nsee.toString();

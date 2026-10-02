@@ -378,21 +378,8 @@ void EventMorph::activate()
         //
         pZone->deleteCreature(pVampire, pVampire->getX(), pVampire->getY());
 
-        // Delete the player from the zone group's ZPM.
-        // pZone->getZoneGroup()->getZonePlayerManager()->deletePlayer_NOBLOCKED(pGamePlayer);
-        // pZone->getZoneGroup()->getZonePlayerManager()->deletePlayer_NOBLOCKED(pGamePlayer->getSocket()->getSOCKET());
-        pZone->getZoneGroup()->getZonePlayerManager()->deletePlayer(pGamePlayer->getSocket()->getSOCKET());
-
-        //--------------------------------------------------
-        // The creature's new coordinates are the portal's arrival point.
-        //--------------------------------------------------
-        // pVampire->setXY(ZoneX, ZoneY);
-        // pVampire->setZone(NULL);
-
-        // Move the player to the IPM.
-        // g_pIncomingPlayerManager->addPlayer(pGamePlayer);
-        // g_pIncomingPlayerManager->pushPlayer(pGamePlayer);
-        pZone->getZoneGroup()->getZonePlayerManager()->pushOutPlayer(pGamePlayer);
+        // Reserve its outgoing entry before releasing the zone's table owner.
+        pZone->getZoneGroup()->getZonePlayerManager()->moveToOutgoing(pGamePlayer);
 
     } catch (NoSuchElementException& nsee) {
         cerr << nsee.toString() << endl;
