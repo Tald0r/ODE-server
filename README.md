@@ -136,6 +136,9 @@ repository, validation, duplicate, allocation or diagnostic failure.
 Shared guild loading is covered through an explicit repository too, including
 complete guild/roster replacement, allocation rollback and retry, orphan-member
 cleanup, field validation and the production guild-info reply built from loaded rows.
+Guild startup also accepts explicit configuration and repository inputs. Tests
+check ID arithmetic, empty-table query policy, and preservation of both counters
+and borrowed rows after query, configuration, roster or allocation failure.
 `world_catalogue_tests` links the common production world loader directly from
 `ServerCore`, without a server runtime or database connection. It checks owned
 replacement, rollback and retry after load failures, ID/status validation,

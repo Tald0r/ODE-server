@@ -277,11 +277,35 @@ preserved roster semantics and the production guild-info reply from loaded rows.
 repository probe, before later probes and roster loading complete. Failed
 initialization can therefore leave only some counters changed. Queried maxima,
 configured dimension/world arithmetic and prior zone maxima plus one also narrow
-to word-sized IDs without validation. These are source findings; task 2.37
-tracks explicit inputs, checked preparation and publication after successful
-initialization, with failure and retry coverage.
+to word-sized IDs without validation. Six regressions reproduced partial
+publication, failed retries, invalid maxima/counts, exhausted zone counters and
+malformed or overflowing configuration.
 
-> **Status:** recorded, not fixed (refactor/shared-guild-loading)
+The explicit repository/configuration entry point prepares all four checked
+maxima, completes the owned roster load, and then publishes counters with
+nonthrowing assignments under the table lock. Negative counts are refused;
+empty counts skip the NULL-producing MAX queries. Only an empty guild table
+requires Dimension/WorldID, parsed as complete nonnegative decimals with optional
+leading plus and surrounding whitespace. Their formula uses widened arithmetic
+and is checked before narrowing, as are stored maxima and previous zones plus one.
+Sixteen startup tests cover all repository stages and exception identities,
+config/ID boundaries, refused rosters, borrowed-row preservation, repeated init
+and four 128-position allocation sweeps with cleanup/retry. Initialization remains
+a quiescent operation before worker startup, not a concurrent refresh API.
+
+> **Status:** fixed (refactor/shared-guild-startup-ids)
+
+## Live guild creation advances word-sized counters without checking exhaustion (2026-10-02)
+
+`GSAddGuildHandler` assigns `getMaxGuildID() + 1` to the word-sized request ID
+before race validation and later narrows each selected zone ID plus one back to
+its static counter. A maximum of 65535 therefore wraps to zero. Startup now
+validates its own arithmetic, but loading a representable stored maximum does
+not add a live allocation-exhaustion policy. This is a source finding from the
+startup-counter audit; the handler/decision boundary needs its own refusal and
+counter-preservation tests.
+
+> **Status:** recorded, not fixed (refactor/shared-guild-startup-ids)
 
 ## Shared guild reply assembly leaves partial records unowned (2026-10-02)
 

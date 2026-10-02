@@ -1126,14 +1126,31 @@ visibility can't express.
     invalid rows, repository errors at both stages, exact roster/count/date
     behavior, boundary IDs, and the production guild-info reply from loaded rows.
 
-- [ ] **2.37 Extract shared guild startup ID initialization.**
-  > **Status:** not started — `GuildManager::init` reads the default repository
-  > and global configuration, publishes each process-wide maximum before later
-  > queries and roster loading finish, and narrows queried/computed IDs to words.
-  > Add explicit inputs, prepare checked maxima without publication, and retain
-  > the previous counters and guild graph on failed initialization.
-  - Planned owner: shared runtime startup tests over supplied counts/maxima,
-    configuration, failed queries/roster loading, bounds and retry.
+- [x] **2.37 Extract shared guild startup ID initialization.**
+  > **Status:** done (this commit) — `GuildManager::init` accepts an explicit
+  > repository and configuration; default startup delegates to that entry point.
+  > Checked counts/maxima, nonnegative decimal configuration and widened ID
+  > arithmetic prepare all four counters before the owned roster load. Counters
+  > publish only after successful graph replacement, under the same table lock.
+  > Empty counts still skip MAX queries, and configuration keys are read only
+  > when the guild table is empty. Failed initialization preserves counters and
+  > borrowed guild/member pointers, allowing retry without consuming IDs.
+  > Initialize with quiescent counter/borrowed-row users, as at startup before
+  > workers run. Successful replacement invalidates borrowed rows; live guild
+  > creation and whole-server initialization retain their separate contracts.
+  - Owner: 16 `SharedGuildStartup` cases in `shared_server_runtime_tests`.
+    Six regressions failed before the fix. Coverage includes every repository
+    stage with three exception types, configuration/ID bounds, refused rosters,
+    repeated initialization, and four 128-position allocation sweeps across
+    empty/populated previous graphs and empty/nonempty database tables.
+
+- [ ] **2.38 Extract owned shared guild reply construction.**
+  > **Status:** not started — shared guild-info assembly allocates raw guild
+  > and member reply records before their filling/attachment can throw. Give
+  > partial records an owner through preparation and preserve the destination
+  > reply on failed construction, without changing packet bytes or roster data.
+  - Planned owner: shared runtime tests over the production builder, populated
+    reply destinations, allocation failures, cleanup and retry.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
