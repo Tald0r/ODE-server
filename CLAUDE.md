@@ -22,6 +22,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Packets carry no `execute()` — handlers register at the composition root | ratchet R4 | R4 above 0 |
 | Server implementations link without `main.cpp`, with the same definitions as production | `game_server_runtime_tests`, `login_server_runtime_tests`, `shared_server_runtime_tests` | duplicate `main` at link time, a mismatched server definition, or a production dispatch/handler test failure |
 | Startup arguments and login offsets are validated before a completed configuration is published | `server_startup_tests`, over the shared `ServerStartup` library, and `server_startup_cli`, over all three executables | malformed arguments accepted, an incorrect or partially applied override, a failed load replacing the published configuration, or the wrong failure status/diagnostic from main |
+| Every server requests shutdown before stopping, attempts cleanup after failed startup, and preserves worker failures in its exit status | `server_lifecycle_tests`, over the shared `ServerLifecycle` library used by all three entry points | starting after a shutdown request, missing or repeated cleanup, lost failure diagnostics, an incorrect drain result or a successful exit after failure |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
 | A critical section is never unlocked by hand | `tests/tools/critical_section_audit.pl`, ctest `critical_section_audit` | the file and line of the hand-written `unlock()` |
 | Zone-group state is touched only under that group's mutex | `ZoneGroup::assertOwned()` under `DE_OWNERSHIP_CHECKS` (Debug builds only) | `abort()` at the gateway |
@@ -284,6 +285,15 @@ optional ID offset. Only `main()` publishes that completed configuration to
 `KernelContext`; it reports a startup configuration error and returns failure
 before constructing a server. `server_startup_tests` exercises this without
 linking a server runtime.
+
+`ServerLifecycle` also depends only on `de-kernel`. Each entry point supplies
+construction/initialization, start and stop actions to `runServerLifecycle`,
+which handles exceptions, requests shutdown before cleanup and returns the
+drain result and exit status. It uses the workers' `ServerShutdown` flags and
+never resets them. The caller keeps the configuration and server graph alive;
+signals, the deadline, the drain message and `_Exit` remain in `main()`.
+`server_lifecycle_tests` runs the shared control flow with controlled actions
+and isolated diagnostics, without starting a server or a deadline thread.
 
 ### Key Directory Structure
 
