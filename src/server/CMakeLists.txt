@@ -9,10 +9,7 @@ set(SERVER_CORE_SOURCES
     PlayerManager.cpp
     GameWorldInfoManager.cpp
     SystemAPI.cpp
-    Thread.cpp
-    ThreadAttr.cpp
     Timeval.cpp
-    pthreadAPI.cpp
     Profile.cpp
     ProxyAcceptor.cpp
     PacketProfile.cpp
@@ -34,6 +31,12 @@ add_library(ServerSynchronization STATIC Mutex.cpp CondVar.cpp PthreadSynchroniz
 target_include_directories(ServerSynchronization PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ServerSynchronization PUBLIC de-kernel Threads::Threads)
 target_link_libraries(ServerCore PUBLIC ServerSynchronization)
+
+# Production worker lifecycle, independently linkable without server managers.
+add_library(ServerWorkers STATIC Thread.cpp ManagedThread.cpp)
+target_include_directories(ServerWorkers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ServerWorkers PUBLIC de-kernel Threads::Threads)
+target_link_libraries(ServerCore PUBLIC ServerWorkers)
 
 # Entry-point configuration, testable without any server runtime or database.
 add_library(ServerStartup STATIC ServerStartup.cpp)
@@ -63,7 +66,7 @@ target_link_libraries(ServerStartSequence PUBLIC Threads::Threads)
 # Shared worker drain order and diagnostics, without a server runtime or database.
 add_library(ServerWorkerShutdown STATIC ServerWorkerShutdown.cpp)
 target_include_directories(ServerWorkerShutdown PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(ServerWorkerShutdown PUBLIC ServerCore de-kernel Threads::Threads)
+target_link_libraries(ServerWorkerShutdown PUBLIC ServerWorkers)
 
 # Process signal/deadline setup, independent of any concrete server or kernel.
 add_library(ServerProcessShutdown STATIC ServerProcessShutdown.cpp)

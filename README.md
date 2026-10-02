@@ -196,6 +196,12 @@ refusal, wrong-owner unlock, returned error codes, attribute reuse, scoped
 release, contended updates and condition wakeups/timeouts. Explicit native
 attribute overrides remain available; name setup and destruction require
 quiescent users.
+`ServerWorkers` contains the production managed worker lifecycle. Worker,
+startup-sequence and shutdown tests link it without `ServerCore` or server
+startup. Coverage includes launch allocation failure/retry, identity/status
+publication, concurrent metadata reads, self-join failure retention and the
+existing stop/join contracts. Every production worker uses this backend; the
+unused native creation/detachment backend and thread attributes are removed.
 `player_connection_key_tests` exercises pure key-table calculation and owned
 installation in `Player`. Allocation faults verify atomic replacement and
 cleanup; fixed vectors and real socket I/O preserve existing table and stream

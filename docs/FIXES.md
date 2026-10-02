@@ -63,12 +63,38 @@ shutdown coordination and pending broadcasts are separate work.
 
 The synchronization extraction found the same negative-result/`errno` pattern
 in the remaining native thread create, join, detach and attribute wrappers in
-`pthreadAPI.cpp`. A positive failure code can be reported as success. These
-are source findings; standalone lifecycle/refusal coverage and extraction are
-tracked in task 2.27. The synchronization fix below only changes the mutex and
-condition-variable wrappers.
+`pthreadAPI.cpp`. A positive failure code can be reported as success. Two
+isolated probes reproduced ignored self-join and invalid detach-state refusals.
+The caller audit found every production worker already uses `ManagedThread`,
+with no native creation/attribute users. The unused backend and `ThreadAttr`
+are removed, leaving an abstract thread interface. Production worker behavior
+now lives in `ServerWorkers`, with standalone lifecycle/startup/shutdown tests;
+the retained mutex and condition wrappers stay in `ServerSynchronization`.
 
-> **Status:** recorded, not fixed (refactor/server-mutex-ownership)
+> **Status:** fixed (refactor/server-workers)
+
+## Managed worker identity races with startup readers (2026-10-02)
+
+`ManagedThread::start` writes the plain native thread ID after creation while
+`getTID` and `toString` can read it concurrently. ThreadSanitizer reproduced
+this race with a real managed worker. The worker body could also run before
+the creator published its identity and running state. Identity is now atomic,
+and worker entry waits on the lifecycle mutex until publication finishes.
+Standalone cases cover identity/status at entry and concurrent metadata reads;
+the same sanitizer probe passes after the fix. An actual first-allocation
+failure leaves ready state and an empty identity, followed by a successful retry.
+
+> **Status:** fixed (refactor/server-workers)
+
+## Zone worker registration loses ownership when pool insertion fails (2026-10-02)
+
+`ThreadManager::init` passes a newly allocated `ZoneGroupThread` raw to
+`ThreadPool::addThread`. The pool allocates its list node before taking any
+scoped ownership, so failure leaves that worker outside the pool without an
+owner. This is a source finding; task 2.28 tracks explicit pool ownership,
+allocation-failure regressions and independently testable cleanup/rollback.
+
+> **Status:** recorded, not fixed (refactor/server-workers)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 

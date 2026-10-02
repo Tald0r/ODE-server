@@ -436,9 +436,11 @@ set_tests_properties(cooperative_thread_tests PROPERTIES TIMEOUT 10)
 
 add_executable(managed_thread_tests EXCLUDE_FROM_ALL
     managed_thread_test.cpp
+    managed_thread_lifecycle_test.cpp
+    support/AllocationProbe.cpp
     ${CMAKE_SOURCE_DIR}/src/server/gameserver/ThreadPool.cpp
 )
-target_link_libraries(managed_thread_tests PRIVATE ServerCore de-kernel gtest_main Threads::Threads)
+target_link_libraries(managed_thread_tests PRIVATE ServerWorkers gtest_main)
 add_dependencies(wire_tests managed_thread_tests)
 add_test(NAME managed_thread_tests COMMAND managed_thread_tests)
 # Headroom for the stop-aware-wait tests: a regression there sits out a

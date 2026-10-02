@@ -22,6 +22,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Packets carry no `execute()` — handlers register at the composition root | ratchet R4 | R4 above 0 |
 | Server implementations link without `main.cpp`, with the same definitions as production | `game_server_runtime_tests`, `login_server_runtime_tests`, `shared_server_runtime_tests` | duplicate `main` at link time, a mismatched server definition, or a production dispatch/handler test failure |
 | Default server mutexes use native ownership, including across condition waits; synchronization wrappers interpret returned pthread error codes | `server_synchronization_tests` over `ServerSynchronization`, shared by all servers | false try-lock success, lost ownership after waiting, ignored misuse, wrong error/timeout classification, failed attribute reuse or lost contended updates/wakeups |
+| Production workers share an independently linkable managed lifecycle; worker entry follows identity/status publication and failed launch leaves a retryable owner | `managed_thread_tests`, `server_start_sequence_tests` and `server_worker_shutdown_tests` over `ServerWorkers` | early worker entry, unsafe metadata access, damaged launch state, lost stop/join/failure behavior or dependence on `ServerCore`/executable startup |
 | Startup arguments and login offsets are validated before a completed configuration is published | `server_startup_tests`, over the shared `ServerStartup` library, and `server_startup_cli`, over all three executables | malformed arguments accepted, an incorrect or partially applied override, a failed load replacing the published configuration, or the wrong failure status/diagnostic from main |
 | Configuration parsing processes the final line without a newline and rejects missing keys and read errors before startup publication | `properties_parser_tests` over `PropertiesParser` in `de-kernel`, plus `server_startup_tests` and `server_startup_cli` | a dropped final property, a malformed line accepted, a read failure spinning or silently succeeding, or a directory accepted as configuration |
 | Every server requests shutdown before stopping, attempts cleanup after failed startup, and preserves worker failures in its exit status | `server_lifecycle_tests`, over the shared `ServerLifecycle` library used by all three entry points | starting after a shutdown request, missing or repeated cleanup, lost failure diagnostics, an incorrect drain result or a successful exit after failure |
@@ -689,8 +690,10 @@ listener plus `GuildManager::heartbeat()`. Each worker registers its own DB
 `Connection` keyed by `Thread::self()` where it needs one.
 
 Every worker in all three processes uses `ManagedThread` (`std::jthread`);
-it is the only remaining subclass of the legacy `Thread`. Start and
-stop are serialized; stop-before-start is terminal, and join allows a
+it implements the abstract `Thread` interface in the `ServerWorkers` library.
+The unused native creation/detachment backend and `ThreadAttr` are removed.
+Worker entry waits for identity/status publication; native identity reads are
+atomic. Start and stop are serialized; stop-before-start is terminal, and join allows a
 concurrent stop request. Derived destructors must stop/join before destroying
 members. SIGTERM/SIGINT request process shutdown; main exits its client loop,
 requests every worker to stop, and joins them while dependencies remain alive.
