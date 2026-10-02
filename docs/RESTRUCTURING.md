@@ -844,13 +844,28 @@ visibility can't express.
   > injected-listener constructor avoids global configuration in tests; the
   > default still uses checked ports and bind retries. Shared player streams
   > use `SocketStreams` with their existing 10,240/163,840-byte buffers.
-  > Game/login acceptance still needs separate adoption audits before using
-  > this boundary; their socket-error queries share the corrected reader.
+  > Game acceptance still needs its own adoption audit; login now shares
+  > this boundary through task 2.21. All socket-error queries use the corrected reader.
   - Owner: `accepted_server_connection_tests` for real options, byte exchange
     and rejection ownership; `socket_construction_tests` for pending/consumed
     socket errors; shared runtime `SharedConnection` allocation sweeps over
     construction, acceptance, refusal/reporting, registration and destruction,
     plus occupied-slot ownership, broadcasts and retries without a database.
+
+- [x] **2.21 Extract owned login connection creation and admission.**
+  > **Status:** done (this commit) — `LoginConnection` owns a begun session
+  > through registration and ends it before resource destruction. Login uses
+  > `AcceptedServerConnection` for socket preparation and adopts the socket in
+  > the `Player` base before derived members, retaining 1,024/4,096-byte buffers.
+  > Manager destruction ends remaining sessions so packet history is freed;
+  > database logout remains an explicit disconnect action. A scoped injected
+  > `LoginContext` supports construction without global publication, and
+  > reconnect bindings are restored in reverse scope order. Forwarded admission
+  > tests run without listener initialization or a database.
+  - Owner: login runtime `LoginConnection` cases for allocation sweeps and retry,
+    occupied-slot refusal, constructor failure, terminal teardown and reconnect
+    bindings, pending errors, real receive/dispatch/reply and packet-history
+    destruction; common socket preparation/construction tests.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

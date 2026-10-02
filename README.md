@@ -160,8 +160,14 @@ actual nonblocking/linger options and rejection of pending peer errors.
 The shared runtime's connection tests inject a listener without configuration
 or database startup, sweep allocation faults through construction, acceptance
 and descriptor-limit refusal, and verify registration, broadcast, retry and
-destruction cleanup. `Socket::getSockError` reports both failed queries and
-the pending `SO_ERROR` value; reading that value consumes it.
+destruction cleanup. `Socket::getSockError` reports whether the query failed
+or `SO_ERROR` is nonzero; reading `SO_ERROR` consumes it.
+The login runtime tests drive forwarded admission without database or listener
+startup. `LoginConnection` retains each player through registration and ends
+its session before cleanup; allocation sweeps, duplicate refusal, real socket
+I/O and packet-history destruction cover that ownership. An injected
+`LoginContext` supports scoped managers and restores the previous reconnect
+binding. Manager teardown releases local resources without database logout.
 `socket_stream_setup_tests` exercises plain buffered-stream construction in
 `de-kernel` with explicit sizes and a borrowed socket. Allocation faults verify
 partial cleanup and atomic player socket replacement, preserving old buffers

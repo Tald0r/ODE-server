@@ -26,6 +26,7 @@ set(LOGINSERVER_RUNTIME_SOURCES
     handler/GLKickVerifyHandler.cpp
     handler/GMServerInfoHandler.cpp
     LoginContext.cpp
+    LoginConnection.cpp
     LoginPacketDispatch.cpp
     CharacterCreation.cpp
     CharacterDeletion.cpp
@@ -96,6 +97,7 @@ target_link_libraries(LoginServerRuntime PUBLIC
     ServerStartSequence
     ListenerStartup
     ServerPortSettings
+    AcceptedServerConnection
     Core
     # The wire archive itself (task 2.4) — also reached transitively through
     # Core/LoginServerPackets, named here so the layering is visible.

@@ -13,11 +13,13 @@
 
 #include <algorithm>
 
+#include "AcceptedServerConnection.h"
 #include "Assert.h"
 #include "DatabaseError.h"
 #include "DescriptorTable.h"
 #include "KernelContext.h"
 #include "ListenerStartup.h"
+#include "LoginConnection.h"
 #include "LoginContext.h"
 #include "LoginPlayer.h"
 #include "Properties.h"
@@ -32,18 +34,21 @@
 //
 // constructor
 //
-// This is where the sub-manager objects are created. (There are none.)
+// The reconnect manager is owned here and borrowed by the context.
 //
 //////////////////////////////////////////////////////////////////////
-LoginPlayerManager::LoginPlayerManager()
+LoginPlayerManager::LoginPlayerManager() : LoginPlayerManager(de::loginContext()) {}
+
+LoginPlayerManager::LoginPlayerManager(de::LoginContext& context)
     : m_pServerSocket(NULL), m_ServerFD(INVALID_SOCKET), m_PollSet((int)nMaxPlayers), m_TimeoutMilliseconds(0),
-      m_MinFD(-1), m_MaxFD(-1) {
+      m_MinFD(-1), m_MaxFD(-1), m_Context(context) {
     __BEGIN_TRY
 
     m_Mutex.setName("LoginPlayerManager");
 
-    m_pReconnectLoginInfoManager = new ReconnectLoginInfoManager();
-    de::loginContext().setReconnectLoginInfoManager(m_pReconnectLoginInfoManager);
+    m_pReconnectLoginInfoManager = std::make_unique<ReconnectLoginInfoManager>();
+    m_PreviousReconnectLoginInfoManager =
+        m_Context.exchangeReconnectLoginInfoManager(m_pReconnectLoginInfoManager.get());
 
     __END_CATCH
 }
@@ -53,7 +58,7 @@ LoginPlayerManager::LoginPlayerManager()
 //
 // destructor
 //
-// This is where the sub-manager objects are deleted. (There are none.)
+// All callers and workers must have stopped using the manager before teardown.
 //
 //////////////////////////////////////////////////////////////////////
 LoginPlayerManager::~LoginPlayerManager() noexcept {
@@ -65,15 +70,18 @@ LoginPlayerManager::~LoginPlayerManager() noexcept {
         m_pServerSocket = NULL;
     }
 
-    // The destructor of the base class PlayerManager disconnects every connected
-    // player and deletes the objects, so there is nothing to do here.
-    //
-    if (m_pReconnectLoginInfoManager != NULL) {
-        delete m_pReconnectLoginInfoManager;
-        m_pReconnectLoginInfoManager = NULL;
+    // Base PlayerManager only deletes pointers. End each login session first
+    // so its destructor can release packet history. This releases local
+    // resources without introducing database logout into manager destruction.
+    for (auto*& player : m_pPlayers) {
+        de::LoginConnection connection(static_cast<LoginPlayer*>(player));
+        player = nullptr;
     }
+    m_nPlayers = 0;
 
     __END_CATCH_NO_RETHROW
+
+    m_Context.setReconnectLoginInfoManager(m_PreviousReconnectLoginInfoManager);
 }
 
 
@@ -393,30 +401,19 @@ void LoginPlayerManager::acceptNewConnection(Socket* forwarded) {
     if (!de::fitsDescriptorTable((int)client->getSOCKET(), (int)nMaxPlayers))
         return;
 
-    if (client->getSockError())
+    try {
+        client = de::prepareAcceptedServerConnection(std::move(client));
+    } catch (const Error&) {
+        // Refuse socket setup errors quietly; allocation failures still propagate.
         return;
-
-    client->setNonBlocking(true);
-
-    if (client->getSockError())
-        return;
+    }
 
     cout << "NEW CONNECTION FROM " << client->getHost() << ":" << client->getPort() << endl;
     cerr << "NEW CONNECTION FROM " << client->getHost() << ":" << client->getPort() << endl;
 
-    // set socket option ( NoLinger )
-    client->setLinger(0);
-
-    // Create the player object, which takes the socket. The release runs
-    // only once the allocation has succeeded.
-    LoginPlayer* pPlayer = new LoginPlayer(client.release());
-
-    // set player status to PLAYER_LOGON
-    Assert(pPlayer->getPlayerStatus() == LPS_NONE);
-    pPlayer->setPlayerStatus(LPS_BEGIN_SESSION);
-
-    // Register it with the LoginPlayerManager.
-    addPlayer_NOLOCKED(pPlayer);
+    auto player = de::makeLoginConnection(std::move(client));
+    addPlayer_NOLOCKED(player.get());
+    player.release();
 
     __END_CATCH
 }

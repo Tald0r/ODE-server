@@ -55,6 +55,13 @@ public:
     void setReconnectLoginInfoManager(ReconnectLoginInfoManager* pReconnectLoginInfoManager) {
         m_pReconnectLoginInfoManager = pReconnectLoginInfoManager;
     }
+    // Scoped owners restore the returned binding before destroying the manager
+    // they published. Nested owners must leave scope in reverse creation order.
+    ReconnectLoginInfoManager* exchangeReconnectLoginInfoManager(ReconnectLoginInfoManager* manager) noexcept {
+        auto* previous = m_pReconnectLoginInfoManager;
+        m_pReconnectLoginInfoManager = manager;
+        return previous;
+    }
     void setUserInfoManager(UserInfoManager* pUserInfoManager) {
         m_pUserInfoManager = pUserInfoManager;
     }

@@ -28,7 +28,10 @@
 //////////////////////////////////////////////////////////////////////
 Player::Player() : m_pSocket(NULL), m_pInputStream(NULL), m_pOutputStream(NULL) {}
 
-Player::Player(Socket* pSocket) : m_pSocket(NULL), m_pInputStream(NULL), m_pOutputStream(NULL) {
+Player::Player(Socket* pSocket) : Player(pSocket, DefaultSocketInputBufferSize, DefaultSocketOutputBufferSize) {}
+
+Player::Player(Socket* pSocket, uint inputBufferSize, uint outputBufferSize)
+    : m_pSocket(NULL), m_pInputStream(NULL), m_pOutputStream(NULL) {
     __BEGIN_TRY
 
     // Adoption includes failure: neither this destructor nor the caller can
@@ -36,7 +39,7 @@ Player::Player(Socket* pSocket) : m_pSocket(NULL), m_pInputStream(NULL), m_pOutp
     // both streams are ready, destroying streams before their borrowed socket.
     std::unique_ptr<Socket> socket(pSocket);
     Assert(socket != nullptr);
-    auto streams = de::makeSocketStreams(socket.get(), DefaultSocketInputBufferSize, DefaultSocketOutputBufferSize);
+    auto streams = de::makeSocketStreams(socket.get(), inputBufferSize, outputBufferSize);
     m_pSocket = socket.release();
     m_pInputStream = streams.input.release();
     m_pOutputStream = streams.output.release();
