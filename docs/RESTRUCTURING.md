@@ -1285,13 +1285,29 @@ visibility can't express.
     early-gate precedence and repository exception identity, without sockets,
     database connections or process-context publication.
 
-- [ ] **2.46 Validate persisted character-selection slot text.**
-  > **Status:** not started — selection checks only the five-character length
-  > before converting the last byte to an integer. Audit creation/listing slot
-  > bounds, then reject invalid prefixes, nondigits and unsupported indices before
-  > routing while retaining rejection precedence and valid slot behavior.
-  - Planned owner: character-selection decision and production-topology cases
-    over malformed repository rows and valid slot boundaries.
+- [x] **2.46 Validate persisted character-selection slot text.**
+  > **Status:** done (this commit) — selection matches the canonical
+  > `Slot2String` names used by creation (`SLOT1`–`SLOT3`). The selected account
+  > slot remains 1–3, distinct from the zero-based packet/creation enum.
+  > Invalid prefixes, unsupported indices and nondigits produce `NoSlot` after
+  > existing earlier gates and before ordinary or quest routing. The existing
+  > handler maps that rejection to a protocol exception; SQL and packet layouts
+  > are unchanged.
+  - Owner: 28 `character_selection_tests` cases and 17 production
+    `LoginCharacterTopologyTest` cases. Four new regressions failed before the
+    fix. Coverage includes all 256 suffix bytes, malformed/embedded-NUL prefixes,
+    all races, every canonical slot, ordinary/quest routes, missing zones and
+    earlier-gate precedence.
+
+- [ ] **2.47 Extract login character-list assembly.**
+  > **Status:** not started — `LoginPlayer::makePCList` reads the default
+  > character repository and builds race-specific packet records inside the
+  > session object. Supply world/account/repository inputs explicitly, audit
+  > partial-record ownership and slot handling, and exercise production assembly
+  > without executable startup. Keep the normalized server-selection world issue
+  > recorded in `docs/FIXES.md` visible at the session/query boundary.
+  - Planned owner: login runtime assembly cases over supplied repository rows,
+    real packet records and failure/retry paths.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

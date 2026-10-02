@@ -21,9 +21,6 @@ const ServerID_t kFirstServerID = 1;
 const int kNonPKMaxLevel = 80;
 const int kNonPKBannedCompetence = 3;
 
-// The SLOT<n> text every race table stores.
-const std::string::size_type kSlotTextSize = 5;
-
 } // namespace
 
 Outcome<SelectedCharacter, SelectPCRejection>
@@ -70,13 +67,22 @@ decideSelectPC(const SelectPCRequest& request, LoginCharacterRepository& reposit
             return Result::Rejected(SelectPCRejection::NonPKServerLimit);
     }
 
-    if (pc.slot.size() != kSlotTextSize)
+    // Creation stores these exact names. The account's last-slot value is
+    // one-based, unlike the Slot enumerators used by packets and creation.
+    int accountSlot = 0;
+    for (int slot = SLOT1; slot < SLOT_MAX; ++slot) {
+        if (pc.slot == Slot2String[slot]) {
+            accountSlot = slot + 1;
+            break;
+        }
+    }
+    if (accountSlot == 0)
         return Result::Rejected(SelectPCRejection::NoSlot);
 
     SelectedCharacter selected;
     selected.table = table;
     selected.zoneID = pc.zoneID;
-    selected.slot = pc.slot.at(kSlotTextSize - 1) - '0';
+    selected.slot = accountSlot;
 
     // Find the game server that runs the zone the character logged out in.
     if (pc.zoneID > kQuestZoneLow && pc.zoneID < kQuestZoneHigh) {

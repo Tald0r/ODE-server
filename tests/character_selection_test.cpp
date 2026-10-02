@@ -272,7 +272,104 @@ TEST(DecideSelectPC, ASlotTextThatIsNotFiveCharactersIsRefused) {
     }
 }
 
+TEST(DecideSelectPC, MalformedPrefixesAreRefusedForEveryRaceAndRoutingPath) {
+    const PCType types[] = {PC_SLAYER, PC_VAMPIRE, PC_OUSTERS};
+    const LoginRaceTable tables[] = {LOGIN_RACE_TABLE_SLAYER, LOGIN_RACE_TABLE_VAMPIRE, LOGIN_RACE_TABLE_OUSTERS};
+    const std::string slots[] = {"WRNG2",
+                                 "slot2",
+                                 "sLOT2",
+                                 "SL0T2",
+                                 " SLO2",
+                                 "LOT2 ",
+                                 std::string("SLO\0"
+                                             "2",
+                                             5),
+                                 std::string("\0LOT2", 5)};
+
+    for (int race = 0; race < 3; ++race) {
+        for (const auto zone : {2101, 10001, 29999}) {
+            for (const auto& slot : slots) {
+                SCOPED_TRACE(::testing::Message() << race << "/" << zone << "/" << slot);
+                FakeLoginCharacterRepository repository;
+                FakeSelectPCTopology topology;
+                repository.addSelectableCharacter(tables[race], "account", "Rowan", zone, slot, 30, 1);
+                auto request = slayerRequest();
+                request.pcType = types[race];
+
+                const auto outcome = decideSelectPC(request, repository, topology);
+
+                ASSERT_TRUE(outcome.isRejected());
+                EXPECT_EQ(outcome.rejection(), SelectPCRejection::NoSlot);
+                EXPECT_EQ(topology.isNonPKServerCalls, 1);
+                EXPECT_TRUE(topology.zoneServerIDCalls.empty());
+            }
+        }
+    }
+}
+
+TEST(DecideSelectPC, OnlyTheThreeSupportedSuffixBytesNameASlot) {
+    for (int suffix = 0; suffix <= 255; ++suffix) {
+        SCOPED_TRACE(suffix);
+        FakeLoginCharacterRepository repository;
+        FakeSelectPCTopology topology;
+        std::string slot = "SLOT";
+        slot.push_back(static_cast<char>(suffix));
+        repository.addSelectableCharacter(LOGIN_RACE_TABLE_SLAYER, "account", "Rowan", 2101, slot, 30, 1);
+
+        const auto outcome = decideSelectPC(slayerRequest(), repository, topology);
+
+        if (suffix >= '1' && suffix <= '3') {
+            ASSERT_TRUE(outcome.isOk());
+            EXPECT_EQ(outcome.events().slot, suffix - '0');
+            EXPECT_EQ(topology.zoneServerIDCalls, (std::vector<ZoneID_t>{2101}));
+        } else {
+            ASSERT_TRUE(outcome.isRejected());
+            EXPECT_EQ(outcome.rejection(), SelectPCRejection::NoSlot);
+            EXPECT_TRUE(topology.zoneServerIDCalls.empty());
+        }
+        EXPECT_EQ(topology.isNonPKServerCalls, 1);
+    }
+}
+
 // --- precedence -----------------------------------------------------------
+
+TEST(DecideSelectPC, EarlierGatesWinOverAMalformedFiveByteSlot) {
+    struct Gate {
+        bool agreed;
+        bool managingCharacters;
+        bool hasCharacter;
+        bool freePlayCap;
+        SelectPCRejection rejection;
+        int characterReads;
+        int topologyReads;
+    };
+    const Gate gates[] = {{false, false, true, true, SelectPCRejection::DidNotAgree, 0, 0},
+                          {true, false, true, true, SelectPCRejection::InvalidStatus, 0, 0},
+                          {true, true, false, true, SelectPCRejection::NoSuchCharacter, 1, 0},
+                          {true, true, true, true, SelectPCRejection::FreePlayLimit, 1, 0},
+                          {true, true, true, false, SelectPCRejection::NonPKServerLimit, 1, 1}};
+    for (const auto& gate : gates) {
+        SCOPED_TRACE(static_cast<int>(gate.rejection));
+        FakeLoginCharacterRepository repository;
+        FakeSelectPCTopology topology;
+        topology.nonPKServer = true;
+        if (gate.hasCharacter)
+            repository.addSelectableCharacter(LOGIN_RACE_TABLE_SLAYER, "account", "Rowan", 2101, "SLOT0", 90, 3);
+        auto request = slayerRequest();
+        request.agreedToTerms = gate.agreed;
+        request.inCharacterManagement = gate.managingCharacters;
+        request.checkFreePlayLimit = gate.freePlayCap;
+        request.freePlaySlayerDomainSum = 80;
+
+        const auto outcome = decideSelectPC(request, repository, topology);
+
+        ASSERT_TRUE(outcome.isRejected());
+        EXPECT_EQ(outcome.rejection(), gate.rejection);
+        EXPECT_EQ(repository.loadCharacterForSelectCalls, gate.characterReads);
+        EXPECT_EQ(topology.isNonPKServerCalls, gate.topologyReads);
+        EXPECT_TRUE(topology.zoneServerIDCalls.empty());
+    }
+}
 
 TEST(DecideSelectPC, TheTermsWinOverEveryOtherReason) {
     FakeLoginCharacterRepository repository;
@@ -377,6 +474,32 @@ TEST(DecideSelectPC, TheSlotIsTheDigitOfTheSlotText) {
 
         ASSERT_TRUE(outcome.isOk()) << slots[i];
         EXPECT_EQ(i + 1, outcome.events().slot) << slots[i];
+    }
+}
+
+TEST(DecideSelectPC, CreationSlotNamesKeepOneBasedAccountValuesForEveryRaceAndRoutingPath) {
+    const PCType types[] = {PC_SLAYER, PC_VAMPIRE, PC_OUSTERS};
+    const LoginRaceTable tables[] = {LOGIN_RACE_TABLE_SLAYER, LOGIN_RACE_TABLE_VAMPIRE, LOGIN_RACE_TABLE_OUSTERS};
+    for (int race = 0; race < 3; ++race) {
+        for (int slot = SLOT1; slot < SLOT_MAX; ++slot) {
+            for (const auto zone : {2101, 20000}) {
+                SCOPED_TRACE(::testing::Message() << race << "/" << slot << "/" << zone);
+                FakeLoginCharacterRepository repository;
+                FakeSelectPCTopology topology;
+                repository.addSelectableCharacter(tables[race], "account", "Rowan", zone, Slot2String[slot], 30, 1);
+                auto request = slayerRequest();
+                request.pcType = types[race];
+
+                const auto outcome = decideSelectPC(request, repository, topology);
+
+                ASSERT_TRUE(outcome.isOk());
+                EXPECT_EQ(outcome.events().table, tables[race]);
+                EXPECT_EQ(outcome.events().slot, slot + 1);
+                EXPECT_EQ(outcome.events().zoneID, zone);
+                EXPECT_EQ(outcome.events().serverID, zone == 20000 ? 1 : FakeSelectPCTopology::kDefaultServerID);
+                EXPECT_EQ(topology.zoneServerIDCalls.size(), zone == 20000 ? 0u : 1u);
+            }
+        }
     }
 }
 

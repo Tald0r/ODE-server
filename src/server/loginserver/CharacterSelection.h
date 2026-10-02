@@ -42,7 +42,7 @@ enum class SelectPCRejection {
     // A non-PK server refuses a high-level character of the top
     // competence.
     NonPKServerLimit,
-    // The character's slot text is not SLOT<n>.
+    // The character's stored slot text is not SLOT1, SLOT2 or SLOT3.
     NoSlot
 };
 
@@ -76,8 +76,8 @@ struct SelectedCharacter {
     // Where the character logged out, and the game server that runs it.
     ZoneID_t zoneID = 0;
     ServerID_t serverID = 0;
-    // The digit of the SLOT<n> text, stored as the account's last
-    // played slot.
+    // The one-based slot (1..3), stored as the account's last played slot.
+    // Packet and creation Slot enumerators instead start at zero.
     int slot = 0;
 };
 
@@ -106,9 +106,8 @@ public:
 // game server stay with the caller, so this function is a pure decision
 // over whatever the collaborators answer and needs no database in a test.
 //
-// A repository that fails its query throws (the DB layer's own const
-// char*); that is a server fault, not a player-facing rejection, and is
-// left to the caller.
+// Repository failures propagate unchanged to the caller; they are server
+// faults, not player-facing rejections.
 [[nodiscard]] Outcome<SelectedCharacter, SelectPCRejection>
 decideSelectPC(const SelectPCRequest& request, LoginCharacterRepository& repository, SelectPCTopology& topology);
 
