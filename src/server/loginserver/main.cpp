@@ -13,6 +13,7 @@
 
 #include <chrono>
 #include <exception>
+#include <memory>
 #include <new>
 
 #include <sys/resource.h>
@@ -24,6 +25,7 @@
 #include "LoginServer.h"
 #include "Properties.h"
 #include "ServerShutdown.h"
+#include "ServerStartup.h"
 #include "StringStream.h"
 #include "Types.h"
 
@@ -55,67 +57,22 @@ int main(int argc, char* argv[]) {
     // any thread can receive one.
     registerLoginServerPacketHandlers();
 
-    if (argc < 3) {
-        cout << "Usage : loginserver -f <config file> [-p port]" << endl;
-        exit(1);
-    }
-
-    // Convert the command-line parameters into strings.
-    string* Argv;
-
-    Argv = new string[argc];
-    for (int i = 0; i < argc; i++)
-        Argv[i] = argv[i];
-
-    // Read the configuration file.
-    // The executable must live in $VSHOME/bin and the configuration file in $VSHOME/conf.
-    // Allow the configuration file to be given on the command line.
-
-    // The configuration outlives every manager that reads it, so main holds
-    // it and registers it on the kernel context for them.
-    Properties* pConfig = NULL;
-
+    // Keep the completed configuration alive until every worker has stopped.
+    // Parsing and loading never publish a partial configuration to the context.
+    std::unique_ptr<Properties> pConfig;
     try {
-        if (Argv[1] != "-f") {
-            throw Error("Usage : loginserver -f config-file [-p port]");
-        }
-
-        // When the first parameter is -f, the second is the path of the configuration file.
-        pConfig = new Properties();
-        de::kernelContext().setConfig(pConfig);
-        pConfig->load(Argv[2]);
-
+        const auto options = de::parseServerOptions(de::ServerKind::Login, argc, argv);
+        pConfig = de::loadServerConfiguration(options);
+        de::kernelContext().setConfig(pConfig.get());
         cout << pConfig->toString() << endl;
-
-    } catch (Error& e) {
-        cout << e.toString() << endl;
-    }
-
-    try {
-        if (argc > 3) {
-            if (argc < 5 || Argv[3] != "-i")
-                throw Error("Usage : loginserver -f config-file [-i ID]");
-
-            // Force the port.
-            char sLoginServerPort[12], sLoginServerUDPPort[12], sLoginServerID[12];
-            snprintf(sLoginServerPort, sizeof(sLoginServerPort), "%d",
-                     pConfig->getPropertyInt("LoginServerBasePort") + atoi(argv[4]));
-            snprintf(sLoginServerUDPPort, sizeof(sLoginServerUDPPort), "%d",
-                     pConfig->getPropertyInt("LoginServerBaseUDPPort") + atoi(argv[4]));
-            snprintf(sLoginServerID, sizeof(sLoginServerID), "%d",
-                     pConfig->getPropertyInt("LoginServerBaseID") + atoi(argv[4]));
-
-            pConfig->setProperty("LoginServerPort", sLoginServerPort);
-            pConfig->setProperty("LoginServerUDPPort", sLoginServerUDPPort);
-            pConfig->setProperty("LoginServerID", sLoginServerID);
-
-            cout << "LoginServerPort : " << sLoginServerPort << endl;
-            cout << "LoginServerUDPPort : " << sLoginServerUDPPort << endl;
-            cout << "LoginServerID : " << sLoginServerID << endl;
+        if (options.loginIDOffset) {
+            cout << "LoginServerPort : " << pConfig->getProperty("LoginServerPort") << endl;
+            cout << "LoginServerUDPPort : " << pConfig->getProperty("LoginServerUDPPort") << endl;
+            cout << "LoginServerID : " << pConfig->getProperty("LoginServerID") << endl;
         }
-
-    } catch (Error& e) {
-        cout << e.toString() << endl;
+    } catch (const Throwable& error) {
+        cerr << error.toString() << endl;
+        return EXIT_FAILURE;
     }
 
     //

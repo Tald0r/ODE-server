@@ -82,6 +82,11 @@ This joins workers but does not introduce a full world-save operation.
 
 ### Start the servers by hand
 
+Each executable accepts `-f <config file>`. Loginserver also accepts `-i ID`,
+a signed decimal offset added to `LoginServerBasePort`,
+`LoginServerBaseUDPPort` and `LoginServerBaseID`. Argument, file-loading and
+override errors return a failure status before server initialization.
+
 Set `command: ["sleep","infinity"]` on the `odk-server` service, then:
 
 ```sh
@@ -119,6 +124,9 @@ objects as the production executables, with a test entry point instead of
 `main.cpp`, and exercise real packet handlers without starting a server or
 connecting to MySQL. The first suite build therefore also compiles the server
 runtimes. Smaller rule tests remain available as individual CMake targets.
+
+`server_startup_tests` covers argument parsing, configuration loading and the
+login-server port/ID overrides without linking a server runtime.
 
 ## Build natively on macOS
 

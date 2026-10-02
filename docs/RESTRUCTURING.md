@@ -535,6 +535,26 @@ visibility can't express.
   - Owner: the three runtime test targets, built by `make dev-test`, and
     the production executable links.
 
+- [x] **2.6 Extract startup configuration from the entry points.**
+  > **Status:** done (2026-10-02) —
+  > `ServerStartup` is a library over `de-kernel` alone. Its
+  > `parseServerOptions` accepts `-f <file>` for all three servers and
+  > `-i <signed decimal offset>` for loginserver; `loadServerConfiguration`
+  > returns an owned `Properties` only after loading and applying the optional
+  > login overrides. Neither function publishes anything to `KernelContext`.
+  > Each `main()` owns and registers the completed configuration, and returns
+  > failure on an argument, file, parse or override error before constructing
+  > its server. Process handlers, the shutdown deadline and server lifecycle
+  > remain in the entry points.
+  > `applyLoginServerOffset` validates the three decimal bases and checks all
+  > sums before writing the port, UDP port and ID. Signed offsets, including
+  > zero, retain their meaning; malformed numbers, overflow and trailing
+  > command-line arguments are rejected (`docs/FIXES.md`). The underlying
+  > `Properties` file grammar is unchanged.
+  - Owner: `server_startup_tests`, linked without any runtime, MySQL or Lua;
+    `server_startup_cli`, which checks the real executables' failure status
+    and diagnostics for invalid startup inputs in a temporary directory.
+
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
 `execute()`; all three servers boot and pass a manual smoke test against the

@@ -31,6 +31,11 @@ target_include_directories(ServerCore PUBLIC
     ${CMAKE_SOURCE_DIR}/src/Core
 )
 
+# Entry-point configuration, testable without any server runtime or database.
+add_library(ServerStartup STATIC ServerStartup.cpp)
+target_include_directories(ServerStartup PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ServerStartup PUBLIC de-kernel)
+
 # ============================================================================
 # 子目录
 # ============================================================================
