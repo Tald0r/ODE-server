@@ -1158,13 +1158,42 @@ visibility can't express.
     roster cleanup, count/diagnostic refusal, allocation-free batch transfer,
     self-transfer, exact fields/order, repeated destruction and retry.
 
-- [ ] **2.39 Extract owned login world-list reply construction.**
-  > **Status:** not started — `CLGetWorldListHandler` prepares raw world-info
-  > records before current-world lookup and packet attachment, and assumes
-  > catalogue IDs are contiguous. Add an explicit, owned assembly boundary
-  > with lookup/allocation failure, sparse IDs and cleanup/retry coverage.
-  - Planned owner: login runtime tests over supplied catalogue/session inputs
-    and the production handler/reply construction.
+- [x] **2.39 Extract owned login world-list reply construction.**
+  > **Status:** done (this commit) — `sendLoginWorldList` accepts the read-only
+  > world catalogue, account repository and existing player interface. The
+  > handler delegates to that production entry point. Actual IDs are sorted
+  > ascending, every prepared row remains owned, and sending follows successful
+  > lookup and validation of the saved world ID. Missing accounts retain the
+  > default world 1; valid saved IDs need not appear in the catalogue. The
+  > packet adder consumes failed insertions, and clearing releases owned rows.
+  > The 37-world limit, name truncation and packet layouts remain unchanged.
+  > Catalogue users remain quiescent; transport side effects after send starts
+  > retain the sender's existing contract. World selection is a separate boundary.
+  - Owner: 17 `LoginWorldList` cases in `login_server_runtime_tests`.
+    Six regressions failed before the fixes. Coverage includes sparse/boundary
+    IDs, exact fields/order and factory budget, missing accounts, exception
+    identity at lookup/send, 128-position allocation failure/retry, count and
+    diagnostic refusal, repeated destruction, clearing and name truncation.
+
+- [ ] **2.40 Extract owned login group and population catalogue loading.**
+  > **Status:** not started — the selection adapter depends on login group
+  > and user-info managers whose unloaded destructors read uninitialized
+  > storage. Their default-repository loaders publish raw arrays before rows
+  > are complete and store `maxWorldID + 2` in a byte. Establish safe scoped
+  > lifetimes, explicit repository inputs and checked owned replacement before
+  > using these production dependencies in isolated selection-topology tests.
+  - Planned owner: login runtime cases for unloaded lifetimes, supplied rows,
+    dimension/ID bounds, borrowed-row preservation, cleanup and failure/retry.
+
+- [ ] **2.41 Extract explicit login world-selection topology.**
+  > **Status:** not started — `GlobalWorldTopology` reads process contexts and
+  > selection decisions treat the catalogue count as its highest world ID.
+  > Supply the production topology's dependencies explicitly and use actual
+  > membership/bounds, so sparse listed worlds are selectable and missing IDs
+  > are refused or normalized according to the selection operation's policy.
+  > Depends on the scoped catalogue lifetimes and explicit loads in 2.40.
+  - Planned owner: selection and login runtime tests over actual catalogue
+    membership, explicit topology inputs, closed/missing worlds and boundaries.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

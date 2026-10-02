@@ -120,7 +120,8 @@ target_sources(game_server_runtime_tests PRIVATE
     game_player_handoff_test.cpp game_player_transfer_test.cpp game_broadcast_queue_test.cpp
     game_broadcast_delivery_test.cpp support/AllocationProbe.cpp)
 add_server_runtime_test(login_server_runtime_tests login_server_runtime_test.cpp LoginServerRuntime)
-target_sources(login_server_runtime_tests PRIVATE login_connection_test.cpp support/AllocationProbe.cpp)
+target_sources(login_server_runtime_tests PRIVATE
+    login_connection_test.cpp login_world_list_test.cpp support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 target_sources(shared_server_runtime_tests PRIVATE
     player_socket_replacement_test.cpp shared_connection_test.cpp shared_server_construction_test.cpp

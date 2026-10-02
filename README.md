@@ -146,6 +146,10 @@ ordering and retry through the production builder and packet handoffs.
 `ServerCore`, without a server runtime or database connection. It checks owned
 replacement, rollback and retry after load failures, ID/status validation,
 read-only lookups and preservation through throwing load diagnostics.
+Login world-list replies use explicit catalogue, account repository and player
+inputs. Tests run the production assembler without sockets or database startup,
+covering sparse world IDs, ordered rows, saved-selection bounds, packet limits,
+and cleanup/retry after lookup, allocation or send failures.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

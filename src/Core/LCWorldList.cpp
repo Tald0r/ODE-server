@@ -28,12 +28,7 @@ LCWorldList::LCWorldList()
 LCWorldList::~LCWorldList() noexcept
 
 {
-    // Delete every object it owns.
-    while (!m_WorldInfoList.empty()) {
-        WorldInfo* pWorldInfo = m_WorldInfoList.front();
-        SAFE_DELETE(pWorldInfo);
-        m_WorldInfoList.pop_front();
-    }
+    clearList();
 }
 
 

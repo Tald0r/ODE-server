@@ -10,6 +10,8 @@
 #define __LC_WORLD_LIST_H__
 
 // include files
+#include <memory>
+
 #include "Packet.h"
 #include "PacketFactory.h"
 #include "WorldInfo.h"
@@ -68,20 +70,22 @@ public:
     }
 
     // add / delete / clear S List
-    // Takes ownership. Refuses an entry past the count the factory max
-    // budgets, so getPacketSize() can never outgrow the read buffer the
-    // receiver sizes from it; the refused entry is destroyed here.
+    // Takes ownership and enforces the factory's count budget. Count refusal
+    // and failed list allocation both destroy the incoming entry.
     void addListElement(WorldInfo* pWorldInfo) {
-        if (m_WorldInfoList.size() >= WorldInfo::kMaxCount) {
-            SAFE_DELETE(pWorldInfo);
+        std::unique_ptr<WorldInfo> owned(pWorldInfo);
+        if (m_WorldInfoList.size() >= WorldInfo::kMaxCount)
             throw InvalidProtocolException("too many world infos");
-        }
-        m_WorldInfoList.push_back(pWorldInfo);
+        m_WorldInfoList.push_back(owned.get());
+        owned.release();
     }
 
     // ClearList
-    void clearList() {
-        m_WorldInfoList.clear();
+    void clearList() noexcept {
+        while (!m_WorldInfoList.empty()) {
+            delete m_WorldInfoList.front();
+            m_WorldInfoList.pop_front();
+        }
     }
 
     // pop front Element in Status List

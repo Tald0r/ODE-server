@@ -344,10 +344,54 @@ from the reply audit, requiring decoder failure and roster-boundary tests.
 fetching the current world and transferring the rows to the reply packet.
 A throwing lookup, setter, allocation or repository call can strand those
 rows. Its `1..getSize()` lookup loop also assumes contiguous world IDs.
-These are source findings from the world-loader reader audit; packet assembly
-still needs an owned, testable boundary with failure and sparse-world coverage.
+Saved current-world values additionally narrowed unchecked to a byte, the
+packet adder leaked its incoming row after failed list allocation, and packet
+clearing discarded owning pointers. Six regressions reproduced these failures.
 
-> **Status:** recorded, not fixed (refactor/world-catalogue-loading)
+The explicit catalogue/account/player assembler owns all rows through lookup
+and synchronous sending. It traverses actual IDs in ascending order, checks the
+saved ID before narrowing and keeps the default world 1 when no account is
+found. Packet insertion consumes incoming ownership on every exit, and clearing
+deletes its rows. Seventeen cases cover sparse/boundary IDs, fields/order, the
+exact factory budget, lookup/send exception identity, allocation cleanup/retry,
+count/diagnostic refusal, clearing, repeated construction and name truncation.
+Packet layouts, the 37-world budget and truncation policy are unchanged.
+
+> **Status:** fixed (refactor/login-world-list-replies)
+
+## Login world selection treats the catalogue count as the highest world ID (2026-10-02)
+
+`GlobalWorldTopology::worldCount` returns `GameWorldInfoManager::getSize`, while
+`decideSelectWorld` rejects IDs above that count and `decideSelectServer` clamps
+them to the count. A catalogue with worlds 1 and 7 therefore cannot select its
+listed world 7 and can normalize a server selection to absent world 2. IDs in
+holes below the count can reach throwing lookups. These are source findings;
+task 2.41 tracks explicit topology inputs and actual membership/bounds tests.
+
+> **Status:** recorded, not fixed (refactor/login-world-list-replies)
+
+## Login group and population catalogues lack safe scoped ownership (2026-10-02)
+
+The login `GameServerGroupInfoManager` constructor leaves its array pointer
+uninitialized, and `UserInfoManager` leaves both pointer and dimension
+uninitialized; their destructors read that state even before loading. Both
+loaders overwrite live arrays before row loading finishes and store
+`maxWorldID + 2` in a byte, which wraps for worlds 254 and 255. Cleanup skips
+world zero, and group loading catches row errors after publishing a prefix.
+These are source findings from the selection adapter's dependency audit.
+Task 2.40 tracks explicit inputs and owned, checked replacement so these
+managers can be tested and composed without executable startup.
+
+> **Status:** recorded, not fixed (refactor/login-world-list-replies)
+
+## World-list decoding leaves refused records unowned (2026-10-02)
+
+`LCWorldList::read` still allocates a raw `WorldInfo` before reading or list
+insertion can throw, and accepts an encoded count above the 37-world factory
+budget. The outgoing assembler and adder enforce ownership and the count limit;
+decoder failure, reuse and count validation need separate packet tests.
+
+> **Status:** recorded, not fixed (refactor/login-world-list-replies)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 
