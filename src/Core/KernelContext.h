@@ -13,9 +13,9 @@
 //               The context does NOT own the managers: each is still created
 //               and destroyed by the startup code that holds it (each
 //               server's application for the configuration, its server object for
-//               the packet factory table and the validator), and registers
-//               itself here as soon as it exists. A manager is therefore null
-//               until its creation point is reached, and an accessor asserts
+//               the packet factory table and the validator), and is registered
+//               when its owning startup stage completes. A manager is null
+//               until its publication point is reached, and an accessor asserts
 //               on a null one: reading a manager before it exists is a
 //               startup-order bug, not a runtime condition to branch on.
 //
@@ -53,8 +53,18 @@ public:
     void setPacketFactoryManager(PacketFactoryManager* pPacketFactoryManager) {
         m_pPacketFactoryManager = pPacketFactoryManager;
     }
+    PacketFactoryManager* exchangePacketFactoryManager(PacketFactoryManager* manager) noexcept {
+        PacketFactoryManager* previous = m_pPacketFactoryManager;
+        m_pPacketFactoryManager = manager;
+        return previous;
+    }
     void setPacketValidator(PacketValidator* pPacketValidator) {
         m_pPacketValidator = pPacketValidator;
+    }
+    PacketValidator* exchangePacketValidator(PacketValidator* validator) noexcept {
+        PacketValidator* previous = m_pPacketValidator;
+        m_pPacketValidator = validator;
+        return previous;
     }
 
     Properties& config() const;

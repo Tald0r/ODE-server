@@ -9,6 +9,9 @@
 // include files
 #include "SharedServer.h"
 
+#include <memory>
+#include <utility>
+
 #include "Assert.h"
 #include "GameServerGroupInfoManager.h"
 #include "GameServerManager.h"
@@ -21,6 +24,7 @@
 #include "ResurrectLocationManager.h"
 #include "ServerContext.h"
 #include "ServerShutdown.h"
+#include "ServerSocket.h"
 #include "ServerStartSequence.h"
 #include "ServerWorkerShutdown.h"
 #include "SharedContext.h"
@@ -36,44 +40,53 @@
 // The system manager's constructor creates the sub-manager objects.
 //
 //////////////////////////////////////////////////////////////////////
-SharedServer::SharedServer() {
+SharedServer::SharedServer() : SharedServer(nullptr) {}
+
+SharedServer::SharedServer(std::unique_ptr<ServerSocket> listener) {
     __BEGIN_TRY
 
     // create database manager
-    m_pDatabaseManager = new DatabaseManager();
-    de::serverContext().setDatabaseManager(m_pDatabaseManager);
+    m_pDatabaseManager = std::make_unique<DatabaseManager>();
 
     // create guild manager
-    m_pGuildManager = new GuildManager();
-    de::sharedContext().setGuildManager(m_pGuildManager);
+    m_pGuildManager = std::make_unique<GuildManager>();
 
     // create some info managers
-    m_pGameServerInfoManager = new SharedGameServerInfoManager();
-    m_pGameServerGroupInfoManager = new GameServerGroupInfoManager();
+    m_pGameServerInfoManager = std::make_unique<SharedGameServerInfoManager>();
+    m_pGameServerGroupInfoManager = std::make_unique<GameServerGroupInfoManager>();
 
     // create packet factory manager, packet validator
     // (They must be created and initialized before the client manager and the server-to-server manager.)
-    m_pPacketFactoryManager = new PacketFactoryManager();
-    de::kernelContext().setPacketFactoryManager(m_pPacketFactoryManager);
-    m_pPacketValidator = new PacketValidator();
-    de::kernelContext().setPacketValidator(m_pPacketValidator);
+    m_pPacketFactoryManager = std::make_unique<PacketFactoryManager>();
+    m_pPacketValidator = std::make_unique<PacketValidator>();
 
     // create inter-server communication manager
-    m_pGameServerManager = new GameServerManager();
-    de::sharedContext().setGameServerManager(m_pGameServerManager);
+    m_pGameServerManager =
+        listener ? std::make_unique<GameServerManager>(std::move(listener)) : std::make_unique<GameServerManager>();
 
     // create client manager
-    m_pHeartbeatManager = new HeartbeatManager();
+    m_pHeartbeatManager = std::make_unique<HeartbeatManager>();
 
     // create GameWorldInfoManager
-    m_pGameWorldInfoManager = new GameWorldInfoManager();
-    de::serverContext().setGameWorldInfoManager(m_pGameWorldInfoManager);
+    m_pGameWorldInfoManager = std::make_unique<GameWorldInfoManager>();
 
     // create ResurrectLocationManager
-    m_pResurrectLocationManager = new ResurrectLocationManager();
+    m_pResurrectLocationManager = std::make_unique<ResurrectLocationManager>();
 
-    m_pStringPool = new StringPool();
-    de::sharedContext().setStringPool(m_pStringPool);
+    m_pStringPool = std::make_unique<StringPool>();
+
+    // All constructors have completed. These exchanges cannot throw, so a
+    // failed construction never publishes any part of the graph.
+    auto& server = de::serverContext();
+    auto& kernel = de::kernelContext();
+    auto& shared = de::sharedContext();
+    m_PreviousDatabaseManager = server.exchangeDatabaseManager(m_pDatabaseManager.get());
+    m_PreviousGameWorldInfoManager = server.exchangeGameWorldInfoManager(m_pGameWorldInfoManager.get());
+    m_PreviousPacketFactoryManager = kernel.exchangePacketFactoryManager(m_pPacketFactoryManager.get());
+    m_PreviousPacketValidator = kernel.exchangePacketValidator(m_pPacketValidator.get());
+    m_PreviousGuildManager = shared.exchangeGuildManager(m_pGuildManager.get());
+    m_PreviousGameServerManager = shared.exchangeGameServerManager(m_pGameServerManager.get());
+    m_PreviousStringPool = shared.exchangeStringPool(m_pStringPool.get());
 
     __END_CATCH
 }
@@ -86,22 +99,20 @@ SharedServer::SharedServer() {
 // The system manager's destructor must delete the sub-manager objects.
 //
 //////////////////////////////////////////////////////////////////////
-SharedServer::~SharedServer() noexcept(false) {
-    __BEGIN_TRY
+SharedServer::~SharedServer() noexcept {
+    m_pHeartbeatManager.reset();
+    m_pGameServerManager.reset(); // Its destructor stops/joins while dependencies are live.
 
-    SAFE_DELETE(m_pHeartbeatManager);
-    SAFE_DELETE(m_pGameServerManager);
-    SAFE_DELETE(m_pPacketValidator);
-    SAFE_DELETE(m_pPacketFactoryManager);
-    SAFE_DELETE(m_pGameServerInfoManager);
-    SAFE_DELETE(m_pGameServerGroupInfoManager);
-    SAFE_DELETE(m_pGuildManager);
-    SAFE_DELETE(m_pDatabaseManager);
-    SAFE_DELETE(m_pGameWorldInfoManager);
-    SAFE_DELETE(m_pResurrectLocationManager);
-    SAFE_DELETE(m_pStringPool);
-
-    __END_CATCH
+    auto& server = de::serverContext();
+    auto& kernel = de::kernelContext();
+    auto& shared = de::sharedContext();
+    (void)shared.exchangeStringPool(m_PreviousStringPool);
+    (void)shared.exchangeGameServerManager(m_PreviousGameServerManager);
+    (void)shared.exchangeGuildManager(m_PreviousGuildManager);
+    (void)kernel.exchangePacketValidator(m_PreviousPacketValidator);
+    (void)kernel.exchangePacketFactoryManager(m_PreviousPacketFactoryManager);
+    (void)server.exchangeGameWorldInfoManager(m_PreviousGameWorldInfoManager);
+    (void)server.exchangeDatabaseManager(m_PreviousDatabaseManager);
 }
 
 

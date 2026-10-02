@@ -5,7 +5,8 @@
 //
 //               The context does NOT own the managers: each is still created
 //               and destroyed by the startup code that holds it (SharedServer),
-//               and registers itself here as soon as it exists. A manager is
+//               which publishes its completed graph here and restores previous
+//               bindings after joining its worker during destruction. A manager is
 //               therefore null until its creation point is reached, and an
 //               accessor asserts on a null one: reading a manager before it
 //               exists is a startup-order bug, not a runtime condition to
@@ -38,14 +39,30 @@ public:
     SharedContext(const SharedContext&) = delete;
     SharedContext& operator=(const SharedContext&) = delete;
 
+    // Exchanges support scoped owners, including initially empty bindings.
     void setGameServerManager(GameServerManager* pGameServerManager) {
         m_pGameServerManager = pGameServerManager;
+    }
+    GameServerManager* exchangeGameServerManager(GameServerManager* manager) noexcept {
+        GameServerManager* previous = m_pGameServerManager;
+        m_pGameServerManager = manager;
+        return previous;
     }
     void setGuildManager(GuildManager* pGuildManager) {
         m_pGuildManager = pGuildManager;
     }
+    GuildManager* exchangeGuildManager(GuildManager* manager) noexcept {
+        GuildManager* previous = m_pGuildManager;
+        m_pGuildManager = manager;
+        return previous;
+    }
     void setStringPool(StringPool* pStringPool) {
         m_pStringPool = pStringPool;
+    }
+    StringPool* exchangeStringPool(StringPool* pool) noexcept {
+        StringPool* previous = m_pStringPool;
+        m_pStringPool = pool;
+        return previous;
     }
 
     GameServerManager& gameServers() const;

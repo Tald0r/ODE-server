@@ -124,6 +124,9 @@ objects as the production executables, with a test entry point instead of
 `main.cpp`, and exercise real packet handlers without starting a server or
 connecting to MySQL. The first suite build therefore also compiles the server
 runtimes. Smaller rule tests remain available as individual CMake targets.
+The shared runtime also constructs and destroys the real server graph with an
+owned listener, without database initialization. Construction faults, nested
+context bindings, allocation retry and cleanup of accepted sockets are covered.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

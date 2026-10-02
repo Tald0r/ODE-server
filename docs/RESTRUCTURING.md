@@ -1044,16 +1044,31 @@ visibility can't express.
     stop: completion-write and flush exceptions, unthrown stream failures,
     independent flushes, successful/failed drain results and context lifetime.
 
-- [ ] **2.32 Make shared-server construction an owned, testable scope.**
-  > **Status:** not started — `SharedServer` allocates and registers raw manager
-  > pointers as construction advances. If a later allocation or listener setup
-  > fails, the incomplete server has no destructor to release earlier managers
-  > or restore their context bindings. Successful destruction also leaves
-  > bindings pointing to the former managers. Give the graph scoped ownership
-  > and cover construction, failure/retry and quiescent teardown without main
-  > or database initialization.
-  - Planned owner: shared runtime construction cases with allocation faults,
-    real listener ownership and context lifetime/restoration checks.
+- [x] **2.32 Make shared-server construction an owned, testable scope.**
+  > **Status:** done (this commit) — `SharedServer` owns its managers with
+  > `unique_ptr` and publishes all seven context bindings only after every
+  > constructor completes. Failed construction releases the partial graph and
+  > incoming listener without changing prior bindings. The default path still
+  > builds its configured listener; a supplied owned listener allows scoped
+  > construction without configuration or database initialization. Destruction
+  > releases the worker before restoring prior bindings and freeing dependencies.
+  > Both shared info managers have empty state before initialization. Context
+  > users must be quiescent, nested scopes unwind in reverse order, and teardown
+  > occurs outside the owned worker. Legacy data loading is the next boundary.
+  - Owner: seven `SharedServerConstruction` cases in `shared_server_runtime_tests`.
+    Four regressions failed before the change. Added coverage sweeps 64 allocation
+    positions with retry, restores nested/empty bindings, retains configuration,
+    and verifies listener/player descriptor and allocation cleanup with real TCP.
+
+- [ ] **2.33 Extract owned shared-server catalogue loading.**
+  > **Status:** not started — both shared server/group info managers load from
+  > the default repository directly into raw tables. They change dimensions
+  > before table allocation succeeds, overwrite old arrays on reload, and
+  > construct unowned rows before insertion. Introduce an explicit repository
+  > boundary and prepare owned replacements before publication, preserving the
+  > previous catalogue on failure and supporting scoped failed initialization.
+  - Planned owner: shared runtime catalogue tests with supplied repository rows,
+    allocation failures, invalid/duplicate rows, reload/retry and empty cleanup.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

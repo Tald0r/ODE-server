@@ -168,14 +168,36 @@ application cases and all 15 reporting regressions pass.
 
 ## Shared-server construction loses managers and context bindings on failure (2026-10-02)
 
-`SharedServer` constructs and registers raw manager pointers incrementally.
-A later allocation or listener failure leaves earlier managers allocated,
-because the incomplete server's destructor cannot run. Contexts retain those
-registrations; successful destruction also leaves dangling registrations.
-This is a source finding. Task 2.32 tracks scoped construction ownership,
-context restoration and failure/retry coverage without database initialization.
+`SharedServer` constructed and registered raw manager pointers incrementally.
+A later allocation or listener failure left earlier managers allocated,
+because the incomplete server's destructor could not run. Contexts retained
+those registrations; successful destruction also left dangling registrations.
+Two regressions reproduced lost ownership and replaced bindings. Two more
+found that the shared server/group info managers left table pointers and
+dimensions uninitialized, making destruction before `init` unsafe.
 
-> **Status:** recorded, not fixed (refactor/application-final-reporting)
+The graph now holds unique owners and publishes its seven bindings only after
+all constructors complete. Exchanges retain prior bindings, including empty
+ones; quiescent destruction joins/releases the worker before restoring them.
+An owned-listener constructor permits real scoped construction without main
+or database initialization. Info managers start empty. All four regressions
+pass, as do a 64-position allocation sweep with retry, nested binding/descriptor
+checks and cleanup of an accepted real TCP connection with allocation tracking.
+Context users must be quiescent and nested server scopes unwind in reverse order.
+
+> **Status:** fixed (refactor/shared-server-ownership)
+
+## Shared catalogue loading publishes partial raw tables (2026-10-02)
+
+`SharedGameServerInfoManager::load` and the shared
+`GameServerGroupInfoManager::load` set table dimensions before allocating their
+arrays. Allocation failure can leave dimensions inconsistent with the stored
+pointer; reloading overwrites old arrays, and rejected or failed row insertion
+can strand raw row objects. This is a source finding. Task 2.33 tracks explicit
+repository input and owned, transactional replacement so failed initialization
+or reload leaves a destructible manager and retains the previous catalogue.
+
+> **Status:** recorded, not fixed (refactor/shared-server-ownership)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 
