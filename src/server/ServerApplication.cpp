@@ -1,11 +1,13 @@
 #include "ServerApplication.h"
 
+#include <cstdlib>
 #include <ostream>
 #include <utility>
 
 #include "Exception.h"
 #include "KernelContext.h"
 #include "ServerPortSettings.h"
+#include "ServerShutdown.h"
 #include "ServerStartup.h"
 
 namespace de {
@@ -44,22 +46,35 @@ std::optional<ServerLifecycleResult> ServerApplication::run(ServerKind server, i
         return std::nullopt;
     }
 
-    const auto result = runServerLifecycle(actions, output, errors, instantLogPath);
-    if (result.drained) {
-        switch (server) {
-        case ServerKind::Game:
-            output << ">>> ALL GAME WORKERS STOPPED." << std::endl;
-            break;
-        case ServerKind::Login:
-            output << ">>> ALL LOGIN WORKERS STOPPED." << std::endl;
-            break;
-        case ServerKind::Shared:
-            output << ">>> ALL SHARED WORKERS STOPPED." << std::endl;
-            break;
+    auto result = runServerLifecycle(actions, output, errors, instantLogPath);
+    const auto report = [&](std::ostream& stream, auto&& action) noexcept {
+        try {
+            action();
+            if (stream)
+                return;
+        } catch (...) {
+            // Preserve the drain result and still attempt the other stream.
         }
+        ServerShutdown::fail();
+        result.exitCode = EXIT_FAILURE;
+    };
+    if (result.drained) {
+        report(output, [&] {
+            switch (server) {
+            case ServerKind::Game:
+                output << ">>> ALL GAME WORKERS STOPPED." << std::endl;
+                break;
+            case ServerKind::Login:
+                output << ">>> ALL LOGIN WORKERS STOPPED." << std::endl;
+                break;
+            case ServerKind::Shared:
+                output << ">>> ALL SHARED WORKERS STOPPED." << std::endl;
+                break;
+            }
+        });
     }
-    output.flush();
-    errors.flush();
+    report(output, [&] { output.flush(); });
+    report(errors, [&] { errors.flush(); });
     return result;
 }
 

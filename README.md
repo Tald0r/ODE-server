@@ -226,6 +226,8 @@ same-socket replacement retains it. Absent input/output streams stay absent.
 and final reporting using an explicit context and controlled actions. It checks
 configuration lifetime and restoration, rejected input and failure status without
 starting a server or connecting to a database.
+Final reporting preserves the completed drain result, attempts both flushes
+independently and returns failed exit status for exceptions or stream error flags.
 `server_worker_shutdown_tests` exercises the three servers' shared auxiliary
 worker drain with real cooperative threads, checking stop-before-join order,
 partial startup, dependency lifetime and retained failure reporting.

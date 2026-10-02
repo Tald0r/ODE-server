@@ -442,6 +442,160 @@ TEST_F(ServerApplicationFixture, FinalReportingFlushesBothStreamsEvenWhenStopFai
     EXPECT_EQ(errorBuffer.str(), errorBuffer.flushed);
 }
 
+class FinalReportingBuffer : public RecordingBuffer {
+public:
+    bool rejectWrites = false;
+    bool rejectFlushes = false;
+    unsigned flushAttempts = 0;
+
+private:
+    std::streamsize xsputn(const char* bytes, std::streamsize count) override {
+        if (rejectWrites)
+            throw std::runtime_error("final output failed");
+        return std::stringbuf::xsputn(bytes, count);
+    }
+    int sync() override {
+        ++flushAttempts;
+        return rejectFlushes ? -1 : RecordingBuffer::sync();
+    }
+};
+
+TEST_P(ServerApplicationTest, FailedCompletionMessagePreservesTheDrainResultAndFlushesErrors) {
+    FinalReportingBuffer outputBuffer;
+    FinalReportingBuffer errorBuffer;
+    std::ostream bufferedOutput(&outputBuffer);
+    std::ostream bufferedErrors(&errorBuffer);
+    bufferedOutput.exceptions(std::ios::badbit);
+    actions.stop = [&, original = actions.stop] {
+        original();
+        bufferedErrors << "pending error";
+        outputBuffer.rejectWrites = true;
+    };
+    {
+        de::ServerApplication application(context);
+        const char* argv[] = {"server", "-f", filename.c_str()};
+        std::optional<de::ServerLifecycleResult> result;
+        EXPECT_NO_THROW(
+            result = application.run(GetParam().kind, 3, argv, actions, bufferedOutput, bufferedErrors, instantLog));
+        EXPECT_TRUE(result);
+        if (result) {
+            EXPECT_TRUE(result->drained);
+            EXPECT_EQ(result->exitCode, EXIT_FAILURE);
+        }
+        EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
+        EXPECT_EQ(observedConfig, &context.config());
+        EXPECT_EQ(context.config().getProperty("Marker"), "ready");
+        EXPECT_TRUE(ServerShutdown::failed.load());
+        EXPECT_EQ(errorBuffer.flushed, "pending error");
+    }
+    expectUntouchedConfiguration();
+}
+
+TEST_P(ServerApplicationTest, FailedFinalOutputFlushStillFlushesErrorsAndReturnsTheFailedDrain) {
+    FinalReportingBuffer outputBuffer;
+    FinalReportingBuffer errorBuffer;
+    std::ostream bufferedOutput(&outputBuffer);
+    std::ostream bufferedErrors(&errorBuffer);
+    bufferedOutput.exceptions(std::ios::badbit);
+    actions.stop = [&, original = actions.stop] {
+        original();
+        bufferedOutput << "pending output";
+        bufferedErrors << "pending error";
+        outputBuffer.rejectFlushes = true;
+        throw std::runtime_error("stop failed");
+    };
+    {
+        de::ServerApplication application(context);
+        const char* argv[] = {"server", "-f", filename.c_str()};
+        std::optional<de::ServerLifecycleResult> result;
+        EXPECT_NO_THROW(
+            result = application.run(GetParam().kind, 3, argv, actions, bufferedOutput, bufferedErrors, instantLog));
+        EXPECT_TRUE(result);
+        if (result) {
+            EXPECT_FALSE(result->drained);
+            EXPECT_EQ(result->exitCode, EXIT_FAILURE);
+        }
+        EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
+        EXPECT_EQ(observedConfig, &context.config());
+        EXPECT_TRUE(ServerShutdown::failed.load());
+        // One flush belongs to the lifecycle diagnostic, the other to final reporting.
+        EXPECT_EQ(errorBuffer.flushAttempts, 2u);
+        EXPECT_EQ(errorBuffer.flushed, "pending errorShutdown failed: stop failed\n");
+    }
+    expectUntouchedConfiguration();
+}
+
+TEST_P(ServerApplicationTest, FailedFinalErrorFlushReturnsFailureWithoutLosingSuccessfulDrain) {
+    FinalReportingBuffer errorBuffer;
+    std::ostream bufferedErrors(&errorBuffer);
+    bufferedErrors.exceptions(std::ios::badbit);
+    actions.stop = [&, original = actions.stop] {
+        original();
+        bufferedErrors << "pending error";
+        errorBuffer.rejectFlushes = true;
+    };
+    {
+        de::ServerApplication application(context);
+        const char* argv[] = {"server", "-f", filename.c_str()};
+        std::optional<de::ServerLifecycleResult> result;
+        EXPECT_NO_THROW(result =
+                            application.run(GetParam().kind, 3, argv, actions, output, bufferedErrors, instantLog));
+        EXPECT_TRUE(result);
+        if (result) {
+            EXPECT_TRUE(result->drained);
+            EXPECT_EQ(result->exitCode, EXIT_FAILURE);
+        }
+        EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
+        EXPECT_EQ(observedConfig, &context.config());
+        EXPECT_TRUE(ServerShutdown::failed.load());
+        EXPECT_EQ(errorBuffer.flushAttempts, 1u);
+        EXPECT_NE(output.str().find(GetParam().stopped), std::string::npos);
+    }
+    expectUntouchedConfiguration();
+}
+
+TEST_P(ServerApplicationTest, FailedCompletionMessageIsDetectedWithStreamExceptionsDisabled) {
+    FinalReportingBuffer buffer;
+    std::ostream brokenOutput(&buffer);
+    actions.stop = [&, original = actions.stop] {
+        original();
+        buffer.rejectWrites = true;
+    };
+    de::ServerApplication application(context);
+    const char* argv[] = {"server", "-f", filename.c_str()};
+    const auto result = application.run(GetParam().kind, 3, argv, actions, brokenOutput, errors, instantLog);
+
+    ASSERT_TRUE(result);
+    EXPECT_TRUE(result->drained);
+    EXPECT_EQ(result->exitCode, EXIT_FAILURE);
+    EXPECT_TRUE(ServerShutdown::failed.load());
+    EXPECT_TRUE(brokenOutput.bad());
+    EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
+    EXPECT_EQ(observedConfig, &context.config());
+}
+
+TEST_P(ServerApplicationTest, FailedErrorFlushIsDetectedWithStreamExceptionsDisabled) {
+    FinalReportingBuffer buffer;
+    std::ostream brokenErrors(&buffer);
+    actions.stop = [&, original = actions.stop] {
+        original();
+        brokenErrors << "pending error";
+        buffer.rejectFlushes = true;
+    };
+    de::ServerApplication application(context);
+    const char* argv[] = {"server", "-f", filename.c_str()};
+    const auto result = application.run(GetParam().kind, 3, argv, actions, output, brokenErrors, instantLog);
+
+    ASSERT_TRUE(result);
+    EXPECT_TRUE(result->drained);
+    EXPECT_EQ(result->exitCode, EXIT_FAILURE);
+    EXPECT_TRUE(ServerShutdown::failed.load());
+    EXPECT_TRUE(brokenErrors.bad());
+    EXPECT_EQ(buffer.flushAttempts, 1u);
+    EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
+    EXPECT_EQ(observedConfig, &context.config());
+}
+
 class FailingBuffer : public std::streambuf {
     std::streamsize xsputn(const char*, std::streamsize) override {
         throw std::runtime_error("output failed");
