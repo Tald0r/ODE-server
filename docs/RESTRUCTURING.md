@@ -962,14 +962,32 @@ visibility can't express.
     condition timeout and broadcast. A native ThreadSanitizer contention probe
     reproduced the old owner race and passed with the extracted implementation.
 
-- [ ] **2.27 Make legacy native thread operations testable independently.**
-  > **Status:** not started — the synchronization audit found thread create,
-  > join, detach and attribute wrappers still compare pthread return values to
-  > zero as though failures were negative and read `errno`. Pin refusals and
-  > lifecycle/resource ownership before changing those wrappers; managed C++
-  > workers and their stop/join policy remain separately covered.
-  - Planned owner: standalone native thread/attribute tests, including returned
-    error codes, successful create/join and failed publication.
+- [x] **2.27 Extract the production worker lifecycle and retire the unused native backend.**
+  > **Status:** done (this commit) — `ServerWorkers` owns the shared `Thread`
+  > interface and `ManagedThread` implementation. The caller audit found every
+  > production worker already uses the managed backend; native creation,
+  > detachment, exit and attribute wrappers and `ThreadAttr` were unused and
+  > are removed. `Thread` is an abstract interface, with no fallback lifecycle.
+  > Worker, startup and shutdown tests link the actual worker library without
+  > `ServerCore`, server runtimes or executable startup. Native identity is
+  > atomic, and a worker waits for the creator to publish identity/status before
+  > entering `run`. A failed launch allocation leaves the worker ready for
+  > retry. Stop/join ordering, retained failures and derived-destructor drain
+  > requirements remain in force; the managed backend has no detach operation.
+  - Owner: `managed_thread_tests`, `server_start_sequence_tests` and
+    `server_worker_shutdown_tests` over `ServerWorkers`; new cases cover worker
+    entry publication, concurrent metadata reads, self-join failure retention,
+    abstract interface and allocation failure/retry. ThreadSanitizer reproduced
+    the old metadata race and passed the same probe after extraction.
+
+- [ ] **2.28 Extract owned worker-pool registration and cleanup.**
+  > **Status:** not started — `ThreadManager::init` allocates a zone worker and
+  > passes it raw to `ThreadPool::addThread`. Failed list-node allocation leaves
+  > that worker unowned. Give pool registration an explicit ownership contract
+  > and test failed insertion, retry, startup rollback and quiescent cleanup
+  > without a zone/database graph. Keep all stop requests ahead of joins.
+  - Planned owner: standalone worker-pool ownership and lifecycle cases linked
+    to the production implementation, with allocation-failure and cleanup probes.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

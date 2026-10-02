@@ -25,52 +25,6 @@ typedef pthread_t TID;
 
 namespace pthreadAPI {
 //
-// exception version of pthread_create()
-//
-void pthread_create_ex(pthread_t* thread, pthread_attr_t* attr, void* (*start_routine)(void*), void* arg);
-
-//
-// exception version of pthread_join()
-//
-void pthread_join_ex(pthread_t th, void** thread_return);
-
-//
-// exception version of pthread_detach()
-//
-void pthread_detach_ex(pthread_t th);
-
-//
-// exception version of pthread_attr_exit()
-//
-void pthread_exit_ex(void* retval);
-
-//
-// exception version of pthread_self()
-//
-pthread_t pthread_self_ex();
-
-//
-// exception version of pthread_attr_init()
-//
-void pthread_attr_init_ex(pthread_attr_t* attr);
-
-//
-// exception version of pthread_attr_destroy()
-//
-void pthread_attr_destroy_ex(pthread_attr_t* attr);
-
-//
-// exception version of pthread_attr_setgetachstate()
-//
-void pthread_attr_getdetachstate_ex(const pthread_attr_t* attr, int* detachstate);
-
-//
-// exception version of pthread_attr_setdetachstate()
-//
-void pthread_attr_setdetachstate_ex(pthread_attr_t* attr, int detachstate);
-
-
-//
 // exception version of pthread_mutex_init()
 //
 void pthread_mutex_init_ex(pthread_mutex_t* mutex, const pthread_mutexattr_t* mutexattr);
