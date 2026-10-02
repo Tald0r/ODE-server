@@ -6,8 +6,6 @@
 
 #include "GameServer.h"
 
-#include <signal.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "Assert.h"
@@ -23,6 +21,7 @@
 #include "PacketValidator.h"
 #include "Properties.h"
 #include "ServerContext.h"
+#include "ServerProcessEnvironment.h"
 #include "ServerWorkerShutdown.h"
 #include "SharedServerManager.h"
 #include "SystemAPI.h"
@@ -139,7 +138,7 @@ void GameServer::init()
 {
     __BEGIN_TRY
 
-    sysinit();
+    de::initializeGameProcess();
     cout << "GameServer::init() : System Initialization Success..." << endl;
 
     // Set gCurrentTime.
@@ -301,26 +300,6 @@ void GameServer::stop()
     // the various game settings to the database.
     //
     // m_pObjectManager->save();
-
-    __END_CATCH
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// System level initialization
-//////////////////////////////////////////////////////////////////////////////
-
-void GameServer::sysinit()
-
-{
-    __BEGIN_TRY
-
-    // Initialization for rand().
-    srand(time(0));
-
-    signal(SIGPIPE, SIG_IGN); // This one is likely to happen now and then
-    signal(SIGALRM, SIG_IGN); // No alarms are used; set for good measure
-    signal(SIGCHLD, SIG_IGN); // No fork is used; set for good measure
 
     __END_CATCH
 }

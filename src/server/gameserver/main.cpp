@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <sys/resource.h>
 #include <sys/time.h>
 
 #include "GamePacketDispatch.h"
@@ -18,6 +17,7 @@
 #include "KernelContext.h"
 #include "ServerApplication.h"
 #include "ServerFatalHandlers.h"
+#include "ServerProcessEnvironment.h"
 #include "ServerProcessShutdown.h"
 #include "StringStream.h"
 #include "Types.h"
@@ -37,8 +37,7 @@ int main(int argc, char* argv[]) {
 
     de::ServerFatalHandlers fatalHandlers(de::ServerKind::Game);
 
-    // Find a suitable place for this.
-    srand(time(0));
+    de::seedProcessRandomness();
     cout << ">>> RANDOMIZATION INITIALIZATION SUCCESS..." << endl;
 
     // Bind every packet id the gameserver receives to its handler before any
@@ -50,10 +49,7 @@ int main(int argc, char* argv[]) {
     const de::ServerLifecycleActions lifecycle{
         .initialize =
             [&] {
-                struct rlimit rl;
-                rl.rlim_cur = RLIM_INFINITY;
-                rl.rlim_max = RLIM_INFINITY;
-                setrlimit(RLIMIT_CORE, &rl);
+                (void)de::raiseCoreDumpLimit();
 
                 pGameServer = new GameServer();
                 cout << ">>> GAME SERVER INSTANCE CREATED..." << endl;

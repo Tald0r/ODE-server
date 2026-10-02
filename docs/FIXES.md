@@ -13,6 +13,28 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Core-dump setup failed under a finite inherited hard limit (2026-10-02)
+
+Each executable tried to set both the soft and hard `RLIMIT_CORE` values to
+infinity, ignoring the result. An ordinary process cannot raise an inherited
+finite hard limit, so the call failed even when it could have raised its soft
+limit within that cap. A process starting with a zero soft limit therefore
+kept core dumps disabled despite a positive permitted limit.
+
+`de::raiseCoreDumpLimit` in `ServerProcessEnvironment` reads the inherited
+limits and raises only the soft value to the
+hard value. It preserves finite caps, keeps a zero hard limit disabled and
+still permits an unlimited soft limit when the inherited hard limit allows it.
+The function returns an error code on syscall failure; the entry points retain
+their existing best-effort policy and continue startup.
+
+`server_process_environment_tests` checks real limits in subprocesses, including
+zero, finite and unlimited hard limits, repeated setup and preservation of
+other resources. The capped-limit cases failed against the original call and
+pass with the extracted policy. The parent runner's limits are never changed.
+
+> **Status:** fixed (refactor/server-process-environment)
+
 ## Configuration parsing could omit data, accept missing keys or stall on read errors (2026-10-02)
 
 `Properties::load` checked EOF before processing the line extracted by

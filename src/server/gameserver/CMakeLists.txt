@@ -679,6 +679,7 @@ target_link_libraries(GameServerRuntime PUBLIC
     GameServerDatabase
     ServerCore
     ServerWorkerShutdown
+    ServerProcessEnvironment
     GameServerPackets
     Skill
     Core

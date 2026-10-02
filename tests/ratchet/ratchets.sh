@@ -72,7 +72,7 @@ check_ratchet R4 "packet headers with execute()" 0 "$R4"
 # in (with a re-baseline note) when they become de-core extraction targets in
 # 3.x.
 R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' | grep -vE 'gameserver/(gm|handler|packetfill)/' | wc -l)
-check_ratchet R5 "__BEGIN_TRY sites in gameserver" 5131 "$R5"
+check_ratchet R5 "__BEGIN_TRY sites in gameserver" 5130 "$R5"
 
 # --- R6: god-file line counts (task 3.3 files only, so far) -----------------
 # Formula extraction to de-core (src/domain) shrinks these; each delegation

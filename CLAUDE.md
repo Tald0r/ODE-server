@@ -26,6 +26,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Every server requests shutdown before stopping, attempts cleanup after failed startup, and preserves worker failures in its exit status | `server_lifecycle_tests`, over the shared `ServerLifecycle` library used by all three entry points | starting after a shutdown request, missing or repeated cleanup, lost failure diagnostics, an incorrect drain result or a successful exit after failure |
 | SIGTERM/SIGINT request shutdown from any thread, and the process deadline bounds blocked initialization and cleanup | `server_process_shutdown_tests`, over the `ServerProcessShutdown` guard used by all three entry points and the shared lifecycle runner | a missed signal, a clean exit after the deadline, a deadline firing before any request or after guard destruction, or signal handlers left installed after the guard's scope |
 | Fatal allocation handlers report failure without C++ heap allocation or normal process teardown | `server_fatal_handler_tests`, over the shared `ServerFatalHandlers` guard, with allocation faults confined to subprocesses | a successful allocation-failure exit, recursive allocation while reporting, an exit callback running, a lost diagnostic or a handler left installed after its scope |
+| Core-dump setup respects the inherited hard limit; game process initialization seeds rand and ignores only its three legacy signals | `server_process_environment_tests`, over `ServerProcessEnvironment`, with process mutations confined to subprocesses | a failed soft-limit raise under a finite cap, a changed hard limit or unrelated resource, an incorrect seeded sequence, or damaged shutdown handlers/state |
 | Application configuration is published only after a successful load, stays alive through cleanup and the result, and restores its previous context binding on scope exit | `server_application_tests`, over the shared `ServerApplication` used by all three entry points | actions running after a configuration error, an incorrect effective login override, a lost binding or failure status, an incorrect drain diagnostic, or unflushed final output |
 | Server shutdown requests every auxiliary worker's stop before draining game zones or joining any auxiliary worker; retained worker failures remain visible after all joins | `server_worker_shutdown_tests`, over `ServerWorkerShutdown` used by all three runtimes | a join before all stop requests, a lost or incorrectly named failure, skipped joins after a retained run failure, or a successful lifecycle exit after worker failure |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
@@ -337,6 +338,17 @@ are plain message lines without timestamp formatting. Login/shared report
 allocation failure to stderr and `_Exit(EXIT_FAILURE)`, preserving their
 existing terminate handlers. `server_fatal_handler_tests` injects allocation
 failure on main and worker threads in child processes with core dumps disabled.
+
+`ServerProcessEnvironment` holds the other process setup without a runtime or
+kernel dependency. All three entry points call `raiseCoreDumpLimit` before
+server construction, raising the soft limit to the inherited hard limit; the
+returned syscall error remains nonfatal for startup. Gameserver seeds rand in
+its main and reseeds at the start of `GameServer::init`, at the same points as
+before. `initializeGameProcess` also ignores SIGPIPE, SIGALRM and SIGCHLD for
+the rest of the process, leaving the shutdown handlers and thread masks alone.
+Explicit seeds make this setup deterministic in tests. Unlike the scoped
+shutdown/fatal guards, these process settings are not restored;
+`server_process_environment_tests` changes them only in subprocesses.
 
 `ServerWorkerShutdown` provides `stopServerWorkers` for all three servers'
 auxiliary workers. After stopping the foreground loop, each server supplies
