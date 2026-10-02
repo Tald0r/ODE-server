@@ -43,7 +43,7 @@ void CLGetWorldListHandler::execute(CLGetWorldList* pPacket, Player* pPlayer)
 
         for (int i = 1; i < Num + 1; i++) {
             WorldInfo* pWorldInfo = new WorldInfo();
-            GameWorldInfo* pGameWorldInfo = de::serverContext().worldInfos().getGameWorldInfo(i);
+            const GameWorldInfo* pGameWorldInfo = de::serverContext().worldInfos().getGameWorldInfo(i);
             pWorldInfo->setID(pGameWorldInfo->getID());
             pWorldInfo->setName(pGameWorldInfo->getName());
 

@@ -1093,14 +1093,31 @@ visibility can't express.
     partial/duplicate refusal, exact text, every coordinate field's bounds,
     boundary IDs, repository/reporting errors and allocation cleanup.
 
-- [ ] **2.35 Extract owned world catalogue loading.**
-  > **Status:** not started — `GameWorldInfoManager` in `ServerCore` clears its
-  > current table before fetching rows, builds unowned raw rows, and swallows
-  > duplicate errors after publishing a prefix. Introduce an explicit
-  > `ServerInfoRepository` input and prepare a complete owned replacement,
-  > preserving existing lookups and database-error translation.
-  - Planned owner: production world-loader tests without main or MySQL,
-    including repository/row/allocation failures, bounds and reload/retry.
+- [x] **2.35 Extract owned world catalogue loading.**
+  > **Status:** done (this commit) — `GameWorldInfoManager` accepts an explicit
+  > `ServerInfoRepository`, with default startup delegating to the same loader.
+  > Rows are value-owned, IDs/status validated before narrowing, and duplicates
+  > refuse the complete replacement. Publication follows all preparation and
+  > load diagnostics; failed loads retain previous rows and borrowed pointers.
+  > Unused mutation APIs are removed and lookups return const rows, with the
+  > login reader updated accordingly. Loading requires quiescent readers;
+  > successful replacement invalidates borrowed pointers. Empty tables,
+  > lookup failures and the database-error translation keep their behavior.
+  - Owner: 15 cases in `world_catalogue_tests`, linking production `ServerCore`
+    without a server runtime or database connection. Three regressions failed
+    before the fix. Two 64-position allocation sweeps cover empty/populated
+    cleanup and retry; other cases cover malformed/duplicate rows, boundary IDs,
+    reload removal, exact names, repository errors and throwing diagnostics.
+
+- [ ] **2.36 Extract owned shared guild and roster loading.**
+  > **Status:** not started — shared `GuildManager::load` fills the live table
+  > with raw guild/member objects, leaves unattached members unowned and can
+  > publish a prefix after failure. Introduce an explicit repository input and
+  > prepare a complete owned graph before publication. Audit allocation-capable
+  > guild/member string accessors declared `noexcept` so failures can unwind.
+  > Keep startup ID-counter initialization separate from roster loading.
+  - Planned owner: shared runtime tests with supplied guild/roster rows,
+    filtered states, unattached members, duplicates, failures and reload/retry.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
