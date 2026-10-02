@@ -1268,15 +1268,22 @@ visibility can't express.
     borrowed matrix identity, duplicate/missing-reference cleanup, two 128-position
     allocation sweeps, default/full-width flags and repeated clear/reload.
 
-- [ ] **2.45 Extract explicit login character-selection topology.**
-  > **Status:** not started — `GlobalSelectPCTopology` lives in the packet handler
-  > and reads process contexts for non-PK status and zone-to-group-to-server
-  > routing. Supply the common server and login routing managers explicitly and
-  > test their production adapter with real scoped catalogues. Keep selection
-  > decisions and handler response policy while testing sparse/boundary routing,
-  > missing references, non-PK flags and observations after quiescent reloads.
-  - Planned owner: login runtime adapter cases plus existing character-selection
-    decisions; no sockets, database connection or executable startup for the adapter.
+- [x] **2.45 Extract explicit login character-selection topology.**
+  > **Status:** done (this commit) — `LoginCharacterTopology` borrows explicit
+  > const server/zone/group managers; the handler composes it at the context
+  > boundary. The adapter reads each requested world's/group's first-server
+  > non-PK flag and follows zone-to-group-to-server mappings without narrowing.
+  > Missing references remain configuration exceptions. Views see quiescent
+  > reloads and retain their independent inputs; manager lifetimes must outlast
+  > the adapter. Selection decisions, quest bounds and handler response policy
+  > are preserved. Persisted slot-format validation remains task 2.46.
+  - Owner: 15 `LoginCharacterTopologyTest` cases in `login_server_runtime_tests`,
+    composed with real production loaders and `decideSelectPC`, plus the 24
+    existing `character_selection_tests` cases. Coverage includes all races,
+    sparse/full-width routes, boundary world/group IDs, missing first-server/zone/
+    group records, independent dependencies, reloads, non-PK limits, quest bounds,
+    early-gate precedence and repository exception identity, without sockets,
+    database connections or process-context publication.
 
 - [ ] **2.46 Validate persisted character-selection slot text.**
   > **Status:** not started — selection checks only the five-character length
