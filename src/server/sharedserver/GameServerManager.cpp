@@ -12,6 +12,7 @@
 #include <chrono>
 #include <memory>
 
+#include "AcceptedServerConnection.h"
 #include "Assert.h"
 #include "DB.h"
 #include "DescriptorTable.h"
@@ -35,32 +36,36 @@
 // Delete the sub-managers and the data members.
 //////////////////////////////////////////////////////////////////////////////
 
-GameServerManager::GameServerManager()
-    : m_pServerSocket(NULL), m_SocketID(INVALID_SOCKET), m_PollSet((int)nMaxGameServers), m_TimeoutMilliseconds(0),
-      m_MinFD(-1), m_MaxFD(-1) {
-    __BEGIN_TRY
-
-    m_Mutex.setName("GameServerManager");
-
+namespace {
+std::unique_ptr<ServerSocket> createSharedListener() {
     try {
         const auto port = de::readServerPort(de::kernelContext().config(), "TCPPort");
-        de::retryListenerStartup(
-            [&] {
-                auto socket = std::make_unique<ServerSocket>(port);
-                socket->setNonBlocking();
-                m_pServerSocket = socket.release();
-            },
-            [&](const BindException& error) {
-                cout << "GameServerManager(" << port << ") : " << error.toString() << endl;
-            },
-            "TCP");
+        std::unique_ptr<ServerSocket> socket;
+        de::retryListenerStartup([&] { socket = std::make_unique<ServerSocket>(port); },
+                                 [&](const BindException& error) {
+                                     cout << "GameServerManager(" << port << ") : " << error.toString() << endl;
+                                 },
+                                 "TCP");
 
-        // Set the server socket descriptor.
-        m_SocketID = m_pServerSocket->getSOCKET();
+        return socket;
     } catch (NoSuchElementException& nsee) {
         // When the configuration file has no such element
         throw Error(nsee.toString());
     }
+}
+} // namespace
+
+GameServerManager::GameServerManager() : GameServerManager(createSharedListener()) {}
+
+GameServerManager::GameServerManager(std::unique_ptr<ServerSocket> listener)
+    : m_pServerSocket(std::move(listener)), m_SocketID(INVALID_SOCKET), m_PollSet((int)nMaxGameServers),
+      m_TimeoutMilliseconds(0), m_MinFD(-1), m_MaxFD(-1) {
+    __BEGIN_TRY
+
+    Assert(m_pServerSocket != nullptr);
+    m_Mutex.setName("GameServerManager");
+    m_pServerSocket->setNonBlocking();
+    m_SocketID = m_pServerSocket->getSOCKET();
 
     __END_CATCH
 }
@@ -76,6 +81,10 @@ GameServerManager::~GameServerManager() noexcept {
     // destructor would run too late.
     stop();
     join();
+    for (auto*& player : m_pGameServerPlayers) {
+        delete player;
+        player = nullptr;
+    }
 }
 
 
@@ -487,83 +496,30 @@ void GameServerManager::processExceptions() {
 void GameServerManager::acceptNewConnection() {
     __BEGIN_TRY
 
-    // When waiting for a connection in blocking mode
-    // the returned value can never be NULL.
-    // NonBlockingIOException cannot be thrown either.
-    Socket* client = NULL;
-
-    // From its construction on the player owns the socket and its destructor
-    // closes and deletes it, so exactly one of the two is freed below.
-    GameServerPlayer* pGameServerPlayer = NULL;
-
+    std::unique_ptr<Socket> client;
     try {
-        client = m_pServerSocket->accept();
-    } catch (Throwable& t) {
+        client.reset(m_pServerSocket->accept());
+    } catch (Throwable&) {
     }
-
-    if (client == NULL) {
+    if (!client)
         return;
-    }
 
     try {
-        // Put in for error handling; the cause still has to be found..
-        // Probably something goes wrong in Thread's socket handling
-        // Temporary guard until Thread's error handling is fixed.
-        if (client->getSockError())
-            throw Error();
-        client->setNonBlocking(true);
-
-        // Put in for error handling; the cause still has to be found..
-        // Probably something goes wrong in Thread's socket handling
-        // Temporary guard until Thread's error handling is fixed.
-        if (client->getSockError())
-            throw Error();
-        // set socket option (!NonBlocking, NoLinger)
-        client->setLinger(0);
-
-
-        // Create the player object with the client socket as parameter.
-        pGameServerPlayer = new GameServerPlayer(client);
-
-        // Register it with the IPM.
+        client = de::prepareAcceptedServerConnection(std::move(client));
+        // Allocation precedes release. Once construction begins, Player's
+        // base destructor owns cleanup even if stream creation fails.
+        std::unique_ptr<GameServerPlayer> player(new GameServerPlayer(client.release()));
         try {
-            addGameServerPlayer(pGameServerPlayer);
-        } catch (DuplicatedException&) {
-            SAFE_DELETE(pGameServerPlayer);
-            return;
+            addGameServerPlayer(player.get());
         } catch (OutOfBoundException&) {
+            const auto* socket = player->getSocket();
             filelog("SSGSManager.txt", "REFUSED %s:%u : socket descriptor %d does not fit the game server table",
-                    client->getHost().c_str(), client->getPort(), (int)client->getSOCKET());
-
-            // Deleting the player closes the socket.
-            SAFE_DELETE(pGameServerPlayer);
+                    socket->getHost().c_str(), socket->getPort(), (int)socket->getSOCKET());
             return;
         }
-    } catch (NoSuchElementException&) {
-        StringStream msg2;
-        msg2 << "ILLEGAL ACCESS FROM " << client->getHost() << ":" << client->getPort();
-        filelog("SSGSManager.txt", "%s", msg2.toString().c_str());
-
-        // The connection is not authenticated, so cut it. Once a player
-        // owns the socket, deleting the player closes it.
-        if (pGameServerPlayer != NULL) {
-            SAFE_DELETE(pGameServerPlayer);
-        } else if (client != NULL) {
-            client->send("Error : Unauthorized access", 27);
-            client->close();
-            SAFE_DELETE(client);
-        }
-    } catch (Throwable& t) {
-        try {
-            if (pGameServerPlayer != NULL) {
-                SAFE_DELETE(pGameServerPlayer);
-            } else if (client != NULL) {
-                SAFE_DELETE(client);
-            }
-        } catch (Throwable& t) {
-        } catch (...) {
-        }
-    } catch (exception& e) {
+        player.release(); // The table adopts only after successful publication.
+    } catch (Throwable&) {
+    } catch (std::exception&) {
     } catch (...) {
     }
 
@@ -586,6 +542,9 @@ void GameServerManager::addGameServerPlayer(GameServerPlayer* pGameServerPlayer)
     // rather than stored past its end.
     if (!de::fitsDescriptorTable((int)fd, (int)nMaxGameServers))
         throw OutOfBoundException();
+
+    if (m_pGameServerPlayers[fd] != nullptr)
+        throw DuplicatedException();
 
     // Readjust m_MinFD and m_MaxFD.
     m_MinFD = min(fd, m_MinFD);

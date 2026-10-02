@@ -205,4 +205,19 @@ TEST(SocketAdoption, SuccessfulReconnectClosesTheOldPeerAndExchangesBytesWithThe
     ASSERT_EQ(1u, newPeer->receive(&byte, 1));
     EXPECT_EQ('x', byte);
 }
+
+TEST(SocketAdoption, ReportsAPendingPeerResetAndClearsItAfterReadingTheSocketError) {
+    ServerSocket listener(0);
+    Socket peer("127.0.0.1", portOf(listener));
+    peer.connect();
+    ASSERT_TRUE(readable(listener.getSOCKET()));
+    std::unique_ptr<Socket> accepted(listener.accept());
+    ASSERT_NE(nullptr, accepted);
+    linger reset{1, 0};
+    ASSERT_EQ(0, ::setsockopt(peer.getSOCKET(), SOL_SOCKET, SO_LINGER, &reset, sizeof(reset)));
+    peer.close();
+    ASSERT_TRUE(readable(accepted->getSOCKET()));
+    EXPECT_NE(0u, accepted->getSockError());
+    EXPECT_EQ(0u, accepted->getSockError()); // SO_ERROR is consumed by the query.
+}
 } // namespace

@@ -7,6 +7,8 @@
 #ifndef __GAME_SERVER_MANAGER_H__
 #define __GAME_SERVER_MANAGER_H__
 
+#include <memory>
+
 #include "DescriptorPollSet.h"
 #include "Exception.h"
 #include "GameServerPlayer.h"
@@ -44,6 +46,9 @@
 class GameServerManager : public ManagedThread {
 public:
     GameServerManager();
+    // Adopt a bound/listening socket, including if construction fails. This
+    // form needs no configuration binding; both forms make it nonblocking.
+    explicit GameServerManager(std::unique_ptr<ServerSocket> listener);
     ~GameServerManager() noexcept;
 
 public:
@@ -78,7 +83,8 @@ public:
     // accept new connection
     void acceptNewConnection();
 
-    // add/delete player
+    // Adopt only after successful registration. Deletion detaches the entry;
+    // its caller owns the removed player and must destroy it.
     void addGameServerPlayer(GameServerPlayer* pGameServerPlayer);
     void deleteGameServerPlayer(SOCKET fd);
 
@@ -92,7 +98,7 @@ public:
 
 private:
     // TCP server socket and socket descriptor
-    ServerSocket* m_pServerSocket;
+    std::unique_ptr<ServerSocket> m_pServerSocket;
     SOCKET m_SocketID;
 
     // The socket descriptors of the game servers that belong here, with what

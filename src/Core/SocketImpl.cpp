@@ -354,10 +354,9 @@ bool SocketImpl::isSockError() const {
 
     int Result = SocketAPI::getsockopt_ex2(m_SocketID, SOL_SOCKET, SO_ERROR, &error, &len);
 
-    if (Result == 0)
-        return false;
-    else
-        return true;
+    // A successful query can still report a pending network error. SO_ERROR
+    // is consumed by the query; failure to query is also an unusable socket.
+    return Result != 0 || error != 0;
 
     __END_CATCH
 }

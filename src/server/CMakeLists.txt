@@ -84,6 +84,11 @@ add_library(OutboundServerConnection STATIC OutboundServerConnection.cpp)
 target_include_directories(OutboundServerConnection PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(OutboundServerConnection PUBLIC de-kernel)
 
+# Accepted socket preparation retains ownership through option setup.
+add_library(AcceptedServerConnection STATIC AcceptedServerConnection.cpp)
+target_include_directories(AcceptedServerConnection PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(AcceptedServerConnection PUBLIC de-kernel)
+
 # ============================================================================
 # 子目录
 # ============================================================================

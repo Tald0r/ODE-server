@@ -832,6 +832,26 @@ visibility can't express.
     failure and main-loop failure composed with `ServerLifecycle` and
     `ServerWorkerShutdown`; all three runtime and executable links.
 
+- [x] **2.20 Extract owned accepted-connection preparation and adoption.**
+  > **Status:** done (this commit) — `AcceptedServerConnection` owns an
+  > accepted socket through error checks, nonblocking setup and disabling
+  > linger, returning it only after success. Empty accepts stay empty.
+  > `Socket::getSockError` now observes pending `SO_ERROR`, not just query
+  > failure. Shared `GameServerManager` retains socket/player ownership until
+  > table publication; occupied slots are rejected before mutation and
+  > descriptor-limit diagnostics keep the player alive through reporting.
+  > Destruction joins before releasing players and its owned listener. An
+  > injected-listener constructor avoids global configuration in tests; the
+  > default still uses checked ports and bind retries. Shared player streams
+  > use `SocketStreams` with their existing 10,240/163,840-byte buffers.
+  > Game/login acceptance still needs separate adoption audits before using
+  > this boundary; their socket-error queries share the corrected reader.
+  - Owner: `accepted_server_connection_tests` for real options, byte exchange
+    and rejection ownership; `socket_construction_tests` for pending/consumed
+    socket errors; shared runtime `SharedConnection` allocation sweeps over
+    construction, acceptance, refusal/reporting, registration and destruction,
+    plus occupied-slot ownership, broadcasts and retries without a database.
+
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
 `execute()`; all three servers boot and pass a manual smoke test against the

@@ -13,6 +13,47 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Socket error queries ignored pending network errors (2026-10-02)
+
+`SocketImpl::isSockError` returned false whenever `getsockopt(SO_ERROR)`
+succeeded, even if the returned value was a connection error. That query also
+cleared the error, so the callers' intended refusal checks discarded it.
+It now reports a failed query or a nonzero pending error. A real reset-peer
+regression failed before the fix and now verifies both rejection and consuming
+the error. Accepted-connection helper coverage verifies failure also releases
+the owned socket. The corrected query is shared by game, login and shared.
+
+> **Status:** fixed (refactor/accepted-server-connection)
+
+## Shared accepted connections had gaps in ownership (2026-10-02)
+
+`GameServerManager::acceptNewConnection` holds the accepted socket raw through
+option setup and `new GameServerPlayer`. If the player allocation itself fails,
+no player has adopted the socket and the empty `std::exception` catch leaves it
+open. The accepted socket/player remain raw until table publication, so cleanup
+also depends on which catch handles a later failure. Separately, the manager
+destructor stops and joins its worker but does not delete its listening socket
+or any players still in the table. Current mains retain the server graph through
+process exit; this does not provide cleanup when the manager is destroyed in
+isolation.
+
+`AcceptedServerConnection` now retains socket ownership through preparation,
+and the shared manager retains the resulting player until registration succeeds.
+Refusal diagnostics run while the player still owns its socket. Registration
+rejects occupied slots before mutation; destruction joins the worker before
+deleting remaining players and the owned listener. An explicit owned-listener
+constructor permits testing without global configuration or database startup.
+The default constructor keeps checked configuration and bind retries.
+
+Four shared-runtime regressions failed before the fix, including the third
+allocation while accepting (player allocation), listener/player destruction and
+duplicate registration. Expanded sweeps cover partial manager construction and
+descriptor-limit refusal, including failures while reporting the refusal, then
+retry and broadcast through the same manager. Game/login acceptance still has
+distinct ownership/session-state paths requiring their own audits.
+
+> **Status:** fixed (refactor/accepted-server-connection)
+
 ## Server startup kept advancing after a worker requested shutdown (2026-10-02)
 
 `ServerLifecycle` checked shutdown before entering a server's `start`, but
