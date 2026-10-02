@@ -18,6 +18,7 @@
 #include "Socket.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
+#include "SocketStreams.h"
 
 // by sigi. 2002.11.12
 const int defaultGameServerPlayerInputStreamSize = 10240;
@@ -42,15 +43,10 @@ GameServerPlayer::GameServerPlayer(Socket* pSocket)
     Assert(pSocket != NULL);
     m_pSocket = pSocket;
 
-    // create socket input stream
-    m_pInputStream = new SocketInputStream(m_pSocket, defaultGameServerPlayerInputStreamSize);
-
-    Assert(m_pInputStream != NULL);
-
-    // create socket output stream
-    m_pOutputStream = new SocketOutputStream(m_pSocket, defaultGameServerPlayerOutputStreamSize);
-
-    Assert(m_pOutputStream != NULL);
+    auto streams = de::makeSocketStreams(m_pSocket, defaultGameServerPlayerInputStreamSize,
+                                         defaultGameServerPlayerOutputStreamSize);
+    m_pInputStream = streams.input.release();
+    m_pOutputStream = streams.output.release();
 
     __END_CATCH
 }

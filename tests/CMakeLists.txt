@@ -118,7 +118,8 @@ add_server_runtime_test(game_server_runtime_tests game_server_runtime_test.cpp G
 target_sources(game_server_runtime_tests PRIVATE game_connection_test.cpp support/AllocationProbe.cpp)
 add_server_runtime_test(login_server_runtime_tests login_server_runtime_test.cpp LoginServerRuntime)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
-target_sources(shared_server_runtime_tests PRIVATE player_socket_replacement_test.cpp support/AllocationProbe.cpp)
+target_sources(shared_server_runtime_tests PRIVATE
+    player_socket_replacement_test.cpp shared_connection_test.cpp support/AllocationProbe.cpp)
 
 add_executable(server_startup_tests EXCLUDE_FROM_ALL server_startup_test.cpp)
 target_link_libraries(server_startup_tests PRIVATE ServerStartup gtest_main)
@@ -220,6 +221,13 @@ add_dependencies(wire_tests outbound_server_connection_tests)
 add_test(NAME outbound_server_connection_tests COMMAND outbound_server_connection_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(outbound_server_connection_tests PROPERTIES TIMEOUT 30)
+
+add_executable(accepted_server_connection_tests EXCLUDE_FROM_ALL accepted_server_connection_test.cpp)
+target_link_libraries(accepted_server_connection_tests PRIVATE AcceptedServerConnection gtest_main)
+add_dependencies(wire_tests accepted_server_connection_tests)
+add_test(NAME accepted_server_connection_tests COMMAND accepted_server_connection_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(accepted_server_connection_tests PROPERTIES TIMEOUT 30)
 
 # Verify that every real main returns failure for invalid startup input,
 # instead of aborting, falling through into managers, or starting workers.

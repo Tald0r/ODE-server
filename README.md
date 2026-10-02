@@ -155,6 +155,13 @@ complete Mofus connection publication. Shared-server and Mofus ports use the
 same checked reader when those features connect.
 Socket construction coverage also checks accepted-socket adoption and failed
 reconnects, including descriptor reuse and successful retries after failure.
+`accepted_server_connection_tests` checks owned accepted-socket preparation,
+actual nonblocking/linger options and rejection of pending peer errors.
+The shared runtime's connection tests inject a listener without configuration
+or database startup, sweep allocation faults through construction, acceptance
+and descriptor-limit refusal, and verify registration, broadcast, retry and
+destruction cleanup. `Socket::getSockError` reports both failed queries and
+the pending `SO_ERROR` value; reading that value consumes it.
 `socket_stream_setup_tests` exercises plain buffered-stream construction in
 `de-kernel` with explicit sizes and a borrowed socket. Allocation faults verify
 partial cleanup and atomic player socket replacement, preserving old buffers
