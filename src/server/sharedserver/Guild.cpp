@@ -7,6 +7,7 @@
 #include "Guild.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "StringStream.h"
 #include "repository/SharedGuildRepository.h"
@@ -658,13 +659,14 @@ void Guild::makeInfo(GuildInfo2* pGuildInfo) noexcept(false) {
 
     HashMapGuildMemberConstItor itr = m_Members.begin();
     for (; itr != m_Members.end(); itr++) {
-        GuildMemberInfo2* pGuildMemberInfo = new GuildMemberInfo2();
+        auto pGuildMemberInfo = std::make_unique<GuildMemberInfo2>();
         pGuildMemberInfo->setGuildID(itr->second->getGuildID());
         pGuildMemberInfo->setName(itr->second->getName());
         pGuildMemberInfo->setRank(itr->second->getRank());
         pGuildMemberInfo->setLogOn(itr->second->getLogOn());
 
-        pGuildInfo->addGuildMemberInfo(pGuildMemberInfo);
+        pGuildInfo->addGuildMemberInfo(pGuildMemberInfo.get());
+        pGuildMemberInfo.release();
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)

@@ -11,6 +11,7 @@
 
 // include files
 #include <list>
+#include <memory>
 
 #include "GuildInfo2.h"
 #include "GuildMemberInfo2.h"
@@ -62,15 +63,25 @@ public:
     }
 
     // add GuildInfo
-    // Takes ownership. Refuses an entry past the count the factory max
-    // budgets, so getPacketSize() can never outgrow the read buffer the
-    // receiver sizes from it; the refused entry is destroyed here.
+    // Takes ownership and enforces the factory's guild-count budget.
+    // Refusal or allocation failure destroys the
+    // incoming entry; ownership never returns to the caller.
     void addGuildInfo(GuildInfo2* pGuildInfo) {
-        if (m_GuildInfoList.size() >= GuildInfo2::kMaxCount) {
-            SAFE_DELETE(pGuildInfo);
+        std::unique_ptr<GuildInfo2> owned(pGuildInfo);
+        if (m_GuildInfoList.size() >= GuildInfo2::kMaxCount)
             throw InvalidProtocolException("too many guild infos");
-        }
-        m_GuildInfoList.push_front(pGuildInfo);
+        m_GuildInfoList.push_front(owned.get());
+        owned.release();
+    }
+
+    // Transfer a completed batch without allocating or reversing its order.
+    // Count refusal leaves both packets unchanged. Transferring to self is a no-op.
+    void prependGuildInfosFrom(SGGuildInfo& source) {
+        if (this == &source)
+            return;
+        if (m_GuildInfoList.size() + source.m_GuildInfoList.size() > GuildInfo2::kMaxCount)
+            throw InvalidProtocolException("too many guild infos");
+        m_GuildInfoList.splice(m_GuildInfoList.begin(), source.m_GuildInfoList);
     }
 
     // clear GuildInfoList

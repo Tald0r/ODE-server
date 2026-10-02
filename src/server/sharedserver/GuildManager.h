@@ -80,6 +80,7 @@ public: // misc methods
 
 #ifdef __SHARED_SERVER__
 public:
+    // Prepend a complete snapshot. Failure preserves the destination reply.
     void makeSGGuildInfo(SGGuildInfo& sgGuildInfo) noexcept(false);
 #endif
 
