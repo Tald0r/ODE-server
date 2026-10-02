@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "Assert.h"
+#include "ConnectionKey.h"
 #include "Packet.h"
 #include "PacketDispatcher.h"
 #include "Socket.h"
@@ -194,6 +195,7 @@ void Player::setSocket(Socket* pSocket) {
     // before their borrowed socket. Absent streams remain absent.
     delete m_pInputStream;
     delete m_pOutputStream;
+    m_ConnectionKey.reset();
     if (!sameSocket)
         delete m_pSocket;
     m_pSocket = pSocket;
@@ -222,26 +224,12 @@ string Player::toString() const {
     __END_CATCH
 }
 
-// add by viva 2008-12-31
 void Player::setKey(WORD EncryptKey, WORD HashKey) {
-    __BEGIN_TRY
-    if (pHashTable != NULL) {
-        if (EncryptKey == 0xAEB7 && HashKey == 0x9B3E)
-            exit(0);
-    }
-    pHashTable = new BYTE[512];
-    BYTE key = (HashKey + 4658) & 0x00FF;
-    for (int i = 0; i < 512; i++) {
-        key = (key + 0xCC) ^ (key * 0x3) ^ key;
-        pHashTable[i] = key;
-    }
-
-    EncryptKey = EncryptKey % 512;
+    auto key = std::make_unique<de::ConnectionKey>(de::makeConnectionKey(EncryptKey, HashKey));
     if (m_pInputStream != NULL)
-        m_pInputStream->setKey(EncryptKey, pHashTable);
+        m_pInputStream->setKey(key->offset, key->table.data());
     if (m_pOutputStream != NULL)
-        m_pOutputStream->setKey(EncryptKey, pHashTable);
-
-    __END_CATCH
+        m_pOutputStream->setKey(key->offset, key->table.data());
+    // Both borrowers now point to the prepared table; only then release the old one.
+    m_ConnectionKey = std::move(key);
 }
-// end

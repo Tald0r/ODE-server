@@ -11,6 +11,8 @@
 #define __PLAYER_H__
 
 // include files
+#include <memory>
+
 #include "Exception.h"
 #include "Types.h"
 
@@ -19,6 +21,9 @@ class Socket;
 class SocketInputStream;
 class SocketOutputStream;
 class Packet;
+namespace de {
+struct ConnectionKey;
+}
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -78,8 +83,9 @@ public:
     }
     // Adopts a different socket even on failure; success closes the old one.
     // Rebuilds only existing streams as empty plain streams of default size.
-    // Failure preserves the current socket/streams, including for same-socket
-    // replacement. Null is allowed only when no input stream is present.
+    // Success discards the old key; failure preserves the socket/streams/key,
+    // including for same-socket replacement. Null is allowed only when no
+    // input stream is present.
     void setSocket(Socket* pSocket);
 
     // get/set player ID
@@ -109,7 +115,8 @@ public:
     // get debug string
     virtual string toString() const;
 
-    // add by viva
+    // Prepare an owned key, then bind both existing streams to it. Allocation
+    // failure preserves their current keys, table and buffered data.
     void setKey(WORD EncryptKey, WORD HashKey);
 
 protected:
@@ -135,8 +142,8 @@ protected:
     // MAC Address
     BYTE m_MacAddress[6];
 
-    // add by viva 2008-12-31
-    BYTE* pHashTable;
+    // Initialized empty and destroyed after the stream teardown in ~Player.
+    std::unique_ptr<de::ConnectionKey> m_ConnectionKey;
 };
 
 #endif

@@ -215,6 +215,14 @@ add_test(NAME socket_stream_setup_tests COMMAND socket_stream_setup_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(socket_stream_setup_tests PROPERTIES TIMEOUT 30)
 
+add_executable(player_connection_key_tests EXCLUDE_FROM_ALL
+    player_connection_key_test.cpp support/AllocationProbe.cpp)
+target_link_libraries(player_connection_key_tests PRIVATE de-kernel gtest_main)
+add_dependencies(wire_tests player_connection_key_tests)
+add_test(NAME player_connection_key_tests COMMAND player_connection_key_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(player_connection_key_tests PROPERTIES TIMEOUT 30)
+
 add_executable(outbound_server_connection_tests EXCLUDE_FROM_ALL
     outbound_server_connection_test.cpp support/AllocationProbe.cpp)
 target_link_libraries(outbound_server_connection_tests PRIVATE OutboundServerConnection gtest_main)

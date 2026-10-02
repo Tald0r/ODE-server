@@ -1145,6 +1145,8 @@ src/Core/Shape.h
 src/Core/Shape.cpp
 src/Core/Player.h
 src/Core/Player.cpp
+src/Core/ConnectionKey.h
+src/Core/ConnectionKey.cpp
 src/Core/UpdateDef.h
 src/Core/Resource.h
 src/Core/Resource.cpp
