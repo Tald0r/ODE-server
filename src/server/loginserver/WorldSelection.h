@@ -48,7 +48,7 @@ BYTE serverGroupStatusFor(UserNum_t userNum, BYTE groupStat, const ServerLoadThr
 struct ServerGroupRow {
     ServerGroupID_t groupID = 0;
     std::string groupName;
-    // SERVER_DOWN takes a group off the list whatever its population.
+    // SERVER_DOWN marks a group down whatever its population.
     BYTE stat = SERVER_FREE;
 };
 
@@ -68,9 +68,9 @@ class ServerListTopology {
 public:
     virtual ~ServerListTopology() {}
 
-    // How many server groups the world has. The group ids are taken to run
-    // 0..count-1, which is how the group table is indexed.
-    virtual int serverGroupCount(WorldID_t worldID) = 0;
+    // Actual configured keys, in unspecified order. Empty when the world
+    // has no groups. Membership stays stable during a decision/list build.
+    virtual std::vector<ServerGroupID_t> serverGroupIDs(WorldID_t worldID) = 0;
     virtual ServerGroupRow serverGroup(ServerGroupID_t groupID, WorldID_t worldID) = 0;
     // How many accounts the group is carrying right now.
     virtual UserNum_t serverGroupUserNum(ServerGroupID_t groupID, WorldID_t worldID) = 0;
@@ -79,14 +79,13 @@ public:
 // The world table beside it.
 class WorldSelectionTopology : public ServerListTopology {
 public:
-    // How many worlds are configured. A world id equal to the count is
-    // accepted, so the ids a client may name run 0..count.
-    virtual int worldCount() = 0;
+    // Actual configured keys, in unspecified order; IDs need not be contiguous.
+    virtual std::vector<WorldID_t> worldIDs() = 0;
     // Is the world taking logins?
     virtual WorldStatus worldStatus(WorldID_t worldID) = 0;
 };
 
-// Every group of a world, each with the status its population gives it.
+// Every group of a world in ascending ID order, with its live population status.
 // The caller turns these into the packet's own entries.
 [[nodiscard]] std::vector<ServerListEntry> serverListFor(WorldID_t worldID, const ServerLoadThresholds& thresholds,
                                                          ServerListTopology& topology);
@@ -129,8 +128,8 @@ struct SelectServerRequest {
 };
 
 // The group an accepted selection puts the session on. Both ids are
-// clamped to what the tables describe: a client naming a world or a group
-// past the end is served the last one rather than refused.
+// checked against actual membership: a missing world or group falls back
+// to the highest configured ID in its table, including requests in gaps.
 struct SelectedServer {
     // The world the group was looked up in. The session's own world is not
     // rewritten to it.
@@ -138,17 +137,17 @@ struct SelectedServer {
     ServerGroupID_t serverGroupID = 0;
 };
 
-// Why a group selection was refused. The one reason drops the connection.
-enum class SelectServerReason { ServerClosed };
+// Each reason drops the connection. An empty table has no fallback ID.
+enum class SelectServerReason { ServerClosed, NoWorlds, NoServerGroups };
 
 struct SelectServerRejection {
     SelectServerReason reason = SelectServerReason::ServerClosed;
-    // The clamped group errorLogin.txt names.
+    // The normalized group, or the requested group when no fallback exists.
     ServerGroupID_t serverGroupID = 0;
 };
 
-// Clamp the request to the configured tables and refuse a group that is
-// down.
+// Normalize missing IDs to the highest configured keys. Refuse empty tables
+// and groups that are down. World-closed policy belongs to decideSelectWorld.
 [[nodiscard]] Outcome<SelectedServer, SelectServerRejection> decideSelectServer(const SelectServerRequest& request,
                                                                                 WorldSelectionTopology& topology);
 

@@ -121,7 +121,8 @@ target_sources(game_server_runtime_tests PRIVATE
     game_broadcast_delivery_test.cpp support/AllocationProbe.cpp)
 add_server_runtime_test(login_server_runtime_tests login_server_runtime_test.cpp LoginServerRuntime)
 target_sources(login_server_runtime_tests PRIVATE
-    login_connection_test.cpp login_world_list_test.cpp login_catalogue_test.cpp support/AllocationProbe.cpp)
+    login_connection_test.cpp login_world_list_test.cpp login_catalogue_test.cpp login_world_topology_test.cpp
+    support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 target_sources(shared_server_runtime_tests PRIVATE
     player_socket_replacement_test.cpp shared_connection_test.cpp shared_server_construction_test.cpp
@@ -1122,13 +1123,13 @@ set_tests_properties(party_invite_decision_tests PROPERTIES TIMEOUT 60)
 # (docs/RESTRUCTURING.md 3.1): decideSelectWorld returns Outcome<void,
 # SelectWorldRejection> and decideSelectServer returns
 # Outcome<SelectedServer, SelectServerRejection> over a recording fake
-# topology, so both refusals of a world, the clamping and the refusal of a
-# group, the queries a decision does and does not make, and every boundary of
-# the population ladder serverListFor shares with CLGetServerListHandler are
+# topology, so world/group membership, missing-ID normalization, empty-table
+# and closed refusals, the queries a decision does and does not make, and every
+# boundary of the population ladder serverListFor shares with CLGetServerListHandler are
 # testable with no login server tables and no socket. The handlers themselves
-# are not linked - they need a socket and the global managers, which is why
-# the decisions were split out of them. Only de-kernel is linked (the type
-# tables carrying the server and world status enums).
+# are not linked here. login_server_runtime_tests also tests the production
+# topology over explicitly supplied managers. Only de-kernel is linked here
+# (the type tables carrying the server and world status enums).
 add_executable(world_selection_tests EXCLUDE_FROM_ALL
     world_selection_test.cpp
     ${CMAKE_SOURCE_DIR}/src/server/loginserver/WorldSelection.cpp

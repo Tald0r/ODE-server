@@ -66,6 +66,16 @@ uint GameServerGroupInfoManager::getSize(WorldID_t worldID) const noexcept {
     return worldID < m_Groups.size() ? m_Groups[worldID].size() : 0;
 }
 
+std::vector<ServerGroupID_t> GameServerGroupInfoManager::getGameServerGroupIDs(WorldID_t worldID) const {
+    std::vector<ServerGroupID_t> ids;
+    if (worldID < m_Groups.size()) {
+        ids.reserve(m_Groups[worldID].size());
+        for (const auto& [id, group] : m_Groups[worldID])
+            ids.push_back(id);
+    }
+    return ids;
+}
+
 string GameServerGroupInfoManager::toString() const {
     StringStream msg;
     msg << "GameServerGroupInfoManager(\n";

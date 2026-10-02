@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "Assert1.h"
-#include "GlobalWorldTopology.h"
 #include "LCServerList.h"
+#include "LoginContext.h"
 #include "LoginPlayer.h"
+#include "LoginWorldTopology.h"
+#include "ServerContext.h"
 #include "ServerGroupInfo.h"
 #include "WorldSelection.h"
 #include "repository/LoginAccountRepository.h"
@@ -36,7 +38,8 @@ void CLSelectWorldHandler::execute(CLSelectWorld* pPacket, Player* pPlayer)
     LoginPlayer* pLoginPlayer = dynamic_cast<LoginPlayer*>(pPlayer);
     WorldID_t WorldID = pPacket->getWorldID();
 
-    GlobalWorldTopology topology;
+    LoginWorldTopology topology(de::serverContext().worldInfos(), de::loginContext().gameServerGroups(),
+                                de::loginContext().userInfos());
 
     ServerLoadThresholds thresholds;
 

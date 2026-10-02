@@ -10,9 +10,11 @@
 #include <utility>
 
 #include "Assert1.h"
-#include "GlobalWorldTopology.h"
 #include "LCPCList.h"
+#include "LoginContext.h"
 #include "LoginPlayer.h"
+#include "LoginWorldTopology.h"
+#include "ServerContext.h"
 #include "WorldSelection.h"
 #endif
 
@@ -36,13 +38,24 @@ void CLSelectServerHandler::execute(CLSelectServer* pPacket, Player* pPlayer)
     request.worldID = pLoginPlayer->getWorldID();
     request.serverGroupID = pPacket->getServerGroupID();
 
-    GlobalWorldTopology topology;
+    LoginWorldTopology topology(de::serverContext().worldInfos(), de::loginContext().gameServerGroups(),
+                                de::loginContext().userInfos());
 
     Outcome<SelectedServer, SelectServerRejection> outcome = decideSelectServer(request, topology);
 
     if (outcome.isRejected()) {
-        filelog("errorLogin.txt", "Server Closed: %d", outcome.rejection().serverGroupID);
-        throw DisconnectException("ServerClosed");
+        const auto& rejection = outcome.rejection();
+        switch (rejection.reason) {
+        case SelectServerReason::ServerClosed:
+            filelog("errorLogin.txt", "Server Closed: %d", rejection.serverGroupID);
+            throw DisconnectException("ServerClosed");
+        case SelectServerReason::NoWorlds:
+            filelog("errorLogin.txt", "No worlds configured");
+            throw DisconnectException("NoWorlds");
+        case SelectServerReason::NoServerGroups:
+            filelog("errorLogin.txt", "No server groups configured for selected world");
+            throw DisconnectException("NoServerGroups");
+        }
     }
 
     const SelectedServer selected = std::move(outcome).events();

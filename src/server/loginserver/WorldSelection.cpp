@@ -7,6 +7,8 @@
 
 #include "WorldSelection.h"
 
+#include <algorithm>
+
 BYTE serverGroupStatusFor(UserNum_t userNum, BYTE groupStat, const ServerLoadThresholds& thresholds) {
     const int population = userNum;
 
@@ -35,13 +37,14 @@ BYTE serverGroupStatusFor(UserNum_t userNum, BYTE groupStat, const ServerLoadThr
 
 std::vector<ServerListEntry> serverListFor(WorldID_t worldID, const ServerLoadThresholds& thresholds,
                                            ServerListTopology& topology) {
-    const int groupCount = topology.serverGroupCount(worldID);
+    auto groupIDs = topology.serverGroupIDs(worldID);
+    std::sort(groupIDs.begin(), groupIDs.end());
 
     std::vector<ServerListEntry> entries;
-    entries.reserve(groupCount > 0 ? groupCount : 0);
+    entries.reserve(groupIDs.size());
 
-    for (int i = 0; i < groupCount; i++) {
-        const ServerGroupRow row = topology.serverGroup(i, worldID);
+    for (const auto groupID : groupIDs) {
+        const ServerGroupRow row = topology.serverGroup(groupID, worldID);
 
         ServerListEntry entry;
         entry.groupID = row.groupID;
@@ -57,9 +60,10 @@ std::vector<ServerListEntry> serverListFor(WorldID_t worldID, const ServerLoadTh
 Outcome<void, SelectWorldRejection> decideSelectWorld(WorldID_t worldID, WorldSelectionTopology& topology) {
     typedef Outcome<void, SelectWorldRejection> Result;
 
-    const int worldCount = topology.worldCount();
+    const auto worldIDs = topology.worldIDs();
+    const int worldCount = static_cast<int>(worldIDs.size());
 
-    if (worldID > worldCount) {
+    if (std::find(worldIDs.begin(), worldIDs.end(), worldID) == worldIDs.end()) {
         SelectWorldRejection rejection;
         rejection.reason = SelectWorldReason::UnknownWorld;
         rejection.worldCount = worldCount;
@@ -80,17 +84,22 @@ Outcome<SelectedServer, SelectServerRejection> decideSelectServer(const SelectSe
                                                                   WorldSelectionTopology& topology) {
     typedef Outcome<SelectedServer, SelectServerRejection> Result;
 
-    SelectedServer selected;
+    const auto worldIDs = topology.worldIDs();
+    if (worldIDs.empty())
+        return Result::Rejected({SelectServerReason::NoWorlds, request.serverGroupID});
 
+    SelectedServer selected;
     selected.worldID = request.worldID;
-    const int maxWorldID = topology.worldCount();
-    if (request.worldID > maxWorldID)
-        selected.worldID = maxWorldID;
+    if (std::find(worldIDs.begin(), worldIDs.end(), request.worldID) == worldIDs.end())
+        selected.worldID = *std::max_element(worldIDs.begin(), worldIDs.end());
+
+    const auto groupIDs = topology.serverGroupIDs(selected.worldID);
+    if (groupIDs.empty())
+        return Result::Rejected({SelectServerReason::NoServerGroups, request.serverGroupID});
 
     selected.serverGroupID = request.serverGroupID;
-    const int maxServerGroupID = topology.serverGroupCount(selected.worldID);
-    if (request.serverGroupID > maxServerGroupID)
-        selected.serverGroupID = maxServerGroupID;
+    if (std::find(groupIDs.begin(), groupIDs.end(), request.serverGroupID) == groupIDs.end())
+        selected.serverGroupID = *std::max_element(groupIDs.begin(), groupIDs.end());
 
     if (topology.serverGroup(selected.serverGroupID, selected.worldID).stat == SERVER_DOWN) {
         SelectServerRejection rejection;
