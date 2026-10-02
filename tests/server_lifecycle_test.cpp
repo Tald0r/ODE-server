@@ -1,8 +1,10 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <iterator>
 #include <memory>
+#include <new>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -195,6 +197,20 @@ enum class StartupStage { Initialize, Start };
 class ServerStartupFailureTest : public ServerLifecycleTest,
                                  public ::testing::WithParamInterface<std::tuple<StartupStage, FailureKind>> {};
 
+class RefusingBuffer : public std::streambuf {
+public:
+    bool failedWhenReporting = false;
+
+private:
+    std::streamsize xsputn(const char*, std::streamsize) override {
+        failedWhenReporting = ServerShutdown::isRequested() && ServerShutdown::failed.load();
+        return 0;
+    }
+    int_type overflow(int_type) override {
+        return traits_type::eof();
+    }
+};
+
 TEST_P(ServerStartupFailureTest, ReportsFailureBeforeStoppingAndReturnsFailureAfterDraining) {
     const auto [stage, kind] = GetParam();
     auto& action = stage == StartupStage::Initialize ? actions.initialize : actions.start;
@@ -223,6 +239,28 @@ TEST_P(ServerStartupFailureTest, ReportsFailureBeforeStoppingAndReturnsFailureAf
     EXPECT_TRUE(errors.str().empty());
 }
 
+TEST_P(ServerStartupFailureTest, OutputFailureStillReachesCleanupWithShutdownAlreadyRequested) {
+    const auto [stage, kind] = GetParam();
+    auto& action = stage == StartupStage::Initialize ? actions.initialize : actions.start;
+    action = [original = action, kind] {
+        original();
+        throwFailure(kind, "startup failed");
+    };
+    RefusingBuffer buffer;
+    std::ostream refused(&buffer);
+    refused.exceptions(std::ios::badbit | std::ios::failbit);
+
+    EXPECT_NO_THROW(expectResult(de::runServerLifecycle(actions, refused, errors, instantLog), true, EXIT_FAILURE));
+    EXPECT_TRUE(buffer.failedWhenReporting);
+    const std::vector<std::string> expected = stage == StartupStage::Initialize
+                                                  ? std::vector<std::string>{"initialize", "stop"}
+                                                  : std::vector<std::string>{"initialize", "start", "stop"};
+    EXPECT_EQ(expected, calls);
+    if (kind == FailureKind::Throwable)
+        EXPECT_EQ(Error("startup failed").toString() + "\n", readInstantLog());
+    EXPECT_TRUE(errors.str().empty());
+}
+
 INSTANTIATE_TEST_SUITE_P(Exceptions, ServerStartupFailureTest,
                          ::testing::Combine(::testing::Values(StartupStage::Initialize, StartupStage::Start),
                                             ::testing::Values(FailureKind::Throwable, FailureKind::Standard,
@@ -243,6 +281,20 @@ TEST_P(ServerStopFailureTest, ReportsFailedDrainAndDoesNotRetryStop) {
                                    : GetParam() == FailureKind::Standard ? "stop failed"
                                                                          : "unknown exception";
     EXPECT_EQ("Shutdown failed: " + diagnostic + "\n", errors.str());
+}
+
+TEST_P(ServerStopFailureTest, OutputFailureStillReturnsTheFailedDrainWithoutRetryingStop) {
+    actions.stop = [&, original = actions.stop] {
+        original();
+        throwFailure(GetParam(), "stop failed");
+    };
+    RefusingBuffer buffer;
+    std::ostream refused(&buffer);
+    refused.exceptions(std::ios::badbit | std::ios::failbit);
+
+    EXPECT_NO_THROW(expectResult(de::runServerLifecycle(actions, output, refused, instantLog), false, EXIT_FAILURE));
+    EXPECT_TRUE(buffer.failedWhenReporting);
+    EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
 }
 
 INSTANTIATE_TEST_SUITE_P(Exceptions, ServerStopFailureTest,
@@ -282,6 +334,78 @@ TEST_F(ServerLifecycleTest, AStartupThrowableReplacesThePreviousInstantLog) {
     actions.initialize = [] { throw Error("startup failed"); };
     expectResult(run(), true, EXIT_FAILURE);
     EXPECT_EQ(Error("startup failed").toString() + "\n", readInstantLog());
+}
+
+class Diagnostic : public Error {
+public:
+    explicit Diagnostic(std::function<std::string()> format) : format(std::move(format)) {}
+    std::string toString() const override {
+        return format();
+    }
+
+private:
+    std::function<std::string()> format;
+};
+
+TEST_F(ServerLifecycleTest, StartupFormatterFailureStillRequestsShutdownAndReachesCleanup) {
+    unsigned reports = 0;
+    bool failedBeforeReporting = true;
+    std::unique_ptr<int> dependency;
+    actions.initialize = [&] {
+        dependency = std::make_unique<int>(42);
+        throw Diagnostic([&]() -> std::string {
+            ++reports;
+            failedBeforeReporting =
+                failedBeforeReporting && ServerShutdown::isRequested() && ServerShutdown::failed.load();
+            throw std::bad_alloc();
+        });
+    };
+    actions.stop = [&, original = actions.stop] {
+        ASSERT_NE(dependency, nullptr);
+        EXPECT_EQ(*dependency, 42);
+        original();
+    };
+
+    EXPECT_NO_THROW(expectResult(run(), true, EXIT_FAILURE));
+    EXPECT_TRUE(failedBeforeReporting);
+    EXPECT_EQ(reports, 2u);
+    EXPECT_EQ((std::vector<std::string>{"stop"}), calls);
+    ASSERT_NE(dependency, nullptr);
+    EXPECT_EQ(*dependency, 42);
+}
+
+TEST_F(ServerLifecycleTest, FailedInstantLogDiagnosticDoesNotSuppressConsoleReporting) {
+    unsigned reports = 0;
+    actions.initialize = [&] {
+        throw Diagnostic([&] {
+            if (++reports == 1)
+                throw std::bad_alloc();
+            return "startup failed";
+        });
+    };
+
+    EXPECT_NO_THROW(expectResult(run(), true, EXIT_FAILURE));
+    EXPECT_EQ(reports, 2u);
+    EXPECT_EQ(output.str(), "startup failed\n");
+    EXPECT_EQ((std::vector<std::string>{"stop"}), calls);
+}
+
+TEST_F(ServerLifecycleTest, StopFormatterFailureStillReturnsTheFailedDrainWithoutRetryingStop) {
+    unsigned reports = 0;
+    bool failedBeforeReporting = false;
+    actions.stop = [&, original = actions.stop] {
+        original();
+        throw Diagnostic([&]() -> std::string {
+            ++reports;
+            failedBeforeReporting = ServerShutdown::isRequested() && ServerShutdown::failed.load();
+            throw std::bad_alloc();
+        });
+    };
+
+    EXPECT_NO_THROW(expectResult(run(), false, EXIT_FAILURE));
+    EXPECT_TRUE(failedBeforeReporting);
+    EXPECT_EQ(reports, 1u);
+    EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
 }
 
 } // namespace

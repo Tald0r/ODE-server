@@ -132,6 +132,9 @@ newline and read failures using in-memory streams.
 `server_lifecycle_tests` exercises the shared initialization, start and stop
 sequence, including partial startup, shutdown requests, exception reporting
 and worker failure status. It also links without a server runtime or database.
+Throwing formatters and rejected output cannot skip cleanup or hide its result;
+process failure is marked before reporting, and startup log/console diagnostics
+are attempted independently.
 `server_process_shutdown_tests` checks the shared signal handlers and deadline,
 including signals on worker threads and blocked startup/cleanup in subprocesses.
 `server_fatal_handler_tests` injects allocation failures in subprocesses to
