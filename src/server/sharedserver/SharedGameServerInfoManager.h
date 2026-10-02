@@ -49,8 +49,8 @@ private:
     // hash map of SharedGameServerInfo
     // key   : GameServerID_t
     // value : SharedGameServerInfo *
-    HashMapSharedGameServerInfo* m_pGameServerInfos;
-    int m_MaxServerGroupID;
+    HashMapSharedGameServerInfo* m_pGameServerInfos = nullptr;
+    int m_MaxServerGroupID = 0;
 };
 
 #endif

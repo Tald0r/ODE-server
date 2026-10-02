@@ -15,6 +15,8 @@
 #endif
 
 // include files
+#include <memory>
+
 #include "Exception.h"
 #include "Types.h"
 
@@ -28,6 +30,7 @@ class PacketFactoryManager;
 class PacketValidator;
 class ResurrectLocationManager;
 class SharedGameServerInfoManager;
+class ServerSocket;
 class StringPool;
 
 //////////////////////////////////////////////////////////////////////
@@ -40,11 +43,18 @@ class StringPool;
 
 class SharedServer {
 public:
-    // constructor
+    // Construct all managers before publishing their context bindings. A
+    // supplied owned listener permits scoped use without configuration binding;
+    // a null listener selects the normal listener built from configuration.
+    // Construction/destruction require quiescent context users and nested
+    // server scopes must unwind in reverse order. Destroy outside the worker.
     SharedServer();
+    explicit SharedServer(std::unique_ptr<ServerSocket> listener);
 
-    // destructor
-    ~SharedServer() noexcept(false);
+    // Join the owned worker before restoring bindings or releasing dependencies.
+    ~SharedServer() noexcept;
+    SharedServer(const SharedServer&) = delete;
+    SharedServer& operator=(const SharedServer&) = delete;
 
     // intialize game server
     void init();
@@ -59,22 +69,27 @@ public:
 private:
     bool m_Stopped = false;
 
-    // The managers the shared server owns. Each is registered on
-    // de::sharedContext() as it is created, except the four nothing outside
-    // this class reads and the packet factory table and the validator, which
-    // go on de::KernelContext because every binary fills it with a set of
-    // its own.
-    GuildManager* m_pGuildManager = nullptr;
-    SharedGameServerInfoManager* m_pGameServerInfoManager = nullptr;
-    GameServerGroupInfoManager* m_pGameServerGroupInfoManager = nullptr;
-    GameServerManager* m_pGameServerManager = nullptr;
-    HeartbeatManager* m_pHeartbeatManager = nullptr;
-    ResurrectLocationManager* m_pResurrectLocationManager = nullptr;
-    StringPool* m_pStringPool = nullptr;
-    GameWorldInfoManager* m_pGameWorldInfoManager = nullptr;
-    DatabaseManager* m_pDatabaseManager = nullptr;
-    PacketFactoryManager* m_pPacketFactoryManager = nullptr;
-    PacketValidator* m_pPacketValidator = nullptr;
+    // Dependencies precede workers so failed construction also destroys the
+    // workers first. Contexts only borrow these completed owners.
+    std::unique_ptr<DatabaseManager> m_pDatabaseManager;
+    std::unique_ptr<GameWorldInfoManager> m_pGameWorldInfoManager;
+    std::unique_ptr<GuildManager> m_pGuildManager;
+    std::unique_ptr<SharedGameServerInfoManager> m_pGameServerInfoManager;
+    std::unique_ptr<GameServerGroupInfoManager> m_pGameServerGroupInfoManager;
+    std::unique_ptr<PacketFactoryManager> m_pPacketFactoryManager;
+    std::unique_ptr<PacketValidator> m_pPacketValidator;
+    std::unique_ptr<ResurrectLocationManager> m_pResurrectLocationManager;
+    std::unique_ptr<StringPool> m_pStringPool;
+    std::unique_ptr<GameServerManager> m_pGameServerManager;
+    std::unique_ptr<HeartbeatManager> m_pHeartbeatManager;
+
+    DatabaseManager* m_PreviousDatabaseManager = nullptr;
+    GameWorldInfoManager* m_PreviousGameWorldInfoManager = nullptr;
+    GuildManager* m_PreviousGuildManager = nullptr;
+    PacketFactoryManager* m_PreviousPacketFactoryManager = nullptr;
+    PacketValidator* m_PreviousPacketValidator = nullptr;
+    StringPool* m_PreviousStringPool = nullptr;
+    GameServerManager* m_PreviousGameServerManager = nullptr;
 };
 
 #endif

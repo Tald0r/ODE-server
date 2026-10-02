@@ -62,9 +62,9 @@ private:
     // hash map of GameServerGroupInfo
     // key   : GameServerGroupID_t
     // value : GameServerGroupInfo *
-    HashMapGameServerGroupInfo* m_GameServerGroupInfos;
+    HashMapGameServerGroupInfo* m_GameServerGroupInfos = nullptr;
 
-    WorldID_t m_MaxWorldID;
+    WorldID_t m_MaxWorldID = 0;
 };
 
 #endif

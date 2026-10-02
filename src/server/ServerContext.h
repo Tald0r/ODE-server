@@ -15,8 +15,8 @@
 //               The context does NOT own the managers: each is still created
 //               and destroyed by the startup code that holds it (each
 //               server's server object, and the game server's ObjectManager
-//               for the world table), and registers itself here as soon as it
-//               exists. A manager is therefore null until its creation point
+//               for the world table), and is registered when its owning startup
+//               stage completes. A manager is null until its publication point
 //               is reached, and an accessor asserts on a null one: reading a
 //               manager before it exists is a startup-order bug, not a
 //               runtime condition to branch on.
@@ -45,11 +45,21 @@ public:
     void setDatabaseManager(DatabaseManager* pDatabaseManager) {
         m_pDatabaseManager = pDatabaseManager;
     }
+    DatabaseManager* exchangeDatabaseManager(DatabaseManager* manager) noexcept {
+        DatabaseManager* previous = m_pDatabaseManager;
+        m_pDatabaseManager = manager;
+        return previous;
+    }
     void setGameServerInfoManager(GameServerInfoManager* pGameServerInfoManager) {
         m_pGameServerInfoManager = pGameServerInfoManager;
     }
     void setGameWorldInfoManager(GameWorldInfoManager* pGameWorldInfoManager) {
         m_pGameWorldInfoManager = pGameWorldInfoManager;
+    }
+    GameWorldInfoManager* exchangeGameWorldInfoManager(GameWorldInfoManager* manager) noexcept {
+        GameWorldInfoManager* previous = m_pGameWorldInfoManager;
+        m_pGameWorldInfoManager = manager;
+        return previous;
     }
 
     DatabaseManager& database() const;

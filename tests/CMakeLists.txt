@@ -123,7 +123,8 @@ add_server_runtime_test(login_server_runtime_tests login_server_runtime_test.cpp
 target_sources(login_server_runtime_tests PRIVATE login_connection_test.cpp support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 target_sources(shared_server_runtime_tests PRIVATE
-    player_socket_replacement_test.cpp shared_connection_test.cpp support/AllocationProbe.cpp)
+    player_socket_replacement_test.cpp shared_connection_test.cpp shared_server_construction_test.cpp
+    support/AllocationProbe.cpp)
 
 add_executable(server_startup_tests EXCLUDE_FROM_ALL server_startup_test.cpp)
 target_link_libraries(server_startup_tests PRIVATE ServerStartup gtest_main)
