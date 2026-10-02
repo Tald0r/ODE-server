@@ -390,14 +390,40 @@ not consume its incoming row after failed list allocation, and `clearList`
 discards owning pointers. Both handlers narrow repository `int` group values
 to the packet's byte without validation. The world-selection handler reads
 the current group; the explicit list request reads the current location using
-the lower-case SQL policy. Task 2.42 tracks explicit reply inputs, retained
-query/default policies, saved-ID bounds and owned construction with failure tests.
+the lower-case SQL policy. Five regressions reproduced saved-ID wrapping, late
+count refusal and partial-record/packet-clearing leaks.
 
-The packet reader separately allocates raw rows before parsing/insertion and
-does not enforce its 37-group factory budget. Outgoing assembly and decoder
-failure/reuse/count behavior need separate tests, as for `LCWorldList`.
+The shared production assembler now takes explicit topology/account/player
+inputs, retains both queries and default group zero, checks a found saved group
+before narrowing, and preflights the 37-group budget before account lookup.
+Records stay owned while fields and list nodes allocate; the packet consumes
+incoming ownership on every exit and clearing deletes remaining rows. Seventeen
+tests cover query/field policies, exact budgets, live statuses, allocation
+cleanup/retry, five-stage exception identity, validation cleanup and packet
+clear/pop/count refusal. Handler status/error policy and wire layout stay intact.
 
-> **Status:** recorded, not fixed (refactor/login-world-topology)
+> **Status:** fixed (refactor/login-server-list-replies)
+
+## Login server-list decoding still needs owned records and a count gate (2026-10-02)
+
+`LCServerList::read` separately allocates raw rows before parsing/insertion and
+does not enforce its 37-group factory budget. The outgoing ownership fix does
+not cover decoding; failure/reuse/count behavior needs separate tests, as for
+`LCWorldList`.
+
+> **Status:** recorded, not fixed (refactor/login-server-list-replies)
+
+## Login routing catalogue loads append partial raw rows into live maps (2026-10-02)
+
+Login `ZoneInfoManager::load` and `ZoneGroupInfoManager::load` fetch through
+the default repository and insert each freshly allocated row into the live map.
+A duplicate or map allocation failure can leak the incoming row after earlier
+rows have already become visible. Loading again does not replace the previous
+catalogue: existing IDs cause duplicate refusal and absent old rows remain.
+Task 2.43 tracks explicit repositories, owned replacement and preservation of
+borrowed rows after failure, with allocation, duplicate and reload regressions.
+
+> **Status:** recorded, not fixed (refactor/login-server-list-replies)
 
 ## Normalized server-selection worlds do not reach character lookup (2026-10-02)
 

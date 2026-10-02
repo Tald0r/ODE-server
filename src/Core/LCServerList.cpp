@@ -28,12 +28,7 @@ LCServerList::LCServerList()
 LCServerList::~LCServerList() noexcept
 
 {
-    // Delete every object it owns.
-    while (!m_ServerGroupInfoList.empty()) {
-        ServerGroupInfo* pServerGroupInfo = m_ServerGroupInfoList.front();
-        SAFE_DELETE(pServerGroupInfo);
-        m_ServerGroupInfoList.pop_front();
-    }
+    clearList();
 }
 
 

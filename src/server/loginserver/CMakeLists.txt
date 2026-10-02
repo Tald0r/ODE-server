@@ -28,6 +28,7 @@ set(LOGINSERVER_RUNTIME_SOURCES
     LoginContext.cpp
     LoginConnection.cpp
     LoginWorldList.cpp
+    LoginServerList.cpp
     LoginPacketDispatch.cpp
     CharacterCreation.cpp
     CharacterDeletion.cpp

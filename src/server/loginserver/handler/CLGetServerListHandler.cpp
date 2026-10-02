@@ -7,16 +7,12 @@
 #include "CLGetServerList.h"
 
 #ifdef __LOGIN_SERVER__
-#include <vector>
-
 #include "Assert1.h"
-#include "LCServerList.h"
 #include "LoginContext.h"
 #include "LoginPlayer.h"
+#include "LoginServerList.h"
 #include "LoginWorldTopology.h"
 #include "ServerContext.h"
-#include "ServerGroupInfo.h"
-#include "WorldSelection.h"
 #include "repository/LoginAccountRepository.h"
 #endif
 
@@ -41,34 +37,9 @@ void CLGetServerListHandler::execute(CLGetServerList* pPacket, Player* pPlayer)
     LoginWorldTopology topology(de::serverContext().worldInfos(), de::loginContext().gameServerGroups(),
                                 de::loginContext().userInfos());
 
-    // This list is built off the plain thresholds whatever the build.
-    const ServerLoadThresholds thresholds;
-
     try {
-        const std::vector<ServerListEntry> groups = serverListFor(WorldID, thresholds, topology);
-
-        LCServerList lcServerList;
-
-        // The account's current world and group. Both values land in the
-        // server group field, the second overwriting the first.
-        int currentWorldID = 0;
-        int currentServerGroupID = 0;
-        if (defaultLoginAccountRepository().loadCurrentLocation(LOGIN_LOCATION_SQL_LOWER, pLoginPlayer->getID(),
-                                                                currentWorldID, currentServerGroupID)) {
-            lcServerList.setCurrentServerGroupID(currentWorldID);
-            lcServerList.setCurrentServerGroupID(currentServerGroupID);
-        }
-
-        for (std::vector<ServerListEntry>::const_iterator itr = groups.begin(); itr != groups.end(); ++itr) {
-            ServerGroupInfo* pServerGroupInfo = new ServerGroupInfo();
-            pServerGroupInfo->setGroupID(itr->groupID);
-            pServerGroupInfo->setGroupName(itr->groupName);
-            pServerGroupInfo->setStat(itr->stat);
-
-            lcServerList.addListElement(pServerGroupInfo);
-        }
-
-        pLoginPlayer->sendPacket(&lcServerList);
+        de::sendLoginServerList(*pLoginPlayer, WorldID, topology, defaultLoginAccountRepository(),
+                                de::LoginServerListQuery::CurrentLocation);
 
         pLoginPlayer->setPlayerStatus(LPS_PC_MANAGEMENT);
     } catch (Throwable&) {

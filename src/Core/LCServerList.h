@@ -10,6 +10,8 @@
 #define __LC_SERVER_LIST_H__
 
 // include files
+#include <memory>
+
 #include "Packet.h"
 #include "PacketFactory.h"
 #include "ServerGroupInfo.h"
@@ -68,20 +70,22 @@ public:
     }
 
     // add / delete / clear S List
-    // Takes ownership. Refuses an entry past the count the factory max
-    // budgets, so getPacketSize() can never outgrow the read buffer the
-    // receiver sizes from it; the refused entry is destroyed here.
+    // Takes ownership and enforces the factory's count budget. Count refusal
+    // and failed list allocation both destroy the incoming entry.
     void addListElement(ServerGroupInfo* pServerGroupInfo) {
-        if (m_ServerGroupInfoList.size() >= ServerGroupInfo::kMaxCount) {
-            SAFE_DELETE(pServerGroupInfo);
+        std::unique_ptr<ServerGroupInfo> owned(pServerGroupInfo);
+        if (m_ServerGroupInfoList.size() >= ServerGroupInfo::kMaxCount)
             throw InvalidProtocolException("too many server group infos");
-        }
-        m_ServerGroupInfoList.push_back(pServerGroupInfo);
+        m_ServerGroupInfoList.push_back(owned.get());
+        owned.release();
     }
 
     // ClearList
-    void clearList() {
-        m_ServerGroupInfoList.clear();
+    void clearList() noexcept {
+        while (!m_ServerGroupInfoList.empty()) {
+            delete m_ServerGroupInfoList.front();
+            m_ServerGroupInfoList.pop_front();
+        }
     }
 
     // pop front Element in Status List

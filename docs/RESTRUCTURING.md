@@ -1212,16 +1212,34 @@ visibility can't express.
     missing population rows. The recording fake now throws for missing keys
     instead of fabricating free groups that hid the old off-by-one.
 
-- [ ] **2.42 Extract owned login server-list replies.**
-  > **Status:** not started — `CLSelectWorldHandler` and `CLGetServerListHandler`
-  > duplicate packet assembly and read account state through default repositories.
-  > Extract explicit topology/account/player inputs with owned preparation,
-  > checked saved group IDs and tests for both account-query policies. Keep
-  > the 37-group budget, name truncation, default group and handler status/error
-  > policies. Fix the packet adder's allocation-failure ownership and clear leaks;
-  > decoder ownership/count handling remains a separately recorded boundary.
-  - Planned owner: login runtime tests over production assembly, packet ownership,
-    repository/send failures, allocation cleanup/retry and exact count limits.
+- [x] **2.42 Extract owned login server-list replies.**
+  > **Status:** done (this commit) — both handlers delegate to one assembler
+  > with explicit topology/account/player inputs. World selection keeps its
+  > current-group query; direct list requests keep their lower-case location
+  > query. Only a found saved group is checked/narrowed; false retains default
+  > zero, and the unused saved world has no effect. The assembler refuses more
+  > than 37 entries before account lookup and owns every record through filling,
+  > packet insertion and synchronous sending. Packet insertion consumes ownership
+  > even after failed list allocation; clear/destruction delete remaining rows.
+  > Pop transfers ownership. Handler status/error policy, layout, population
+  > thresholds and name truncation are preserved. Decoder ownership/count behavior
+  > remains separately recorded; send-side effects cannot be rolled back.
+  - Owner: 17 `LoginServerList` cases in `login_server_runtime_tests`. Five
+    regressions failed before the fix. Tests cover both query/default paths,
+    sparse IDs, exact budgets, saved-ID validation, threshold/live-count changes,
+    two 64-position allocation sweeps, exception identity and retry at five
+    failure stages, repeated cleanup and packet clear/pop/count-refusal ownership.
+
+- [ ] **2.43 Extract owned login routing catalogues.**
+  > **Status:** not started — login `ZoneInfoManager` and `ZoneGroupInfoManager`
+  > append raw rows directly into live maps through default repositories. A
+  > duplicate or insertion failure can leak the current row and leave a prefix
+  > published; repeated loads retain stale rows or fail on existing IDs. Supply
+  > repositories explicitly and prepare complete owned replacement maps with
+  > preserved borrowed lookups on failure. Audit raw mutation callers before
+  > removing unused APIs; retain database-error translation and stored ID widths.
+  - Planned owner: login runtime tests over production loaders, duplicate/fetch/
+    allocation failures, successful and empty replacement, cleanup and retry.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
