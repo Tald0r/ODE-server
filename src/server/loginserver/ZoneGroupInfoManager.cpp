@@ -1,175 +1,56 @@
-//----------------------------------------------------------------------
-//
-// Filename    : ZoneGroupInfoManager.cpp
-// Written By  : Reiot
-// Description :
-//
-//----------------------------------------------------------------------
-
-// include files
 #include "ZoneGroupInfoManager.h"
+
+#include <vector>
 
 #include "DatabaseError.h"
 #include "repository/LoginConfigRepository.h"
 
-//----------------------------------------------------------------------
-// constructor
-//----------------------------------------------------------------------
-ZoneGroupInfoManager::ZoneGroupInfoManager() noexcept {}
-
-//----------------------------------------------------------------------
-// destructor
-//----------------------------------------------------------------------
-ZoneGroupInfoManager::~ZoneGroupInfoManager() noexcept {
-    // Delete only the second of each pair in the hash map, i.e. the
-    // ZoneGroupInfo objects, and leave the pairs themselves. (Note that
-    // they live on the heap, so they must be deleted explicitly. ZGIM being
-    // destructed means the login server is shutting down anyway.)
-    for (HashMapZoneGroupInfo::iterator itr = m_ZoneGroupInfos.begin(); itr != m_ZoneGroupInfos.end(); itr++) {
-        delete itr->second;
-        itr->second = NULL;
-    }
-
-    // Now erase every pair in the hash map.
-    m_ZoneGroupInfos.clear();
-}
-
-
-//----------------------------------------------------------------------
-// initialize GSIM
-//----------------------------------------------------------------------
-void ZoneGroupInfoManager::init() noexcept(false) {
-    __BEGIN_TRY
-
-    // just load data from ZoneGroupInfo table
+void ZoneGroupInfoManager::init() {
     load();
-
-    // just print to cout
     cout << toString() << endl;
-
-    __END_CATCH
 }
 
-//----------------------------------------------------------------------
-// load data from database
-//----------------------------------------------------------------------
-void ZoneGroupInfoManager::load() noexcept(false) {
-    __BEGIN_TRY
+void ZoneGroupInfoManager::load() {
+    load(defaultLoginConfigRepository());
+}
 
-    vector<LoginZoneGroupRow> rows;
-
+void ZoneGroupInfoManager::load(LoginConfigRepository& repository) {
+    std::vector<LoginZoneGroupRow> rows;
     try {
-        rows = defaultLoginConfigRepository().loadZoneGroups();
+        rows = repository.loadZoneGroups();
     } catch (const DatabaseError& error) {
-        // A SQL failure arrives as END_DB's DatabaseError carrying the line
-        // it wrote to DBError.log; rethrown as the Error the startup path
-        // expects, with that line in it.
         throw Error("ZoneGroupInfoManager::load : " + error.message());
     }
 
-    for (size_t i = 0; i < rows.size(); i++) {
-        ZoneGroupInfo* pZoneGroupInfo = new ZoneGroupInfo();
-        pZoneGroupInfo->setZoneGroupID(rows[i].zoneGroupID);
-        pZoneGroupInfo->setServerID(rows[i].serverID);
-        addZoneGroupInfo(pZoneGroupInfo);
+    decltype(m_ZoneGroupInfos) prepared;
+    for (const auto& row : rows) {
+        const auto [position, inserted] = prepared.try_emplace(row.zoneGroupID);
+        if (!inserted)
+            throw DuplicatedException("duplicated zone id");
+        position->second.setZoneGroupID(row.zoneGroupID);
+        position->second.setServerID(row.serverID);
     }
-
-    __END_CATCH
+    m_ZoneGroupInfos.swap(prepared);
 }
 
-//----------------------------------------------------------------------
-// add info
-//----------------------------------------------------------------------
-void ZoneGroupInfoManager::addZoneGroupInfo(ZoneGroupInfo* pZoneGroupInfo) noexcept(false) {
-    __BEGIN_TRY
-
-    HashMapZoneGroupInfo::iterator itr = m_ZoneGroupInfos.find(pZoneGroupInfo->getZoneGroupID());
-
-    if (itr != m_ZoneGroupInfos.end())
-        throw DuplicatedException("duplicated zone id");
-
-    m_ZoneGroupInfos[pZoneGroupInfo->getZoneGroupID()] = pZoneGroupInfo;
-
-    __END_CATCH
-}
-
-//----------------------------------------------------------------------
-// delete info
-//----------------------------------------------------------------------
-void ZoneGroupInfoManager::deleteZoneGroupInfo(ZoneGroupID_t zoneGroupID) noexcept(false) {
-    __BEGIN_TRY
-
-    HashMapZoneGroupInfo::iterator itr = m_ZoneGroupInfos.find(zoneGroupID);
-
-    if (itr != m_ZoneGroupInfos.end()) {
-        // Delete the ZoneGroupInfo.
-        delete itr->second;
-
-        // Erase the pair.
-        m_ZoneGroupInfos.erase(itr);
-
-    } else { // not found
-
-        StringStream msg;
-        msg << "ZoneGroupID : " << zoneGroupID;
-        throw NoSuchElementException(msg.toString());
+const ZoneGroupInfo* ZoneGroupInfoManager::getZoneGroupInfo(ZoneGroupID_t zoneGroupID) const {
+    const auto found = m_ZoneGroupInfos.find(zoneGroupID);
+    if (found == m_ZoneGroupInfos.end()) {
+        StringStream message;
+        message << "ZoneGroupID : " << zoneGroupID;
+        throw NoSuchElementException(message.toString());
     }
-
-    __END_CATCH
+    return &found->second;
 }
 
-//----------------------------------------------------------------------
-// get info
-//----------------------------------------------------------------------
-ZoneGroupInfo* ZoneGroupInfoManager::getZoneGroupInfo(ZoneGroupID_t zoneGroupID) const {
-    __BEGIN_TRY
-
-    ZoneGroupInfo* pZoneGroupInfo = NULL;
-
-    HashMapZoneGroupInfo::const_iterator itr = m_ZoneGroupInfos.find(zoneGroupID);
-
-    if (itr != m_ZoneGroupInfos.end()) {
-        pZoneGroupInfo = itr->second;
-
-    } else { // not found
-
-        StringStream msg;
-        msg << "ZoneGroupID : " << zoneGroupID;
-        throw NoSuchElementException(msg.toString());
-    }
-
-    return pZoneGroupInfo;
-
-    __END_CATCH
-}
-
-
-//----------------------------------------------------------------------
-// get debug string
-//----------------------------------------------------------------------
 string ZoneGroupInfoManager::toString() const {
-    __BEGIN_TRY
-
-    StringStream msg;
-
-    msg << "ZoneGroupInfoManager(";
-
-    if (m_ZoneGroupInfos.empty()) {
-        msg << "EMPTY";
-
-    } else {
-        //--------------------------------------------------
-        // *OPTIMIZATION*
-        //
-        // Could use for_each()
-        //--------------------------------------------------
-        for (HashMapZoneGroupInfo::const_iterator itr = m_ZoneGroupInfos.begin(); itr != m_ZoneGroupInfos.end(); itr++)
-            msg << itr->second->toString();
-    }
-
-    msg << ")";
-
-    return msg.toString();
-
-    __END_CATCH
+    StringStream message;
+    message << "ZoneGroupInfoManager(";
+    if (m_ZoneGroupInfos.empty())
+        message << "EMPTY";
+    else
+        for (const auto& [id, group] : m_ZoneGroupInfos)
+            message << group.toString();
+    message << ")";
+    return message.toString();
 }

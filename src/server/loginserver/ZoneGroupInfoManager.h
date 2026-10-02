@@ -1,69 +1,33 @@
-//----------------------------------------------------------------------
-//
-// Filename    : ZoneGroupInfoManager.h
-// Written By  : Reiot
-// Description :
-//
-//----------------------------------------------------------------------
-
+// The login server's zone-group-to-server routing catalogue.
 #ifndef __ZONE_GROUP_INFO_MANAGER_H__
 #define __ZONE_GROUP_INFO_MANAGER_H__
 
-// include files
 #include <unordered_map>
 
-#include "Exception.h"
-#include "Types.h"
 #include "ZoneGroupInfo.h"
 
-typedef unordered_map<ZoneGroupID_t, ZoneGroupInfo*> HashMapZoneGroupInfo;
+class LoginConfigRepository;
 
-//----------------------------------------------------------------------
-//
-// class ZoneGroupInfoManager;
-//
-// Holds an unordered_map of that information keyed by the zone group id
-// internally.
-//
-//----------------------------------------------------------------------
-
+// Load with quiescent readers. Failure preserves borrowed row pointers;
+// successful replacement invalidates them and releases removed routes.
 class ZoneGroupInfoManager {
 public:
-    // constructor
-    ZoneGroupInfoManager() noexcept;
+    ZoneGroupInfoManager() = default;
+    ZoneGroupInfoManager(const ZoneGroupInfoManager&) = delete;
+    ZoneGroupInfoManager& operator=(const ZoneGroupInfoManager&) = delete;
 
-    // destructor
-    ~ZoneGroupInfoManager() noexcept;
+    void init();
+    void load();
+    void load(LoginConfigRepository& repository);
 
-    // initialize manager
-    void init() noexcept(false);
-
-    // load from database
-    void load() noexcept(false);
-
-    // add info
-    void addZoneGroupInfo(ZoneGroupInfo* pZoneGroupInfo) noexcept(false);
-
-    // delete info
-    void deleteZoneGroupInfo(ZoneGroupID_t zoneGroupID) noexcept(false);
-
-    // get info
-    ZoneGroupInfo* getZoneGroupInfo(ZoneGroupID_t zoneGroupID) const noexcept(false);
-
-    // get count of info
+    const ZoneGroupInfo* getZoneGroupInfo(ZoneGroupID_t zoneGroupID) const;
     uint getSize() const noexcept {
         return m_ZoneGroupInfos.size();
     }
-
-    // get debug string
     string toString() const;
 
 private:
-    // hash map of ZoneGroupInfo
-    // key   : ZoneGroupID_t
-    // value : ZoneGroupInfo *
-    HashMapZoneGroupInfo m_ZoneGroupInfos;
+    std::unordered_map<ZoneGroupID_t, ZoneGroupInfo> m_ZoneGroupInfos;
 };
-
 
 #endif
