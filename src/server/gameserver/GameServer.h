@@ -41,7 +41,6 @@ public:
 
 private:
     bool m_Stopped = false; // Lifecycle operations are owned by the main thread.
-    void sysinit();
     void goBackground();
 
     // Managers this class creates and deletes. The client manager, the login

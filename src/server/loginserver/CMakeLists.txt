@@ -105,4 +105,4 @@ target_link_libraries(LoginServerRuntime PUBLIC
 
 add_executable(loginserver main.cpp)
 target_link_libraries(loginserver PRIVATE
-    LoginServerRuntime ServerApplication ServerProcessShutdown ServerFatalHandlers)
+    LoginServerRuntime ServerApplication ServerProcessShutdown ServerFatalHandlers ServerProcessEnvironment)

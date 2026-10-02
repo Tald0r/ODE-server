@@ -167,6 +167,13 @@ add_test(NAME properties_parser_tests COMMAND properties_parser_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(properties_parser_tests PROPERTIES TIMEOUT 30)
 
+add_executable(server_process_environment_tests EXCLUDE_FROM_ALL server_process_environment_test.cpp)
+target_link_libraries(server_process_environment_tests PRIVATE ServerProcessEnvironment ServerProcessShutdown gtest_main)
+add_dependencies(wire_tests server_process_environment_tests)
+add_test(NAME server_process_environment_tests COMMAND server_process_environment_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(server_process_environment_tests PROPERTIES TIMEOUT 30)
+
 # Verify that every real main returns failure for invalid startup input,
 # instead of aborting, falling through into managers, or starting workers.
 add_dependencies(wire_tests gameserver loginserver sharedserver)

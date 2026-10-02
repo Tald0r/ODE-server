@@ -14,7 +14,6 @@
 #include <chrono>
 #include <exception>
 
-#include <sys/resource.h>
 #include <sys/time.h>
 
 #include "KernelContext.h"
@@ -22,6 +21,7 @@
 #include "LoginServer.h"
 #include "ServerApplication.h"
 #include "ServerFatalHandlers.h"
+#include "ServerProcessEnvironment.h"
 #include "ServerProcessShutdown.h"
 #include "StringStream.h"
 #include "Types.h"
@@ -46,10 +46,7 @@ int main(int argc, char* argv[]) {
     const de::ServerLifecycleActions lifecycle{
         .initialize =
             [&] {
-                struct rlimit rl;
-                rl.rlim_cur = RLIM_INFINITY;
-                rl.rlim_max = RLIM_INFINITY;
-                setrlimit(RLIMIT_CORE, &rl);
+                (void)de::raiseCoreDumpLimit();
 
                 pLoginServer = new LoginServer();
                 pLoginServer->init();

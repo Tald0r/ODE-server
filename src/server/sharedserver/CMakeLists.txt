@@ -68,4 +68,4 @@ target_link_libraries(SharedServerRuntime PUBLIC
 
 add_executable(sharedserver main.cpp)
 target_link_libraries(sharedserver PRIVATE
-    SharedServerRuntime ServerApplication ServerProcessShutdown ServerFatalHandlers)
+    SharedServerRuntime ServerApplication ServerProcessShutdown ServerFatalHandlers ServerProcessEnvironment)

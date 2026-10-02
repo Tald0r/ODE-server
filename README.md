@@ -136,6 +136,8 @@ and worker failure status. It also links without a server runtime or database.
 including signals on worker threads and blocked startup/cleanup in subprocesses.
 `server_fatal_handler_tests` injects allocation failures in subprocesses to
 check fatal diagnostics, failure status and handler restoration without a server.
+`server_process_environment_tests` checks core-dump limits, random seeds and
+game signal policy in subprocesses that cannot alter the runner's environment.
 `server_application_tests` runs configuration loading through lifecycle cleanup
 and final reporting using an explicit context and controlled actions. It checks
 configuration lifetime and restoration, rejected input and failure status without

@@ -60,6 +60,10 @@ target_link_libraries(ServerProcessShutdown PUBLIC Threads::Threads)
 add_library(ServerFatalHandlers STATIC ServerFatalHandlers.cpp)
 target_include_directories(ServerFatalHandlers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Process limits, random seeding and game signal policy, without a server runtime.
+add_library(ServerProcessEnvironment STATIC ServerProcessEnvironment.cpp)
+target_include_directories(ServerProcessEnvironment PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 # ============================================================================
 # 子目录
 # ============================================================================
