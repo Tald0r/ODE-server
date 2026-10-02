@@ -21,8 +21,11 @@ struct ServerWorker {
 // Request every worker's stop before joining any of them. The optional action
 // drains other workers (the game's zone pool) after these stop requests and
 // before these joins. Keep all workers and their dependencies alive throughout.
-// Retained run failures are reported without interrupting the remaining joins;
-// stop/action/join errors propagate to the server lifecycle's failure handling.
+// Call from outside these workers. Throwing stop/join overrides fall back to
+// managed cancellation/join. Every operation and retained failure report is
+// attempted; reporting follows all joins. The first operation/diagnostic error
+// requests process failure and propagates after the remaining drain attempts.
+// Retained run failures alone are reported without throwing them again.
 // Does not own workers, clear shutdown flags or impose a shutdown deadline.
 void stopServerWorkers(std::span<const ServerWorker> workers, std::ostream& errors,
                        const std::function<void()>& beforeJoin = {});

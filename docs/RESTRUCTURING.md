@@ -656,18 +656,19 @@ visibility can't express.
   > **Status:** done (2026-10-02) —
   > `ServerWorkerShutdown` provides the shared `stopServerWorkers` sequence.
   > It borrows the workers, requests every stop, runs an optional drain action,
-  > then joins each worker and reports its retained run failure. Gameserver
+  > then joins every worker before reporting retained run failures. Gameserver
   > drains the zone pool between the auxiliary stop requests and joins; the
   > login/shared single-worker paths retain their `GameServerManager` diagnostic
   > name. A stack array replaces gameserver's temporary shutdown vector.
   > Each server still requests process shutdown and stops its foreground loop
   > first, owns all managers and guards repeated successful stop calls. The
   > helper neither destroys workers nor clears process failure state. Retained
-  > worker failures do not interrupt remaining joins. Stop, extra-drain and
-  > join errors propagate as before, so the lifecycle cannot report those
-  > attempts as successfully drained; the process deadline still bounds a
-  > blocked shutdown. The library links common `ServerCore`, `de-kernel` and
-  > `Threads::Threads`, with no concrete runtime or database dependency.
+  > worker failures do not interrupt remaining joins. Task 2.29 also preserves
+  > drain/report progress after stop, extra-drain, join or diagnostic errors,
+  > propagating the first after all attempts. The lifecycle cannot report
+  > those attempts as successfully drained; the process deadline still bounds
+  > blocked shutdown. The library links `ServerWorkers` (and transitively
+  > `de-kernel`/`Threads::Threads`) without `ServerCore`, a runtime or database.
   - Owner: `server_worker_shutdown_tests`, using real cooperative workers and
     controlled failures to cover stop/join order, zone-drain placement, partial
     startup, live dependencies through joins, all retained exception types,
@@ -999,14 +1000,27 @@ visibility can't express.
     failures, allocation sweep/retry, refusal ownership, rollback ordering and
     original error, stop/join failures, diagnostic continuation and scoped cleanup.
 
-- [ ] **2.29 Preserve shared worker drain progress across failures.**
-  > **Status:** not started — the shared `stopServerWorkers` helper still stops
-  > at a thrown stop, pre-join action, join or diagnostic, skipping later joins.
-  > Extend the independently tested drain boundary used by all three servers
-  > to retain failures while attempting the remaining shutdown work. Keep the
-  > pre-join action after all stop requests and preserve the first failure.
-  - Planned owner: `server_worker_shutdown_tests` over real managed workers,
-    injected operation/diagnostic failures and recorded shutdown ordering.
+- [x] **2.29 Preserve shared worker drain progress across failures.**
+  > **Status:** done (this commit) — `stopServerWorkers` attempts every stop,
+  > the optional zone drain, every join, then every retained failure report.
+  > Throwing overrides fall back to managed cancellation/join. Each operation
+  > or diagnostic error requests process failure immediately; the first is
+  > rethrown unchanged after the remaining attempts. The helper still borrows
+  > its workers, requires their dependencies alive throughout, and leaves
+  > unsuccessful drain status and the deadline policy to the lifecycle.
+  - Owner: `server_worker_shutdown_tests` over real managed workers and a zone
+    pool. Seven regressions failed before the change; coverage pins failing
+    stop/action/join progress, formatter/name/output failures, reporting after
+    all joins, exact first-error preservation and lifecycle failure status.
+
+- [ ] **2.30 Preserve lifecycle cleanup when diagnostics fail.**
+  > **Status:** not started — `runServerLifecycle` formats/writes startup
+  > diagnostics before marking process failure and reaching stop. A formatter
+  > or stream exception can skip both; shutdown diagnostics can also prevent
+  > the result from being returned. Isolate reporting failure from lifecycle
+  > progress while preserving existing output and failed-drain semantics.
+  - Planned owner: standalone lifecycle regressions over throwing formatters,
+    rejected output, cleanup ordering and retained failure status.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

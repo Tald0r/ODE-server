@@ -226,6 +226,9 @@ starting a server or connecting to a database.
 `server_worker_shutdown_tests` exercises the three servers' shared auxiliary
 worker drain with real cooperative threads, checking stop-before-join order,
 partial startup, dependency lifetime and retained failure reporting.
+Stop, zone-drain, join and diagnostic failures do not skip remaining work;
+reporting follows all joins and the first error reaches the lifecycle after
+the drain attempts. Throwing worker overrides fall back to managed stop/join.
 `server_start_sequence_tests` exercises the background startup steps and main
 loop handoff used by all three servers. Shutdown gates stop later callbacks
 after a request or worker failure; real managed-worker tests verify lifecycle

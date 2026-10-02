@@ -116,14 +116,32 @@ injected stop/join/diagnostic failures pin ownership, ordering, retry and cleanu
 
 ## Shared worker shutdown skips later joins after a failure (2026-10-02)
 
-`stopServerWorkers` calls virtual stops, the optional pre-join action and joins
-without retaining their errors. A thrown operation leaves later workers
-undrained; even failure formatting can interrupt the join loop. The worker-pool
-extraction now handles these phases independently, but the shared helper used
-by the three server stop methods still needs the same progress guarantee.
-Task 2.29 tracks this source finding and standalone failure/ordering coverage.
+`stopServerWorkers` called virtual stops, the optional pre-join action and joins
+without retaining their errors. A thrown operation left later workers
+undrained; even failure formatting could interrupt the join loop. Seven
+standalone regressions reproduced skipped work across stop, pre-join, join,
+formatter, name and output failures, including loss of later reports.
 
-> **Status:** recorded, not fixed (refactor/worker-pool-ownership)
+The helper now attempts all stops, the optional zone drain, all joins and then
+all reports. Throwing overrides fall back to managed cancellation/join. Errors
+mark process failure before further blocking work; the first is retained and
+rethrown unchanged after every attempt. Retained run failures remain reported
+without rethrowing them. Real workers, an owned zone pool and the lifecycle
+tests pin dependency lifetime, phase order, first-error identity and failed
+exit/drain status.
+
+> **Status:** fixed (refactor/server-worker-drain)
+
+## Lifecycle diagnostics can bypass cleanup or its result (2026-10-02)
+
+`runServerLifecycle` formats and writes startup failure diagnostics before
+marking process failure and calling stop. A thrown formatter or output
+operation escapes the catch, skipping cleanup and potentially leaving the
+shutdown flags clear. A thrown shutdown diagnostic similarly hides the drain
+result. This is a source finding; task 2.30 tracks reporting isolation and
+standalone cleanup/failure-status regressions.
+
+> **Status:** recorded, not fixed (refactor/server-worker-drain)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 
