@@ -1,7 +1,10 @@
 #include <atomic>
 #include <chrono>
 #include <exception>
+#include <functional>
 #include <future>
+#include <memory>
+#include <new>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -13,6 +16,7 @@
 #include "ManagedThread.h"
 #include "ServerLifecycle.h"
 #include "ServerWorkerShutdown.h"
+#include "ThreadPool.h"
 
 using namespace std::chrono_literals;
 
@@ -41,9 +45,9 @@ public:
 
     void stop() override {
         events.push_back(name + ".stop");
-        ManagedThread::stop();
         if (stopFailure)
             std::rethrow_exception(stopFailure);
+        ManagedThread::stop();
     }
 
     void join() override {
@@ -55,6 +59,9 @@ public:
     }
 
     std::string getName() const override {
+        ++nameAttempts;
+        if (nameFailure)
+            std::rethrow_exception(nameFailure);
         return name;
     }
 
@@ -65,6 +72,8 @@ public:
     std::exception_ptr runFailure;
     std::exception_ptr stopFailure;
     std::exception_ptr joinFailure;
+    std::exception_ptr nameFailure;
+    mutable unsigned nameAttempts = 0;
     bool joined = false;
 
 private:
@@ -226,7 +235,7 @@ TEST_F(ServerWorkerShutdownTest, EveryRetainedFailureIsReportedAndRemainingWorke
     EXPECT_THROW(third.rethrowFailure(), int);
 }
 
-TEST_F(ServerWorkerShutdownTest, OtherDrainFailureReachesTheLifecycleWithoutClaimingWorkersDrained) {
+TEST_F(ServerWorkerShutdownTest, OtherDrainFailureStillJoinsWorkersAndReachesTheLifecycle) {
     ObservedWorker first("first", events);
     ObservedWorker second("second", events);
     start(first);
@@ -246,32 +255,193 @@ TEST_F(ServerWorkerShutdownTest, OtherDrainFailureReachesTheLifecycleWithoutClai
     const auto result = de::runServerLifecycle(actions, output, errors);
     EXPECT_FALSE(result.drained);
     EXPECT_EQ(EXIT_FAILURE, result.exitCode);
-    EXPECT_EQ((std::vector<std::string>{"first.stop", "second.stop", "zones"}), events);
+    EXPECT_EQ((std::vector<std::string>{"first.stop", "second.stop", "zones", "first.join", "second.join"}), events);
     EXPECT_NE(std::string::npos, errors.str().find("Shutdown failed: " + Error("zone drain failed").toString()));
-    EXPECT_FALSE(first.joined || second.joined);
+    EXPECT_TRUE(first.joined && second.joined);
+    EXPECT_TRUE(first.finished && second.finished);
     EXPECT_TRUE(ServerShutdown::failed.load());
 }
 
-TEST_F(ServerWorkerShutdownTest, StopErrorsPropagateBeforeAnyJoin) {
+TEST_F(ServerWorkerShutdownTest, ZonePoolFailureStillJoinsEveryAuxiliaryWorker) {
+    ObservedWorker first("first", events);
+    ObservedWorker second("second", events);
+    ThreadPool zones;
+    auto owner = std::make_unique<ObservedWorker>("zone", events);
+    auto* zone = owner.get();
+    zone->stopFailure = std::make_exception_ptr(Error("zone stop failed"));
+    auto zoneEntered = zone->entered.get_future();
+    zones.addThread(std::move(owner));
+    zones.start();
+    ASSERT_EQ(std::future_status::ready, zoneEntered.wait_for(2s));
+    start(first);
+    start(second);
+    const de::ServerWorker workers[] = {{first}, {second}};
+
+    EXPECT_THROW(de::stopServerWorkers(workers, errors, [&] { zones.stop(); }), Error);
+    EXPECT_EQ(
+        (std::vector<std::string>{"first.stop", "second.stop", "zone.stop", "zone.join", "first.join", "second.join"}),
+        events);
+    EXPECT_TRUE(first.finished && second.finished && zone->finished);
+    EXPECT_TRUE(first.joined && second.joined && zone->joined);
+    EXPECT_TRUE(ServerShutdown::failed.load());
+    EXPECT_NO_THROW(zones.stop());
+}
+
+TEST_F(ServerWorkerShutdownTest, StopErrorsPropagateAfterAllWorkersAndOtherDrainingAreAttempted) {
     ObservedWorker first("first", events);
     ObservedWorker second("second", events);
     first.stopFailure = std::make_exception_ptr(Error("stop failed"));
+    start(first);
+    start(second);
     const de::ServerWorker workers[] = {{first}, {second}};
     EXPECT_THROW(de::stopServerWorkers(workers, errors, [&] { events.emplace_back("zones"); }), Error);
-    EXPECT_EQ((std::vector<std::string>{"first.stop"}), events);
-    EXPECT_FALSE(first.joined || second.joined);
+    EXPECT_EQ((std::vector<std::string>{"first.stop", "second.stop", "zones", "first.join", "second.join"}), events);
+    EXPECT_TRUE(first.joined && second.joined);
+    EXPECT_TRUE(first.finished && second.finished);
+    EXPECT_TRUE(ServerShutdown::isRequested());
+    EXPECT_TRUE(ServerShutdown::failed.load());
     EXPECT_TRUE(errors.str().empty());
 }
 
-TEST_F(ServerWorkerShutdownTest, JoinErrorsPropagateAfterAllStopsHaveBeenRequested) {
+TEST_F(ServerWorkerShutdownTest, JoinErrorsFallBackToManagedJoinAndDoNotSkipRemainingWorkers) {
     ObservedWorker first("first", events);
     ObservedWorker second("second", events);
     first.joinFailure = std::make_exception_ptr(std::runtime_error("join failed"));
+    start(first);
+    start(second);
     const de::ServerWorker workers[] = {{first}, {second}};
     EXPECT_THROW(de::stopServerWorkers(workers, errors), std::runtime_error);
-    EXPECT_EQ((std::vector<std::string>{"first.stop", "second.stop", "first.join"}), events);
-    EXPECT_FALSE(first.joined || second.joined);
+    EXPECT_EQ((std::vector<std::string>{"first.stop", "second.stop", "first.join", "second.join"}), events);
+    EXPECT_TRUE(first.finished && second.finished);
+    EXPECT_EQ(Thread::EXIT, first.getStatus());
+    EXPECT_EQ(Thread::EXIT, second.getStatus());
+    EXPECT_TRUE(second.joined);
+    EXPECT_TRUE(ServerShutdown::failed.load());
     EXPECT_TRUE(errors.str().empty());
+}
+
+class Diagnostic : public Error {
+public:
+    explicit Diagnostic(std::function<std::string()> format) : format(std::move(format)) {}
+    std::string toString() const override {
+        return format();
+    }
+
+private:
+    std::function<std::string()> format;
+};
+
+TEST_F(ServerWorkerShutdownTest, FormattingFailureDoesNotSkipJoinsOrLaterReports) {
+    ObservedWorker first("first", events);
+    ObservedWorker second("second", events);
+    ObservedWorker healthy("healthy", events);
+    unsigned reports[2]{};
+    bool allJoinedWhenFormatting = false;
+    first.runFailure = std::make_exception_ptr(Diagnostic([&]() -> std::string {
+        ++reports[0];
+        allJoinedWhenFormatting = first.joined && second.joined && healthy.joined;
+        throw std::bad_alloc();
+    }));
+    second.runFailure = std::make_exception_ptr(Diagnostic([&] {
+        ++reports[1];
+        return "second failure";
+    }));
+    start(first);
+    start(second);
+    start(healthy);
+    const de::ServerWorker workers[] = {{first}, {second}, {healthy}};
+
+    EXPECT_THROW(de::stopServerWorkers(workers, errors), std::bad_alloc);
+    EXPECT_TRUE(allJoinedWhenFormatting);
+    EXPECT_EQ(reports[0], 1u);
+    EXPECT_EQ(reports[1], 1u);
+    EXPECT_EQ(errors.str(), "second: second failure\n");
+    EXPECT_TRUE(healthy.finished);
+    EXPECT_TRUE(ServerShutdown::failed.load());
+}
+
+TEST_F(ServerWorkerShutdownTest, NameFailureDoesNotSkipLaterDiagnosticsAndExplicitNamesBypassTheGetter) {
+    ObservedWorker first("first", events);
+    ObservedWorker second("second", events);
+    first.nameFailure = second.nameFailure = std::make_exception_ptr(std::bad_alloc());
+    first.runFailure = second.runFailure = std::make_exception_ptr(std::runtime_error("worker failed"));
+    start(first);
+    start(second);
+    const de::ServerWorker workers[] = {{first}, {second, "manager"}};
+
+    EXPECT_THROW(de::stopServerWorkers(workers, errors), std::bad_alloc);
+    EXPECT_TRUE(first.joined && second.joined);
+    EXPECT_EQ(first.nameAttempts, 1u);
+    EXPECT_EQ(second.nameAttempts, 0u);
+    EXPECT_EQ(errors.str(), "manager: worker failed\n");
+}
+
+class RefusingBuffer : public std::streambuf {
+    std::streamsize xsputn(const char*, std::streamsize) override {
+        return 0;
+    }
+    int_type overflow(int_type) override {
+        return traits_type::eof();
+    }
+};
+
+TEST_F(ServerWorkerShutdownTest, OutputFailureStillAttemptsEveryReportAfterAllJoins) {
+    ObservedWorker first("first", events);
+    ObservedWorker second("second", events);
+    unsigned reports = 0;
+    bool allJoinedWhenFormatting = true;
+    first.runFailure = second.runFailure = std::make_exception_ptr(Diagnostic([&] {
+        ++reports;
+        allJoinedWhenFormatting = allJoinedWhenFormatting && first.joined && second.joined;
+        return "worker failed";
+    }));
+    start(first);
+    start(second);
+    const de::ServerWorker workers[] = {{first}, {second}};
+    RefusingBuffer buffer;
+    std::ostream refused(&buffer);
+    refused.exceptions(std::ios::badbit | std::ios::failbit);
+
+    EXPECT_THROW(de::stopServerWorkers(workers, refused), std::ios_base::failure);
+    EXPECT_TRUE(allJoinedWhenFormatting);
+    EXPECT_EQ(reports, 2u);
+    EXPECT_TRUE(first.joined && second.joined);
+    EXPECT_TRUE(ServerShutdown::failed.load());
+}
+
+TEST_F(ServerWorkerShutdownTest, TheFirstFailureSurvivesLaterStopActionJoinAndDiagnosticErrors) {
+    ObservedWorker first("first", events);
+    ObservedWorker second("second", events);
+    const auto original = std::make_exception_ptr(42);
+    first.stopFailure = original;
+    second.stopFailure = std::make_exception_ptr(Error("later stop failed"));
+    first.joinFailure = std::make_exception_ptr(std::runtime_error("join failed"));
+    unsigned reports = 0;
+    second.runFailure = std::make_exception_ptr(Diagnostic([&]() -> std::string {
+        ++reports;
+        throw std::bad_alloc();
+    }));
+    start(first);
+    start(second);
+    const de::ServerWorker workers[] = {{first}, {second}};
+    bool failedBeforeOtherDraining = false;
+
+    try {
+        de::stopServerWorkers(workers, errors, [&] {
+            events.emplace_back("zones");
+            failedBeforeOtherDraining = ServerShutdown::failed.load() && ServerShutdown::isRequested();
+            throw std::logic_error("zone drain failed");
+        });
+        FAIL() << "expected the original stop failure";
+    } catch (...) {
+        EXPECT_EQ(std::current_exception(), original);
+    }
+    EXPECT_TRUE(failedBeforeOtherDraining);
+    EXPECT_EQ((std::vector<std::string>{"first.stop", "second.stop", "zones", "first.join", "second.join"}), events);
+    EXPECT_TRUE(first.finished && second.finished);
+    EXPECT_EQ(Thread::EXIT, first.getStatus());
+    EXPECT_EQ(Thread::EXIT, second.getStatus());
+    EXPECT_EQ(reports, 1u);
 }
 
 class WorkerFailureTest : public ServerWorkerShutdownTest, public ::testing::WithParamInterface<int> {};
