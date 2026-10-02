@@ -51,6 +51,11 @@ add_library(ServerApplication STATIC ServerApplication.cpp)
 target_include_directories(ServerApplication PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ServerApplication PUBLIC ServerStartup ServerPortSettings ServerLifecycle)
 
+# Background startup order and main-loop handoff without a server runtime.
+add_library(ServerStartSequence STATIC ServerStartSequence.cpp)
+target_include_directories(ServerStartSequence PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ServerStartSequence PUBLIC Threads::Threads)
+
 # Shared worker drain order and diagnostics, without a server runtime or database.
 add_library(ServerWorkerShutdown STATIC ServerWorkerShutdown.cpp)
 target_include_directories(ServerWorkerShutdown PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -93,6 +93,7 @@ target_link_libraries(LoginServerRuntime PUBLIC
     LoginServerPackets
     ServerCore
     ServerWorkerShutdown
+    ServerStartSequence
     ListenerStartup
     ServerPortSettings
     Core

@@ -22,6 +22,7 @@
 #include "Properties.h"
 #include "ServerContext.h"
 #include "ServerProcessEnvironment.h"
+#include "ServerStartSequence.h"
 #include "ServerWorkerShutdown.h"
 #include "SharedServerManager.h"
 #include "SystemAPI.h"
@@ -214,44 +215,39 @@ void GameServer::start()
 {
     __BEGIN_TRY
 
-    cout << ">>> STARTING THREAD MANAGER..." << endl;
-    m_pThreadManager->start();
-
-    cout << ">>> STARTING LOGIN SERVER MANAGER..." << endl;
-    m_pLoginServerManager->start();
-
-    cout << ">>> STARTING SHARED SERVER MANAGER..." << endl;
-    m_pSharedServerManager->start();
-
+    const de::ServerStartAction backgroundStarts[] = {
+        [this] {
+            cout << ">>> STARTING THREAD MANAGER..." << endl;
+            m_pThreadManager->start();
+        },
+        [this] {
+            cout << ">>> STARTING LOGIN SERVER MANAGER..." << endl;
+            m_pLoginServerManager->start();
+        },
+        [this] {
+            cout << ">>> STARTING SHARED SERVER MANAGER..." << endl;
+            m_pSharedServerManager->start();
+        },
 #ifdef __MOFUS__
-    m_pMPlayerManager->start();
-    cout << ">>> STARTING MOFUS PLAYER MANAGER..." << endl;
+        [this] {
+            m_pMPlayerManager->start();
+            cout << ">>> STARTING MOFUS PLAYER MANAGER..." << endl;
+        },
 #endif
-
-    // add by zdj
-    // cout << ">>> STARTING SMS SERVICE THREAD..." << endl;
-    // SMSServiceThread::Instance().start();
-
-    //	cout << ">>> STARTING Gilles De Rais Lair Manager THREAD..." << endl;
-    GDRLairManager::Instance().init();
-    GDRLairManager::Instance().start();
-
-    // Start the client manager.
-    // *Reiot's Notes*
-    // It must run last, because it is a function with an infinite loop
-    // rather than something multithreaded. Any function called after it
-    // does not run until the loop ends, that is, until an error
-    // occurs.
-    cout << ">>> ALL INITIALIZATIONS ARE COMPLETED SUCCESSFULLY." << endl;
-    cout << ">>> STARTING ClientManager->start() INFINITE LOOP..." << endl;
-
-    try {
-        m_pClientManager->start();
-
-    } catch (Throwable& t) {
-        filelog("GameServerError.txt", "%s", t.toString().c_str());
-        throw;
-    }
+        [] { GDRLairManager::Instance().init(); },
+        [] { GDRLairManager::Instance().start(); },
+    };
+    de::runServerStartSequence(backgroundStarts, [this] {
+        // The blocking client loop starts only after every background step.
+        cout << ">>> ALL INITIALIZATIONS ARE COMPLETED SUCCESSFULLY." << endl;
+        cout << ">>> STARTING ClientManager->start() INFINITE LOOP..." << endl;
+        try {
+            m_pClientManager->start();
+        } catch (Throwable& t) {
+            filelog("GameServerError.txt", "%s", t.toString().c_str());
+            throw;
+        }
+    });
 
     __END_CATCH
 }

@@ -162,6 +162,14 @@ add_test(NAME server_worker_shutdown_tests COMMAND server_worker_shutdown_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(server_worker_shutdown_tests PROPERTIES TIMEOUT 30)
 
+add_executable(server_start_sequence_tests EXCLUDE_FROM_ALL server_start_sequence_test.cpp)
+target_link_libraries(server_start_sequence_tests PRIVATE
+    ServerStartSequence ServerWorkerShutdown ServerLifecycle gtest_main)
+add_dependencies(wire_tests server_start_sequence_tests)
+add_test(NAME server_start_sequence_tests COMMAND server_start_sequence_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(server_start_sequence_tests PROPERTIES TIMEOUT 30)
+
 add_executable(properties_parser_tests EXCLUDE_FROM_ALL properties_parser_test.cpp)
 target_link_libraries(properties_parser_tests PRIVATE de-kernel gtest_main)
 add_dependencies(wire_tests properties_parser_tests)

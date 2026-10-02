@@ -57,6 +57,7 @@ target_link_libraries(SharedServerRuntime PUBLIC
     SharedServerPackets
     ServerCore
     ServerWorkerShutdown
+    ServerStartSequence
     ListenerStartup
     ServerPortSettings
     Core

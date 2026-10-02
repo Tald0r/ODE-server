@@ -816,6 +816,22 @@ visibility can't express.
     shared runtime; existing player/shared-client/Mofus construction sweeps
     (including Mofus buffer sizes), wire and all three production links.
 
+- [x] **2.19 Extract the server worker startup sequence.**
+  > **Status:** done (this commit) — `ServerStartSequence` runs each server's
+  > background startup actions before its blocking client/heartbeat loop,
+  > checking process shutdown before every action. The three runtimes retain
+  > their order, Mofus compile-time selection and diagnostics, including the
+  > game's client-loop error log. Lair initialization and start are separate
+  > steps so shutdown between them skips the start. Exceptions propagate
+  > unchanged; the helper never clears shutdown or failure state. Lifecycle
+  > and worker shutdown helpers still own draining, including unstarted
+  > workers after partial startup. Checks are cooperative boundaries: a step
+  > already underway must observe shutdown itself.
+  - Owner: `server_start_sequence_tests` for every shutdown/exception boundary
+    and real managed-worker success, shutdown, asynchronous failure, start
+    failure and main-loop failure composed with `ServerLifecycle` and
+    `ServerWorkerShutdown`; all three runtime and executable links.
+
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
 `execute()`; all three servers boot and pass a manual smoke test against the

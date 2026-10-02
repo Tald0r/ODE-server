@@ -22,6 +22,7 @@
 #include "PacketValidator.h"
 #include "ServerContext.h"
 #include "ServerShutdown.h"
+#include "ServerStartSequence.h"
 #include "ServerWorkerShutdown.h"
 #include "UserInfoManager.h"
 #include "ZoneGroupInfoManager.h"
@@ -197,20 +198,8 @@ void LoginServer::init() {
 void LoginServer::start() {
     __BEGIN_TRY
 
-    // Start the server-to-server communication manager.
-    m_pGameServerManager->start();
-
-    //
-    // Start the client manager.
-    //
-    // *Reiot's Notes*
-    //
-    // It must run last, because it is not multi-thread based but
-    // a function with an infinite loop. If another function were
-    // called after it, then unless the loop ends (that is, unless an error occurs)
-    // the other managers' processing loops would never run.
-    //
-    m_pClientManager->start();
+    const de::ServerStartAction backgroundStarts[] = {[this] { m_pGameServerManager->start(); }};
+    de::runServerStartSequence(backgroundStarts, [this] { m_pClientManager->start(); });
 
     __END_CATCH
 }
