@@ -30,6 +30,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Listener startup retries only bind failures, observes shutdown during waits and releases each failed attempt's socket | `listener_startup_tests`, over `ListenerStartup` and real TCP/UDP sockets in subprocesses | an unreported or retried non-bind failure, a bind after shutdown, an uninterruptible retry wait, lost failure state or a leaked descriptor |
 | Required listener ports are complete decimal values in 1..65535, validated after login offsets and before publication or manager construction | `server_port_settings_tests`, `server_application_tests` and `server_startup_cli`, over `ServerPortSettings` shared by application startup and all five listeners | a malformed, missing or wrapped port accepted, the wrong server's keys required, a rejected configuration published, or a lifecycle action run after invalid input |
 | Outbound connections return owned sockets only after connect and option setup; player adoption and Mofus stream setup release partial resources on failure | `outbound_server_connection_tests`, `socket_construction_tests` and the game runtime's `GameConnection` tests | incorrect socket options, a leaked descriptor/allocation, partial Mofus publication, failed retry after allocation failure or lost ownership while constructing a player |
+| Accepted sockets retain an owner through wrapper construction; failed reconnects release the replacement and leave safe closed state | `socket_construction_tests`, over real accepts/reconnects and isolated allocation faults | an abandoned accepted descriptor/implementation, a dangling member after reconnect, a failed attempt left open, closing a reused descriptor or a failed subsequent retry |
 | Application configuration is published only after a successful load, stays alive through cleanup and the result, and restores its previous context binding on scope exit | `server_application_tests`, over the shared `ServerApplication` used by all three entry points | actions running after a configuration error, an incorrect effective login override, a lost binding or failure status, an incorrect drain diagnostic, or unflushed final output |
 | Server shutdown requests every auxiliary worker's stop before draining game zones or joining any auxiliary worker; retained worker failures remain visible after all joins | `server_worker_shutdown_tests`, over `ServerWorkerShutdown` used by all three runtimes | a join before all stop requests, a lost or incorrectly named failure, skipped joins after a retained run failure, or a successful lifecycle exit after worker failure |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
@@ -386,6 +387,16 @@ Socket constructors retain temporary implementation ownership through creation.
 socket/input/output together after complete setup. The focused connection tests
 use real loopback peers; isolated allocation probes verify resource cleanup in
 the kernel and the production game runtime without starting a server or database.
+
+`SocketImpl::accept` closes an accepted descriptor if implementation allocation
+fails and retains ownership through peer metadata setup; `ServerSocket::accept`
+retains that implementation until its `Socket` wrapper can adopt it. Empty
+nonblocking accepts still return null. `Socket::reconnect` closes the old
+connection first, then owns a replacement locally through creation/connection.
+On failure the old, closed implementation remains available for inspection,
+safe repeated close, destruction or retry; a successful replacement then takes
+its place. Its retained descriptor number is not closed again if another socket
+has reused it. `socket_construction_tests` covers these handoffs and failures.
 
 `ServerWorkerShutdown` provides `stopServerWorkers` for all three servers'
 auxiliary workers. After stopping the foreground loop, each server supplies

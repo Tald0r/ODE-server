@@ -53,16 +53,16 @@ Socket::~Socket() noexcept {
 void Socket::reconnect(const string& host, uint port) {
     __BEGIN_TRY
 
-    // delete old socket impl object
+    // The old connection closes first as before. Retain its implementation
+    // until the replacement is connected, so failure leaves safe closed state
+    // that can be inspected, closed again, destroyed or retried.
     m_pSocketImpl->close();
+    auto impl = std::make_unique<SocketImpl>(host, port);
+    impl->create();
+    impl->connect();
+
     delete m_pSocketImpl;
-
-    // create new socket impl object
-    m_pSocketImpl = new SocketImpl(host, port);
-    m_pSocketImpl->create();
-
-    // try to connect
-    m_pSocketImpl->connect();
+    m_pSocketImpl = impl.release();
 
     __END_CATCH
 }

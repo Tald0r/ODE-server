@@ -13,6 +13,36 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Socket acceptance and reconnect lost ownership during failures (2026-10-02)
+
+`SocketImpl::accept` received a descriptor before allocating its implementation,
+then populated metadata through a raw pointer. `ServerSocket::accept` likewise
+held the accepted implementation raw while allocating the `Socket` wrapper.
+An allocation failure could abandon a descriptor or implementation.
+
+`Socket::reconnect` closed and deleted the old implementation before allocating
+the replacement. A failed allocation left a dangling member; a refused
+connection instead retained the failed attempt's open descriptor and published
+the replacement's endpoint despite the failed reconnect.
+
+Acceptance now closes the descriptor if implementation allocation fails and
+uses temporary ownership through metadata and wrapper construction. Reconnect
+still closes the old connection first, but keeps that closed implementation
+until the replacement is connected. A failure releases the replacement and
+leaves the old metadata/descriptor number readable, safe for another close,
+destruction or retry. The retained number must not be closed again after a
+different socket reuses it; the implementation's existing close flag preserves
+that rule. Empty nonblocking accepts continue to return null.
+
+Three `socket_construction_tests` regressions failed before the fixes:
+allocation during accept, allocation during reconnect, and actual connection
+refusal. They now check released descriptors and heap allocations, safe reuse
+of the old descriptor, and successful retries. Additional cases verify empty
+accepts and successful reconnects closing the old peer and sending bytes to the
+new peer.
+
+> **Status:** fixed (refactor/socket-adoption-ownership)
+
 ## Outbound setup could leak resources or publish a partial connection (2026-10-02)
 
 The default and endpoint `Socket` constructors allocated a raw `SocketImpl`
@@ -43,18 +73,11 @@ production fatal-handler policy remains unchanged.
 
 > **Status:** fixed (refactor/outbound-server-connection)
 
-Further source inspection found pending adoption/replacement paths:
-
-- `SocketImpl::accept` accepts a descriptor before allocating its implementation,
-  then assigns host metadata without temporary ownership. Allocation failures
-  can abandon the descriptor or implementation. `ServerSocket::accept` likewise
-  holds the accepted implementation as a raw pointer while allocating `Socket`.
-- `Player::setSocket` deletes a stream before allocating its replacement, leaving
-  a dangling stream pointer if allocation throws. The related
-  `Socket::reconnect` replacement issue is recorded below.
-
-These remaining paths need allocation-failure regressions and explicit
-ownership. They have not yet been fixed or validated by fault injection.
+The accepted-socket and `Socket::reconnect` ownership issues found here are
+fixed above. `Player::setSocket` still deletes a stream before allocating its
+replacement, leaving a dangling stream pointer if allocation throws. That
+remaining path needs allocation-failure regressions and explicit ownership;
+it has not yet been fixed or validated by fault injection.
 
 > **Status:** recorded, not fixed (refactor/outbound-server-connection)
 
@@ -111,14 +134,11 @@ bind retries that stop without leaks when shutdown is requested.
 
 > **Status:** fixed (refactor/server-listener-startup)
 
-The related outbound `Socket` constructor leak is fixed by the outbound setup
-extraction above, with descriptor-exhaustion regressions. `Socket::reconnect`
-still deletes its old implementation before allocating the replacement,
-leaving a dangling member if replacement construction throws. This path was
-identified by source inspection and needs failure-injection coverage and
-explicit ownership.
+The related outbound `Socket` constructor leak and `Socket::reconnect`
+replacement issue are fixed by the follow-ups above, with descriptor-exhaustion,
+allocation-failure and connection-refusal regressions.
 
-> **Status:** recorded, not fixed (refactor/server-listener-startup)
+> **Status:** fixed (refactor/socket-adoption-ownership)
 
 ## Core-dump setup failed under a finite inherited hard limit (2026-10-02)
 
