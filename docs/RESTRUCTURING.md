@@ -1193,17 +1193,35 @@ visibility can't express.
     stage-specific repository errors, empty/repeated reloads, reporting failure
     and four 128-position allocation sweeps over empty/populated tables with retry.
 
-- [ ] **2.41 Extract explicit login world-selection topology.**
-  > **Status:** not started — `GlobalWorldTopology` reads process contexts and
-  > selection decisions treat the catalogue count as its highest world ID.
-  > Supply the production topology's dependencies explicitly and use actual
-  > world/group membership and bounds, so sparse listed entries are selectable
-  > and missing IDs are refused or normalized according to the selection
-  > operation's policy. Group listing also assumes contiguous IDs, while server
-  > selection treats the group count itself as an inclusive upper bound.
-  > Depends on the scoped catalogue lifetimes and explicit loads in 2.40.
-  - Planned owner: selection and login runtime tests over actual catalogue
-    membership, explicit topology inputs, closed/missing worlds and boundaries.
+- [x] **2.41 Extract explicit login world-selection topology.**
+  > **Status:** done (this commit) — `LoginWorldTopology` borrows explicit const
+  > world/group/population managers; the three handlers compose it at their
+  > boundary. Decisions enumerate actual keys. World selection refuses absent
+  > and closed worlds; server selection preserves configured IDs and normalizes
+  > missing IDs, including gaps, to the highest configured key. Empty world/group
+  > tables have explicit disconnect outcomes. Lists enumerate groups in ascending
+  > ID order and read current populations. Reloads require quiescent readers;
+  > existing views see the next completed load. The population ladder and the
+  > server decision's group-down-only policy stay intact. As before, the handler
+  > does not write a normalized world to the session; that separate flow issue
+  > is recorded in `docs/FIXES.md`.
+  - Owner: 20 production-topology cases in `login_server_runtime_tests` and
+    30 `world_selection_tests` cases. Eleven runtime regressions failed before
+    the fix. Coverage includes sparse IDs, absent count-derived IDs, empty
+    catalogues, IDs 0..255, live counts, reloads, closed/down precedence and
+    missing population rows. The recording fake now throws for missing keys
+    instead of fabricating free groups that hid the old off-by-one.
+
+- [ ] **2.42 Extract owned login server-list replies.**
+  > **Status:** not started — `CLSelectWorldHandler` and `CLGetServerListHandler`
+  > duplicate packet assembly and read account state through default repositories.
+  > Extract explicit topology/account/player inputs with owned preparation,
+  > checked saved group IDs and tests for both account-query policies. Keep
+  > the 37-group budget, name truncation, default group and handler status/error
+  > policies. Fix the packet adder's allocation-failure ownership and clear leaks;
+  > decoder ownership/count handling remains a separately recorded boundary.
+  - Planned owner: login runtime tests over production assembly, packet ownership,
+    repository/send failures, allocation cleanup/retry and exact count limits.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "Assert1.h"
-#include "GlobalWorldTopology.h"
 #include "LCServerList.h"
+#include "LoginContext.h"
 #include "LoginPlayer.h"
+#include "LoginWorldTopology.h"
+#include "ServerContext.h"
 #include "ServerGroupInfo.h"
 #include "WorldSelection.h"
 #include "repository/LoginAccountRepository.h"
@@ -36,7 +38,8 @@ void CLGetServerListHandler::execute(CLGetServerList* pPacket, Player* pPlayer)
 
     WorldID_t WorldID = pLoginPlayer->getWorldID();
 
-    GlobalWorldTopology topology;
+    LoginWorldTopology topology(de::serverContext().worldInfos(), de::loginContext().gameServerGroups(),
+                                de::loginContext().userInfos());
 
     // This list is built off the plain thresholds whatever the build.
     const ServerLoadThresholds thresholds;

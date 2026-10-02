@@ -367,10 +367,50 @@ them to the count. A catalogue with worlds 1 and 7 therefore cannot select its
 listed world 7 and can normalize a server selection to absent world 2. IDs in
 holes below the count can reach throwing lookups. Group listing assumes
 `0..count-1`, but server selection accepts or clamps to group ID `count`, which
-is absent even for that contiguous range. These are source findings; task 2.41
-tracks explicit topology inputs and actual world/group membership and bounds.
+is absent even for that contiguous range. Eleven runtime regressions reproduced
+these failures with real managers loaded from supplied repositories. The old
+decision fake fabricated an empty free group for absent IDs, hiding that defect.
 
-> **Status:** recorded, not fixed (refactor/login-world-list-replies)
+`LoginWorldTopology` now borrows explicit managers and enumerates actual keys.
+World selection refuses missing/closed worlds; server selection normalizes
+missing IDs (including gaps) to the highest configured keys, refusing empty
+tables and down groups. Group lists sort actual IDs and read live populations.
+Twenty runtime cases and thirty decision cases cover sparse/boundary IDs,
+reloads, empty tables, missing population rows and preserved decision policies.
+Handler composition still occurs at the context boundary; decisions and the
+production adapter run without process startup, sockets or database connections.
+
+> **Status:** fixed (refactor/login-world-topology)
+
+## Login server-list replies leave partial rows unowned and narrow saved groups unchecked (2026-10-02)
+
+`CLSelectWorldHandler` and `CLGetServerListHandler` duplicate raw `ServerGroupInfo`
+construction before throwing setters and packet insertion. `LCServerList` does
+not consume its incoming row after failed list allocation, and `clearList`
+discards owning pointers. Both handlers narrow repository `int` group values
+to the packet's byte without validation. The world-selection handler reads
+the current group; the explicit list request reads the current location using
+the lower-case SQL policy. Task 2.42 tracks explicit reply inputs, retained
+query/default policies, saved-ID bounds and owned construction with failure tests.
+
+The packet reader separately allocates raw rows before parsing/insertion and
+does not enforce its 37-group factory budget. Outgoing assembly and decoder
+failure/reuse/count behavior need separate tests, as for `LCWorldList`.
+
+> **Status:** recorded, not fixed (refactor/login-world-topology)
+
+## Normalized server-selection worlds do not reach character lookup (2026-10-02)
+
+`decideSelectServer` reports the normalized world used to look up a group, but
+`CLSelectServerHandler` writes only the selected group to the session.
+`LoginPlayer::makePCList` reads the session's existing world for its character
+repository queries. A stale/missing session world can therefore normalize to
+an existing world's group while the next lookup still uses the stale world.
+This pre-existing handler behavior is retained by the topology extraction;
+the session/character-query boundary needs its own tests and consistent
+world refusal or update policy.
+
+> **Status:** recorded, not fixed (refactor/login-world-topology)
 
 ## Login group and population catalogues lack safe scoped ownership (2026-10-02)
 

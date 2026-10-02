@@ -138,7 +138,7 @@ TEST(ServerList, AWorldWithNoGroupsAnswersAnEmptyListAndAsksNothingElse) {
     EXPECT_TRUE(entries.empty());
 
     Calls expected;
-    expected.push_back("serverGroupCount(3)");
+    expected.push_back("serverGroupIDs(3)");
     EXPECT_EQ(expected, topology.calls);
 }
 
@@ -165,21 +165,20 @@ TEST(ServerList, EveryGroupKeepsItsIdAndNameAndGetsTheStatusItsPopulationGives) 
     EXPECT_EQ(SERVER_DOWN, entries[2].stat);
 }
 
-TEST(ServerList, TheGroupsAreReadByIndexAndTheirPopulationByTheIdTheTableGave) {
-    // The group table is walked 0..count-1; the population is asked for
-    // under the id the row itself carries.
+TEST(ServerList, GroupsAndPopulationsAreReadByActualIDInAscendingOrder) {
+    // Repository order does not determine reply order or lookup keys.
     FakeWorldTopology topology;
-    topology.addGroup(10, "one", SERVER_FREE, 0);
     topology.addGroup(11, "two", SERVER_FREE, 0);
+    topology.addGroup(10, "one", SERVER_FREE, 0);
 
     const std::vector<ServerListEntry> entries = serverListFor(7, kDefault, topology);
     EXPECT_EQ(2u, entries.size());
 
     Calls expected;
-    expected.push_back("serverGroupCount(7)");
-    expected.push_back("serverGroup(0,7)");
+    expected.push_back("serverGroupIDs(7)");
+    expected.push_back("serverGroup(10,7)");
     expected.push_back("serverGroupUserNum(10,7)");
-    expected.push_back("serverGroup(1,7)");
+    expected.push_back("serverGroup(11,7)");
     expected.push_back("serverGroupUserNum(11,7)");
     EXPECT_EQ(expected, topology.calls);
 }
@@ -201,9 +200,9 @@ TEST(ServerList, TheChinaLadderIsCarriedIntoTheList) {
 // Selecting a world.
 //////////////////////////////////////////////////////////////////////////////
 
-TEST(SelectWorld, AWorldPastTheConfiguredCountIsRefusedBeforeItsStatusIsRead) {
+TEST(SelectWorld, AnUnconfiguredWorldIsRefusedBeforeItsStatusIsRead) {
     FakeWorldTopology topology;
-    topology.worlds = 2;
+    topology.worlds = {{1, WORLD_OPEN}, {2, WORLD_OPEN}};
 
     Outcome<void, SelectWorldRejection> outcome = decideSelectWorld(3, topology);
 
@@ -213,30 +212,28 @@ TEST(SelectWorld, AWorldPastTheConfiguredCountIsRefusedBeforeItsStatusIsRead) {
     EXPECT_EQ(2, outcome.rejection().worldCount);
 
     Calls expected;
-    expected.push_back("worldCount");
+    expected.push_back("worldIDs");
     EXPECT_EQ(expected, topology.calls);
 }
 
-TEST(SelectWorld, AWorldIdEqualToTheCountIsStillAccepted) {
-    // The count is used as the last id, not as one past it.
+TEST(SelectWorld, AConfiguredWorldIdEqualToTheCountIsAccepted) {
     FakeWorldTopology topology;
-    topology.worlds = 2;
+    topology.worlds = {{1, WORLD_OPEN}, {2, WORLD_OPEN}};
 
     Outcome<void, SelectWorldRejection> outcome = decideSelectWorld(2, topology);
 
     EXPECT_TRUE(outcome.isOk());
 
     Calls expected;
-    expected.push_back("worldCount");
+    expected.push_back("worldIDs");
     expected.push_back("worldStatus(2)");
     EXPECT_EQ(expected, topology.calls);
 }
 
 TEST(SelectWorld, AClosedWorldIsRefused) {
     FakeWorldTopology topology;
-    topology.worlds = 3;
-    topology.worldStatuses.push_back(WORLD_OPEN);
-    topology.worldStatuses.push_back(WORLD_CLOSE);
+    topology.worlds = {{1, WORLD_OPEN}, {2, WORLD_OPEN}, {3, WORLD_OPEN}};
+    topology.worlds[1] = WORLD_CLOSE;
 
     Outcome<void, SelectWorldRejection> outcome = decideSelectWorld(1, topology);
 
@@ -247,20 +244,16 @@ TEST(SelectWorld, AClosedWorldIsRefused) {
 
 TEST(SelectWorld, AnOpenWorldIsAccepted) {
     FakeWorldTopology topology;
-    topology.worlds = 3;
-    topology.worldStatuses.push_back(WORLD_OPEN);
-    topology.worldStatuses.push_back(WORLD_OPEN);
+    topology.worlds = {{1, WORLD_OPEN}, {2, WORLD_OPEN}, {3, WORLD_OPEN}};
 
     EXPECT_TRUE(decideSelectWorld(1, topology).isOk());
 }
 
 TEST(SelectWorld, AnUnknownWorldIsAnsweredBeforeAClosedOne) {
-    // A world past the count is never asked for its status, so the
-    // out-of-range refusal is the one that goes out.
+    // An absent world is never asked for its status.
     FakeWorldTopology topology;
-    topology.worlds = 1;
-    topology.worldStatuses.push_back(WORLD_CLOSE);
-    topology.worldStatuses.push_back(WORLD_CLOSE);
+    topology.worlds = {{1, WORLD_OPEN}};
+    topology.worlds[1] = WORLD_CLOSE;
 
     Outcome<void, SelectWorldRejection> outcome = decideSelectWorld(9, topology);
 
@@ -272,13 +265,13 @@ TEST(SelectWorld, TheDecisionReadsNoGroupTable) {
     // The list is built separately, so an accepted world touches neither the
     // group table nor the populations.
     FakeWorldTopology topology;
-    topology.worlds = 1;
+    topology.worlds = {{1, WORLD_OPEN}};
     topology.addGroup(0, "one", SERVER_FREE, 0);
 
     EXPECT_TRUE(decideSelectWorld(1, topology).isOk());
 
     Calls expected;
-    expected.push_back("worldCount");
+    expected.push_back("worldIDs");
     expected.push_back("worldStatus(1)");
     EXPECT_EQ(expected, topology.calls);
 }
@@ -296,7 +289,7 @@ SelectServerRequest requestOf(WorldID_t worldID, ServerGroupID_t serverGroupID) 
 
 TEST(SelectServer, AGroupThatIsUpIsAccepted) {
     FakeWorldTopology topology;
-    topology.worlds = 2;
+    topology.worlds = {{1, WORLD_OPEN}, {2, WORLD_OPEN}};
     topology.addGroup(0, "one", SERVER_FREE, 0);
     topology.addGroup(1, "two", SERVER_FREE, 0);
 
@@ -307,15 +300,15 @@ TEST(SelectServer, AGroupThatIsUpIsAccepted) {
     EXPECT_EQ(1, outcome.events().serverGroupID);
 
     Calls expected;
-    expected.push_back("worldCount");
-    expected.push_back("serverGroupCount(1)");
+    expected.push_back("worldIDs");
+    expected.push_back("serverGroupIDs(1)");
     expected.push_back("serverGroup(1,1)");
     EXPECT_EQ(expected, topology.calls);
 }
 
 TEST(SelectServer, ADownGroupIsRefusedAndTheRefusalNamesIt) {
     FakeWorldTopology topology;
-    topology.worlds = 1;
+    topology.worlds = {{1, WORLD_OPEN}};
     topology.addGroup(0, "one", SERVER_FREE, 0);
     topology.addGroup(1, "two", SERVER_DOWN, 0);
 
@@ -326,9 +319,9 @@ TEST(SelectServer, ADownGroupIsRefusedAndTheRefusalNamesIt) {
     EXPECT_EQ(1, outcome.rejection().serverGroupID);
 }
 
-TEST(SelectServer, AWorldPastTheCountIsServedTheLastWorldInsteadOfBeingRefused) {
+TEST(SelectServer, AMissingWorldIsServedTheHighestConfiguredWorld) {
     FakeWorldTopology topology;
-    topology.worlds = 2;
+    topology.worlds = {{1, WORLD_OPEN}, {2, WORLD_OPEN}};
     topology.addGroup(0, "one", SERVER_FREE, 0);
 
     Outcome<SelectedServer, SelectServerRejection> outcome = decideSelectServer(requestOf(9, 0), topology);
@@ -338,30 +331,28 @@ TEST(SelectServer, AWorldPastTheCountIsServedTheLastWorldInsteadOfBeingRefused) 
 
     // The clamped world is the one the group table is read for.
     Calls expected;
-    expected.push_back("worldCount");
-    expected.push_back("serverGroupCount(2)");
+    expected.push_back("worldIDs");
+    expected.push_back("serverGroupIDs(2)");
     expected.push_back("serverGroup(0,2)");
     EXPECT_EQ(expected, topology.calls);
 }
 
-TEST(SelectServer, AGroupPastTheCountIsServedTheLastGroupInsteadOfBeingRefused) {
+TEST(SelectServer, AMissingGroupIsServedTheHighestConfiguredGroup) {
     FakeWorldTopology topology;
-    topology.worlds = 1;
+    topology.worlds = {{1, WORLD_OPEN}};
     topology.addGroup(0, "one", SERVER_FREE, 0);
     topology.addGroup(1, "two", SERVER_FREE, 0);
 
     Outcome<SelectedServer, SelectServerRejection> outcome = decideSelectServer(requestOf(1, 7), topology);
 
     ASSERT_TRUE(outcome.isOk());
-    // The count itself, not one below it: the clamp keeps the legacy
-    // off-by-one that lets a client reach one past the last row.
-    EXPECT_EQ(2, outcome.events().serverGroupID);
-    EXPECT_EQ("serverGroup(2,1)", topology.calls.back());
+    EXPECT_EQ(1, outcome.events().serverGroupID);
+    EXPECT_EQ("serverGroup(1,1)", topology.calls.back());
 }
 
-TEST(SelectServer, AGroupIdInsideTheCountIsNotClamped) {
+TEST(SelectServer, AConfiguredGroupIsNotChanged) {
     FakeWorldTopology topology;
-    topology.worlds = 4;
+    topology.worlds = {{1, WORLD_OPEN}, {2, WORLD_OPEN}, {3, WORLD_OPEN}, {4, WORLD_OPEN}};
     topology.addGroup(0, "one", SERVER_FREE, 0);
     topology.addGroup(1, "two", SERVER_FREE, 0);
     topology.addGroup(2, "three", SERVER_FREE, 0);
@@ -375,16 +366,35 @@ TEST(SelectServer, AGroupIdInsideTheCountIsNotClamped) {
 
 TEST(SelectServer, TheDecisionReadsNoPopulation) {
     FakeWorldTopology topology;
-    topology.worlds = 1;
+    topology.worlds = {{1, WORLD_OPEN}};
     topology.addGroup(0, "one", SERVER_FREE, 1300);
 
     EXPECT_TRUE(decideSelectServer(requestOf(1, 0), topology).isOk());
 
     Calls expected;
-    expected.push_back("worldCount");
-    expected.push_back("serverGroupCount(1)");
+    expected.push_back("worldIDs");
+    expected.push_back("serverGroupIDs(1)");
     expected.push_back("serverGroup(0,1)");
     EXPECT_EQ(expected, topology.calls);
+}
+
+TEST(SelectServer, AnEmptyWorldTableIsRefusedWithoutReadingGroups) {
+    FakeWorldTopology topology;
+    topology.worlds.clear();
+    const auto outcome = decideSelectServer({0, 8}, topology);
+    ASSERT_TRUE(outcome.isRejected());
+    EXPECT_EQ(outcome.rejection().reason, SelectServerReason::NoWorlds);
+    EXPECT_EQ(outcome.rejection().serverGroupID, 8);
+    EXPECT_EQ(topology.calls, (Calls{"worldIDs"}));
+}
+
+TEST(SelectServer, AnEmptyGroupTableIsRefusedWithoutLookingUpARow) {
+    FakeWorldTopology topology;
+    const auto outcome = decideSelectServer({1, 8}, topology);
+    ASSERT_TRUE(outcome.isRejected());
+    EXPECT_EQ(outcome.rejection().reason, SelectServerReason::NoServerGroups);
+    EXPECT_EQ(outcome.rejection().serverGroupID, 8);
+    EXPECT_EQ(topology.calls, (Calls{"worldIDs", "serverGroupIDs(1)"}));
 }
 
 } // namespace

@@ -23,6 +23,8 @@ public:
     void load(LoginConfigRepository& repository);
 
     const GameServerGroupInfo* getGameServerGroupInfo(ServerGroupID_t groupID, WorldID_t worldID) const;
+    // The configured keys, in unspecified order; empty for an absent world.
+    std::vector<ServerGroupID_t> getGameServerGroupIDs(WorldID_t worldID) const;
     uint getSize(WorldID_t worldID) const noexcept;
     string toString() const;
 

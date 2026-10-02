@@ -5,6 +5,9 @@
 // order, so a test can pin the lookups a decision makes - and the ones it
 // does not.
 
+#include <algorithm>
+#include <map>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -19,12 +22,9 @@ public:
         UserNum_t userNum = 0;
     };
 
-    // How many worlds the world table holds.
-    int worlds = 1;
-    // The status of each world, indexed by world id. A world with no entry
-    // here is open.
-    std::vector<WorldStatus> worldStatuses;
-    // The groups of the world under test, indexed by group id.
+    // Real membership, including each world's status.
+    std::map<WorldID_t, WorldStatus> worlds = {{1, WORLD_OPEN}};
+    // The groups of the world under test, keyed by their row's group ID.
     std::vector<Group> groups;
 
     // Every query, in the order it was made.
@@ -39,23 +39,26 @@ public:
         groups.push_back(group);
     }
 
-    int worldCount() override {
-        calls.push_back("worldCount");
-        return worlds;
+    std::vector<WorldID_t> worldIDs() override {
+        calls.push_back("worldIDs");
+        std::vector<WorldID_t> ids;
+        for (const auto& [id, status] : worlds)
+            ids.push_back(id);
+        return ids;
     }
 
     WorldStatus worldStatus(WorldID_t worldID) override {
         calls.push_back("worldStatus(" + std::to_string((int)worldID) + ")");
 
-        if (worldID < worldStatuses.size())
-            return worldStatuses[worldID];
-
-        return WORLD_OPEN;
+        return worlds.at(worldID);
     }
 
-    int serverGroupCount(WorldID_t worldID) override {
-        calls.push_back("serverGroupCount(" + std::to_string((int)worldID) + ")");
-        return static_cast<int>(groups.size());
+    std::vector<ServerGroupID_t> serverGroupIDs(WorldID_t worldID) override {
+        calls.push_back("serverGroupIDs(" + std::to_string((int)worldID) + ")");
+        std::vector<ServerGroupID_t> ids;
+        for (const auto& group : groups)
+            ids.push_back(group.row.groupID);
+        return ids;
     }
 
     ServerGroupRow serverGroup(ServerGroupID_t groupID, WorldID_t worldID) override {
@@ -70,13 +73,12 @@ public:
     }
 
 private:
-    // A group id the tables do not hold answers an empty free group rather
-    // than throwing; the tests that care seed every id they ask for.
-    Group at(ServerGroupID_t groupID) const {
-        if (groupID < groups.size())
-            return groups[groupID];
-
-        return Group();
+    const Group& at(ServerGroupID_t groupID) const {
+        const auto found = std::find_if(groups.begin(), groups.end(),
+                                        [groupID](const Group& group) { return group.row.groupID == groupID; });
+        if (found == groups.end())
+            throw std::out_of_range("Missing fake group");
+        return *found;
     }
 };
 
