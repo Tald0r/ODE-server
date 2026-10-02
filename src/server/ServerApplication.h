@@ -27,7 +27,8 @@ public:
     ServerApplication(const ServerApplication&) = delete;
     ServerApplication& operator=(const ServerApplication&) = delete;
 
-    // Validate/load before publishing the configuration or invoking any action.
+    // Load, apply offsets and validate required listener ports before publishing
+    // the configuration or invoking any action.
     // An empty result means configuration failed; no lifecycle action has run.
     // Otherwise return the lifecycle result after reporting and flushing its
     // diagnostics. Does not install process handlers, exit or destroy servers.

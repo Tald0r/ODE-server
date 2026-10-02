@@ -32,6 +32,7 @@
 #include "PlayerCreature.h"
 #include "PlayerMailbox.h"
 #include "Properties.h"
+#include "ServerPortSettings.h"
 #include "Socket.h"
 #include "SocketAPI.h"
 #include "ZoneGroup.h"
@@ -61,15 +62,15 @@ IncomingPlayerManager::IncomingPlayerManager()
     m_PlayerListQueue.clear();
 
     try {
+        const auto port = de::readServerPort(de::kernelContext().config(), "TCPPort");
         de::retryListenerStartup(
             [&] {
-                auto socket = std::make_unique<ServerSocket>(de::kernelContext().config().getPropertyInt("TCPPort"));
+                auto socket = std::make_unique<ServerSocket>(port);
                 socket->setNonBlocking(true);
                 m_pServerSocket = socket.release();
             },
             [&](const BindException& error) {
-                cout << "IncomingPlayerManager(" << de::kernelContext().config().getPropertyInt("TCPPort")
-                     << ") : " << error.toString() << endl;
+                cout << "IncomingPlayerManager(" << port << ") : " << error.toString() << endl;
             },
             "TCP");
 

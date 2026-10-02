@@ -1,9 +1,11 @@
 #include "ServerApplication.h"
 
 #include <ostream>
+#include <utility>
 
 #include "Exception.h"
 #include "KernelContext.h"
+#include "ServerPortSettings.h"
 #include "ServerStartup.h"
 
 namespace de {
@@ -26,7 +28,9 @@ std::optional<ServerLifecycleResult> ServerApplication::run(ServerKind server, i
         const auto options = parseServerOptions(server, argc, argv);
         if (server == ServerKind::Game)
             output << ">>> COMMAND-LINE PARAMETER READING SUCCESS..." << std::endl;
-        m_Config = loadServerConfiguration(options);
+        auto config = loadServerConfiguration(options);
+        validateServerListenerPorts(server, *config);
+        m_Config = std::move(config);
         m_PreviousConfig = m_Context.exchangeConfig(m_Config.get());
         if (server != ServerKind::Game)
             output << m_Config->toString() << std::endl;

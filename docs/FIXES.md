@@ -13,6 +13,34 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Listener configuration accepted malformed or wrapped ports (2026-10-02)
+
+The five TCP/UDP listeners read ports through `Properties::getPropertyInt`,
+which uses `atoi`. Non-numbers became zero, trailing text was silently ignored,
+and negative or oversized values could wrap to a different 16-bit port during
+`htons`. Zero asks the OS for an ephemeral port, leaving a server listening at
+an address its peers and clients were not configured to use. Login's `-i`
+override checked integer overflow but could still produce an effective port
+outside the network range. Missing ports were discovered only after startup
+had published configuration and begun constructing managers.
+
+`ServerPortSettings` now requires complete decimal values in 1..65535 for
+these listeners. It preserves leading plus signs and zeroes, surrounding
+spaces/tabs and trailing CR from CRLF files. `ServerApplication` validates
+only the current server's required listeners after applying login offsets,
+before publishing configuration or running lifecycle actions. Every listener
+also uses this reader before binding. Rejection names the property and leaves
+the previous configuration binding intact, including after application scope
+exit. Generic integer properties and low-level ephemeral sockets are unchanged.
+
+`server_port_settings_tests` checks the grammar, boundaries and server-specific
+requirements in memory. Application regressions for all five required ports
+and effective login offsets failed against the prior publication path;
+they now pass without starting managers. `server_startup_cli` also checks
+missing, malformed and out-of-range ports through the real executables.
+
+> **Status:** fixed (refactor/server-port-settings)
+
 ## Listener bind retries leaked descriptors and could ignore shutdown (2026-10-02)
 
 `ServerSocket` allocated its `SocketImpl` before socket creation, binding and

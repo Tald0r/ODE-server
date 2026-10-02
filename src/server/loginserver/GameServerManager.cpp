@@ -22,6 +22,7 @@
 #include "PacketDispatcher.h"
 #include "Properties.h"
 #include "ServerContext.h"
+#include "ServerPortSettings.h"
 #include "ServerShutdown.h"
 #include "SocketAPI.h"
 
@@ -31,10 +32,10 @@
 GameServerManager::GameServerManager() : m_pDatagramSocket(NULL) {
     __BEGIN_TRY
 
+    const auto port = de::readServerPort(de::kernelContext().config(), "LoginServerUDPPort");
     de::retryListenerStartup(
         [&] {
-            auto socket =
-                std::make_unique<DatagramSocket>(de::kernelContext().config().getPropertyInt("LoginServerUDPPort"));
+            auto socket = std::make_unique<DatagramSocket>(port);
             // Idle UDP traffic must not keep the worker inside recvfrom during shutdown.
             SocketAPI::setsocketnonblocking_ex(socket->getSOCKET(), true);
             m_pDatagramSocket = socket.release();
