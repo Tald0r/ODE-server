@@ -1,71 +1,38 @@
 //----------------------------------------------------------------------
-//
 // Filename    : GameWorldInfoManager.h
 // Written By  : reiot@ewestsoft.com
-// Description :
-//
+// Description : The world catalogue shared by all three servers.
 //----------------------------------------------------------------------
 
 #ifndef __GAME_WORLD_INFO_MANAGER_H__
 #define __GAME_WORLD_INFO_MANAGER_H__
 
-// include files
 #include <unordered_map>
 
-#include "Exception.h"
 #include "GameWorldInfo.h"
-#include "Types.h"
 
-typedef unordered_map<WorldID_t, GameWorldInfo*> HashMapGameWorldInfo;
+class ServerInfoRepository;
 
-//----------------------------------------------------------------------
-//
-// class GameWorldInfoManager;
-//
-// It holds an unordered_map of GameWorldInfo keyed by the game server's ID
-// internally.
-//
-//----------------------------------------------------------------------
-
+// Load with quiescent readers. Failed loads retain the previous catalogue;
+// successful replacement/destruction invalidates borrowed const row pointers.
 class GameWorldInfoManager {
 public:
-    // constructor
-    GameWorldInfoManager();
+    GameWorldInfoManager() = default;
+    GameWorldInfoManager(const GameWorldInfoManager&) = delete;
+    GameWorldInfoManager& operator=(const GameWorldInfoManager&) = delete;
 
-    // destructor
-    ~GameWorldInfoManager();
-
-    // initialize manager
     void init();
-
-    // load from database
     void load();
+    void load(ServerInfoRepository& repository);
 
-    // clear GameWorldInfo objects
-    void clear();
-
-    // add info
-    void addGameWorldInfo(GameWorldInfo* pGameWorldInfo);
-
-    // delete info
-    void deleteGameWorldInfo(const WorldID_t WorldID);
-
-    // get GameWorldInfo by WorldID
-    GameWorldInfo* getGameWorldInfo(const WorldID_t WorldID) const;
-
-    // get count of info
+    const GameWorldInfo* getGameWorldInfo(WorldID_t worldID) const;
     uint getSize() const {
         return m_GameWorldInfos.size();
     }
-
-    // get debug string
     string toString() const;
 
 private:
-    // hash map of GameWorldInfo
-    // key   : WorldID_t
-    // value : GameWorldInfo *
-    HashMapGameWorldInfo m_GameWorldInfos;
+    std::unordered_map<WorldID_t, GameWorldInfo> m_GameWorldInfos;
 };
 
 #endif

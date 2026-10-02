@@ -233,22 +233,44 @@ refusal, cleanup and preserved lookup/error behavior.
 `ServerCore`'s `GameWorldInfoManager::load` clears its live map before fetching
 worlds. A repository failure therefore loses the previous catalogue. Each
 row is allocated raw before setters, diagnostics and insertion can throw;
-duplicate-row errors are swallowed after publishing a prefix. This is a
-source finding. Task 2.35 tracks an explicit repository boundary, owned
-replacement and tests for cleanup, preservation and retry.
+duplicate-row errors are swallowed after publishing a prefix. Three tests
+reproduced lost data, swallowed duplicate refusal and leaked rows (first
+failing at allocation position five on the native build).
 
-> **Status:** recorded, not fixed (refactor/shared-startup-data-loading)
+An explicit repository loader now prepares value-owned rows locally, validates
+IDs/status before narrowing and publishes only after load diagnostics complete.
+Failures retain the previous catalogue; successful reloads release old rows.
+Unused mutation APIs are removed and callers receive const row pointers.
+Fifteen standalone tests link the production `ServerCore` loader without main
+or a database connection. Coverage includes the regressions, two 64-position
+allocation sweeps, cleanup/retry, bounds, exact names, empty/replaced tables,
+repository exceptions and throwing diagnostics at each load stage.
+
+> **Status:** fixed (refactor/world-catalogue-loading)
 
 ## Shared guild loading leaves refused or unattached rows unowned (2026-10-02)
 
 Shared `GuildManager::load` constructs raw guild/member objects before setters
 and insertion finish. An active-member row whose guild was not loaded is
 never attached or deleted, and failures after partial guild/member insertion
-leave the live catalogue partly updated. This is a source finding; the guild
-startup boundary still needs owned preparation and repository-driven failure
-tests, including unattached members and retry.
+leave the live catalogue partly updated. Several string setters/getters on
+`Guild` and `GuildMember` are also declared `noexcept` despite allocating, so
+allocation failure terminates instead of unwinding. These are source findings;
+task 2.36 tracks owned preparation and repository-driven failure tests,
+including unattached members and retry.
 
 > **Status:** recorded, not fixed (refactor/shared-startup-data-loading)
+
+## Login world-list assembly leaves partial reply rows unowned (2026-10-02)
+
+`CLGetWorldListHandler` allocates raw `WorldInfo` rows into a vector before
+fetching the current world and transferring the rows to the reply packet.
+A throwing lookup, setter, allocation or repository call can strand those
+rows. Its `1..getSize()` lookup loop also assumes contiguous world IDs.
+These are source findings from the world-loader reader audit; packet assembly
+still needs an owned, testable boundary with failure and sparse-world coverage.
+
+> **Status:** recorded, not fixed (refactor/world-catalogue-loading)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 

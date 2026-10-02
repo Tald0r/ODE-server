@@ -126,6 +126,15 @@ target_sources(shared_server_runtime_tests PRIVATE
     player_socket_replacement_test.cpp shared_connection_test.cpp shared_server_construction_test.cpp
     shared_catalogue_test.cpp shared_startup_data_test.cpp support/AllocationProbe.cpp)
 
+# Common production world loading, without any server runtime or process startup.
+add_executable(world_catalogue_tests EXCLUDE_FROM_ALL
+    world_catalogue_test.cpp support/AllocationProbe.cpp support/server_runtime_main.cpp)
+target_link_libraries(world_catalogue_tests PRIVATE ServerCore Database ${MYSQL_LIBRARY} gtest)
+add_dependencies(wire_tests world_catalogue_tests)
+add_test(NAME world_catalogue_tests COMMAND world_catalogue_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(world_catalogue_tests PROPERTIES TIMEOUT 30)
+
 add_executable(server_startup_tests EXCLUDE_FROM_ALL server_startup_test.cpp)
 target_link_libraries(server_startup_tests PRIVATE ServerStartup gtest_main)
 add_dependencies(wire_tests server_startup_tests)
