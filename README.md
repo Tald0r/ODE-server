@@ -133,6 +133,9 @@ allocation failures, reload cleanup and ID bounds without MySQL or `main`.
 Resurrection and shared-string loaders use the same boundary: tests exercise
 paired race locations, exact text, complete reloads and preservation after
 repository, validation, duplicate, allocation or diagnostic failure.
+Shared guild loading is covered through an explicit repository too, including
+complete guild/roster replacement, allocation rollback and retry, orphan-member
+cleanup, field validation and the production guild-info reply built from loaded rows.
 `world_catalogue_tests` links the common production world loader directly from
 `ServerCore`, without a server runtime or database connection. It checks owned
 replacement, rollback and retry after load failures, ID/status validation,

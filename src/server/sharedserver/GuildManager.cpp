@@ -5,6 +5,9 @@
 
 #include "GuildManager.h"
 
+#include <memory>
+#include <utility>
+
 #include "Guild.h"
 #include "Properties.h"
 #include "StringStream.h"
@@ -101,65 +104,74 @@ void GuildManager::init() noexcept(false) {
 
 
 void GuildManager::load() noexcept(false) {
-    __BEGIN_TRY
-
-    SharedGuildRepository& repo = defaultSharedGuildRepository();
-
-    __ENTER_CRITICAL_SECTION(m_Mutex)
-
-    // Only the waiting and the active guilds are kept in memory.
-    vector<SharedGuildListRow> guilds = repo.loadGuildsInStates(Guild::GUILD_STATE_WAIT, Guild::GUILD_STATE_ACTIVE);
-
-    for (size_t i = 0; i < guilds.size(); i++) {
-        const SharedGuildListRow& row = guilds[i];
-        GuildState_t state = row.state;
-
-        if (state == Guild::GUILD_STATE_WAIT || state == Guild::GUILD_STATE_ACTIVE) {
-            Guild* pGuild = new Guild();
-
-            pGuild->setID(row.id);
-            pGuild->setName(row.name);
-            pGuild->setType(row.type);
-            pGuild->setRace(row.race);
-            pGuild->setState(state);
-            pGuild->setServerGroupID(row.serverGroupID);
-            pGuild->setZoneID(row.zoneID);
-            pGuild->setMaster(row.master);
-            pGuild->setDate(row.date);
-            pGuild->setIntro(row.intro);
-
-            addGuild_NOBLOCKED(pGuild);
-        }
-    }
-
-    // The roster: every member row whose guild is in memory joins it; a
-    // member of a guild that was not loaded is never attached or freed.
-    vector<SharedGuildMemberListRow> members = repo.loadActiveMembers();
-
-    for (size_t i = 0; i < members.size(); i++) {
-        const SharedGuildMemberListRow& row = members[i];
-        GuildMember* pMember = new GuildMember();
-
-        pMember->setGuildID(row.guildID);
-        pMember->setName(row.name);
-        pMember->setRank(row.rank);
-
-        if (pMember->getRank() == GuildMember::GUILDMEMBER_RANK_WAIT)
-            pMember->setRequestDateTime(row.requestDateTime);
-
-        pMember->setLogOn(row.logOn);
-
-        Guild* pGuild = getGuild_NOBLOCKED(pMember->getGuildID());
-
-        if (pGuild != NULL)
-            pGuild->addMember(pMember);
-    }
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
+    load(defaultSharedGuildRepository());
 }
 
+void GuildManager::load(SharedGuildRepository& repo) {
+    CriticalSection lock{m_Mutex};
+    std::unordered_map<GuildID_t, std::unique_ptr<Guild>> replacement;
+
+    for (const auto& row : repo.loadGuildsInStates(Guild::GUILD_STATE_WAIT, Guild::GUILD_STATE_ACTIVE)) {
+        if (row.state < Guild::GUILD_STATE_ACTIVE || row.state >= Guild::GUILD_STATE_MAX)
+            throw Error("invalid shared guild state");
+        if (row.state != Guild::GUILD_STATE_WAIT && row.state != Guild::GUILD_STATE_ACTIVE)
+            continue;
+        if (!std::in_range<GuildID_t>(row.id) || !std::in_range<ServerGroupID_t>(row.serverGroupID) ||
+            !std::in_range<ZoneID_t>(row.zoneID) || row.type < Guild::GUILD_TYPE_NORMAL ||
+            row.type >= Guild::GUILD_TYPE_MAX || row.race < Guild::GUILD_RACE_SLAYER ||
+            row.race >= Guild::GUILD_RACE_MAX)
+            throw Error("invalid shared guild ID, type or race");
+
+        auto guild = std::make_unique<Guild>();
+        const auto guildID = static_cast<GuildID_t>(row.id);
+        guild->setID(guildID);
+        guild->setName(row.name);
+        guild->setType(static_cast<GuildType_t>(row.type));
+        guild->setRace(static_cast<GuildRace_t>(row.race));
+        guild->setState(static_cast<GuildState_t>(row.state));
+        guild->setServerGroupID(static_cast<ServerGroupID_t>(row.serverGroupID));
+        guild->setZoneID(static_cast<ZoneID_t>(row.zoneID));
+        guild->setMaster(row.master);
+        guild->setDate(row.date);
+        guild->setIntro(row.intro);
+        if (!replacement.emplace(guildID, std::move(guild)).second)
+            throw DuplicatedException();
+    }
+
+    for (const auto& row : repo.loadActiveMembers()) {
+        if (!std::in_range<GuildID_t>(row.guildID))
+            throw Error("invalid shared guild member GuildID");
+        const auto guildID = static_cast<GuildID_t>(row.guildID);
+        const auto guild = replacement.find(guildID);
+        if (guild == replacement.end())
+            continue;
+        if (row.rank < GuildMember::GUILDMEMBER_RANK_NORMAL || row.rank > GuildMember::GUILDMEMBER_RANK_WAIT)
+            throw Error("invalid shared guild member rank");
+
+        auto member = std::make_unique<GuildMember>();
+        member->setGuildID(guildID);
+        member->setName(row.name);
+        member->setRank(static_cast<GuildMemberRank_t>(row.rank));
+        if (row.rank == GuildMember::GUILDMEMBER_RANK_WAIT)
+            member->setRequestDateTime(row.requestDateTime);
+        member->setLogOn(row.logOn);
+        guild->second->addMember(member.get());
+        member.release(); // addMember owns the completed row after insertion.
+    }
+
+    // Prepare the existing runtime index while every row still has an owner.
+    HashMapGuild published;
+    for (const auto& [id, guild] : replacement)
+        published.emplace(id, guild.get());
+
+    // Nothing after the swap can throw. The manager takes ownership of the
+    // new graph and releases every guild/member in the previous one.
+    m_Guilds.swap(published);
+    for (auto& [id, guild] : replacement)
+        guild.release();
+    for (auto& [id, guild] : published)
+        delete guild;
+}
 
 void GuildManager::addGuild(Guild* pGuild) noexcept(false) {
     __BEGIN_TRY

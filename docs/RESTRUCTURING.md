@@ -1109,15 +1109,31 @@ visibility can't express.
     cleanup and retry; other cases cover malformed/duplicate rows, boundary IDs,
     reload removal, exact names, repository errors and throwing diagnostics.
 
-- [ ] **2.36 Extract owned shared guild and roster loading.**
-  > **Status:** not started — shared `GuildManager::load` fills the live table
-  > with raw guild/member objects, leaves unattached members unowned and can
-  > publish a prefix after failure. Introduce an explicit repository input and
-  > prepare a complete owned graph before publication. Audit allocation-capable
-  > guild/member string accessors declared `noexcept` so failures can unwind.
-  > Keep startup ID-counter initialization separate from roster loading.
-  - Planned owner: shared runtime tests with supplied guild/roster rows,
-    filtered states, unattached members, duplicates, failures and reload/retry.
+- [x] **2.36 Extract owned shared guild and roster loading.**
+  > **Status:** done (this commit) — shared `GuildManager::load` accepts an
+  > explicit repository and prepares guilds under unique ownership, retaining
+  > each member's owner until attachment succeeds. IDs/enums are checked before
+  > narrowing; inactive guilds and members without a loaded guild are skipped.
+  > The complete runtime index is prepared before publication under the table
+  > lock. Failure retains the prior graph; successful replacement releases it.
+  > Copying string getters/setters permit allocation exceptions to unwind.
+  > Load with quiescent users of borrowed guild/member pointers; successful
+  > replacement invalidates those pointers. Startup ID-counter initialization
+  > remains a separate boundary, and runtime guild mutation keeps its existing API.
+  - Owner: 20 `SharedGuildLoading` cases in `shared_server_runtime_tests`.
+    Seven regressions failed before the fixes. Coverage includes 128-position
+    allocation sweeps over empty/populated graphs, cleanup/retry, duplicate and
+    invalid rows, repository errors at both stages, exact roster/count/date
+    behavior, boundary IDs, and the production guild-info reply from loaded rows.
+
+- [ ] **2.37 Extract shared guild startup ID initialization.**
+  > **Status:** not started — `GuildManager::init` reads the default repository
+  > and global configuration, publishes each process-wide maximum before later
+  > queries and roster loading finish, and narrows queried/computed IDs to words.
+  > Add explicit inputs, prepare checked maxima without publication, and retain
+  > the previous counters and guild graph on failed initialization.
+  - Planned owner: shared runtime startup tests over supplied counts/maxima,
+    configuration, failed queries/roster loading, bounds and retry.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
