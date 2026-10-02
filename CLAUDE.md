@@ -20,6 +20,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | `tests/generated/AllPacketFactories.inc` matches the kernel membership | `ratchets.sh` re-runs `tests/tools/gen_factory_list.sh` and diffs | "AllPacketFactories.inc is stale" |
 | A kernel file includes only kernel files and mentions no server-type macro or `__COMBAT__` (K1/K2/K3); a core file includes no MySQL, Lua or socket-transport header (C1, shrink-only baseline in `tests/arch/baseline.txt`); `src/domain/` quote-includes only existing `"domain/X.h"` headers and angle-includes only `<algorithm>`/`<cmath>` (D1) | `tests/arch/check_includes.pl`, ctest `arch_includes` | the offending include or macro, named |
 | Packets carry no `execute()` — handlers register at the composition root | ratchet R4 | R4 above 0 |
+| Server implementations link without `main.cpp`, with the same definitions as production | `game_server_runtime_tests`, `login_server_runtime_tests`, `shared_server_runtime_tests` | duplicate `main` at link time, a mismatched server definition, or a production dispatch/handler test failure |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
 | A critical section is never unlocked by hand | `tests/tools/critical_section_audit.pl`, ctest `critical_section_audit` | the file and line of the hand-written `unlock()` |
 | Zone-group state is touched only under that group's mutex | `ZoneGroup::assertOwned()` under `DE_OWNERSHIP_CHECKS` (Debug builds only) | `abort()` at the gateway |
@@ -266,6 +267,15 @@ Three coordinated processes:
 CMake is the build system; the `Makefile`s in `src/` subdirectories are
 legacy and superseded. No target globs its sources: every `.cpp` is named,
 which is what lets ratchet R15 call a source no target compiles dead.
+
+`GameServerRuntime`, `LoginServerRuntime` and `SharedServerRuntime` are
+OBJECT libraries. Each executable compiles only `main.cpp` and links its
+runtime; the corresponding runtime tests link those same objects without
+running process startup. Link a runtime directly with
+`target_link_libraries` to inherit its server definitions, headers and
+dependencies. Keep different runtimes in separate executables: several
+classes share names across servers, and packet registration is process-wide.
+The existing isolated rule tests remain the faster choice for pure logic.
 
 ### Key Directory Structure
 

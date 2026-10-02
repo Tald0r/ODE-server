@@ -513,6 +513,28 @@ visibility can't express.
   >   client repo mirrors.
   - Owner: CMake target membership + include-graph test.
 
+- [x] **2.5 Link server implementations without their executable entry points.**
+  > **Status:** done (2026-10-02) —
+  > `GameServerRuntime`, `LoginServerRuntime` and `SharedServerRuntime` are
+  > OBJECT libraries containing each server's implementation except
+  > `main.cpp`. The executables compile only that entry point and link their
+  > runtime. Server definitions, include paths and dependencies are PUBLIC
+  > usage requirements, so tests use the same objects and class definitions
+  > as production. OBJECT libraries keep all server objects ahead of the
+  > subsystem archives, preserving the gameserver's existing back-references
+  > from those archives.
+  > Each runtime belongs in a separate test process: the servers have
+  > different classes with identical names and a process-wide dispatch table.
+  > The three `*_server_runtime_tests` register the real handlers and exercise
+  > game compatibility packets, login logout, shared guild-info replies and
+  > rejection of packets meant for another server. They need no listeners,
+  > database or server startup. Their own `main` is compiled directly, so
+  > accidentally moving a server's `main` into its runtime fails the link.
+  > These tests add the full runtime build to `wire_tests`; the existing
+  > isolated rule tests retain their smaller dependencies.
+  - Owner: the three runtime test targets, built by `make dev-test`, and
+    the production executable links.
+
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
 `execute()`; all three servers boot and pass a manual smoke test against the

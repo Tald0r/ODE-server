@@ -416,9 +416,8 @@ set(HANDLER_SOURCES
     handler/SGQuitGuildOKHandler.cpp
 )
 
-set(GAMESERVER_MAIN_SOURCES
+set(GAMESERVER_RUNTIME_SOURCES
     GamePacketDispatch.cpp
-    main.cpp
     Zone.cpp
     ZoneBroadcast.cpp
     ZoneItem.cpp
@@ -640,12 +639,16 @@ set(GM_SOURCES
 )
 
 # ============================================================================
-# GameServer 可执行文件
+# GameServer runtime and executable
 # ============================================================================
-add_executable(gameserver
+# Keep the implementation linkable without main(), which installs process
+# handlers, starts the server and calls _Exit(). An OBJECT library preserves
+# the existing link's placement of all game objects before the subsystem
+# archives; those archives also call back into the game objects.
+add_library(GameServerRuntime OBJECT
     ${PACKETFILL_SOURCES}
     ${HANDLER_SOURCES}
-    ${GAMESERVER_MAIN_SOURCES}
+    ${GAMESERVER_RUNTIME_SOURCES}
     ${MONSTER_SOURCES}
     ${ITEM_SOURCES}
     ${GUILD_SOURCES}
@@ -657,10 +660,10 @@ add_executable(gameserver
 )
 
 # 编译定义
-target_compile_definitions(gameserver PRIVATE ${GAMESERVER_COMPILE_DEFS})
+target_compile_definitions(GameServerRuntime PUBLIC ${GAMESERVER_COMPILE_DEFS})
 
 # 包含目录
-target_include_directories(gameserver PRIVATE ${GAMESERVER_INCLUDE_DIRS})
+target_include_directories(GameServerRuntime PUBLIC ${GAMESERVER_INCLUDE_DIRS})
 
 # 链接库（注意顺序，被依赖的库放后面）
 if(APPLE)
@@ -669,7 +672,7 @@ elseif(UNIX)
     set(EXTRA_LIBS nsl util dl z)
 endif()
 
-target_link_libraries(gameserver PRIVATE
+target_link_libraries(GameServerRuntime PUBLIC
     Items
     Quest
     Mofus
@@ -692,6 +695,9 @@ target_link_libraries(gameserver PRIVATE
     Threads::Threads
     ${EXTRA_LIBS}
 )
+
+add_executable(gameserver main.cpp)
+target_link_libraries(gameserver PRIVATE GameServerRuntime)
 
 # 导出符号（用于动态加载）
 set_target_properties(gameserver PROPERTIES ENABLE_EXPORTS ON)

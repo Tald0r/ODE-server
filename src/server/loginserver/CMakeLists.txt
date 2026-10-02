@@ -2,7 +2,7 @@
 # LoginServer 可执行文件
 # ============================================================================
 
-set(LOGINSERVER_SOURCES
+set(LOGINSERVER_RUNTIME_SOURCES
     handler/CGConnectSetKeyHandler.cpp
     handler/CLChangeServerHandler.cpp
     handler/CLCreatePCHandler.cpp
@@ -43,7 +43,6 @@ set(LOGINSERVER_SOURCES
     LoginServer.cpp
     ZoneGroupInfoManager.cpp
     ZoneInfoManager.cpp
-    main.cpp
     ItemDestroyer.cpp
     ReconnectLoginInfoManager.cpp
     repository/MySQLLoginAccountRepository.cpp
@@ -63,13 +62,16 @@ target_link_libraries(PasswordHash PUBLIC argon2)
 add_executable(hashpw tools/hashpw.cpp)
 target_link_libraries(hashpw PRIVATE PasswordHash)
 
-add_executable(loginserver ${LOGINSERVER_SOURCES})
+# The executable and runtime tests link these same objects. main() alone owns
+# process setup and shutdown; the server macro and headers travel with the
+# runtime so consumers compile the same class definitions.
+add_library(LoginServerRuntime OBJECT ${LOGINSERVER_RUNTIME_SOURCES})
 
 # 编译定义
-target_compile_definitions(loginserver PRIVATE __LOGIN_SERVER__)
+target_compile_definitions(LoginServerRuntime PUBLIC __LOGIN_SERVER__)
 
 # 包含目录
-target_include_directories(loginserver PRIVATE
+target_include_directories(LoginServerRuntime PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src/Core
     ${CMAKE_SOURCE_DIR}/src/server
@@ -86,7 +88,7 @@ elseif(UNIX)
     set(EXTRA_LIBS nsl z dl)
 endif()
 
-target_link_libraries(loginserver PRIVATE
+target_link_libraries(LoginServerRuntime PUBLIC
     LoginServerDatabase
     LoginServerPackets
     ServerCore
@@ -99,3 +101,6 @@ target_link_libraries(loginserver PRIVATE
     Threads::Threads
     ${EXTRA_LIBS}
 )
+
+add_executable(loginserver main.cpp)
+target_link_libraries(loginserver PRIVATE LoginServerRuntime)
