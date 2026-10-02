@@ -93,6 +93,7 @@ target_link_libraries(LoginServerRuntime PUBLIC
     LoginServerPackets
     ServerCore
     ServerWorkerShutdown
+    ListenerStartup
     Core
     # The wire archive itself (task 2.4) — also reached transitively through
     # Core/LoginServerPackets, named here so the layering is visible.

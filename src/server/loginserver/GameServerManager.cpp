@@ -11,12 +11,14 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <memory>
 
 #include "DB.h"
 #include "Datagram.h"
 #include "DatagramPacket.h"
 #include "KernelContext.h"
 #include "LGKickCharacter.h"
+#include "ListenerStartup.h"
 #include "PacketDispatcher.h"
 #include "Properties.h"
 #include "ServerContext.h"
@@ -29,25 +31,15 @@
 GameServerManager::GameServerManager() : m_pDatagramSocket(NULL) {
     __BEGIN_TRY
 
-    // create datagram server socket
-    while (!ServerShutdown::isRequested()) {
-        try {
-            m_pDatagramSocket = new DatagramSocket(de::kernelContext().config().getPropertyInt("LoginServerUDPPort"));
-            // A blocking recvfrom() would hold the worker inside the kernel
-            // for as long as the game servers stay quiet, so a shutdown
-            // request could not be observed. recvfrom_ex() maps EWOULDBLOCK
-            // to "no datagram", which is what the loop below already expects.
-            SocketAPI::setsocketnonblocking_ex(m_pDatagramSocket->getSOCKET(), true);
-            break;
-        } catch (BindException& be) {
-            SAFE_DELETE(m_pDatagramSocket);
-            cout << be.toString() << endl;
-            sleep(1);
-        }
-    }
-
-    if (m_pDatagramSocket == NULL)
-        throw Error("shutdown requested during UDP listener startup");
+    de::retryListenerStartup(
+        [&] {
+            auto socket =
+                std::make_unique<DatagramSocket>(de::kernelContext().config().getPropertyInt("LoginServerUDPPort"));
+            // Idle UDP traffic must not keep the worker inside recvfrom during shutdown.
+            SocketAPI::setsocketnonblocking_ex(socket->getSOCKET(), true);
+            m_pDatagramSocket = socket.release();
+        },
+        [](const BindException& error) { cout << error.toString() << endl; }, "UDP");
 
     __END_CATCH
 }

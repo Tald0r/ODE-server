@@ -13,6 +13,40 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Listener bind retries leaked descriptors and could ignore shutdown (2026-10-02)
+
+`ServerSocket` allocated its `SocketImpl` before socket creation, binding and
+listening. If any step threw, the unfinished constructor never ran its
+destructor. `DatagramSocket` likewise left its created descriptor open after
+a failed bind. Every occupied-port retry therefore leaked a TCP or UDP socket,
+eventually exhausting the process's descriptors. Manager-level cleanup could
+not recover a resource from an object whose construction had failed.
+
+The TCP constructor now retains local ownership through all setup steps, and
+the UDP constructor closes its descriptor before rethrowing a bind failure.
+Managers also retain temporary socket ownership through nonblocking setup.
+`listener_startup_tests` repeatedly occupies real TCP and UDP ports in child
+processes and verifies that the next socket can reuse the descriptor after each
+failed construction. Both regressions failed before the constructor fixes.
+
+Gameserver's `IncomingPlayerManager` and loginserver's `LoginPlayerManager`
+retried occupied ports forever without checking shutdown. All five listener
+paths now use `ListenerStartup`, which observes requests before each attempt
+and during retry waits while preserving their diagnostics and retry intervals.
+The tests check cancellation, exception propagation, failure state and real
+bind retries that stop without leaks when shutdown is requested.
+
+> **Status:** fixed (refactor/server-listener-startup)
+
+The related outbound `Socket` constructors still assign a raw `SocketImpl`
+before calling `create`; a socket-creation exception leaks that allocation.
+`Socket::reconnect` also deletes its old implementation before allocating the
+replacement, leaving a dangling member if replacement construction throws.
+These paths were identified by source inspection and remain outside the
+listener change; they need failure-injection coverage and explicit ownership.
+
+> **Status:** recorded, not fixed (refactor/server-listener-startup)
+
 ## Core-dump setup failed under a finite inherited hard limit (2026-10-02)
 
 Each executable tried to set both the soft and hard `RLIMIT_CORE` values to

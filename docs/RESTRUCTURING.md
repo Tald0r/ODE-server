@@ -710,6 +710,28 @@ visibility can't express.
     a broken pipe and integration with the existing shutdown guard; all three
     production executable links and the gameserver runtime link.
 
+- [x] **2.14 Extract listener startup retries from the server managers.**
+  > **Status:** done (2026-10-02) —
+  > `ListenerStartup` provides `retryListenerStartup` for all five TCP/UDP
+  > listener paths across the three runtimes, with only kernel and thread
+  > dependencies. Callers supply binding and diagnostic actions; only
+  > `BindException` is retried. Existing messages and retry intervals remain
+  > (1 ms for login's player listener, 1 s for the others). A shutdown request
+  > prevents the first or next attempt and interrupts retry waits, checked
+  > at most every 10 ms. Other binding/reporting exceptions propagate, and
+  > the helper never clears shutdown/failure flags or repeats a successful
+  > attempt. This also fixes game/login player listeners ignoring shutdown
+  > while their ports are occupied.
+  > TCP and UDP socket constructors now release resources when setup throws;
+  > managers retain temporary ownership through nonblocking setup before
+  > publishing the listener. Repeated failed binds no longer leak descriptors.
+  > Both defects and the remaining outbound-socket ownership issue are
+  > recorded in `docs/FIXES.md`.
+  - Owner: `listener_startup_tests`, covering retry/report order, propagated
+    exceptions, intervals, shutdown during waits and retained failure state;
+    subprocess regressions over occupied TCP/UDP ports and descriptor reuse;
+    all three runtime and production executable links.
+
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
 `execute()`; all three servers boot and pass a manual smoke test against the

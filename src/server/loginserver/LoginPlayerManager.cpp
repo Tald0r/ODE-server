@@ -17,6 +17,7 @@
 #include "DatabaseError.h"
 #include "DescriptorTable.h"
 #include "KernelContext.h"
+#include "ListenerStartup.h"
 #include "LoginContext.h"
 #include "LoginPlayer.h"
 #include "Properties.h"
@@ -85,19 +86,9 @@ void LoginPlayerManager::init() {
 
     m_ProxyAcceptor = de::ProxyAcceptor::fromConfig(de::kernelContext().config());
 
-    // Retry until the bind succeeds
-    while (1) {
-        try {
-            // Create the server socket.
-            m_pServerSocket = new ServerSocket(de::kernelContext().config().getPropertyInt("LoginServerPort"));
-            // Leave once the bind succeeds.
-            break;
-        } catch (BindException& be) {
-            SAFE_DELETE(m_pServerSocket);
-            cout << be.toString() << endl;
-            usleep(1000);
-        }
-    }
+    de::retryListenerStartup(
+        [&] { m_pServerSocket = new ServerSocket(de::kernelContext().config().getPropertyInt("LoginServerPort")); },
+        [](const BindException& error) { cout << error.toString() << endl; }, "TCP", std::chrono::milliseconds(1));
 
     // Set the server socket descriptor.
     m_ServerFD = m_pServerSocket->getSOCKET();
