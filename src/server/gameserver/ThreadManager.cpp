@@ -20,16 +20,7 @@
 //--------------------------------------------------------------------------------
 // constructor
 //--------------------------------------------------------------------------------
-ThreadManager::ThreadManager()
-
-    : m_pZoneGroupThreadPool(NULL) {
-    __BEGIN_TRY
-
-    // Create the zone thread pool.
-    m_pZoneGroupThreadPool = new ThreadPool();
-
-    __END_CATCH
-}
+ThreadManager::ThreadManager() = default;
 
 
 //--------------------------------------------------------------------------------
@@ -39,15 +30,7 @@ ThreadManager::ThreadManager()
 // Must be run when Stop() has not been called.
 //
 //--------------------------------------------------------------------------------
-ThreadManager::~ThreadManager()
-
-{
-    __BEGIN_TRY
-
-    SAFE_DELETE(m_pZoneGroupThreadPool);
-
-    __END_CATCH_NO_RETHROW
-}
+ThreadManager::~ThreadManager() = default;
 
 
 //--------------------------------------------------------------------------------
@@ -71,9 +54,8 @@ void ThreadManager::init()
 
     for (size_t i = 0; i < zoneGroupIDs.size(); i++) {
         ZoneGroupID_t zoneGroupID = zoneGroupIDs[i];
-        ZoneGroupThread* pZoneGroupThread =
-            new ZoneGroupThread(de::gameContext().zoneGroups().getZoneGroup(zoneGroupID));
-        m_pZoneGroupThreadPool->addThread(pZoneGroupThread);
+        m_ZoneGroupThreadPool.addThread(
+            std::make_unique<ZoneGroupThread>(de::gameContext().zoneGroups().getZoneGroup(zoneGroupID)));
     }
 
     __END_CATCH
@@ -93,7 +75,7 @@ void ThreadManager::start()
     __BEGIN_TRY
 
     // Start the Zone Thread Pool.
-    m_pZoneGroupThreadPool->start();
+    m_ZoneGroupThreadPool.start();
 
     __END_CATCH
 }
@@ -111,7 +93,7 @@ void ThreadManager::stop()
 {
     __BEGIN_TRY
 
-    m_pZoneGroupThreadPool->stop();
+    m_ZoneGroupThreadPool.stop();
 
     __END_CATCH
 }

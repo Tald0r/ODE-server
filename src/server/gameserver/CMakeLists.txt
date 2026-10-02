@@ -461,7 +461,6 @@ set(GAMESERVER_RUNTIME_SOURCES
     Script.cpp
     ScriptManager.cpp
     ThreadManager.cpp
-    ThreadPool.cpp
     Tile.cpp
     Sector.cpp
     TimeManager.cpp

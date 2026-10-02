@@ -11,10 +11,8 @@
 
 // include files
 #include "Exception.h"
+#include "ThreadPool.h"
 #include "Types.h"
-
-// forward declaration
-class ThreadPool;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -51,15 +49,9 @@ public:
     // Stop the sub thread pools.
     void stop();
 
-    // #ifdef __NO_COMBAT__
-    ThreadPool* getThreadPool() {
-        return m_pZoneGroupThreadPool;
-    }
-    // #endif
-
 private:
     // Thread pool
-    ThreadPool* m_pZoneGroupThreadPool;
+    ThreadPool m_ZoneGroupThreadPool;
 };
 
 #endif
