@@ -8,8 +8,17 @@
 
 #include "MutexAttr.h"
 #include "StringStream.h"
-#include "Thread.h"
+#include "Utility.h"
 #include "pthreadAPI.h"
+
+namespace {
+[[noreturn]] void reportMutexFailure(const char* operation, const std::string& name, const MutexException& error) {
+    const auto message = std::string("Mutex::") + operation + " [" + name + "]: " + error.toString();
+    std::cerr << message << std::endl;
+    filelog("MutexError.log", "%s", message.c_str());
+    throw Error(message);
+}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -20,8 +29,12 @@
 Mutex::Mutex(MutexAttr* attr) {
     __BEGIN_TRY
 
-    pthreadAPI::pthread_mutex_init_ex(&m_Mutex, (attr == NULL ? NULL : attr->getAttr()));
-    m_LockTID = -1;
+    if (attr) {
+        pthreadAPI::pthread_mutex_init_ex(&m_Mutex, attr->getAttr());
+    } else {
+        MutexAttr defaults;
+        pthreadAPI::pthread_mutex_init_ex(&m_Mutex, defaults.getAttr());
+    }
 
     __END_CATCH
 }
@@ -54,19 +67,9 @@ void Mutex::lock() {
 
 
     try {
-        int TID = (int)(long)Thread::self();
-
-        if (TID != m_LockTID) {
-            pthreadAPI::pthread_mutex_lock_ex(&m_Mutex);
-            m_LockTID = TID;
-        } else {
-            cerr << "Mutex::lock() : SELF DEAD LOCK [" << m_Name << "]" << endl;
-            filelog("MutexError.log", "Mutex::lock() : SELF DEAD LOCK [%s]", m_Name.c_str());
-            throw Error("Mutex::lock() : SELF DEAD LOCK");
-        }
+        pthreadAPI::pthread_mutex_lock_ex(&m_Mutex);
     } catch (MutexException& me) {
-        cerr << me.toString() << endl;
-        throw Error(me.toString());
+        reportMutexFailure("lock", m_Name, me);
     }
 
 
@@ -84,19 +87,9 @@ void Mutex::trylock() {
 
 
     try {
-        int TID = (int)(long)Thread::self();
-
-        if (TID != m_LockTID) {
-            pthreadAPI::pthread_mutex_trylock_ex(&m_Mutex);
-            m_LockTID = TID;
-        } else {
-            cerr << "Mutex::trylock() : SELF DEAD LOCK [" << m_Name << "]" << endl;
-            filelog("MutexError.log", "Mutex::trylock() : SELF DEAD LOCK [%s]", m_Name.c_str());
-            throw Error("Mutex::trylock() : SELF DEAD LOCK");
-        }
+        pthreadAPI::pthread_mutex_trylock_ex(&m_Mutex);
     } catch (MutexException& me) {
-        cerr << me.toString() << endl;
-        throw Error(me.toString());
+        reportMutexFailure("trylock", m_Name, me);
     }
 
 
@@ -114,10 +107,8 @@ void Mutex::unlock() {
 
     try {
         pthreadAPI::pthread_mutex_unlock_ex(&m_Mutex);
-        m_LockTID = -1;
     } catch (MutexException& me) {
-        cerr << me.toString() << endl;
-        throw Error(me.toString());
+        reportMutexFailure("unlock", m_Name, me);
     }
 
 

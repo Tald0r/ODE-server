@@ -445,6 +445,12 @@ add_test(NAME managed_thread_tests COMMAND managed_thread_tests)
 # five-second polling interval per case instead of waking immediately.
 set_tests_properties(managed_thread_tests PROPERTIES TIMEOUT 30)
 
+add_executable(server_synchronization_tests EXCLUDE_FROM_ALL server_synchronization_test.cpp)
+target_link_libraries(server_synchronization_tests PRIVATE ServerSynchronization gtest_main)
+add_dependencies(wire_tests server_synchronization_tests)
+add_test(NAME server_synchronization_tests COMMAND server_synchronization_tests)
+set_tests_properties(server_synchronization_tests PROPERTIES TIMEOUT 20)
+
 # War-system Schedule/Scheduler and the VSDateTime clock they run on —
 # ported from the deleted gameserver/test and gameserver/testAlone cppunit
 # suites. Links only de-kernel plus the two war/ sources under test; the

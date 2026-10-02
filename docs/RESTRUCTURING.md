@@ -943,15 +943,33 @@ visibility can't express.
     real race-filtered TCP delivery and concurrent producers consumed through
     heartbeat, without database or world startup.
 
-- [ ] **2.26 Make server mutex ownership testable without executable startup.**
-  > **Status:** not started — the broadcast audit found legacy `Mutex` reads
-  > its plain integer owner before acquiring the native mutex and clears it
-  > after unlocking. Besides a data race, the old owner can erase a newly
-  > acquired owner's record. Audit attribute/native-handle callers and pin
-  > contention, recursive refusal, try-lock and owner release in standalone
-  > tests before replacing that bookkeeping.
-  - Planned owner: standalone mutex behavior and contention tests, with a
-    sanitizer or deterministic scheduling regression for ownership publication.
+- [x] **2.26 Make server mutex ownership testable without executable startup.**
+  > **Status:** done (this commit) — `ServerSynchronization` owns `Mutex`,
+  > `CondVar` and their native wrappers; `ServerCore` and standalone tests link
+  > that same library. Default mutex attributes use native error checking,
+  > eliminating the racy/truncated integer owner and preserving ownership
+  > through condition waits. Recursive/default misuse is refused with `Error`;
+  > explicit native attribute overrides are honored. Mutexes and their
+  > attributes cannot be copied or moved. The caller audit found no production
+  > attribute overrides and only condition waits use the native mutex handle.
+  > Mutex/condition wrappers interpret pthread return codes, not `errno`;
+  > successful condition destruction is accepted, timeout keeps its existing
+  > exception type and other condition errors carry the returned error number.
+  > Name configuration and object destruction still require quiescent users.
+  - Owner: `server_synchronization_tests`, linked without `ServerCore` or any
+    executable/runtime, covers seven reproduced regressions, contended handoffs,
+    wrong-owner/recursive refusal, explicit/reused attributes, named diagnostics, scoped release,
+    condition timeout and broadcast. A native ThreadSanitizer contention probe
+    reproduced the old owner race and passed with the extracted implementation.
+
+- [ ] **2.27 Make legacy native thread operations testable independently.**
+  > **Status:** not started — the synchronization audit found thread create,
+  > join, detach and attribute wrappers still compare pthread return values to
+  > zero as though failures were negative and read `errno`. Pin refusals and
+  > lifecycle/resource ownership before changing those wrappers; managed C++
+  > workers and their stop/join policy remain separately covered.
+  - Planned owner: standalone native thread/attribute tests, including returned
+    error codes, successful create/join and failed publication.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

@@ -23,6 +23,8 @@ class Mutex {
 public:
     Mutex(MutexAttr* attr = NULL);
     virtual ~Mutex() noexcept;
+    Mutex(const Mutex&) = delete;
+    Mutex& operator=(const Mutex&) = delete;
 
 public:
     string getName(void) const {
@@ -36,6 +38,8 @@ public:
     void unlock();
     void trylock();
 
+    // The native mutex owns the thread identity, including across condition
+    // waits. Default attributes refuse recursive locking and non-owner unlock.
     pthread_mutex_t* getMutex() {
         return &m_Mutex;
     }
@@ -43,7 +47,6 @@ public:
 private:
     pthread_mutex_t m_Mutex; // the mutex object
     string m_Name;           // the name of the class that owns this mutex
-    int m_LockTID;           // the id of the process that currently holds the lock
 };
 
 #endif

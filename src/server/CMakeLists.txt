@@ -6,8 +6,6 @@
 # ServerCore 库 - 服务器公共代码
 # ============================================================================
 set(SERVER_CORE_SOURCES
-    CondVar.cpp
-    Mutex.cpp
     PlayerManager.cpp
     GameWorldInfoManager.cpp
     SystemAPI.cpp
@@ -30,6 +28,12 @@ target_include_directories(ServerCore PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src/Core
 )
+
+# Native synchronization shared by all servers, without their managers or main.
+add_library(ServerSynchronization STATIC Mutex.cpp CondVar.cpp PthreadSynchronization.cpp)
+target_include_directories(ServerSynchronization PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ServerSynchronization PUBLIC de-kernel Threads::Threads)
+target_link_libraries(ServerCore PUBLIC ServerSynchronization)
 
 # Entry-point configuration, testable without any server runtime or database.
 add_library(ServerStartup STATIC ServerStartup.cpp)

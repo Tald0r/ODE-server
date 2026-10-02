@@ -189,6 +189,13 @@ socket delivery and concurrent producers through heartbeat. Dispatch consumes
 each started message; an uncaught failure retains only later entries for retry.
 Queue access is synchronized, and quiescent manager destruction releases pending
 messages. Literal broadcast framing stays unchanged.
+`server_synchronization_tests` links the same `ServerSynchronization` library
+as all three servers, without their runtimes or `main()`. Native error-checking
+mutexes retain ownership through condition waits. Tests cover busy/recursive
+refusal, wrong-owner unlock, returned error codes, attribute reuse, scoped
+release, contended updates and condition wakeups/timeouts. Explicit native
+attribute overrides remain available; name setup and destruction require
+quiescent users.
 `player_connection_key_tests` exercises pure key-table calculation and owned
 installation in `Player`. Allocation faults verify atomic replacement and
 cleanup; fixed vectors and real socket I/O preserve existing table and stream
