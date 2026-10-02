@@ -204,24 +204,6 @@ void GameServerPlayer::disconnect(bool bDisconnected) noexcept(false) {
 
 
 //////////////////////////////////////////////////////////////////////
-// set socket
-//////////////////////////////////////////////////////////////////////
-void GameServerPlayer::setSocket(Socket* pSocket) noexcept {
-    m_pSocket = pSocket;
-
-    if (m_pInputStream != NULL) {
-        delete m_pInputStream;
-        m_pInputStream = new SocketInputStream(m_pSocket);
-    }
-
-    if (m_pOutputStream != NULL) {
-        delete m_pOutputStream;
-        m_pOutputStream = new SocketOutputStream(m_pSocket);
-    }
-}
-
-
-//////////////////////////////////////////////////////////////////////
 //
 // get debug string
 //

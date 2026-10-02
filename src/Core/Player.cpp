@@ -18,6 +18,7 @@
 #include "Socket.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
+#include "SocketStreams.h"
 // #include "PacketFactoryManager.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -35,11 +36,10 @@ Player::Player(Socket* pSocket) : m_pSocket(NULL), m_pInputStream(NULL), m_pOutp
     // both streams are ready, destroying streams before their borrowed socket.
     std::unique_ptr<Socket> socket(pSocket);
     Assert(socket != nullptr);
-    auto input = std::make_unique<SocketInputStream>(socket.get());
-    auto output = std::make_unique<SocketOutputStream>(socket.get());
+    auto streams = de::makeSocketStreams(socket.get(), DefaultSocketInputBufferSize, DefaultSocketOutputBufferSize);
     m_pSocket = socket.release();
-    m_pInputStream = input.release();
-    m_pOutputStream = output.release();
+    m_pInputStream = streams.input.release();
+    m_pOutputStream = streams.output.release();
 
     __END_CATCH
 }
@@ -179,17 +179,24 @@ void Player::disconnect(bool bDisconnected) {
 void Player::setSocket(Socket* pSocket) {
     __BEGIN_TRY
 
+    // Own a different incoming socket even if preparation fails. Rebuilding
+    // streams over the current socket must never create a second owner.
+    const bool sameSocket = pSocket == m_pSocket;
+    std::unique_ptr<Socket> replacement(sameSocket ? nullptr : pSocket);
+    auto streams = de::makeSocketStreams(pSocket, m_pInputStream ? DefaultSocketInputBufferSize : 0,
+                                         m_pOutputStream ? DefaultSocketOutputBufferSize : 0);
+
+    // Everything below is nonthrowing. Keep the old socket and buffered data
+    // intact until all requested streams are ready, then destroy streams
+    // before their borrowed socket. Absent streams remain absent.
+    delete m_pInputStream;
+    delete m_pOutputStream;
+    if (!sameSocket)
+        delete m_pSocket;
     m_pSocket = pSocket;
-
-    if (m_pInputStream != NULL) {
-        delete m_pInputStream;
-        m_pInputStream = new SocketInputStream(m_pSocket);
-    }
-
-    if (m_pOutputStream != NULL) {
-        delete m_pOutputStream;
-        m_pOutputStream = new SocketOutputStream(m_pSocket);
-    }
+    m_pInputStream = streams.input.release();
+    m_pOutputStream = streams.output.release();
+    replacement.release();
 
     __END_CATCH
 }

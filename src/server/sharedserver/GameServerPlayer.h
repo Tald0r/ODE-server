@@ -49,10 +49,6 @@ public:
     // instead.
     virtual void disconnect(bool bDisconnected = DISCONNECTED) noexcept(false);
 
-    // get/set socket
-    // Socket* getSocket ()  { return m_pSocket; }
-    void setSocket(Socket* pSocket) noexcept;
-
     // get/set player ID
     // string getID () const  { return m_ID; }
     // void setID (const string & id)  { m_ID = id; }
