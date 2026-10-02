@@ -31,6 +31,8 @@ src/Core/FileAPI.h
 src/Core/FileAPI.cpp
 src/Core/Properties.h
 src/Core/Properties.cpp
+src/Core/PropertiesParser.h
+src/Core/PropertiesParser.cpp
 # The registry for the process-wide managers whose classes live in src/Core.
 # It forward-declares them and only binds references, so the two that are
 # compiled per server (the packet factory table and the validator) stay
