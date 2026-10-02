@@ -1,75 +1,34 @@
-//----------------------------------------------------------------------
-//
-// Filename    : GameServerGroupInfoManager.h
-// Written By  : reiot@ewestsoft.com
-// Description :
-//
-//----------------------------------------------------------------------
-
+// The login server's group catalogue, loaded before request processing.
 #ifndef __LOGIN_SERVER_GAME_SERVER_GROUP_INFO_MANAGER_H__
 #define __LOGIN_SERVER_GAME_SERVER_GROUP_INFO_MANAGER_H__
 
-// include files
+#include <vector>
+
 #include <unordered_map>
 
-#include "Exception.h"
 #include "GameServerGroupInfo.h"
-#include "Types.h"
 
-typedef unordered_map<ServerGroupID_t, GameServerGroupInfo*> HashMapGameServerGroupInfo;
+class LoginConfigRepository;
 
-//----------------------------------------------------------------------
-//
-// class GameServerGroupInfoManager;
-//
-// Holds an unordered_map of GameServerGroupInfo keyed by the game server ID
-// internally.
-//
-//----------------------------------------------------------------------
-
+// Load with quiescent readers. Failure retains the previous catalogue;
+// successful replacement invalidates borrowed row pointers.
 class GameServerGroupInfoManager {
 public:
-    // constructor
-    GameServerGroupInfoManager() noexcept;
+    GameServerGroupInfoManager() = default;
+    GameServerGroupInfoManager(const GameServerGroupInfoManager&) = delete;
+    GameServerGroupInfoManager& operator=(const GameServerGroupInfoManager&) = delete;
 
-    // destructor
-    ~GameServerGroupInfoManager() noexcept;
+    void init();
+    void load();
+    void load(LoginConfigRepository& repository);
 
-    // initialize manager
-    void init() noexcept(false);
-
-    // load from database
-    void load() noexcept(false);
-
-    // clear GameServerGroupInfos
-    void clear() noexcept(false);
-
-    // add info
-    void addGameServerGroupInfo(GameServerGroupInfo* pGameServerGroupInfo, WorldID_t WorldID) noexcept(false);
-
-    // delete info
-    void deleteGameServerGroupInfo(const ServerGroupID_t ServerGroupID, WorldID_t WorldID) noexcept(false);
-
-    // get GameServerGroupInfo by ServerGroupID
-    GameServerGroupInfo* getGameServerGroupInfo(const ServerGroupID_t ServerGroupID, WorldID_t WorldID) const
-        noexcept(false);
-
-    // get count of info
-    uint getSize(WorldID_t WorldID) const noexcept {
-        return m_GameServerGroupInfos[WorldID].size();
-    }
-
-    // get debug string
-    string toString() const noexcept(false);
+    const GameServerGroupInfo* getGameServerGroupInfo(ServerGroupID_t groupID, WorldID_t worldID) const;
+    uint getSize(WorldID_t worldID) const noexcept;
+    string toString() const;
 
 private:
-    // hash map of GameServerGroupInfo
-    // key   : GameServerGroupID_t
-    // value : GameServerGroupInfo *
-    HashMapGameServerGroupInfo* m_GameServerGroupInfos;
-
-    WorldID_t m_MaxWorldID;
+    using GroupTable = std::unordered_map<ServerGroupID_t, GameServerGroupInfo>;
+    std::vector<GroupTable> m_Groups;
 };
-
 
 #endif

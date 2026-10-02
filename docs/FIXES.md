@@ -365,8 +365,10 @@ Packet layouts, the 37-world budget and truncation policy are unchanged.
 `decideSelectWorld` rejects IDs above that count and `decideSelectServer` clamps
 them to the count. A catalogue with worlds 1 and 7 therefore cannot select its
 listed world 7 and can normalize a server selection to absent world 2. IDs in
-holes below the count can reach throwing lookups. These are source findings;
-task 2.41 tracks explicit topology inputs and actual membership/bounds tests.
+holes below the count can reach throwing lookups. Group listing assumes
+`0..count-1`, but server selection accepts or clamps to group ID `count`, which
+is absent even for that contiguous range. These are source findings; task 2.41
+tracks explicit topology inputs and actual world/group membership and bounds.
 
 > **Status:** recorded, not fixed (refactor/login-world-list-replies)
 
@@ -378,11 +380,22 @@ uninitialized; their destructors read that state even before loading. Both
 loaders overwrite live arrays before row loading finishes and store
 `maxWorldID + 2` in a byte, which wraps for worlds 254 and 255. Cleanup skips
 world zero, and group loading catches row errors after publishing a prefix.
-These are source findings from the selection adapter's dependency audit.
-Task 2.40 tracks explicit inputs and owned, checked replacement so these
-managers can be tested and composed without executable startup.
+Nine regressions reproduced unloaded crashes, failed reload/duplicate
+preservation, world-zero leaks and wrapped dimensions.
 
-> **Status:** recorded, not fixed (refactor/login-world-list-replies)
+Both explicit-repository loaders now prepare value-owned tables and validate
+dimensions/fields before publication. Allocation, queries, duplicate refusal
+and group load diagnostics can fail without replacing prior rows or live
+population counts. Success releases the old catalogue and starts replacement
+counters at zero. Metadata lookups return const rows; population updates keep
+their mutable accessor, with a const view for readers. Unused raw mutation APIs
+are removed, missing counts return zero, and absent row lookups throw safely.
+Twenty-one tests cover the regressions, field bounds, repository translations,
+failed reporting, empty/repeated reloads and four 128-position allocation
+sweeps with cleanup/retry. Reload remains a quiescent operation; each manager
+publishes independently.
+
+> **Status:** fixed (refactor/login-catalogue-loading)
 
 ## World-list decoding leaves refused records unowned (2026-10-02)
 

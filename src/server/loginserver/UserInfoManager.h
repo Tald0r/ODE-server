@@ -1,71 +1,35 @@
-//----------------------------------------------------------------------
-//
-// Filename    : UserInfoManager.h
-// Written By  : Reiot
-// Description :
-//
-//----------------------------------------------------------------------
-
+// The login server's population counters, keyed by world and group.
 #ifndef __USER_INFO_MANAGER_H__
 #define __USER_INFO_MANAGER_H__
 
-// include files
+#include <vector>
+
 #include <unordered_map>
 
-#include "Exception.h"
-#include "Types.h"
 #include "UserInfo.h"
 
-typedef unordered_map<ZoneGroupID_t, UserInfo*> HashMapUserInfo;
+class LoginConfigRepository;
 
-//----------------------------------------------------------------------
-//
-// class UserInfoManager;
-//
-// Holds an unordered_map of that information keyed by the zone group id
-// internally.
-//
-//----------------------------------------------------------------------
-
+// Load with quiescent users of borrowed counters. Failure preserves their
+// identity and live counts; successful replacement starts the new counters at zero.
 class UserInfoManager {
 public:
-    // constructor
-    UserInfoManager() noexcept;
+    UserInfoManager() = default;
+    UserInfoManager(const UserInfoManager&) = delete;
+    UserInfoManager& operator=(const UserInfoManager&) = delete;
 
-    // destructor
-    ~UserInfoManager() noexcept;
+    void init();
+    void load();
+    void load(LoginConfigRepository& repository);
 
-    // initialize manager
-    void init() noexcept(false);
-
-    // add info
-    void addUserInfo(UserInfo* pUserInfo) noexcept(false);
-
-    // delete info
-    void deleteUserInfo(ZoneGroupID_t ServerGroupID, WorldID_t WorldID) noexcept(false);
-
-    // get info
-    UserInfo* getUserInfo(ZoneGroupID_t ServerGroupID, WorldID_t WorldID) const noexcept(false);
-
-    // get count of info
-    uint getSize(WorldID_t WorldID) const noexcept {
-        return m_UserInfos[WorldID].size();
-    }
-
-    // get debug string
-    string toString() const noexcept(false);
-
-    // load from database
-    void load() noexcept(false);
+    UserInfo* getUserInfo(ZoneGroupID_t groupID, WorldID_t worldID);
+    const UserInfo* getUserInfo(ZoneGroupID_t groupID, WorldID_t worldID) const;
+    uint getSize(WorldID_t worldID) const noexcept;
+    string toString() const;
 
 private:
-    // hash map of UserInfo
-    // key   : UserID_t
-    // value : UserInfo *
-    HashMapUserInfo* m_UserInfos;
-
-    WorldID_t m_MaxWorldID;
+    using PopulationTable = std::unordered_map<ZoneGroupID_t, UserInfo>;
+    std::vector<PopulationTable> m_Users;
 };
-
 
 #endif

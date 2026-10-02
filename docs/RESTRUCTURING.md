@@ -1175,22 +1175,32 @@ visibility can't express.
     identity at lookup/send, 128-position allocation failure/retry, count and
     diagnostic refusal, repeated destruction, clearing and name truncation.
 
-- [ ] **2.40 Extract owned login group and population catalogue loading.**
-  > **Status:** not started — the selection adapter depends on login group
-  > and user-info managers whose unloaded destructors read uninitialized
-  > storage. Their default-repository loaders publish raw arrays before rows
-  > are complete and store `maxWorldID + 2` in a byte. Establish safe scoped
-  > lifetimes, explicit repository inputs and checked owned replacement before
-  > using these production dependencies in isolated selection-topology tests.
-  - Planned owner: login runtime cases for unloaded lifetimes, supplied rows,
-    dimension/ID bounds, borrowed-row preservation, cleanup and failure/retry.
+- [x] **2.40 Extract owned login group and population catalogue loading.**
+  > **Status:** done (this commit) — both managers accept explicit repository
+  > inputs and own value tables with safe unloaded lifetimes. Dimensions use
+  > checked `size_t` arithmetic; row IDs/status are checked against their stored
+  > widths and reported maximum world. Load preparation/reporting completes
+  > before swapping tables. Failure retains borrowed rows and live population
+  > counts; successful replacement releases previous rows, including world zero,
+  > and initializes new counters to zero. Missing counts return zero and missing
+  > row lookups throw. Group metadata is read-only; population updates retain a
+  > mutable accessor alongside a const view. Unused raw mutation APIs are removed.
+  > Loads require quiescent users; successful replacement invalidates borrowed
+  > rows. This does not make the two separate manager loads one transaction.
+  - Owner: 21 `LoginCatalogue` cases in `login_server_runtime_tests`.
+    Nine regressions failed before the fix. Coverage includes unloaded lifetimes,
+    world-zero cleanup, worlds 254/255, field widths, duplicate/refusal cleanup,
+    stage-specific repository errors, empty/repeated reloads, reporting failure
+    and four 128-position allocation sweeps over empty/populated tables with retry.
 
 - [ ] **2.41 Extract explicit login world-selection topology.**
   > **Status:** not started — `GlobalWorldTopology` reads process contexts and
   > selection decisions treat the catalogue count as its highest world ID.
   > Supply the production topology's dependencies explicitly and use actual
-  > membership/bounds, so sparse listed worlds are selectable and missing IDs
-  > are refused or normalized according to the selection operation's policy.
+  > world/group membership and bounds, so sparse listed entries are selectable
+  > and missing IDs are refused or normalized according to the selection
+  > operation's policy. Group listing also assumes contiguous IDs, while server
+  > selection treats the group count itself as an inclusive upper bound.
   > Depends on the scoped catalogue lifetimes and explicit loads in 2.40.
   - Planned owner: selection and login runtime tests over actual catalogue
     membership, explicit topology inputs, closed/missing worlds and boundaries.
