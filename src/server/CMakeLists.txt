@@ -46,6 +46,10 @@ add_library(ServerProcessShutdown STATIC ServerProcessShutdown.cpp)
 target_include_directories(ServerProcessShutdown PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ServerProcessShutdown PUBLIC Threads::Threads)
 
+# Fatal handlers use only the standard library and POSIX file descriptors.
+add_library(ServerFatalHandlers STATIC ServerFatalHandlers.cpp)
+target_include_directories(ServerFatalHandlers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 # ============================================================================
 # 子目录
 # ============================================================================

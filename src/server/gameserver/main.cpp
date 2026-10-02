@@ -7,13 +7,10 @@
 //////////////////////////////////////////////////////////////////////
 
 // include files
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include <memory>
-#include <new>
-#include <stdexcept>
 
 #include <sys/resource.h>
 #include <sys/time.h>
@@ -23,41 +20,12 @@
 #include "GameServer.h"
 #include "KernelContext.h"
 #include "Properties.h"
+#include "ServerFatalHandlers.h"
 #include "ServerLifecycle.h"
 #include "ServerProcessShutdown.h"
 #include "ServerStartup.h"
 #include "StringStream.h"
 #include "Types.h"
-
-void handleMemoryError() {
-    cerr << "==============================================================================" << endl;
-    cerr << "CRITICAL ERROR! NOT ENOUGH MEMORY!" << endl;
-    cerr << "==============================================================================" << endl;
-    filelog("CriticalError.log", "CRITICAL ERROR! NOT ENOUGH MEMORY!");
-    abort();
-}
-
-void handleUnhandledException() {
-    cerr << "==============================================================================" << endl;
-    cerr << "UNHANDLED EXCEPTION OCCURED" << endl;
-    cerr << "==============================================================================" << endl;
-    filelog("CriticalError.log", "UNHANDLED EXCEPTION OCCURED");
-    abort();
-}
-
-void testMaxMemory() {
-    long mem = 10 * 1024 * 1024; // 10M
-
-    char str[80];
-
-    for (int i = 1; i < 2048; i++) {
-        char* p = new char[mem];
-
-        snprintf(str, sizeof(str), "%p = %04d0 M", (void*)p, i);
-
-        cout << str << endl;
-    }
-}
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -72,9 +40,7 @@ int main(int argc, char* argv[]) {
 
     filelog("serverStart.log", "GameServer Start");
 
-    // Install the various handlers.
-    std::set_new_handler(handleMemoryError);
-    std::set_terminate(handleUnhandledException);
+    de::ServerFatalHandlers fatalHandlers(de::ServerKind::Game);
 
     // Find a suitable place for this.
     srand(time(0));

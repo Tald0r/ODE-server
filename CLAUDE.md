@@ -24,6 +24,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Startup arguments and login offsets are validated before a completed configuration is published | `server_startup_tests`, over the shared `ServerStartup` library, and `server_startup_cli`, over all three executables | malformed arguments accepted, an incorrect or partially applied override, a failed load replacing the published configuration, or the wrong failure status/diagnostic from main |
 | Every server requests shutdown before stopping, attempts cleanup after failed startup, and preserves worker failures in its exit status | `server_lifecycle_tests`, over the shared `ServerLifecycle` library used by all three entry points | starting after a shutdown request, missing or repeated cleanup, lost failure diagnostics, an incorrect drain result or a successful exit after failure |
 | SIGTERM/SIGINT request shutdown from any thread, and the process deadline bounds blocked initialization and cleanup | `server_process_shutdown_tests`, over the `ServerProcessShutdown` guard used by all three entry points and the shared lifecycle runner | a missed signal, a clean exit after the deadline, a deadline firing before any request or after guard destruction, or signal handlers left installed after the guard's scope |
+| Fatal allocation handlers report failure without C++ heap allocation or normal process teardown | `server_fatal_handler_tests`, over the shared `ServerFatalHandlers` guard, with allocation faults confined to subprocesses | a successful allocation-failure exit, recursive allocation while reporting, an exit callback running, a lost diagnostic or a handler left installed after its scope |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
 | A critical section is never unlocked by hand | `tests/tools/critical_section_audit.pl`, ctest `critical_section_audit` | the file and line of the hand-written `unlock()` |
 | Zone-group state is touched only under that group's mutex | `ZoneGroup::assertOwned()` under `DE_OWNERSHIP_CHECKS` (Debug builds only) | `abort()` at the gateway |
@@ -303,6 +304,17 @@ On scope exit it cancels and joins the watcher, then restores the previous
 signal handlers; it never clears shutdown state. The library depends only on
 `Threads::Threads`. `server_process_shutdown_tests` delivers real signals to
 main and worker threads and checks blocked lifecycle paths in subprocesses.
+
+`ServerFatalHandlers` installs the allocation handler for each server and the
+gameserver's terminate handler, restoring previous handlers on scope exit.
+It has no runtime or kernel dependency; the common `ServerKind` enum lives
+in its own header. Fatal diagnostics use fixed text and POSIX writes, so
+they cannot re-enter the allocation handler through C++ heap allocation.
+Gameserver still appends `CriticalError.log` and aborts; its emergency records
+are plain message lines without timestamp formatting. Login/shared report
+allocation failure to stderr and `_Exit(EXIT_FAILURE)`, preserving their
+existing terminate handlers. `server_fatal_handler_tests` injects allocation
+failure on main and worker threads in child processes with core dumps disabled.
 
 ### Key Directory Structure
 

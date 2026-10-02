@@ -12,13 +12,13 @@
 #include <chrono>
 #include <exception>
 #include <memory>
-#include <new>
 
 #include <sys/resource.h>
 
 #include "Exception.h"
 #include "KernelContext.h"
 #include "Properties.h"
+#include "ServerFatalHandlers.h"
 #include "ServerLifecycle.h"
 #include "ServerProcessShutdown.h"
 #include "ServerStartup.h"
@@ -26,11 +26,6 @@
 #include "SharedServer.h"
 #include "StringStream.h"
 #include "Types.h"
-
-void memoryError() {
-    cout << "CRITICAL ERROR! NOT ENOUGH MEMORY!" << endl;
-    exit(0);
-}
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -42,8 +37,7 @@ int main(int argc, char* argv[]) {
     if (!shutdown.ready())
         return EXIT_FAILURE;
 
-    // Set the out-of-memory handler.
-    set_new_handler(memoryError);
+    de::ServerFatalHandlers fatalHandlers(de::ServerKind::Shared);
 
     // Bind every packet id the sharedserver receives to its handler before
     // any thread can receive one.

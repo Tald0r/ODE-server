@@ -697,7 +697,8 @@ target_link_libraries(GameServerRuntime PUBLIC
 )
 
 add_executable(gameserver main.cpp)
-target_link_libraries(gameserver PRIVATE GameServerRuntime ServerStartup ServerLifecycle ServerProcessShutdown)
+target_link_libraries(gameserver PRIVATE
+    GameServerRuntime ServerStartup ServerLifecycle ServerProcessShutdown ServerFatalHandlers)
 
 # 导出符号（用于动态加载）
 set_target_properties(gameserver PROPERTIES ENABLE_EXPORTS ON)

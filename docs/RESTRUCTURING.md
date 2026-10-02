@@ -545,7 +545,7 @@ visibility can't express.
   > Each `main()` owns and registers the completed configuration, and returns
   > failure on an argument, file, parse or override error before constructing
   > its server. Lifecycle control and process shutdown setup are shared by
-  > 2.7 and 2.8 below; the entry points keep their fatal-error handlers.
+  > 2.7 and 2.8 below; fatal-error handlers are shared by 2.9.
   > `applyLoginServerOffset` validates the three decimal bases and checks all
   > sums before writing the port, UDP port and ID. Signed offsets, including
   > zero, retain their meaning; malformed numbers, overflow and trailing
@@ -571,8 +571,8 @@ visibility can't express.
   > diagnostic. Stop failures reach stderr and mark the result undrained.
   > A worker failure remains a failed exit even when stop returns normally.
   > The function returns its drain result and exit status. Signal/deadline
-  > setup is shared by 2.8 below; fatal-error handlers, resource limits and
-  > `_Exit` remain in `main()`. The server graph is not destroyed by the
+  > setup and fatal handlers are shared by 2.8 and 2.9 below; resource limits
+  > and `_Exit` remain in `main()`. The server graph is not destroyed by the
   > shared runner.
   - Owner: `server_lifecycle_tests`, covering lifecycle order, shutdown
     requests, partial startup, exceptions at each stage, diagnostics and
@@ -593,12 +593,32 @@ visibility can't express.
   > installation is rolled back; construction unwinding also restores
   > handlers if the watcher could not be started. The normal server path
   > still ends with `_Exit` after cleanup, preserving the process graph's
-  > lifetime. Fatal-error handlers and core-dump limits remain in `main()`.
+  > lifetime. Fatal-error handlers are shared by 2.9 below; core-dump limits
+  > remain in `main()`.
   - Owner: `server_process_shutdown_tests`, delivering SIGTERM/SIGINT on
     main and worker threads, checking lifecycle startup/stop integration,
     handler restoration and flag preservation, and using subprocesses to
     verify cancellation and forced failure for blocked initialization or
     cleanup. Existing executable CLI checks also cover early returns.
+
+- [x] **2.9 Extract fatal-error handlers from the entry points.**
+  > **Status:** done (2026-10-02) —
+  > All three entry points install a `ServerFatalHandlers` guard. It restores
+  > previous allocation/termination handlers on scope exit and needs no
+  > runtime or kernel library. `ServerKind` has its own header, shared with
+  > startup parsing. The unused gameserver memory-exhaustion helper is gone.
+  > Fatal diagnostics use fixed messages and POSIX file descriptors, avoiding
+  > C++ heap allocation in an allocation-failure handler. Gameserver keeps its
+  > stderr banner, append-only `CriticalError.log` and abort behavior for
+  > allocation and termination failures; its emergency log now contains plain
+  > message lines without timestamps. Login/shared allocation failures report
+  > to stderr and `_Exit(EXIT_FAILURE)`, fixing their former successful exit
+  > while avoiding unaudited process teardown. Their terminate handler is
+  > preserved. These behavior corrections are recorded in `docs/FIXES.md`.
+  - Owner: `server_fatal_handler_tests`, with deterministic C++ allocation
+    faults only inside subprocesses, covering main/worker failures, failure
+    status, diagnostics, append logging, unavailable output, absence of exit
+    callbacks, and restoration of previous handlers on return or unwinding.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
