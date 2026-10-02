@@ -867,6 +867,20 @@ visibility can't express.
     bindings, pending errors, real receive/dispatch/reply and packet-history
     destruction; common socket preparation/construction tests.
 
+- [x] **2.22 Extract owned player connection-key setup.**
+  > **Status:** done (this commit) — `ConnectionKey` in `de-kernel` computes
+  > the legacy table and normalized offset without allocation or side effects.
+  > `Player` owns the installed key and changes both existing stream borrowers
+  > only after the replacement is prepared. Failure retains the previous
+  > table, stream offsets and buffered bytes. Destruction frees the table after
+  > the streams; successful socket replacement discards the old key. Received
+  > key values no longer exit the process. Plain stream transforms and protocol
+  > bytes remain unchanged.
+  - Owner: `player_connection_key_tests` for recorded table vectors, hash-byte
+    behavior, empty/default and partial-stream modes, initial/repeated setup,
+    allocation failures, socket replacement, destruction and real socket I/O;
+    game/login runtime cases through their production dispatch and key handlers.
+
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
 `execute()`; all three servers boot and pass a manual smoke test against the

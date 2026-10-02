@@ -8,6 +8,7 @@
 #include "LoginPacketDispatch.h"
 #include "PacketDispatcher.h"
 #include "Player.h"
+#include "support/ConnectionKeyDispatchChecks.h"
 
 #if !defined(__LOGIN_SERVER__) || defined(__GAME_SERVER__) || defined(__SHARED_SERVER__)
 #error "LoginServerRuntime must supply only the loginserver's compile definitions"
@@ -39,6 +40,14 @@ TEST_F(LoginServerRuntimeTest, RejectsGameserverCompatibilityPackets) {
 TEST_F(LoginServerRuntimeTest, RejectsSharedServerRequests) {
     GSRequestGuildInfo packet;
     EXPECT_THROW(PacketDispatcher::dispatch(&packet, nullptr), InvalidProtocolException);
+}
+
+TEST_F(LoginServerRuntimeTest, ConnectionKeyDispatchReplacesOwnedStateWithoutExiting) {
+    connection_key_test::checkDispatchedReplacement();
+}
+
+TEST_F(LoginServerRuntimeTest, ConnectionKeyDispatchPreservesStateOnAllocationFailureAndCanRetry) {
+    connection_key_test::checkDispatchedFailureAndRetry();
 }
 
 } // namespace

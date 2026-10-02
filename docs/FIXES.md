@@ -13,18 +13,30 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
-## Player connection-key storage has no defined owner (2026-10-02)
+## Player connection-key setup leaked memory and could exit the server (2026-10-02)
 
-The login-admission audit reached `Player::setKey`: the player constructors
-leave `pHashTable` uninitialized, key installation reads that pointer and then
-overwrites it with a new 512-byte allocation, and player destruction never
-releases it. Repeated installation also abandons the previous table. The
-streams borrow this storage, so replacement and destruction need an explicit
-lifetime boundary. The special key-pair `exit(0)` branch also needs a behavior
-audit before the real login handshake can safely be exercised in process.
-These are source findings, not yet isolated by regression tests.
+`Player::setKey` read an uninitialized pointer, overwrote it with each new
+512-byte table, and never freed the table on player destruction. A repeated
+handshake carrying one key pair also called `exit(0)`. Three core regressions
+reproduced the destruction/replacement leaks and process exit. Four more
+regressions failed through the actual game/login dispatch tables, including
+cleanup after allocation failure and retry.
 
-> **Status:** recorded, not fixed (refactor/login-connection-adoption)
+`ConnectionKey` now calculates the table and normalized offset without
+allocation or side effects. `Player` starts with an empty owner, allocates the
+replacement before changing either stream, and releases the old table only
+after both borrowers have changed. Destruction releases the table after the
+streams. Successful socket replacement discards the previous key along with
+the old streams; failed replacement preserves it. Received key values no
+longer control process lifetime.
+
+The regression fixtures no longer initialize the old pointer. Fixed digests
+pin all 512 table bytes, all hash-key high-byte combinations preserve the
+legacy calculation, and fault tests cover every stream-presence mode, initial
+setup, replacement and retry. Real loopback I/O preserves the existing plain
+stream bytes; this change does not enable the currently disabled transform.
+
+> **Status:** fixed (refactor/player-connection-keys)
 
 ## Login registration leaked rejected connections and teardown skipped session cleanup (2026-10-02)
 
