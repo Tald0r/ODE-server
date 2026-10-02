@@ -27,6 +27,7 @@ set(LOGINSERVER_RUNTIME_SOURCES
     handler/GMServerInfoHandler.cpp
     LoginContext.cpp
     LoginConnection.cpp
+    LoginWorldList.cpp
     LoginPacketDispatch.cpp
     CharacterCreation.cpp
     CharacterDeletion.cpp

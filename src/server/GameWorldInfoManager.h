@@ -26,6 +26,10 @@ public:
     void load(ServerInfoRepository& repository);
 
     const GameWorldInfo* getGameWorldInfo(WorldID_t worldID) const;
+    // Read-only catalogue traversal; iteration order is unspecified.
+    const std::unordered_map<WorldID_t, GameWorldInfo>& getGameWorldInfos() const noexcept {
+        return m_GameWorldInfos;
+    }
     uint getSize() const {
         return m_GameWorldInfos.size();
     }
