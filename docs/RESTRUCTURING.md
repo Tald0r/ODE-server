@@ -1247,18 +1247,44 @@ visibility can't express.
     exception identity/translation, repeated destruction and four 32-position
     allocation sweeps over empty/populated tables with retry.
 
-- [ ] **2.44 Extract owned common game-server catalogue loading.**
-  > **Status:** not started — `GameServerInfoManager` reads a default repository,
-  > stores an uninitialized table pointer before loading, publishes dimensions
-  > and raw arrays before preparation finishes, and never allocates world zero's
-  > group table. Non-PK and castle-following flags are applied after base rows
-  > become live. Supply explicit repository input, validate dimensions/fields
-  > and prepare complete owned rows plus overlays before publication. Preserve
-  > required traversal APIs after auditing their game/login callers; keep failed
-  > loads, cold destruction and repeated cleanup safe. This enables an explicit
-  > production character-selection topology alongside the login routing maps.
-  - Planned owner: standalone ServerCore catalogue tests covering staged query,
-    overlay, validation, allocation/reporting failure, borrowed rows and retry.
+- [x] **2.44 Extract owned common game-server catalogue loading.**
+  > **Status:** done (this commit) — the loader accepts an explicit repository
+  > and prepares owned records, group tables, a borrowed traversal matrix and
+  > both flag overlays before a nonthrowing swap. All load diagnostics precede
+  > publication. Failed loads preserve dimensions, borrowed records and matrix
+  > identity. Clear resets dimensions and storage without allocation; cold and
+  > repeated destruction are safe. World zero has storage, with the existing
+  > MAX(WorldID)+2 / MAX(GroupID)+1 traversal dimensions retained for game/login
+  > consumers. Unused raw add/delete APIs are removed. Existing pointer getters
+  > and traversal remain borrowed; callers must not delete rows or mutate the
+  > matrix. Loads/clear require quiescent readers and final init reporting remains
+  > outside publication. IDs/status and unsigned port representation are checked;
+  > transport endpoint policy is separate. Castle followers default to zero and
+  > keep their full word width; repeated overlays retain last-row semantics.
+  - Owner: 24 `server_catalogue_tests` cases, linking production `ServerCore`
+    without any executable/runtime startup. Ten regressions failed before the
+    fix. Coverage includes full ID/dimension boundaries, empty/MAX/refusal policy,
+    field and overlay validation, all five query stages, reporting failures,
+    borrowed matrix identity, duplicate/missing-reference cleanup, two 128-position
+    allocation sweeps, default/full-width flags and repeated clear/reload.
+
+- [ ] **2.45 Extract explicit login character-selection topology.**
+  > **Status:** not started — `GlobalSelectPCTopology` lives in the packet handler
+  > and reads process contexts for non-PK status and zone-to-group-to-server
+  > routing. Supply the common server and login routing managers explicitly and
+  > test their production adapter with real scoped catalogues. Keep selection
+  > decisions and handler response policy while testing sparse/boundary routing,
+  > missing references, non-PK flags and observations after quiescent reloads.
+  - Planned owner: login runtime adapter cases plus existing character-selection
+    decisions; no sockets, database connection or executable startup for the adapter.
+
+- [ ] **2.46 Validate persisted character-selection slot text.**
+  > **Status:** not started — selection checks only the five-character length
+  > before converting the last byte to an integer. Audit creation/listing slot
+  > bounds, then reject invalid prefixes, nondigits and unsupported indices before
+  > routing while retaining rejection precedence and valid slot behavior.
+  - Planned owner: character-selection decision and production-topology cases
+    over malformed repository rows and valid slot boundaries.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

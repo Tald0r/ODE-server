@@ -146,6 +146,10 @@ ordering and retry through the production builder and packet handoffs.
 `ServerCore`, without a server runtime or database connection. It checks owned
 replacement, rollback and retry after load failures, ID/status validation,
 read-only lookups and preservation through throwing load diagnostics.
+`server_catalogue_tests` similarly links the common game-server catalogue from
+`ServerCore`. It checks owned rows/traversal tables, complete non-PK and castle
+flags, cold and repeated cleanup, field validation, world zero and rollback/retry
+after query, allocation or diagnostic failure without executable startup.
 Login world-list replies use explicit catalogue, account repository and player
 inputs. Tests run the production assembler without sockets or database startup,
 covering sparse world IDs, ordered rows, saved-selection bounds, packet limits,

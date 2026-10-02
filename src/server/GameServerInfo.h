@@ -27,7 +27,7 @@
 class GameServerInfo {
 public:
     // constructor
-    GameServerInfo() : m_bNonPKServer(false) {}
+    GameServerInfo() : m_bNonPKServer(false), m_CastleFollowingServerID(0) {}
 
 public:
     // get/set GameServerID
@@ -114,7 +114,7 @@ public:
         StringStream msg;
         msg << "GameServerInfo(" << "ServerID: " << (int)m_ServerID << ",Nickname:" << m_Nickname << ",IP: " << m_IP
             << ",TCPPort:" << m_TCPPort << ",UDPPort:" << m_UDPPort << ",GroupID:" << (int)m_GroupID
-            << ",WorldID:" << (int)m_WorldID << ",ServerStat:" << (int)m_GroupID << ")";
+            << ",WorldID:" << (int)m_WorldID << ",ServerStat:" << (int)m_ServerStat << ")";
         return msg.toString();
     }
 

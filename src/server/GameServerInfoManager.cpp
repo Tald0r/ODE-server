@@ -1,254 +1,143 @@
-//////////////////////////////////////////////////////////////////////////////
-// Filename    : GameServerInfoManager.cpp
-// Written By  : Reiot
-// Description :
-//////////////////////////////////////////////////////////////////////////////
-
 #include "GameServerInfoManager.h"
+
+#include <utility>
 
 #include "repository/ServerInfoRepository.h"
 
-//////////////////////////////////////////////////////////////////////////////
-// class GameServerInfoManager member methods
-//////////////////////////////////////////////////////////////////////////////
-
-GameServerInfoManager::GameServerInfoManager() {
-    m_MaxWorldID = 0;
-    m_MaxServerGroupID = 0;
+void GameServerInfoManager::Catalogue::swap(Catalogue& other) noexcept {
+    rows.swap(other.rows);
+    tables.swap(other.tables);
+    view.swap(other.view);
+    std::swap(groupCount, other.groupCount);
 }
 
-
-GameServerInfoManager::~GameServerInfoManager() {
-    clear();
+GameServerInfo* GameServerInfoManager::Catalogue::lookup(ServerID_t serverID, ServerGroupID_t groupID,
+                                                         WorldID_t worldID) const {
+    if (worldID >= tables.size() || groupID >= groupCount)
+        throw NoSuchElementException();
+    const auto& group = tables[worldID][groupID];
+    const auto found = group.find(serverID);
+    if (found == group.end())
+        throw NoSuchElementException();
+    return found->second;
 }
 
-
-void GameServerInfoManager::clear() {
-    // Delete only the second of each pair in the hashmap, that is the GameServerInfo
-    // object, and leave the pair itself. (note that GameServerInfo is created on
-    // the heap, so it has to be deleted explicitly. then again, GSIM being destructed
-    // means the login server is shutting down..)
-    for (int j = 1; j < m_MaxWorldID; j++) {
-        for (int i = 0; i < m_MaxServerGroupID; i++) {
-            HashMapGameServerInfo::iterator itr = m_pGameServerInfos[j][i].begin();
-            for (; itr != m_pGameServerInfos[j][i].end(); itr++) {
-                SAFE_DELETE(itr->second);
-            }
-
-            // Now delete every pair in the hash map.
-            m_pGameServerInfos[j][i].clear();
-        }
-    }
-
-    if (m_pGameServerInfos != NULL) {
-        for (int i = 1; i < m_MaxWorldID; i++)
-            SAFE_DELETE_ARRAY(m_pGameServerInfos[i]);
-        SAFE_DELETE_ARRAY(m_pGameServerInfos);
-    }
+void GameServerInfoManager::clear() noexcept {
+    Catalogue empty;
+    m_Catalogue.swap(empty);
 }
-
 
 void GameServerInfoManager::init() {
-    __BEGIN_TRY
-
-    // just load data from GameServerInfo table
     load();
-
-    // just print to cout
     cout << toString() << endl;
-
-    __END_CATCH
 }
 
 void GameServerInfoManager::load() {
-    __BEGIN_TRY
+    load(defaultServerInfoRepository());
+}
 
-
-    ServerInfoRepository& repo = defaultServerInfoRepository();
-
-    // The tables are sized from the largest GroupID and WorldID; an
-    // empty table is a startup error.
-    int maxGroupID = 0;
-    if (!repo.loadMaxServerGroupID(maxGroupID)) {
+void GameServerInfoManager::load(ServerInfoRepository& repository) {
+    int maxGroup = 0;
+    if (!repository.loadMaxServerGroupID(maxGroup)) {
         cerr << "GameServerInfo TABLE does not exist!" << endl;
         throw Error("GameServerInfo TABLE does not exist!");
     }
+    if (!std::in_range<ServerGroupID_t>(maxGroup))
+        throw Error("invalid maximum game-server GroupID");
 
-    m_MaxServerGroupID = maxGroupID + 1;
-
-    int maxWorldID = 0;
-    if (!repo.loadMaxWorldID(maxWorldID)) {
+    int maxWorld = 0;
+    if (!repository.loadMaxWorldID(maxWorld)) {
         cerr << "GameServerInfo TABLE does not exist!" << endl;
         throw Error("GameServerInfo TABLE does not exist!");
     }
+    if (!std::in_range<WorldID_t>(maxWorld))
+        throw Error("invalid maximum game-server WorldID");
 
-    m_MaxWorldID = maxWorldID + 2;
+    Catalogue prepared;
+    prepared.groupCount = maxGroup + 1; // Checked before arithmetic or indexing.
+    prepared.tables.resize(static_cast<std::size_t>(maxWorld) + 2);
+    prepared.view = std::make_unique<HashMapGameServerInfo*[]>(prepared.tables.size());
+    for (std::size_t world = 0; world < prepared.tables.size(); ++world) {
+        prepared.tables[world].resize(static_cast<std::size_t>(prepared.groupCount));
+        prepared.view[world] = prepared.tables[world].data();
+    }
+    cout << "MAX SERVER GROUP = " << prepared.groupCount << endl;
 
-    m_pGameServerInfos = new HashMapGameServerInfo*[m_MaxWorldID];
+    const auto servers = repository.loadServers();
+    prepared.rows.reserve(servers.size());
+    for (const auto& row : servers) {
+        if (!std::in_range<ServerID_t>(row.serverID) || !std::in_range<WorldID_t>(row.worldID) ||
+            row.worldID > maxWorld || !std::in_range<ServerGroupID_t>(row.groupID) || row.groupID > maxGroup)
+            throw Error("invalid game-server catalogue ID");
+        if (row.stat < SERVER_FREE || row.stat > SERVER_DOWN)
+            throw Error("invalid game-server status");
+        // Ports retain their stored unsigned width; endpoint policy belongs to transport setup.
+        if (!std::in_range<uint>(row.tcpPort) || !std::in_range<uint>(row.udpPort))
+            throw Error("invalid game-server catalogue port");
 
-    for (int i = 1; i < m_MaxWorldID; i++)
-        m_pGameServerInfos[i] = new HashMapGameServerInfo[m_MaxServerGroupID];
-
-    cout << "MAX SERVER GROUP = " << m_MaxServerGroupID << endl;
-
-    vector<ServerInfoRow> servers = repo.loadServers();
-
-    for (size_t i = 0; i < servers.size(); i++) {
-        const ServerInfoRow& row = servers[i];
-        GameServerInfo* pGameServerInfo = new GameServerInfo();
-
-        pGameServerInfo->setServerID(row.serverID);
-        pGameServerInfo->setNickname(row.nickname);
-        pGameServerInfo->setIP(row.ip);
-        pGameServerInfo->setTCPPort(row.tcpPort);
-        pGameServerInfo->setUDPPort(row.udpPort);
-
-        WorldID_t WorldID = row.worldID;
-        pGameServerInfo->setWorldID(WorldID);
-
-        ServerGroupID_t ServerGroupID = row.groupID;
-        pGameServerInfo->setGroupID(ServerGroupID);
-
-        pGameServerInfo->setServerStat((ServerStatus)row.stat);
-        addGameServerInfo(pGameServerInfo, ServerGroupID, WorldID);
+        auto info = std::make_unique<GameServerInfo>();
+        info->setServerID(static_cast<ServerID_t>(row.serverID));
+        info->setNickname(row.nickname);
+        info->setIP(row.ip);
+        info->setTCPPort(static_cast<uint>(row.tcpPort));
+        info->setUDPPort(static_cast<uint>(row.udpPort));
+        info->setWorldID(static_cast<WorldID_t>(row.worldID));
+        info->setGroupID(static_cast<ServerGroupID_t>(row.groupID));
+        info->setServerStat(static_cast<ServerStatus>(row.stat));
+        auto* borrowed = info.get();
+        prepared.rows.push_back(std::move(info));
+        auto& group = prepared.tables[static_cast<std::size_t>(row.worldID)][static_cast<std::size_t>(row.groupID)];
+        if (!group.emplace(borrowed->getServerID(), borrowed).second)
+            throw DuplicatedException("duplicated game-server ServerID");
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // The non-PK servers, from the player (login) database.
-    ///////////////////////////////////////////////////////////////////////////////
-    vector<ServerInfoNonPKRow> nonPK = repo.loadNonPKServers();
-
-    for (size_t i = 0; i < nonPK.size(); i++) {
-        WorldID_t worldID = nonPK[i].worldID;
-        ServerGroupID_t serverGroupID = nonPK[i].serverGroupID;
-
-        GameServerInfo* pGameServerInfo = getGameServerInfo(1, serverGroupID, worldID);
-
-        pGameServerInfo->setNonPKServer();
-
-        cout << "WorldID:" << (int)worldID << " ServerGroupID:" << (int)serverGroupID << " NonPK set" << endl;
+    for (const auto& row : repository.loadNonPKServers()) {
+        if (!std::in_range<WorldID_t>(row.worldID) || row.worldID > maxWorld ||
+            !std::in_range<ServerGroupID_t>(row.serverGroupID) || row.serverGroupID > maxGroup)
+            throw Error("invalid non-PK catalogue ID");
+        prepared.lookup(1, static_cast<ServerGroupID_t>(row.serverGroupID), static_cast<WorldID_t>(row.worldID))
+            ->setNonPKServer();
+        cout << "WorldID:" << row.worldID << " ServerGroupID:" << row.serverGroupID << " NonPK set" << endl;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // Which server's war results this server's castles follow, from the
-    // player (login) database.
-    ///////////////////////////////////////////////////////////////////////////////
-    vector<ServerInfoCastleStatRow> castleStats = repo.loadCastleStats();
-
-    for (size_t i = 0; i < castleStats.size(); i++) {
-        WorldID_t worldID = castleStats[i].worldID;
-        ServerGroupID_t serverGroupID = castleStats[i].serverGroupID;
-        ServerGroupID_t followServerID = castleStats[i].followServerID;
-
-        GameServerInfo* pGameServerInfo = getGameServerInfo(1, serverGroupID, worldID);
-
-        pGameServerInfo->setCastleFollowingServerID(followServerID);
-
-        cout << "WorldID:" << (int)worldID << " ServerGroupID:" << (int)serverGroupID << " follows"
-             << (int)followServerID << endl;
+    for (const auto& row : repository.loadCastleStats()) {
+        if (!std::in_range<WorldID_t>(row.worldID) || row.worldID > maxWorld ||
+            !std::in_range<ServerGroupID_t>(row.serverGroupID) || row.serverGroupID > maxGroup ||
+            !std::in_range<ServerID_t>(row.followServerID))
+            throw Error("invalid castle-following catalogue ID");
+        prepared.lookup(1, static_cast<ServerGroupID_t>(row.serverGroupID), static_cast<WorldID_t>(row.worldID))
+            ->setCastleFollowingServerID(static_cast<ServerID_t>(row.followServerID));
+        cout << "WorldID:" << row.worldID << " ServerGroupID:" << row.serverGroupID << " follows" << row.followServerID
+             << endl;
     }
 
-    __END_CATCH
+    // No row, index, flag, dimension or diagnostic remains to prepare at publication.
+    m_Catalogue.swap(prepared);
 }
 
-void GameServerInfoManager::addGameServerInfo(GameServerInfo* pGameServerInfo, const ServerGroupID_t ServerGroupID,
-                                              WorldID_t WorldID) {
-    __BEGIN_TRY
-
-    if (ServerGroupID >= m_MaxServerGroupID) {
-        throw DuplicatedException("ServerGroupID over Bounce");
-    }
-
-    if (WorldID >= m_MaxWorldID) {
-        throw DuplicatedException("WorldID over Bounce");
-    }
-
-    HashMapGameServerInfo::iterator itr =
-        m_pGameServerInfos[WorldID][ServerGroupID].find(pGameServerInfo->getServerID());
-
-    if (itr != m_pGameServerInfos[WorldID][ServerGroupID].end()) {
-        throw DuplicatedException("duplicated game-server ServerID");
-    }
-
-    m_pGameServerInfos[WorldID][ServerGroupID][pGameServerInfo->getServerID()] = pGameServerInfo;
-
-    __END_CATCH
+GameServerInfo* GameServerInfoManager::getGameServerInfo(ServerID_t serverID, ServerGroupID_t groupID,
+                                                         WorldID_t worldID) const {
+    return m_Catalogue.lookup(serverID, groupID, worldID);
 }
 
-void GameServerInfoManager::deleteGameServerInfo(const ServerID_t ServerID, const ServerGroupID_t ServerGroupID,
-                                                 WorldID_t WorldID) {
-    __BEGIN_TRY
-
-    if (ServerGroupID >= m_MaxServerGroupID) {
-        throw DuplicatedException("ServerGroupID over Bounce");
-    }
-    if (WorldID >= m_MaxWorldID) {
-        throw DuplicatedException("WorldID over Bounce");
-    }
-    HashMapGameServerInfo::iterator itr = m_pGameServerInfos[WorldID][ServerGroupID].find(ServerID);
-
-    if (itr != m_pGameServerInfos[WorldID][ServerGroupID].end()) {
-        // Delete the GameServerInfo.
-        delete itr->second;
-
-        // Delete the pair.
-        m_pGameServerInfos[WorldID][ServerGroupID].erase(itr);
-    } else {
-        // When no such game server info object can be found
-        throw NoSuchElementException();
-    }
-
-    __END_CATCH
-}
-
-
-GameServerInfo* GameServerInfoManager::getGameServerInfo(const ServerID_t ServerID, const ServerGroupID_t ServerGroupID,
-                                                         WorldID_t WorldID) const {
-    __BEGIN_TRY
-
-    GameServerInfo* pGameServerInfo = NULL;
-
-    if (WorldID >= m_MaxWorldID || ServerGroupID >= m_MaxServerGroupID) {
-        // When no such game server info object could be found
-        throw NoSuchElementException();
-    }
-
-    HashMapGameServerInfo::const_iterator itr = m_pGameServerInfos[WorldID][ServerGroupID].find(ServerID);
-
-    if (itr != m_pGameServerInfos[WorldID][ServerGroupID].end()) {
-        pGameServerInfo = itr->second;
-    } else {
-        // When no such game server info object could be found
-        throw NoSuchElementException();
-    }
-
-    return pGameServerInfo;
-
-    __END_CATCH
+uint GameServerInfoManager::getSize(WorldID_t worldID, ServerGroupID_t groupID) const noexcept {
+    return worldID < m_Catalogue.tables.size() && groupID < m_Catalogue.groupCount
+               ? m_Catalogue.tables[worldID][groupID].size()
+               : 0;
 }
 
 string GameServerInfoManager::toString() const {
-    __BEGIN_TRY
-
-    StringStream msg;
-    msg << "GameServerInfoManager(\n";
-
-    for (int j = 1; j < m_MaxWorldID; j++) {
-        for (int i = 0; i < m_MaxServerGroupID; i++) {
-            if (m_pGameServerInfos[j][i].empty()) {
-                msg << "EMPTY";
-            } else {
-                HashMapGameServerInfo::const_iterator itr = m_pGameServerInfos[j][i].begin();
-                for (; itr != m_pGameServerInfos[j][i].end(); itr++) {
-                    msg << itr->second->toString() << '\n';
-                }
-            }
-
-            msg << ")";
+    StringStream message;
+    message << "GameServerInfoManager(\n";
+    for (const auto& world : m_Catalogue.tables) {
+        for (const auto& group : world) {
+            if (group.empty())
+                message << "EMPTY";
+            else
+                for (const auto& [id, info] : group)
+                    message << info->toString() << '\n';
+            message << ")";
         }
     }
-
-    return msg.toString();
-
-    __END_CATCH
+    return message.toString();
 }
