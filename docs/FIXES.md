@@ -312,11 +312,31 @@ counter-preservation tests.
 `GuildManager::makeSGGuildInfo` allocates raw guild-info records before filling
 and attaching them to the reply, and `Guild::makeInfo(GuildInfo2*)` does the
 same for member records. Throwing setters or list insertion can leave those
-records unowned. This is a source finding from the guild-loader reply audit;
-the successful reply path is covered, while allocation-failure ownership still
-needs its own extraction and tests.
+records unowned. The packet adder also destroyed refused records at its count
+limit but leaked them after failed list allocation. Five regressions reproduced
+these leaks and a partly extended destination after count refusal.
 
-> **Status:** recorded, not fixed (refactor/shared-guild-loading)
+The shared builder now prepares a complete owned packet under the table lock,
+with guild/member owners retained through filling and attachment. Completed
+records transfer without allocation and keep their prepend order. The packet
+adder consumes its incoming record on every exit; a refused batch transfer
+retains both packet owners. Twelve tests cover allocation cleanup and retry,
+empty/populated destinations, exact row fields/order, count and diagnostic
+refusal, transfer without allocation, self-transfer, repeated destruction and
+unchanged intro truncation. Packet bytes and count limits are unchanged.
+
+> **Status:** fixed (refactor/shared-guild-replies)
+
+## Guild-info decoding and roster budgets need separate ownership and bounds checks (2026-10-02)
+
+`SGGuildInfo::read` and `GuildInfo2::read` allocate raw nested records before
+reading and list insertion can throw. Their input-decoding paths therefore
+still need owned partial records; the shared reply-construction fix covers
+outgoing assembly. `GuildInfo2::getMaxSize` budgets 220 members, but its adder,
+reader and writer do not enforce that roster count. These are source findings
+from the reply audit, requiring decoder failure and roster-boundary tests.
+
+> **Status:** recorded, not fixed (refactor/shared-guild-replies)
 
 ## Login world-list assembly leaves partial reply rows unowned (2026-10-02)
 

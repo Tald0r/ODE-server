@@ -340,21 +340,17 @@ void GuildManager::clear_NOBLOCKED() {
 
 #ifdef __SHARED_SERVER__
 void GuildManager::makeSGGuildInfo(SGGuildInfo& sgGuildInfo) noexcept(false) {
-    __BEGIN_TRY
+    CriticalSection lock{m_Mutex};
+    if (m_Guilds.size() + sgGuildInfo.getGuildInfoListNum() > GuildInfo2::kMaxCount)
+        throw InvalidProtocolException("too many guild infos");
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
-
-    HashMapGuildConstItor itr = m_Guilds.begin();
-    for (; itr != m_Guilds.end(); itr++) {
-        GuildInfo2* pGuildInfo = new GuildInfo2();
-        itr->second->makeInfo(pGuildInfo);
-
-        sgGuildInfo.addGuildInfo(pGuildInfo);
+    SGGuildInfo prepared;
+    for (const auto& [id, guild] : m_Guilds) {
+        auto info = std::make_unique<GuildInfo2>();
+        guild->makeInfo(info.get());
+        prepared.addGuildInfo(info.release()); // Consumed even if list insertion fails.
     }
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
+    sgGuildInfo.prependGuildInfosFrom(prepared);
 }
 #endif
 

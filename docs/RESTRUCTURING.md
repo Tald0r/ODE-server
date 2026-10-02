@@ -1144,13 +1144,27 @@ visibility can't express.
     repeated initialization, and four 128-position allocation sweeps across
     empty/populated previous graphs and empty/nonempty database tables.
 
-- [ ] **2.38 Extract owned shared guild reply construction.**
-  > **Status:** not started — shared guild-info assembly allocates raw guild
-  > and member reply records before their filling/attachment can throw. Give
-  > partial records an owner through preparation and preserve the destination
-  > reply on failed construction, without changing packet bytes or roster data.
-  - Planned owner: shared runtime tests over the production builder, populated
-    reply destinations, allocation failures, cleanup and retry.
+- [x] **2.38 Extract owned shared guild reply construction.**
+  > **Status:** done (this commit) — shared guild-info assembly owns partial
+  > guild/member records and builds a temporary packet under the table lock.
+  > A completed batch transfers without allocation, preserving the existing
+  > prepend order and destination rows. Count/allocation refusal leaves the
+  > destination unchanged. The packet adder consumes incoming ownership on
+  > both count refusal and failed list allocation; batch refusal retains both
+  > packet owners. Packet layouts, limits and intro truncation stay unchanged.
+  - Owner: 12 `SharedGuildReplies` cases in `shared_server_runtime_tests`.
+    Five regressions failed before the fix. Coverage includes 128-position
+    reply allocation sweeps over empty/populated destinations, individual
+    roster cleanup, count/diagnostic refusal, allocation-free batch transfer,
+    self-transfer, exact fields/order, repeated destruction and retry.
+
+- [ ] **2.39 Extract owned login world-list reply construction.**
+  > **Status:** not started — `CLGetWorldListHandler` prepares raw world-info
+  > records before current-world lookup and packet attachment, and assumes
+  > catalogue IDs are contiguous. Add an explicit, owned assembly boundary
+  > with lookup/allocation failure, sparse IDs and cleanup/retry coverage.
+  - Planned owner: login runtime tests over supplied catalogue/session inputs
+    and the production handler/reply construction.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
