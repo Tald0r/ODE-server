@@ -97,6 +97,27 @@ target_link_libraries(wire_tests PRIVATE
 )
 
 add_test(NAME wire_tests COMMAND wire_tests)
+
+# Exercise the production composition roots and handlers without main(). Each
+# runtime is compiled once with its server's definitions, and linked by both
+# the deployed executable and its test. Separate processes are essential:
+# their dispatch tables and several identically named classes are different.
+function(add_server_runtime_test target source runtime)
+    # Compile the test main directly: if a runtime acquires a main(), the
+    # duplicate symbol must fail the link, never replace gtest_main from an
+    # archive and accidentally run server startup under ctest.
+    add_executable(${target} EXCLUDE_FROM_ALL ${source} support/server_runtime_main.cpp)
+    target_link_libraries(${target} PRIVATE ${runtime} gtest)
+    add_dependencies(wire_tests ${target})
+    add_test(NAME ${target} COMMAND ${target}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    set_tests_properties(${target} PROPERTIES TIMEOUT 60)
+endfunction()
+
+add_server_runtime_test(game_server_runtime_tests game_server_runtime_test.cpp GameServerRuntime)
+add_server_runtime_test(login_server_runtime_tests login_server_runtime_test.cpp LoginServerRuntime)
+add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
+
 add_executable(proxy_acceptor_tests EXCLUDE_FROM_ALL
     proxy_acceptor_test.cpp
     socket_close_test.cpp

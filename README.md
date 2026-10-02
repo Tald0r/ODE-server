@@ -113,6 +113,13 @@ The same commands work on macOS under OrbStack (verified) and should under
 Docker Desktop; on Apple Silicon the image is arm64 and the build is native
 to it.
 
+The suite includes `game_server_runtime_tests`, `login_server_runtime_tests`
+and `shared_server_runtime_tests`. They link the same server implementation
+objects as the production executables, with a test entry point instead of
+`main.cpp`, and exercise real packet handlers without starting a server or
+connecting to MySQL. The first suite build therefore also compiles the server
+runtimes. Smaller rule tests remain available as individual CMake targets.
+
 ## Build natively on macOS
 
 The servers also build as native macOS executables with Apple Clang. This is
@@ -165,9 +172,9 @@ cmake --build build-tests --target wire_tests -j"$(sysctl -n hw.ncpu)"
 (cd build-tests && ctest --output-on-failure)
 ```
 
-50 of the 53 tests pass, the wire goldens among them. `ratchets`,
-`proxy_acceptor_tests` and `shutdown_supervisor` fail because of the
-platform rather than the code; `docs/FIXES.md` records each one.
+The native suite has three known platform-specific failures: `ratchets`,
+`proxy_acceptor_tests` and `shutdown_supervisor`. `docs/FIXES.md` records
+each one; the pinned container remains the reference run.
 
 ## Howto
 

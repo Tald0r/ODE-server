@@ -17,10 +17,9 @@
 //      registers handlers by Factory::kPacketID, so the factory/packet id
 //      agreement is what keeps dispatch pointed at the same handlers.
 //
-// What this file cannot reach: the per-server registration lists and the
-// composition roots' DirectionSets are compiled only under a server macro,
-// which the test build never defines. Their checks fire in the production
-// builds.
+// This kernel-only test does not reach the per-server registration lists or
+// the composition roots' DirectionSets. The separate *_server_runtime_tests
+// link those production objects with their server macros and exercise dispatch.
 //
 //////////////////////////////////////////////////////////////////////
 

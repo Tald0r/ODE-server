@@ -2,7 +2,7 @@
 # SharedServer 可执行文件
 # ============================================================================
 
-set(SHAREDSERVER_SOURCES
+set(SHAREDSERVER_RUNTIME_SOURCES
     handler/GSAddGuildHandler.cpp
     handler/GSAddGuildMemberHandler.cpp
     handler/GSExpelGuildMemberHandler.cpp
@@ -24,19 +24,21 @@ set(SHAREDSERVER_SOURCES
     GameServerGroupInfoManager.cpp
     GameServerManager.cpp
     SharedServer.cpp
-    main.cpp
     StringPool.cpp
     repository/MySQLSharedConfigRepository.cpp
     repository/MySQLSharedGuildRepository.cpp
 )
 
-add_executable(sharedserver ${SHAREDSERVER_SOURCES})
+# Link the real handlers and managers in tests without the process setup,
+# listeners and shutdown performed by main(). Keep each server runtime in its
+# own executable: the servers define different classes with the same names.
+add_library(SharedServerRuntime OBJECT ${SHAREDSERVER_RUNTIME_SOURCES})
 
 # 编译定义
-target_compile_definitions(sharedserver PRIVATE __SHARED_SERVER__)
+target_compile_definitions(SharedServerRuntime PUBLIC __SHARED_SERVER__)
 
 # 包含目录
-target_include_directories(sharedserver PRIVATE
+target_include_directories(SharedServerRuntime PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src/Core
     ${CMAKE_SOURCE_DIR}/src/server
@@ -50,7 +52,7 @@ elseif(UNIX)
     set(EXTRA_LIBS nsl z dl)
 endif()
 
-target_link_libraries(sharedserver PRIVATE
+target_link_libraries(SharedServerRuntime PUBLIC
     Database
     SharedServerPackets
     ServerCore
@@ -62,3 +64,6 @@ target_link_libraries(sharedserver PRIVATE
     Threads::Threads
     ${EXTRA_LIBS}
 )
+
+add_executable(sharedserver main.cpp)
+target_link_libraries(sharedserver PRIVATE SharedServerRuntime)
