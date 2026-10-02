@@ -153,6 +153,8 @@ refused connections. `socket_construction_tests` and game runtime tests inject
 allocation failures in child processes to check socket/stream cleanup and
 complete Mofus connection publication. Shared-server and Mofus ports use the
 same checked reader when those features connect.
+Socket construction coverage also checks accepted-socket adoption and failed
+reconnects, including descriptor reuse and successful retries after failure.
 `server_application_tests` runs configuration loading through lifecycle cleanup
 and final reporting using an explicit context and controlled actions. It checks
 configuration lifetime and restoration, rejected input and failure status without

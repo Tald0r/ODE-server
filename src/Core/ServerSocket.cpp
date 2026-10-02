@@ -75,12 +75,14 @@ Socket* ServerSocket::accept() {
     Socket* Client = NULL;
 
     try {
-        SocketImpl* impl = m_Impl->accept();
+        std::unique_ptr<SocketImpl> impl(m_Impl->accept());
 
         if (impl == NULL)
             throw UnknownError("impl == NULL");
 
-        Client = new Socket(impl);
+        // Allocation precedes argument evaluation, so a failed new retains
+        // ownership here. Socket then adopts the implementation.
+        Client = new Socket(impl.release());
     } catch (NonBlockingIOException&) {
         // ignore
     } catch (ConnectException&) {

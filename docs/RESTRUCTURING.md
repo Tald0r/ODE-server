@@ -778,6 +778,24 @@ visibility can't express.
     game runtime `GameConnection` tests for real shared-client adoption and
     Mofus allocation failures/retries; production runtime and Mofus links.
 
+- [x] **2.17 Pin ownership through socket acceptance and reconnection.**
+  > **Status:** done (2026-10-02) —
+  > `SocketImpl::accept` closes the raw descriptor if implementation allocation
+  > fails, then retains ownership through peer metadata setup.
+  > `ServerSocket::accept` owns that implementation through wrapper allocation.
+  > Empty nonblocking accepts retain their null-result behavior.
+  > `Socket::reconnect` still closes the old connection first, but keeps its
+  > closed implementation until the replacement has connected. Allocation,
+  > creation or connection failures destroy the replacement and leave the old
+  > endpoint metadata/descriptor number readable, safe to close or destroy
+  > again, and ready for another reconnect. Closing the retained implementation
+  > does not close a descriptor another socket has since reused. No class layout
+  > or wire behavior changes; `Player::setSocket` remains pending in the fix log.
+  - Owner: `socket_construction_tests`, with allocation-failure sweeps over
+    acceptance and reconnect, empty accepts, actual connection refusal,
+    descriptor reuse, successful retries, old-peer EOF and new-peer byte exchange;
+    wire and all three runtime/production links.
+
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
 `execute()`; all three servers boot and pass a manual smoke test against the

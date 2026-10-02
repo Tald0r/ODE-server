@@ -11,10 +11,14 @@
 //////////////////////////////////////////////////
 #include "SocketImpl.h"
 
+#include <memory>
+
 #include "FileAPI.h"
 #include "SocketAPI.h"
 
 #if defined(__LINUX__) || defined(__APPLE__)
+#include <unistd.h>
+
 #include <arpa/inet.h> // for inet_ntoa()
 #include <sys/socket.h>
 #endif
@@ -223,17 +227,24 @@ SocketImpl* SocketImpl::accept() {
     uint len = sizeof(ClientAddr);
 
     // get client socket descriptor
-    uint ClientID = SocketAPI::accept_ex(m_SocketID, (struct sockaddr*)&ClientAddr, &len);
+    const SOCKET ClientID = SocketAPI::accept_ex(m_SocketID, (struct sockaddr*)&ClientAddr, &len);
 
-    // create MSocketImpl with socket descriptor
-    SocketImpl* client = new SocketImpl();
+    // Until an implementation exists, no destructor can release the accepted
+    // descriptor. Preserve the allocation exception while closing that gap.
+    std::unique_ptr<SocketImpl> client;
+    try {
+        client = std::make_unique<SocketImpl>();
+    } catch (...) {
+        ::close(ClientID);
+        throw;
+    }
 
     // initialize client socket implementation object
     client->m_SocketID = ClientID;
     memcpy(&(client->m_SockAddr), &ClientAddr, sizeof(SOCKADDR_IN));
     client->m_Host = client->_getHost();
     client->m_Port = client->_getPort();
-    return client;
+    return client.release();
 
     __END_CATCH
 }
