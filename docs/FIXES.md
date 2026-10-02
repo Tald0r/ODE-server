@@ -13,6 +13,17 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Login/shared allocation failures still report a successful exit (2026-10-02)
+
+The `memoryError` handlers in `loginserver/main.cpp` and
+`sharedserver/main.cpp` print an out-of-memory error and call `exit(0)`.
+They are installed through `set_new_handler`, so an allocation failure is
+reported to the OS and supervisor as successful termination. The gameserver's
+handler aborts instead. Process shutdown extraction leaves these fatal-error
+handlers in their entry points; their exit behavior still needs correction.
+
+> **Status:** recorded, not fixed (refactor/server-process-shutdown)
+
 ## Startup configuration could fall through into server construction (2026-10-02)
 
 All three entry points caught an invalid `-f` flag's `Error` and continued

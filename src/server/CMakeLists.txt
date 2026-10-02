@@ -41,6 +41,11 @@ add_library(ServerLifecycle STATIC ServerLifecycle.cpp)
 target_include_directories(ServerLifecycle PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ServerLifecycle PUBLIC de-kernel)
 
+# Process signal/deadline setup, independent of any concrete server or kernel.
+add_library(ServerProcessShutdown STATIC ServerProcessShutdown.cpp)
+target_include_directories(ServerProcessShutdown PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ServerProcessShutdown PUBLIC Threads::Threads)
+
 # ============================================================================
 # 子目录
 # ============================================================================

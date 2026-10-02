@@ -544,8 +544,8 @@ visibility can't express.
   > login overrides. Neither function publishes anything to `KernelContext`.
   > Each `main()` owns and registers the completed configuration, and returns
   > failure on an argument, file, parse or override error before constructing
-  > its server. Process handlers and the shutdown deadline remain in the
-  > entry points; lifecycle control is shared by 2.7 below.
+  > its server. Lifecycle control and process shutdown setup are shared by
+  > 2.7 and 2.8 below; the entry points keep their fatal-error handlers.
   > `applyLoginServerOffset` validates the three decimal bases and checks all
   > sums before writing the port, UDP port and ID. Signed offsets, including
   > zero, retain their meaning; malformed numbers, overflow and trailing
@@ -570,13 +570,35 @@ visibility can't express.
   > before cleanup; other startup exceptions keep the existing unknown-error
   > diagnostic. Stop failures reach stderr and mark the result undrained.
   > A worker failure remains a failed exit even when stop returns normally.
-  > The function returns its drain result and exit status. Signals, the
-  > deadline, process handlers, resource limits and `_Exit` remain in `main()`;
-  > the server graph is not destroyed by the shared runner.
+  > The function returns its drain result and exit status. Signal/deadline
+  > setup is shared by 2.8 below; fatal-error handlers, resource limits and
+  > `_Exit` remain in `main()`. The server graph is not destroyed by the
+  > shared runner.
   - Owner: `server_lifecycle_tests`, covering lifecycle order, shutdown
     requests, partial startup, exceptions at each stage, diagnostics and
     preservation of worker failure status; all three executable links and
     the existing `server_startup_cli` checks exercise the entry points.
+
+- [x] **2.8 Extract process shutdown setup from the entry points.**
+  > **Status:** done (2026-10-02) —
+  > All three entry points construct `ServerProcessShutdown` before
+  > initialization and return failure if `ready()` reports failed signal
+  > installation. The library depends only on `Threads::Threads`. Its
+  > SIGTERM/SIGINT handlers only set the existing lock-free shutdown request,
+  > and its watcher keeps the 30-second default deadline after that request.
+  > A shorter timeout can be supplied by tests. A guard never resets a
+  > pending request or worker failure.
+  > Leaving scope cancels and joins the watcher before restoring the previous
+  > signal handlers, including their flags and masks. Partial signal
+  > installation is rolled back; construction unwinding also restores
+  > handlers if the watcher could not be started. The normal server path
+  > still ends with `_Exit` after cleanup, preserving the process graph's
+  > lifetime. Fatal-error handlers and core-dump limits remain in `main()`.
+  - Owner: `server_process_shutdown_tests`, delivering SIGTERM/SIGINT on
+    main and worker threads, checking lifecycle startup/stop integration,
+    handler restoration and flag preservation, and using subprocesses to
+    verify cancellation and forced failure for blocked initialization or
+    cleanup. Existing executable CLI checks also cover early returns.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

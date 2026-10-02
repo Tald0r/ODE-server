@@ -25,7 +25,7 @@
 #include "LoginServer.h"
 #include "Properties.h"
 #include "ServerLifecycle.h"
-#include "ServerShutdown.h"
+#include "ServerProcessShutdown.h"
 #include "ServerStartup.h"
 #include "StringStream.h"
 #include "Types.h"
@@ -41,15 +41,9 @@ void memoryError() {
 //
 //////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[]) {
-    // SIGTERM/SIGINT only store a lock-free request; the main client loop and
-    // every worker observe it on their next turn.
-    struct sigaction action {};
-    action.sa_handler = ServerShutdown::request;
-    sigemptyset(&action.sa_mask);
-    if (sigaction(SIGTERM, &action, nullptr) != 0 || sigaction(SIGINT, &action, nullptr) != 0)
+    de::ServerProcessShutdown shutdown("loginserver");
+    if (!shutdown.ready())
         return EXIT_FAILURE;
-    // Armed before initialization so a startup that blocks still exits.
-    ServerShutdown::Deadline shutdownDeadline(std::chrono::seconds(30), "loginserver");
 
     // Set the out-of-memory handler.
     set_new_handler(memoryError);

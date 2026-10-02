@@ -24,7 +24,7 @@
 #include "KernelContext.h"
 #include "Properties.h"
 #include "ServerLifecycle.h"
-#include "ServerShutdown.h"
+#include "ServerProcessShutdown.h"
 #include "ServerStartup.h"
 #include "StringStream.h"
 #include "Types.h"
@@ -65,12 +65,9 @@ void testMaxMemory() {
 //
 //////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[]) {
-    struct sigaction action {};
-    action.sa_handler = ServerShutdown::request;
-    sigemptyset(&action.sa_mask);
-    if (sigaction(SIGTERM, &action, nullptr) != 0 || sigaction(SIGINT, &action, nullptr) != 0)
+    de::ServerProcessShutdown shutdown("gameserver");
+    if (!shutdown.ready())
         return EXIT_FAILURE;
-    ServerShutdown::Deadline shutdownDeadline(std::chrono::seconds(30), "gameserver");
     cout << ">>> STARTING GAME SERVER..." << endl;
 
     filelog("serverStart.log", "GameServer Start");
