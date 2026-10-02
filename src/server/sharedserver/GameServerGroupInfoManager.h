@@ -1,70 +1,39 @@
 //----------------------------------------------------------------------
-//
 // Filename    : GameServerGroupInfoManager.h
 // Written By  : reiot@ewestsoft.com
-// Description :
-//
+// Description : The shared server's catalogue of game-server groups.
 //----------------------------------------------------------------------
 
 #ifndef __SHARED_SERVER_GAME_SERVER_GROUP_INFO_MANAGER_H__
 #define __SHARED_SERVER_GAME_SERVER_GROUP_INFO_MANAGER_H__
 
-// include files
+#include <vector>
+
 #include <unordered_map>
 
-#include "Exception.h"
 #include "GameServerGroupInfo.h"
-#include "Types.h"
 
-typedef unordered_map<ServerGroupID_t, GameServerGroupInfo*> HashMapGameServerGroupInfo;
+class SharedConfigRepository;
 
-//----------------------------------------------------------------------
-//
-// class GameServerGroupInfoManager;
-//
-// Holds an unordered_map of GameServerGroupInfo keyed by the game server ID
-// internally.
-//
-//----------------------------------------------------------------------
-
+// Load with quiescent readers. Failed loads preserve the current catalogue;
+// successful replacement/destruction invalidates borrowed const row pointers.
 class GameServerGroupInfoManager {
 public:
-    // constructor
-    GameServerGroupInfoManager();
+    GameServerGroupInfoManager() = default;
+    GameServerGroupInfoManager(const GameServerGroupInfoManager&) = delete;
+    GameServerGroupInfoManager& operator=(const GameServerGroupInfoManager&) = delete;
 
-    // destructor
-    ~GameServerGroupInfoManager();
-
-    // initialize manager
     void init();
-
-    // load from database
     void load();
+    void load(SharedConfigRepository& repository);
 
-    // add info
-    void addGameServerGroupInfo(GameServerGroupInfo* pGameServerGroupInfo, WorldID_t WorldID);
-
-    // delete info
-    void deleteGameServerGroupInfo(const ServerGroupID_t ServerGroupID, WorldID_t WorldID);
-
-    // get GameServerGroupInfo by ServerGroupID
-    GameServerGroupInfo* getGameServerGroupInfo(const ServerGroupID_t ServerGroupID, WorldID_t WorldID) const;
-
-    // get count of info
-    uint getSize(WorldID_t WorldID) const {
-        return m_GameServerGroupInfos[WorldID].size();
-    }
-
-    // get debug string
+    const GameServerGroupInfo* getGameServerGroupInfo(ServerGroupID_t groupID, WorldID_t worldID) const;
+    uint getSize(WorldID_t worldID) const;
     string toString() const;
 
 private:
-    // hash map of GameServerGroupInfo
-    // key   : GameServerGroupID_t
-    // value : GameServerGroupInfo *
-    HashMapGameServerGroupInfo* m_GameServerGroupInfos = nullptr;
-
-    WorldID_t m_MaxWorldID = 0;
+    using Groups = std::unordered_map<ServerGroupID_t, GameServerGroupInfo>;
+    std::vector<Groups> m_Groups;
 };
 
 #endif

@@ -193,11 +193,32 @@ Context users must be quiescent and nested server scopes unwind in reverse order
 `GameServerGroupInfoManager::load` set table dimensions before allocating their
 arrays. Allocation failure can leave dimensions inconsistent with the stored
 pointer; reloading overwrites old arrays, and rejected or failed row insertion
-can strand raw row objects. This is a source finding. Task 2.33 tracks explicit
-repository input and owned, transactional replacement so failed initialization
-or reload leaves a destructible manager and retains the previous catalogue.
+can strand raw row objects. Four regressions reproduced destruction crashes
+after the first allocation fails and leaks after reload. The group loader also
+swallowed duplicate-row errors, skipped world-zero cleanup and narrowed its
+table dimension to a byte.
 
-> **Status:** recorded, not fixed (refactor/shared-server-ownership)
+Both loaders now accept explicit repository inputs and prepare value-owned
+replacement tables. Bounds and status are validated before narrowing or
+publication, duplicates refuse the entire replacement, and failures retain
+the previous catalogue. Checked const lookups replace the unused raw-pointer
+mutation interfaces. Twenty tests cover the original regressions, 96-position
+allocation sweeps for both loaders, retry, world-zero cleanup, boundary IDs,
+filtering, repository errors and throwing diagnostics without MySQL or main.
+
+> **Status:** fixed (refactor/shared-catalogue-loading)
+
+## Shared resurrection and string reloads mutate live data before success (2026-10-02)
+
+Shared `ResurrectLocationManager::load` inserts each race's position separately
+into live maps. A failed insertion leaves a row prefix or mismatched race maps,
+and a repeated load collides with existing IDs. Shared `StringPool::load` clears
+the current strings before fetching replacement rows, so a repository error
+loses previous data and insertion failure leaves an incomplete replacement.
+These are source findings; task 2.34 tracks explicit repository boundaries,
+replacement ownership and tests for preservation and retry.
+
+> **Status:** recorded, not fixed (refactor/shared-catalogue-loading)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 

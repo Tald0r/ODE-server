@@ -1060,15 +1060,31 @@ visibility can't express.
     positions with retry, restores nested/empty bindings, retains configuration,
     and verifies listener/player descriptor and allocation cleanup with real TCP.
 
-- [ ] **2.33 Extract owned shared-server catalogue loading.**
-  > **Status:** not started — both shared server/group info managers load from
-  > the default repository directly into raw tables. They change dimensions
-  > before table allocation succeeds, overwrite old arrays on reload, and
-  > construct unowned rows before insertion. Introduce an explicit repository
-  > boundary and prepare owned replacements before publication, preserving the
-  > previous catalogue on failure and supporting scoped failed initialization.
-  - Planned owner: shared runtime catalogue tests with supplied repository rows,
-    allocation failures, invalid/duplicate rows, reload/retry and empty cleanup.
+- [x] **2.33 Extract owned shared-server catalogue loading.**
+  > **Status:** done (this commit) — the server/group loaders accept an explicit
+  > `SharedConfigRepository`; the single-world loader also accepts its world ID
+  > before narrowing. Startup delegates to these same loaders. Value-owned
+  > replacement tables validate dimensions, IDs, status and duplicates before
+  > publication. Failed loads retain the previous catalogue; successful loads
+  > release all prior rows, including world zero. Lookups are read-only and
+  > bounds checked; unused raw-pointer mutation APIs are removed. Readers must
+  > be quiescent while loading, and successful replacement invalidates borrowed
+  > row pointers. The existing group-row database-error translation is retained.
+  - Owner: 20 `SharedCatalogue` cases in `shared_server_runtime_tests`. Four
+    regressions first reproduced failed-allocation destruction crashes and
+    reload leaks. Two 96-position allocation sweeps cover cleanup and retry;
+    other cases cover malformed data, duplicate refusal, zero/maximum IDs,
+    world filtering, repository/reporting failures and safe missing lookups.
+
+- [ ] **2.34 Extract transactional shared startup data loading.**
+  > **Status:** not started — shared `ResurrectLocationManager` appends directly
+  > to two live maps, so failed insertion can publish one race's location or
+  > a row prefix, and a repeated load rejects existing IDs. Shared `StringPool`
+  > clears its live map before fetching rows, losing previous data if fetching
+  > or insertion fails. Add explicit repository inputs and prepare complete
+  > replacements before publication, preserving lookup behavior.
+  - Planned owner: shared runtime tests with supplied repository rows,
+    duplicate/error/allocation failures, paired locations and reload/retry.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
