@@ -681,6 +681,7 @@ target_link_libraries(GameServerRuntime PUBLIC
     ServerWorkerShutdown
     ListenerStartup
     ServerPortSettings
+    OutboundServerConnection
     ServerProcessEnvironment
     GameServerPackets
     Skill

@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 
+#include <memory>
+
 #include "Assert.h"
 #include "Packet.h"
 #include "PacketDispatcher.h"
@@ -25,20 +27,19 @@
 //////////////////////////////////////////////////////////////////////
 Player::Player() : m_pSocket(NULL), m_pInputStream(NULL), m_pOutputStream(NULL) {}
 
-Player::Player(Socket* pSocket) : m_pSocket(pSocket), m_pInputStream(NULL), m_pOutputStream(NULL) {
+Player::Player(Socket* pSocket) : m_pSocket(NULL), m_pInputStream(NULL), m_pOutputStream(NULL) {
     __BEGIN_TRY
 
-    Assert(m_pSocket != NULL);
-
-    // create socket input stream
-    m_pInputStream = new SocketInputStream(m_pSocket);
-
-    Assert(m_pInputStream != NULL);
-
-    // create socket output stream
-    m_pOutputStream = new SocketOutputStream(m_pSocket);
-
-    Assert(m_pOutputStream != NULL);
+    // Adoption includes failure: neither this destructor nor the caller can
+    // clean up an incompletely constructed Player. Keep every part owned until
+    // both streams are ready, destroying streams before their borrowed socket.
+    std::unique_ptr<Socket> socket(pSocket);
+    Assert(socket != nullptr);
+    auto input = std::make_unique<SocketInputStream>(socket.get());
+    auto output = std::make_unique<SocketOutputStream>(socket.get());
+    m_pSocket = socket.release();
+    m_pInputStream = input.release();
+    m_pOutputStream = output.release();
 
     __END_CATCH
 }

@@ -147,6 +147,12 @@ configuration: `TCPPort`/`GameServerUDPPort` for game, `LoginServerPort`/
 Missing values, malformed text and out-of-range ports fail before manager
 construction; leading plus/zeroes, surrounding spaces/tabs and trailing CR remain
 accepted. The application and executable CLI tests also cover this boundary.
+`outbound_server_connection_tests` checks the shared-server/Mofus connection
+helper against loopback peers, including socket options, byte exchange and
+refused connections. `socket_construction_tests` and game runtime tests inject
+allocation failures in child processes to check socket/stream cleanup and
+complete Mofus connection publication. Shared-server and Mofus ports use the
+same checked reader when those features connect.
 `server_application_tests` runs configuration loading through lifecycle cleanup
 and final reporting using an explicit context and controlled actions. It checks
 configuration lifetime and restoration, rejected input and failure status without
