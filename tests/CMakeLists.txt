@@ -174,6 +174,13 @@ add_test(NAME server_process_environment_tests COMMAND server_process_environmen
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(server_process_environment_tests PROPERTIES TIMEOUT 30)
 
+add_executable(listener_startup_tests EXCLUDE_FROM_ALL listener_startup_test.cpp)
+target_link_libraries(listener_startup_tests PRIVATE ListenerStartup gtest_main)
+add_dependencies(wire_tests listener_startup_tests)
+add_test(NAME listener_startup_tests COMMAND listener_startup_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(listener_startup_tests PROPERTIES TIMEOUT 30)
+
 # Verify that every real main returns failure for invalid startup input,
 # instead of aborting, falling through into managers, or starting workers.
 add_dependencies(wire_tests gameserver loginserver sharedserver)

@@ -57,6 +57,7 @@ target_link_libraries(SharedServerRuntime PUBLIC
     SharedServerPackets
     ServerCore
     ServerWorkerShutdown
+    ListenerStartup
     Core
     # The wire archive itself (task 2.4) — also reached transitively through
     # Core/SharedServerPackets, named here so the layering is visible.

@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "Assert.h"
 #include "CreatureUtil.h"
@@ -20,6 +21,7 @@
 #include "GLKickVerify.h"
 #include "GameContext.h"
 #include "GamePlayer.h"
+#include "ListenerStartup.h"
 #include "LogDef.h"
 #include "LoginServerManager.h"
 #include "MasterLairManager.h"
@@ -59,20 +61,17 @@ IncomingPlayerManager::IncomingPlayerManager()
     m_PlayerListQueue.clear();
 
     try {
-        // create  server socket
-        while (1) {
-            try {
-                m_pServerSocket = new ServerSocket(de::kernelContext().config().getPropertyInt("TCPPort"));
-                break;
-            } catch (BindException& b) {
-                SAFE_DELETE(m_pServerSocket);
+        de::retryListenerStartup(
+            [&] {
+                auto socket = std::make_unique<ServerSocket>(de::kernelContext().config().getPropertyInt("TCPPort"));
+                socket->setNonBlocking(true);
+                m_pServerSocket = socket.release();
+            },
+            [&](const BindException& error) {
                 cout << "IncomingPlayerManager(" << de::kernelContext().config().getPropertyInt("TCPPort")
-                     << ") : " << b.toString() << endl;
-                sleep(1);
-            }
-        }
-
-        m_pServerSocket->setNonBlocking(true);
+                     << ") : " << error.toString() << endl;
+            },
+            "TCP");
 
         // Set the server socket descriptor.
         m_SocketID = m_pServerSocket->getSOCKET();

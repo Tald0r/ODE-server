@@ -11,6 +11,8 @@
 
 #include <unistd.h>
 
+#include <memory>
+
 #include "Assert.h"
 #include "DB.h"
 #include "Datagram.h"
@@ -18,6 +20,7 @@
 #include "GameContext.h"
 #include "KeepAlive.h"
 #include "KernelContext.h"
+#include "ListenerStartup.h"
 #include "PacketDispatcher.h"
 #include "Properties.h"
 #include "ServerContext.h"
@@ -36,24 +39,17 @@ LoginServerManager::LoginServerManager() : m_pDatagramSocket(NULL) {
 
     m_Mutex.setName("LoginServerManager");
 
-    // create datagram server socket
-    while (!ServerShutdown::isRequested()) {
-        try {
-            m_pDatagramSocket = new DatagramSocket(config.getPropertyInt("GameServerUDPPort"));
-            SocketAPI::setsocketnonblocking_ex(m_pDatagramSocket->getSOCKET(), true);
-            break;
-        } catch (BindException& be) {
-            SAFE_DELETE(m_pDatagramSocket);
-            cout << "LoginServerManager(" << config.getPropertyInt("GameServerUDPPort") << ") : " << be.toString()
+    de::retryListenerStartup(
+        [&] {
+            auto socket = std::make_unique<DatagramSocket>(config.getPropertyInt("GameServerUDPPort"));
+            SocketAPI::setsocketnonblocking_ex(socket->getSOCKET(), true);
+            m_pDatagramSocket = socket.release();
+        },
+        [&](const BindException& error) {
+            cout << "LoginServerManager(" << config.getPropertyInt("GameServerUDPPort") << ") : " << error.toString()
                  << endl;
-            sleep(1);
-        }
-    }
-
-    if (m_pDatagramSocket == NULL)
-        throw Error("shutdown requested during UDP listener startup");
-
-    //	m_pDatagramSocket = new DatagramSocket(config.getPropertyInt("GameServerUDPPort"));
+        },
+        "UDP");
 
     __END_CATCH
 }

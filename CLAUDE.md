@@ -27,6 +27,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | SIGTERM/SIGINT request shutdown from any thread, and the process deadline bounds blocked initialization and cleanup | `server_process_shutdown_tests`, over the `ServerProcessShutdown` guard used by all three entry points and the shared lifecycle runner | a missed signal, a clean exit after the deadline, a deadline firing before any request or after guard destruction, or signal handlers left installed after the guard's scope |
 | Fatal allocation handlers report failure without C++ heap allocation or normal process teardown | `server_fatal_handler_tests`, over the shared `ServerFatalHandlers` guard, with allocation faults confined to subprocesses | a successful allocation-failure exit, recursive allocation while reporting, an exit callback running, a lost diagnostic or a handler left installed after its scope |
 | Core-dump setup respects the inherited hard limit; game process initialization seeds rand and ignores only its three legacy signals | `server_process_environment_tests`, over `ServerProcessEnvironment`, with process mutations confined to subprocesses | a failed soft-limit raise under a finite cap, a changed hard limit or unrelated resource, an incorrect seeded sequence, or damaged shutdown handlers/state |
+| Listener startup retries only bind failures, observes shutdown during waits and releases each failed attempt's socket | `listener_startup_tests`, over `ListenerStartup` and real TCP/UDP sockets in subprocesses | an unreported or retried non-bind failure, a bind after shutdown, an uninterruptible retry wait, lost failure state or a leaked descriptor |
 | Application configuration is published only after a successful load, stays alive through cleanup and the result, and restores its previous context binding on scope exit | `server_application_tests`, over the shared `ServerApplication` used by all three entry points | actions running after a configuration error, an incorrect effective login override, a lost binding or failure status, an incorrect drain diagnostic, or unflushed final output |
 | Server shutdown requests every auxiliary worker's stop before draining game zones or joining any auxiliary worker; retained worker failures remain visible after all joins | `server_worker_shutdown_tests`, over `ServerWorkerShutdown` used by all three runtimes | a join before all stop requests, a lost or incorrectly named failure, skipped joins after a retained run failure, or a successful lifecycle exit after worker failure |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
@@ -349,6 +350,16 @@ the rest of the process, leaving the shutdown handlers and thread masks alone.
 Explicit seeds make this setup deterministic in tests. Unlike the scoped
 shutdown/fatal guards, these process settings are not restored;
 `server_process_environment_tests` changes them only in subprocesses.
+
+`ListenerStartup` supplies `retryListenerStartup` for the five TCP/UDP listener
+paths in the three runtimes. It accepts binding and reporting actions and links
+only `de-kernel` and threads. Only `BindException` is retried, using each caller's
+existing diagnostic and delay (1 ms for login's player listener, 1 s elsewhere).
+Shutdown prevents the first or next attempt and interrupts the wait, checked at
+most every 10 ms; other exceptions propagate. Socket constructors release their
+resources if setup throws, and managers keep temporary ownership through socket
+configuration. `listener_startup_tests` checks the retry policy and real occupied
+ports, including descriptor reuse after failed TCP and UDP construction.
 
 `ServerWorkerShutdown` provides `stopServerWorkers` for all three servers'
 auxiliary workers. After stopping the foreground loop, each server supplies

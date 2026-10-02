@@ -11,6 +11,8 @@
 //////////////////////////////////////////////////
 #include "ServerSocket.h"
 
+#include <memory>
+
 //////////////////////////////////////////////////////////////////////
 // constructor
 //////////////////////////////////////////////////////////////////////
@@ -18,22 +20,25 @@ ServerSocket::ServerSocket(uint port, uint backlog) : m_Impl(NULL) {
     __BEGIN_TRY
 
     // create socket implementation object
-    m_Impl = new SocketImpl(port);
+    auto impl = std::make_unique<SocketImpl>(port);
 
     // create socket
-    m_Impl->create();
+    impl->create();
 
     // reuse address before Bind()
     // Tell the system to reuse the address before binding.
-    m_Impl->setReuseAddr();
+    impl->setReuseAddr();
 
     // bind address to socket
-    // The port is already stored in m_Impl, so Bind() can be called without a parameter.
-    m_Impl->bind();
+    // The port is already stored in impl, so Bind() can be called without a parameter.
+    impl->bind();
 
 
     // set listening queue size
-    m_Impl->listen(backlog);
+    impl->listen(backlog);
+    // A throwing constructor never runs ~ServerSocket. Keep ownership local
+    // until create, bind and listen have all succeeded.
+    m_Impl = impl.release();
 
     __END_CATCH
 }

@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <memory>
 
 #include "Assert.h"
 #include "DB.h"
@@ -18,6 +19,7 @@
 #include "GuildManager.h"
 #include "KeepAlive.h"
 #include "KernelContext.h"
+#include "ListenerStartup.h"
 #include "Packet.h"
 #include "Properties.h"
 #include "ServerContext.h"
@@ -40,23 +42,17 @@ GameServerManager::GameServerManager()
     m_Mutex.setName("GameServerManager");
 
     try {
-        // create  server socket
-        while (!ServerShutdown::isRequested()) {
-            try {
-                m_pServerSocket = new ServerSocket(de::kernelContext().config().getPropertyInt("TCPPort"));
-                break;
-            } catch (BindException& b) {
-                SAFE_DELETE(m_pServerSocket);
+        de::retryListenerStartup(
+            [&] {
+                auto socket = std::make_unique<ServerSocket>(de::kernelContext().config().getPropertyInt("TCPPort"));
+                socket->setNonBlocking();
+                m_pServerSocket = socket.release();
+            },
+            [&](const BindException& error) {
                 cout << "GameServerManager(" << de::kernelContext().config().getPropertyInt("TCPPort")
-                     << ") : " << b.toString() << endl;
-                sleep(1);
-            }
-        }
-
-        if (m_pServerSocket == NULL)
-            throw Error("shutdown requested during TCP listener startup");
-
-        m_pServerSocket->setNonBlocking();
+                     << ") : " << error.toString() << endl;
+            },
+            "TCP");
 
         // Set the server socket descriptor.
         m_SocketID = m_pServerSocket->getSOCKET();

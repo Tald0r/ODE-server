@@ -64,6 +64,11 @@ target_include_directories(ServerFatalHandlers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR
 add_library(ServerProcessEnvironment STATIC ServerProcessEnvironment.cpp)
 target_include_directories(ServerProcessEnvironment PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Listener retries are independent of manager construction and concrete sockets.
+add_library(ListenerStartup STATIC ListenerStartup.cpp)
+target_include_directories(ListenerStartup PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ListenerStartup PUBLIC de-kernel Threads::Threads)
+
 # ============================================================================
 # 子目录
 # ============================================================================

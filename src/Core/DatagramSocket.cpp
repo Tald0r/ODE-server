@@ -9,6 +9,8 @@
 // include files
 #include "DatagramSocket.h"
 
+#include <unistd.h>
+
 #include <exception>
 
 #include "Assert.h"
@@ -52,7 +54,15 @@ DatagramSocket::DatagramSocket(uint port) : m_SocketID(INVALID_SOCKET) {
     m_SockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     m_SockAddr.sin_port = htons(port);
     //  bind address to socket
-    SocketAPI::bind_ex(m_SocketID, (SOCKADDR*)&m_SockAddr, szSOCKADDR_IN);
+    try {
+        SocketAPI::bind_ex(m_SocketID, (SOCKADDR*)&m_SockAddr, szSOCKADDR_IN);
+    } catch (...) {
+        // No destructor runs when construction fails. Release this attempt's
+        // descriptor without replacing the original bind exception.
+        ::close(m_SocketID);
+        m_SocketID = INVALID_SOCKET;
+        throw;
+    }
 
     __END_CATCH
 }
