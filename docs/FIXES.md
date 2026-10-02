@@ -59,18 +59,57 @@ shutdown coordination and pending broadcasts are separate work.
 
 > **Status:** fixed (refactor/game-player-handoffs)
 
+## Native thread wrappers ignore positive pthread error returns (2026-10-02)
+
+The synchronization extraction found the same negative-result/`errno` pattern
+in the remaining native thread create, join, detach and attribute wrappers in
+`pthreadAPI.cpp`. A positive failure code can be reported as success. These
+are source findings; standalone lifecycle/refusal coverage and extraction are
+tracked in task 2.27. The synchronization fix below only changes the mutex and
+condition-variable wrappers.
+
+> **Status:** recorded, not fixed (refactor/server-mutex-ownership)
+
+## Mutex and condition wrappers misreport native success and failure (2026-10-02)
+
+The mutex wrappers tested pthread results with `< 0` and inspected `errno`.
+Pthread returns error numbers directly, so busy try-lock, recursive native
+lock and non-owner unlock all appeared successful. `Mutex::trylock` then
+published a thread as owner without acquiring the lock. Four regressions
+reproduced those failures. Two more showed successful condition destruction
+always throwing and invalid timed waits reporting unrelated stale `errno`.
+
+`PthreadSynchronization` now translates returned error numbers and accepts
+zero as success. Existing mutex refusal and condition timeout exception types
+are retained; other failures carry the returned code. These wrappers, `Mutex`
+and `CondVar` form `ServerSynchronization`, shared by all servers and standalone
+tests without server/database startup. Fifteen cases cover the regressions,
+attributes, named diagnostics, scoped cleanup, real contention and condition
+wakeups/timeouts.
+
+> **Status:** fixed (refactor/server-mutex-ownership)
+
 ## Legacy mutex ownership bookkeeping races with acquisition (2026-10-02)
 
 `Mutex::lock` and `trylock` read the plain `m_LockTID` before acquiring the
 native mutex. `unlock` writes it after releasing that mutex, so the previous
 owner can overwrite the next owner's record; even making the integer atomic
 would leave this ordering defect. Narrowing `pthread_t` to `int` also cannot
-establish thread identity portably. The broadcast queue now uses `std::mutex`,
-but other server users retain the legacy implementation. Task 2.26 tracks a
-standalone behavior/ownership test boundary and the attribute/native-handle
-audit needed before changing those users' synchronization contract.
+establish thread identity portably. Condition waits release and reacquire the
+native mutex without updating the owner field; a regression reproduced a
+recursive lock hanging after another thread signaled a waiter. ThreadSanitizer
+also reproduced the owner-field data race under four contending threads.
 
-> **Status:** recorded, not fixed (refactor/game-broadcast-queue)
+`Mutex` now defaults to native error-checking attributes and keeps no separate
+owner field. The native mutex maintains identity through condition waits and
+refuses recursive locking and non-owner unlock. Explicit attribute overrides
+remain native; the audit found none in production. Mutexes and their attribute
+owners cannot be copied or moved. Standalone tests pin refusal, contention,
+wait ownership, attribute reuse and scoped release; the same sanitizer probe
+passes after the change. Users must remain quiescent for name configuration
+and destruction.
+
+> **Status:** fixed (refactor/server-mutex-ownership)
 
 ## Zone broadcast queues leak allocations and replay dispatched messages (2026-10-02)
 

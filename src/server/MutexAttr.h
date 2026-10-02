@@ -24,6 +24,8 @@
 //////////////////////////////////////////////////
 #include <pthread.h>
 
+#include <cstring>
+
 #include "Exception.h"
 #include "Types.h"
 #include "pthreadAPI.h"
@@ -48,13 +50,20 @@ class MutexAttr {
 public:
     // constructor
     MutexAttr() {
-        pthread_mutexattr_init(&m_Attr);
+        pthreadAPI::pthread_mutexattr_init_ex(&m_Attr);
+        const int result = pthread_mutexattr_settype(&m_Attr, PTHREAD_MUTEX_ERRORCHECK);
+        if (result != 0) {
+            pthread_mutexattr_destroy(&m_Attr);
+            throw UnknownError(std::strerror(result), result);
+        }
     }
 
     // destructor
     ~MutexAttr() {
         pthread_mutexattr_destroy(&m_Attr);
     }
+    MutexAttr(const MutexAttr&) = delete;
+    MutexAttr& operator=(const MutexAttr&) = delete;
 
 
     //////////////////////////////////////////////////
@@ -72,6 +81,8 @@ public:
     // (assignment may not be supported for
     // pthread_mutexattr_t)
     //
+    // Attributes default to ERRORCHECK. Explicit native changes (for example
+    // RECURSIVE) are honored by Mutex; the caller owns their synchronization.
     pthread_mutexattr_t* getAttr() {
         return &m_Attr;
     }
