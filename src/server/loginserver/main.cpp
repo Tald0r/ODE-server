@@ -24,6 +24,7 @@
 #include "LoginPacketDispatch.h"
 #include "LoginServer.h"
 #include "Properties.h"
+#include "ServerLifecycle.h"
 #include "ServerShutdown.h"
 #include "ServerStartup.h"
 #include "StringStream.h"
@@ -75,69 +76,31 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    //
-    // Create the login server object, initialize it and activate it.
-    //
-    LoginServer* pLoginServer = NULL;
+    LoginServer* pLoginServer = nullptr;
+    const de::ServerLifecycleActions lifecycle{
+        .initialize =
+            [&] {
+                struct rlimit rl;
+                rl.rlim_cur = RLIM_INFINITY;
+                rl.rlim_max = RLIM_INFINITY;
+                setrlimit(RLIMIT_CORE, &rl);
 
-    try {
-        struct rlimit rl;
-        rl.rlim_cur = RLIM_INFINITY;
-        rl.rlim_max = RLIM_INFINITY;
-        setrlimit(RLIMIT_CORE, &rl);
-
-        // Create the login server object.
-        pLoginServer = new LoginServer();
-
-        // Initialize the login server object.
-        pLoginServer->init();
-
-        // Activate the login server object.
-        if (!ServerShutdown::isRequested())
-            pLoginServer->start();
-    } catch (Throwable& e) {
-        // In case the server ends before logging is up
-        ofstream ofile("../log/instant.log", ios::out);
-        ofile << e.toString() << endl;
-        ofile.close();
-
-        // It means an exception or error not caught below occurred.
-        // Print it on standard output.
-        cout << e.toString() << endl;
-
-        // Stop the login server; every sub-manager has to stop with it.
-        ServerShutdown::fail();
-    } catch (...) {
-        cout << "unknown exception..." << endl;
-        ServerShutdown::fail();
-    }
-
-    // Both the signal-driven and the failed-startup paths reach the same
-    // teardown: request the stop, then join every worker while the managers
-    // it uses are still alive.
-    ServerShutdown::request();
-    bool drained = true;
-    try {
-        if (pLoginServer != NULL)
-            pLoginServer->stop();
-    } catch (Throwable& error) {
-        drained = false;
-        ServerShutdown::fail();
-        cerr << "Shutdown failed: " << error.toString() << endl;
-    } catch (const std::exception& error) {
-        drained = false;
-        ServerShutdown::fail();
-        cerr << "Shutdown failed: " << error.what() << endl;
-    } catch (...) {
-        drained = false;
-        ServerShutdown::fail();
-        cerr << "Shutdown failed: unknown exception" << endl;
-    }
+                pLoginServer = new LoginServer();
+                pLoginServer->init();
+            },
+        .start = [&] { pLoginServer->start(); },
+        .stop =
+            [&] {
+                if (pLoginServer != nullptr)
+                    pLoginServer->stop();
+            },
+    };
+    const auto result = de::runServerLifecycle(lifecycle, cout, cerr);
     // The legacy singleton graph has no audited destruction order, so let the
     // OS reclaim it once every worker has joined.
-    if (drained)
+    if (result.drained)
         cout << ">>> ALL LOGIN WORKERS STOPPED." << endl;
     cout.flush();
     cerr.flush();
-    std::_Exit(ServerShutdown::failed.load() ? EXIT_FAILURE : EXIT_SUCCESS);
+    std::_Exit(result.exitCode);
 }

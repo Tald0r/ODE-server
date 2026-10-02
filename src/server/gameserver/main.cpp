@@ -23,6 +23,7 @@
 #include "GameServer.h"
 #include "KernelContext.h"
 #include "Properties.h"
+#include "ServerLifecycle.h"
 #include "ServerShutdown.h"
 #include "ServerStartup.h"
 #include "StringStream.h"
@@ -100,70 +101,33 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    //
-    // Create the game server object, initialize it and start it.
-    //
-    GameServer* pGameServer = NULL;
+    GameServer* pGameServer = nullptr;
+    const de::ServerLifecycleActions lifecycle{
+        .initialize =
+            [&] {
+                struct rlimit rl;
+                rl.rlim_cur = RLIM_INFINITY;
+                rl.rlim_max = RLIM_INFINITY;
+                setrlimit(RLIMIT_CORE, &rl);
 
-    try {
-        struct rlimit rl;
-        rl.rlim_cur = RLIM_INFINITY;
-        rl.rlim_max = RLIM_INFINITY;
-        setrlimit(RLIMIT_CORE, &rl);
-
-        // Create the game server object.
-        pGameServer = new GameServer();
-
-        cout << ">>> GAME SERVER INSTANCE CREATED..." << endl;
-
-        // Initialize the game server object.
-        pGameServer->init();
-
-        cout << ">>> GAME SERVER INITIALIZATION SUCCESS..." << endl;
-
-        // Start the game server object.
-        if (!ServerShutdown::isRequested())
-            pGameServer->start();
-    } catch (Throwable& e) {
-        // In case the server ends before logging is up.
-        ofstream ofile("../log/instant.log", ios::out);
-        ofile << e.toString() << endl;
-        ofile.close();
-
-        // Print it to standard output as well.
-        cout << e.toString() << endl;
-
-        // Stop the game server.
-        // The sub-managers have to be stopped from inside it.
-        ServerShutdown::fail();
-    } catch (...) {
-        cout << "unknown exception..." << endl;
-        ServerShutdown::fail();
-    }
-    // Both signal-driven and failed startup paths reach the same teardown.
-    ServerShutdown::request();
-    bool drained = true;
-    try {
-        if (pGameServer != NULL)
-            pGameServer->stop();
-    } catch (Throwable& error) {
-        drained = false;
-        ServerShutdown::fail();
-        cerr << "Shutdown failed: " << error.toString() << endl;
-    } catch (const std::exception& error) {
-        drained = false;
-        ServerShutdown::fail();
-        cerr << "Shutdown failed: " << error.what() << endl;
-    } catch (...) {
-        drained = false;
-        ServerShutdown::fail();
-        cerr << "Shutdown failed: unknown exception" << endl;
-    }
+                pGameServer = new GameServer();
+                cout << ">>> GAME SERVER INSTANCE CREATED..." << endl;
+                pGameServer->init();
+                cout << ">>> GAME SERVER INITIALIZATION SUCCESS..." << endl;
+            },
+        .start = [&] { pGameServer->start(); },
+        .stop =
+            [&] {
+                if (pGameServer != nullptr)
+                    pGameServer->stop();
+            },
+    };
+    const auto result = de::runServerLifecycle(lifecycle, cout, cerr);
     // Legacy singleton destructors do not have a complete dependency order.
     // After every worker has joined, let the OS reclaim the process graph;
     // do not introduce untested singleton destruction on the signal path.
-    if (drained)
+    if (result.drained)
         cout << ">>> ALL GAME WORKERS STOPPED." << endl;
     cerr.flush();
-    std::_Exit(ServerShutdown::failed.load() ? EXIT_FAILURE : EXIT_SUCCESS);
+    std::_Exit(result.exitCode);
 }

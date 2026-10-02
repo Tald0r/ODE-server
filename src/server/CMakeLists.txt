@@ -36,6 +36,11 @@ add_library(ServerStartup STATIC ServerStartup.cpp)
 target_include_directories(ServerStartup PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ServerStartup PUBLIC de-kernel)
 
+# Shared lifecycle control without a concrete server, listeners or database.
+add_library(ServerLifecycle STATIC ServerLifecycle.cpp)
+target_include_directories(ServerLifecycle PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ServerLifecycle PUBLIC de-kernel)
+
 # ============================================================================
 # 子目录
 # ============================================================================

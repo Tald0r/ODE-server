@@ -544,8 +544,8 @@ visibility can't express.
   > login overrides. Neither function publishes anything to `KernelContext`.
   > Each `main()` owns and registers the completed configuration, and returns
   > failure on an argument, file, parse or override error before constructing
-  > its server. Process handlers, the shutdown deadline and server lifecycle
-  > remain in the entry points.
+  > its server. Process handlers and the shutdown deadline remain in the
+  > entry points; lifecycle control is shared by 2.7 below.
   > `applyLoginServerOffset` validates the three decimal bases and checks all
   > sums before writing the port, UDP port and ID. Signed offsets, including
   > zero, retain their meaning; malformed numbers, overflow and trailing
@@ -554,6 +554,29 @@ visibility can't express.
   - Owner: `server_startup_tests`, linked without any runtime, MySQL or Lua;
     `server_startup_cli`, which checks the real executables' failure status
     and diagnostics for invalid startup inputs in a temporary directory.
+
+- [x] **2.7 Extract lifecycle control from the entry points.**
+  > **Status:** done (2026-10-02) —
+  > Each entry point calls `runServerLifecycle` with construction/initialization,
+  > start and stop actions. The shared `ServerLifecycle` library links only
+  > `de-kernel`, so its production exception handling and cleanup sequence run
+  > in tests without a server runtime, listeners or database.
+  > Initialization still runs when shutdown was already requested; start is
+  > skipped if the request exists after initialization. Normal return and
+  > failed startup both request shutdown before attempting stop once, while
+  > configuration and managers remain alive. Construction failure leaves
+  > the entry point's server pointer null, making its stop action a no-op.
+  > Startup `Throwable` diagnostics still reach stdout and `../log/instant.log`
+  > before cleanup; other startup exceptions keep the existing unknown-error
+  > diagnostic. Stop failures reach stderr and mark the result undrained.
+  > A worker failure remains a failed exit even when stop returns normally.
+  > The function returns its drain result and exit status. Signals, the
+  > deadline, process handlers, resource limits and `_Exit` remain in `main()`;
+  > the server graph is not destroyed by the shared runner.
+  - Owner: `server_lifecycle_tests`, covering lifecycle order, shutdown
+    requests, partial startup, exceptions at each stage, diagnostics and
+    preservation of worker failure status; all three executable links and
+    the existing `server_startup_cli` checks exercise the entry points.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
