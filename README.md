@@ -132,6 +132,8 @@ sequence, including partial startup, shutdown requests, exception reporting
 and worker failure status. It also links without a server runtime or database.
 `server_process_shutdown_tests` checks the shared signal handlers and deadline,
 including signals on worker threads and blocked startup/cleanup in subprocesses.
+`server_fatal_handler_tests` injects allocation failures in subprocesses to
+check fatal diagnostics, failure status and handler restoration without a server.
 
 ## Build natively on macOS
 

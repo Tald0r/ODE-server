@@ -13,16 +13,33 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
-## Login/shared allocation failures still report a successful exit (2026-10-02)
+## Fatal handlers could report success or allocate while reporting failure (2026-10-02)
 
 The `memoryError` handlers in `loginserver/main.cpp` and
-`sharedserver/main.cpp` print an out-of-memory error and call `exit(0)`.
-They are installed through `set_new_handler`, so an allocation failure is
-reported to the OS and supervisor as successful termination. The gameserver's
-handler aborts instead. Process shutdown extraction leaves these fatal-error
-handlers in their entry points; their exit behavior still needs correction.
+`sharedserver/main.cpp` printed an out-of-memory error and called `exit(0)`.
+Installed through `set_new_handler`, they reported allocation failure to the
+OS and supervisor as successful termination. The gameserver's handler aborted,
+but called `filelog` first: timestamp formatting and file streams could allocate
+and re-enter the memory handler while reporting the original failure.
 
-> **Status:** recorded, not fixed (refactor/server-process-shutdown)
+`ServerFatalHandlers` now owns these handlers outside `main()`. It uses fixed
+messages and POSIX writes without C++ heap allocation, and restores previous
+handlers on scope exit. Login/shared report allocation failure to stderr and
+call `_Exit(EXIT_FAILURE)` so they neither report success nor start normal
+process teardown while workers may still be running. Their existing terminate
+handler is preserved. Gameserver keeps its stderr banner and abort behavior
+for both allocation failure and `std::terminate`, appending the diagnostic to
+`CriticalError.log`. Those emergency records are now plain message lines,
+without the ordinary logger's timestamp formatting. Logging is best effort:
+an unavailable log file or a closed standard-error descriptor does not prevent
+termination.
+
+`server_fatal_handler_tests` fails C++ allocations only in child processes,
+including failures on a worker thread, and detects recursive allocation by a
+distinct failure status. It checks diagnostics, log append behavior, unavailable
+output, absence of exit callbacks and restoration of previous handlers.
+
+> **Status:** fixed (refactor/server-fatal-handlers)
 
 ## Startup configuration could fall through into server construction (2026-10-02)
 

@@ -6,10 +6,9 @@
 #include <string>
 
 #include "Properties.h"
+#include "ServerKind.h"
 
 namespace de {
-
-enum class ServerKind { Game, Login, Shared };
 
 struct ServerOptions {
     std::string configFile;

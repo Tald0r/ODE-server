@@ -139,6 +139,13 @@ add_test(NAME server_process_shutdown_tests COMMAND server_process_shutdown_test
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(server_process_shutdown_tests PROPERTIES TIMEOUT 30)
 
+add_executable(server_fatal_handler_tests EXCLUDE_FROM_ALL server_fatal_handler_test.cpp)
+target_link_libraries(server_fatal_handler_tests PRIVATE ServerFatalHandlers gtest_main Threads::Threads)
+add_dependencies(wire_tests server_fatal_handler_tests)
+add_test(NAME server_fatal_handler_tests COMMAND server_fatal_handler_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(server_fatal_handler_tests PROPERTIES TIMEOUT 30)
+
 # Verify that every real main returns failure for invalid startup input,
 # instead of aborting, falling through into managers, or starting workers.
 add_dependencies(wire_tests gameserver loginserver sharedserver)
