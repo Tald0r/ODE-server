@@ -1076,15 +1076,31 @@ visibility can't express.
     other cases cover malformed data, duplicate refusal, zero/maximum IDs,
     world filtering, repository/reporting failures and safe missing lookups.
 
-- [ ] **2.34 Extract transactional shared startup data loading.**
-  > **Status:** not started — shared `ResurrectLocationManager` appends directly
-  > to two live maps, so failed insertion can publish one race's location or
-  > a row prefix, and a repeated load rejects existing IDs. Shared `StringPool`
-  > clears its live map before fetching rows, losing previous data if fetching
-  > or insertion fails. Add explicit repository inputs and prepare complete
-  > replacements before publication, preserving lookup behavior.
-  - Planned owner: shared runtime tests with supplied repository rows,
-    duplicate/error/allocation failures, paired locations and reload/retry.
+- [x] **2.34 Extract transactional shared startup data loading.**
+  > **Status:** done (this commit) — shared `ResurrectLocationManager` and
+  > `StringPool` accept explicit repository inputs, with default startup calls
+  > delegating to the same loaders. Replacements are prepared locally, with
+  > both race positions owned in one row, and published only after validation
+  > and insertion succeed. Removed zones/strings disappear after successful
+  > reload; failures preserve the previous tables and borrowed string pointers.
+  > IDs/coordinates are validated before narrowing. Unused piecewise mutation
+  > APIs are removed. Loading requires quiescent readers; successful string
+  > replacement invalidates borrowed pointers. Missing lookups, empty strings,
+  > empty-table policies and repository exception classifications are retained.
+  - Owner: 18 `SharedStartupData` cases in `shared_server_runtime_tests`.
+    Four regressions failed before the change. Each loader has 64-position
+    allocation sweeps over empty/populated state with retry; other cases cover
+    partial/duplicate refusal, exact text, every coordinate field's bounds,
+    boundary IDs, repository/reporting errors and allocation cleanup.
+
+- [ ] **2.35 Extract owned world catalogue loading.**
+  > **Status:** not started — `GameWorldInfoManager` in `ServerCore` clears its
+  > current table before fetching rows, builds unowned raw rows, and swallows
+  > duplicate errors after publishing a prefix. Introduce an explicit
+  > `ServerInfoRepository` input and prepare a complete owned replacement,
+  > preserving existing lookups and database-error translation.
+  - Planned owner: production world-loader tests without main or MySQL,
+    including repository/row/allocation failures, bounds and reload/retry.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

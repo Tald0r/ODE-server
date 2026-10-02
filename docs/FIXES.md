@@ -215,10 +215,40 @@ into live maps. A failed insertion leaves a row prefix or mismatched race maps,
 and a repeated load collides with existing IDs. Shared `StringPool::load` clears
 the current strings before fetching replacement rows, so a repository error
 loses previous data and insertion failure leaves an incomplete replacement.
-These are source findings; task 2.34 tracks explicit repository boundaries,
-replacement ownership and tests for preservation and retry.
+Four tests reproduced rejected resurrection reloads, published location
+prefixes, lost strings after a failed fetch and partial string replacement.
 
-> **Status:** recorded, not fixed (refactor/shared-catalogue-loading)
+Both loaders now accept explicit repositories and publish locally prepared
+maps only after success. Race positions share one owned row, IDs/coordinates
+are checked before narrowing, and unused piecewise mutation APIs are removed.
+The previous tables and borrowed string pointers survive failed loads.
+Eighteen tests cover the regressions, 64-position allocation sweeps over empty
+and populated state for each loader, retry, exact contents, range/duplicate
+refusal, cleanup and preserved lookup/error behavior.
+
+> **Status:** fixed (refactor/shared-startup-data-loading)
+
+## World catalogue loading clears live data and can leak refused rows (2026-10-02)
+
+`ServerCore`'s `GameWorldInfoManager::load` clears its live map before fetching
+worlds. A repository failure therefore loses the previous catalogue. Each
+row is allocated raw before setters, diagnostics and insertion can throw;
+duplicate-row errors are swallowed after publishing a prefix. This is a
+source finding. Task 2.35 tracks an explicit repository boundary, owned
+replacement and tests for cleanup, preservation and retry.
+
+> **Status:** recorded, not fixed (refactor/shared-startup-data-loading)
+
+## Shared guild loading leaves refused or unattached rows unowned (2026-10-02)
+
+Shared `GuildManager::load` constructs raw guild/member objects before setters
+and insertion finish. An active-member row whose guild was not loaded is
+never attached or deleted, and failures after partial guild/member insertion
+leave the live catalogue partly updated. This is a source finding; the guild
+startup boundary still needs owned preparation and repository-driven failure
+tests, including unattached members and retry.
+
+> **Status:** recorded, not fixed (refactor/shared-startup-data-loading)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 

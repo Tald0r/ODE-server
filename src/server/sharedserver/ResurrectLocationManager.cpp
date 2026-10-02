@@ -6,131 +6,61 @@
 
 #include "ResurrectLocationManager.h"
 
+#include <utility>
+
 #include "repository/SharedConfigRepository.h"
 
-//////////////////////////////////////////////////////////////////////////////
-// class ResurrectLocationManager member methods
-//////////////////////////////////////////////////////////////////////////////
-
-ResurrectLocationManager::ResurrectLocationManager(){__BEGIN_TRY __END_CATCH}
-
-ResurrectLocationManager::~ResurrectLocationManager() {
-    __BEGIN_TRY
-
-    m_SlayerPosition.clear();
-    m_VampirePosition.clear();
-
-    __END_CATCH
-}
-
 void ResurrectLocationManager::init() {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void ResurrectLocationManager::load() {
-    __BEGIN_TRY
+    load(defaultSharedConfigRepository());
+}
 
-    vector<SharedResurrectLocationRow> rows = defaultSharedConfigRepository().loadResurrectLocations();
-
+void ResurrectLocationManager::load(SharedConfigRepository& repository) {
+    const auto rows = repository.loadResurrectLocations();
     if (rows.empty()) {
         cerr << "ResurrectLocationManager::load() : TABLE DOES NOT EXIST!" << endl;
         throw Error("ResurrectLocationManager::load() : TABLE DOES NOT EXIST!");
     }
 
-    for (size_t i = 0; i < rows.size(); i++) {
-        ZoneID_t ID = 0;
-        ZONE_COORD slayer_coord;
-        ZONE_COORD vampire_coord;
+    decltype(m_Positions) replacement;
+    for (const auto& row : rows) {
+        if (!std::in_range<ZoneID_t>(row.zoneID) || !std::in_range<ZoneID_t>(row.slayerZoneID) ||
+            !std::in_range<ZoneCoord_t>(row.slayerX) || !std::in_range<ZoneCoord_t>(row.slayerY) ||
+            !std::in_range<ZoneID_t>(row.vampireZoneID) || !std::in_range<ZoneCoord_t>(row.vampireX) ||
+            !std::in_range<ZoneCoord_t>(row.vampireY))
+            throw Error("invalid resurrection location ID or coordinate");
 
-        ID = rows[i].zoneID;
-        slayer_coord.id = rows[i].slayerZoneID;
-        slayer_coord.x = rows[i].slayerX;
-        slayer_coord.y = rows[i].slayerY;
-        vampire_coord.id = rows[i].vampireZoneID;
-        vampire_coord.x = rows[i].vampireX;
-        vampire_coord.y = rows[i].vampireY;
-
-        addSlayerPosition(ID, slayer_coord);
-        addVampirePosition(ID, vampire_coord);
+        const Positions positions{{static_cast<ZoneID_t>(row.slayerZoneID), static_cast<ZoneCoord_t>(row.slayerX),
+                                   static_cast<ZoneCoord_t>(row.slayerY)},
+                                  {static_cast<ZoneID_t>(row.vampireZoneID), static_cast<ZoneCoord_t>(row.vampireX),
+                                   static_cast<ZoneCoord_t>(row.vampireY)}};
+        if (!replacement.emplace(static_cast<ZoneID_t>(row.zoneID), positions).second) {
+            cerr << "ResurrectLocationManager::addPosition() : ZoneID already exist!" << endl;
+            throw NoSuchElementException("ResurrectLocationManager::addPosition() : ZoneID already exist!");
+        }
     }
-
-    __END_CATCH
+    m_Positions.swap(replacement);
 }
 
-bool ResurrectLocationManager::getSlayerPosition(ZoneID_t id, ZONE_COORD& zoneCoord) const
-// NoSuchElementException)
-{
-    __BEGIN_TRY
-
-    unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_SlayerPosition.find(id);
-
-    if (itr == m_SlayerPosition.end()) {
+bool ResurrectLocationManager::getSlayerPosition(ZoneID_t id, ZONE_COORD& zoneCoord) const {
+    const auto position = m_Positions.find(id);
+    if (position == m_Positions.end()) {
         cerr << "ResurrectLocationManager::getPosition() : No Such ZoneID" << endl;
-        // throw NoSuchElementException("ResurrectLocationManager::getPosition() : No Such ZoneID");
-
         return false;
     }
-
-    zoneCoord = itr->second;
-
+    zoneCoord = position->second.slayer;
     return true;
-
-    __END_CATCH
 }
 
-
-void ResurrectLocationManager::addSlayerPosition(ZoneID_t id, const ZONE_COORD& coord) {
-    __BEGIN_TRY
-
-    unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_SlayerPosition.find(id);
-
-    if (itr != m_SlayerPosition.end()) {
-        cerr << "ResurrectLocationManager::addPosition() : ZoneID already exist!" << endl;
-        throw NoSuchElementException("ResurrectLocationManager::addPosition() : ZoneID already exist!");
-    }
-
-    m_SlayerPosition[id] = coord;
-
-    __END_CATCH
-}
-
-bool ResurrectLocationManager::getVampirePosition(ZoneID_t id, ZONE_COORD& zoneCoord) const
-// NoSuchElementException)
-{
-    __BEGIN_TRY
-
-    unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_VampirePosition.find(id);
-
-    if (itr == m_VampirePosition.end()) {
+bool ResurrectLocationManager::getVampirePosition(ZoneID_t id, ZONE_COORD& zoneCoord) const {
+    const auto position = m_Positions.find(id);
+    if (position == m_Positions.end()) {
         cerr << "ResurrectLocationManager::getPosition() : No Such ZoneID" << endl;
-        // throw NoSuchElementException("ResurrectLocationManager::getPosition() : No Such ZoneID");
         return false;
     }
-
-
-    zoneCoord = itr->second;
-
+    zoneCoord = position->second.vampire;
     return true;
-
-    __END_CATCH
-}
-
-
-void ResurrectLocationManager::addVampirePosition(ZoneID_t id, const ZONE_COORD& coord) {
-    __BEGIN_TRY
-
-    unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_VampirePosition.find(id);
-
-    if (itr != m_VampirePosition.end()) {
-        cerr << "ResurrectLocationManager::addPosition() : ZoneID already exist!" << endl;
-        throw NoSuchElementException("ResurrectLocationManager::addPosition() : ZoneID already exist!");
-    }
-
-    m_VampirePosition[id] = coord;
-
-    __END_CATCH
 }

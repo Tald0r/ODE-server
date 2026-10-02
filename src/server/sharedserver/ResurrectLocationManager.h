@@ -1,9 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // Filename    : ResurrectLocationManager.h
 // Written by  : excel96
-// Description :
-// Map storing, per zone, the resurrection location where a player is reborn
-// after dying.
+// Description : Resurrection locations for each zone.
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef __SHARED_SERVER_RESURRECT_LOCATION_MANAGER_H__
@@ -14,37 +12,26 @@
 #include "Exception.h"
 #include "Types.h"
 
-//////////////////////////////////////////////////////////////////////////////
-// class ResurrectLocationManager
-//
-// Map storing, per zone, the resurrection location where a player is reborn
-// after dying.
-//
-// There should be a function that can set the default resurrection location
-// for slayers and vampires separately. At the moment it sits in Resurrect.cpp at source level.
-//////////////////////////////////////////////////////////////////////////////
+class SharedConfigRepository;
 
+// Load with quiescent readers. Failed loads retain all previous positions;
+// a successful load replaces both races together and removes absent zones.
 class ResurrectLocationManager {
-public:
-    ResurrectLocationManager();
-    ~ResurrectLocationManager();
-
 public:
     void init();
     void load();
+    void load(SharedConfigRepository& repository);
 
-public:
-    bool getSlayerPosition(ZoneID_t id, ZONE_COORD& zoneCoord) const;  // NoSuchElementException);
-    bool getVampirePosition(ZoneID_t id, ZONE_COORD& zoneCoord) const; // NoSuchElementException);
+    // A missing zone leaves the caller's coordinate unchanged.
+    bool getSlayerPosition(ZoneID_t id, ZONE_COORD& zoneCoord) const;
+    bool getVampirePosition(ZoneID_t id, ZONE_COORD& zoneCoord) const;
 
-    void addSlayerPosition(ZoneID_t id, const ZONE_COORD& coord);
-    void addVampirePosition(ZoneID_t id, const ZONE_COORD& coord);
-
-
-protected:
-    unordered_map<ZoneID_t, ZONE_COORD> m_SlayerPosition;
-    unordered_map<ZoneID_t, ZONE_COORD> m_VampirePosition;
+private:
+    struct Positions {
+        ZONE_COORD slayer;
+        ZONE_COORD vampire;
+    };
+    std::unordered_map<ZoneID_t, Positions> m_Positions;
 };
-
 
 #endif

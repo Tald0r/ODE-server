@@ -27,28 +27,20 @@ enum StringID {
     STRID_MAX
 };
 
+class SharedConfigRepository;
+
+// Load with quiescent readers. Failed loads retain the previous strings and
+// borrowed c_str pointers; successful replacement/destruction invalidates them.
 class StringPool {
 public:
-    typedef unordered_map<uint, string> StringHashMap;
-    typedef StringHashMap::iterator StringHashMapItor;
-    typedef StringHashMap::const_iterator StringHashMapConstItor;
+    void load();
+    void load(SharedConfigRepository& repository);
 
-public:
-    StringPool() noexcept(false);
-    ~StringPool() noexcept;
-
-public:
-    void clear() noexcept(false);
-    void load() noexcept(false);
-
-    void addString(uint strID, string sString) noexcept(false);
-
-    string getString(uint strID) noexcept(false);
-
-    const char* c_str(uint strID) noexcept(false);
+    string getString(uint strID) const;
+    const char* c_str(uint strID) const;
 
 private:
-    StringHashMap m_Strings;
+    std::unordered_map<uint, string> m_Strings;
 };
 
 #endif // __SHARED_SERVER_STRING_POOL_H__
