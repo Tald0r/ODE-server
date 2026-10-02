@@ -9,8 +9,6 @@
 // include files
 #include "LoginServer.h"
 
-#include <exception>
-
 #include "Assert.h"
 #include "ClientManager.h"
 #include "GameServerGroupInfoManager.h"
@@ -24,6 +22,7 @@
 #include "PacketValidator.h"
 #include "ServerContext.h"
 #include "ServerShutdown.h"
+#include "ServerWorkerShutdown.h"
 #include "UserInfoManager.h"
 #include "ZoneGroupInfoManager.h"
 #include "ZoneInfoManager.h"
@@ -237,17 +236,8 @@ void LoginServer::stop() {
 
     // Request the stop before joining, then join while every manager the
     // worker uses (config, database, packet factory) is still alive.
-    m_pGameServerManager->stop();
-    m_pGameServerManager->join();
-    try {
-        m_pGameServerManager->rethrowFailure();
-    } catch (Throwable& error) {
-        cerr << "GameServerManager: " << error.toString() << endl;
-    } catch (const std::exception& error) {
-        cerr << "GameServerManager: " << error.what() << endl;
-    } catch (...) {
-        cerr << "GameServerManager: unknown worker failure" << endl;
-    }
+    const de::ServerWorker workers[] = {{*m_pGameServerManager, "GameServerManager"}};
+    de::stopServerWorkers(workers, cerr);
     m_Stopped = true;
 
     __END_CATCH

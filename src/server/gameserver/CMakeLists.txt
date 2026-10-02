@@ -678,6 +678,7 @@ target_link_libraries(GameServerRuntime PUBLIC
     Mofus
     GameServerDatabase
     ServerCore
+    ServerWorkerShutdown
     GameServerPackets
     Skill
     Core

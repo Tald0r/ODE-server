@@ -9,8 +9,6 @@
 // include files
 #include "SharedServer.h"
 
-#include <exception>
-
 #include "Assert.h"
 #include "GameServerGroupInfoManager.h"
 #include "GameServerManager.h"
@@ -23,6 +21,7 @@
 #include "ResurrectLocationManager.h"
 #include "ServerContext.h"
 #include "ServerShutdown.h"
+#include "ServerWorkerShutdown.h"
 #include "SharedContext.h"
 #include "SharedGameServerInfoManager.h"
 #include "StringPool.h"
@@ -195,17 +194,8 @@ void SharedServer::stop() {
 
     // Request the stop before joining, then join while every manager the
     // worker uses (config, database, guild manager) is still alive.
-    m_pGameServerManager->stop();
-    m_pGameServerManager->join();
-    try {
-        m_pGameServerManager->rethrowFailure();
-    } catch (Throwable& error) {
-        cerr << "GameServerManager: " << error.toString() << endl;
-    } catch (const std::exception& error) {
-        cerr << "GameServerManager: " << error.what() << endl;
-    } catch (...) {
-        cerr << "GameServerManager: unknown worker failure" << endl;
-    }
+    const de::ServerWorker workers[] = {{*m_pGameServerManager, "GameServerManager"}};
+    de::stopServerWorkers(workers, cerr);
     m_Stopped = true;
 
     __END_CATCH

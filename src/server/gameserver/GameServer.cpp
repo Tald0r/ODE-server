@@ -23,6 +23,7 @@
 #include "PacketValidator.h"
 #include "Properties.h"
 #include "ServerContext.h"
+#include "ServerWorkerShutdown.h"
 #include "SharedServerManager.h"
 #include "SystemAPI.h"
 #include "ThreadManager.h"
@@ -281,36 +282,17 @@ void GameServer::stop()
     //
     ServerShutdown::request();
     m_pClientManager->stop();
-    // Request every auxiliary stop before any join. All shared dependencies
-    // remain alive until BOTH auxiliary and zone workers have finished.
-    std::vector<ManagedThread*> workers{m_pLoginServerManager, m_pSharedServerManager, &GDRLairManager::Instance()};
+    // Auxiliary workers and the zone pool drain while their shared dependencies
+    // remain alive. Ask every auxiliary worker to stop before draining zones.
+    const de::ServerWorker workers[] = {
+        {*m_pLoginServerManager},
+        {*m_pSharedServerManager},
+        {GDRLairManager::Instance()},
 #ifdef __MOFUS__
-    workers.push_back(m_pMPlayerManager);
+        {*m_pMPlayerManager},
 #endif
-    for (auto* worker : workers)
-        worker->stop();
-
-    //
-    // stop thread manager
-    //
-    // Then destroy the thread manager, which stops processing the existing
-    // users and throws them off the game server. The stop run by the thread
-    // manager's thread pools has to work properly here.
-    //
-    //
-    m_pThreadManager->stop();
-    for (auto* worker : workers) {
-        worker->join();
-        try {
-            worker->rethrowFailure();
-        } catch (Throwable& error) {
-            cerr << worker->getName() << ": " << error.toString() << endl;
-        } catch (const std::exception& error) {
-            cerr << worker->getName() << ": " << error.what() << endl;
-        } catch (...) {
-            cerr << worker->getName() << ": unknown worker failure" << endl;
-        }
-    }
+    };
+    de::stopServerWorkers(workers, cerr, [&] { m_pThreadManager->stop(); });
     m_Stopped = true;
 
     // stop object manager

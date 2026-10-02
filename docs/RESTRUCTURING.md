@@ -649,6 +649,28 @@ visibility can't express.
     unwinding, one-run ownership and final diagnostics; the executable links
     and `server_startup_cli` cover the entry points.
 
+- [x] **2.11 Extract auxiliary worker shutdown from the server runtimes.**
+  > **Status:** done (2026-10-02) —
+  > `ServerWorkerShutdown` provides the shared `stopServerWorkers` sequence.
+  > It borrows the workers, requests every stop, runs an optional drain action,
+  > then joins each worker and reports its retained run failure. Gameserver
+  > drains the zone pool between the auxiliary stop requests and joins; the
+  > login/shared single-worker paths retain their `GameServerManager` diagnostic
+  > name. A stack array replaces gameserver's temporary shutdown vector.
+  > Each server still requests process shutdown and stops its foreground loop
+  > first, owns all managers and guards repeated successful stop calls. The
+  > helper neither destroys workers nor clears process failure state. Retained
+  > worker failures do not interrupt remaining joins. Stop, extra-drain and
+  > join errors propagate as before, so the lifecycle cannot report those
+  > attempts as successfully drained; the process deadline still bounds a
+  > blocked shutdown. The library links common `ServerCore`, `de-kernel` and
+  > `Threads::Threads`, with no concrete runtime or database dependency.
+  - Owner: `server_worker_shutdown_tests`, using real cooperative workers and
+    controlled failures to cover stop/join order, zone-drain placement, partial
+    startup, live dependencies through joins, all retained exception types,
+    diagnostic names, propagated drain errors and lifecycle failure status;
+    all three production runtime and executable links.
+
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
 `execute()`; all three servers boot and pass a manual smoke test against the
