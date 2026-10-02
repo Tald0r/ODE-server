@@ -22,6 +22,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | Packets carry no `execute()` — handlers register at the composition root | ratchet R4 | R4 above 0 |
 | Server implementations link without `main.cpp`, with the same definitions as production | `game_server_runtime_tests`, `login_server_runtime_tests`, `shared_server_runtime_tests` | duplicate `main` at link time, a mismatched server definition, or a production dispatch/handler test failure |
 | Startup arguments and login offsets are validated before a completed configuration is published | `server_startup_tests`, over the shared `ServerStartup` library, and `server_startup_cli`, over all three executables | malformed arguments accepted, an incorrect or partially applied override, a failed load replacing the published configuration, or the wrong failure status/diagnostic from main |
+| Configuration parsing processes the final line without a newline and rejects missing keys and read errors before startup publication | `properties_parser_tests` over `PropertiesParser` in `de-kernel`, plus `server_startup_tests` and `server_startup_cli` | a dropped final property, a malformed line accepted, a read failure spinning or silently succeeding, or a directory accepted as configuration |
 | Every server requests shutdown before stopping, attempts cleanup after failed startup, and preserves worker failures in its exit status | `server_lifecycle_tests`, over the shared `ServerLifecycle` library used by all three entry points | starting after a shutdown request, missing or repeated cleanup, lost failure diagnostics, an incorrect drain result or a successful exit after failure |
 | SIGTERM/SIGINT request shutdown from any thread, and the process deadline bounds blocked initialization and cleanup | `server_process_shutdown_tests`, over the `ServerProcessShutdown` guard used by all three entry points and the shared lifecycle runner | a missed signal, a clean exit after the deadline, a deadline firing before any request or after guard destruction, or signal handlers left installed after the guard's scope |
 | Fatal allocation handlers report failure without C++ heap allocation or normal process teardown | `server_fatal_handler_tests`, over the shared `ServerFatalHandlers` guard, with allocation faults confined to subprocesses | a successful allocation-failure exit, recursive allocation while reporting, an exit callback running, a lost diagnostic or a handler left installed after its scope |
@@ -287,6 +288,15 @@ The existing isolated rule tests remain the faster choice for pure logic.
 owned configuration, including loginserver's optional ID offset, without
 publishing it. `server_startup_tests` exercises this without linking a server
 runtime.
+
+`Properties::load` opens the file and delegates to `de::readProperties` in
+`PropertiesParser`. The parser accepts a borrowed stream and merges into a
+destination `Properties`, so grammar and read failures are tested in memory.
+It processes the last line without requiring a newline and rejects empty keys
+and failed reads; the file adapter explicitly rejects directories. Earlier
+entries remain in the destination after a parse error, so startup still loads
+an unpublished object. `properties_parser_tests` owns this contract, including
+EOF under stream exception masks and the existing whitespace/comment rules.
 
 `ServerLifecycle` also depends only on `de-kernel`. `runServerLifecycle` takes
 construction/initialization, start and stop actions, handles exceptions,

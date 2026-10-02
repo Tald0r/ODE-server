@@ -13,6 +13,35 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Configuration parsing could omit data, accept missing keys or stall on read errors (2026-10-02)
+
+`Properties::load` checked EOF before processing the line extracted by
+`getline`, dropping a valid final property without a newline and silently
+accepting malformed final lines. Its loop only checked EOF, so a stream in
+`failbit` or `badbit` without EOF made no progress and never returned. An empty
+key such as `: value` also reached substring arithmetic instead of a parse
+error. On the native macOS build, opening a directory as the configuration
+appeared to be an empty file; startup published it and entered server
+construction before failing on missing properties.
+
+The parser now lives in `PropertiesParser` inside `de-kernel`, accepting a
+borrowed stream and a destination `Properties`. It processes a successfully
+extracted final line, rejects missing keys and reports failed stream states
+as `IOException` instead of looping or accepting a partial line. Normal EOF
+works with or without stream exception masks. `Properties::load` still owns
+file opening and explicitly rejects directories, including implementations
+that present them as normal EOF. Existing comment, separator, space/tab
+trimming, duplicate-key and merge behavior is preserved. Successfully parsed
+earlier entries remain in a caller's destination on failure; server startup
+continues to publish only a fully loaded configuration.
+
+`properties_parser_tests` covers the grammar and injected stream failures in
+memory. `server_startup_tests` checks final-line login overrides and failed
+loads without publication. `server_startup_cli` checks malformed final lines,
+missing keys and directory paths through all three real executables.
+
+> **Status:** fixed (refactor/properties-stream-parser)
+
 ## Fatal handlers could report success or allocate while reporting failure (2026-10-02)
 
 The `memoryError` handlers in `loginserver/main.cpp` and
@@ -71,11 +100,10 @@ and requires exit status 1 with a diagnostic on standard error.
 
 > **Status:** fixed (refactor/server-startup-configuration)
 
-The existing `Properties::load` parser still ignores a final line without a
-newline: it checks `eof()` immediately after `getline`, before processing
-that line. This extraction does not change the file grammar or parser.
+The final-line omission recorded during this extraction is now fixed by the
+stream parser above, together with read-failure and missing-key validation.
 
-> **Status:** recorded, not fixed (refactor/server-startup-configuration)
+> **Status:** fixed (refactor/properties-stream-parser)
 
 ## Packet reads bounded by their frame (2026-09-30)
 

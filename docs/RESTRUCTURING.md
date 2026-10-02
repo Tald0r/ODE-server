@@ -551,7 +551,8 @@ visibility can't express.
   > sums before writing the port, UDP port and ID. Signed offsets, including
   > zero, retain their meaning; malformed numbers, overflow and trailing
   > command-line arguments are rejected (`docs/FIXES.md`). The underlying
-  > `Properties` file grammar is unchanged.
+  > `Properties` file grammar was preserved; parser extraction and validation
+  > fixes are recorded in 2.12 below.
   - Owner: `server_startup_tests`, linked without any runtime, MySQL or Lua;
     `server_startup_cli`, which checks the real executables' failure status
     and diagnostics for invalid startup inputs in a temporary directory.
@@ -670,6 +671,23 @@ visibility can't express.
     startup, live dependencies through joins, all retained exception types,
     diagnostic names, propagated drain errors and lifecycle failure status;
     all three production runtime and executable links.
+
+- [x] **2.12 Separate configuration parsing from file access.**
+  > **Status:** done (2026-10-02) —
+  > `PropertiesParser` belongs to `de-kernel`; `readProperties` parses a
+  > borrowed stream into a supplied `Properties`, while `Properties::load`
+  > retains file opening and rejects directory paths. The existing colon
+  > separator, column-zero comments, space/tab trimming, duplicate-key and
+  > merge rules remain. A final line needs no newline, and missing keys and
+  > failed reads are rejected; the defects are recorded in `docs/FIXES.md`.
+  > Normal EOF is handled even with stream exceptions enabled, without
+  > changing the caller's exception mask. Earlier valid entries remain in the
+  > supplied destination after an error. `ServerStartup` still uses a fresh,
+  > unpublished object, so partial data never replaces the live configuration.
+  - Owner: `properties_parser_tests` for grammar and injected read failures;
+    `server_startup_tests` for final-line overrides and failed publication;
+    `server_startup_cli` for all three executables' rejection of malformed
+    final lines, missing keys and directory paths; kernel include/macro rules.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

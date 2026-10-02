@@ -160,6 +160,13 @@ add_test(NAME server_worker_shutdown_tests COMMAND server_worker_shutdown_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(server_worker_shutdown_tests PROPERTIES TIMEOUT 30)
 
+add_executable(properties_parser_tests EXCLUDE_FROM_ALL properties_parser_test.cpp)
+target_link_libraries(properties_parser_tests PRIVATE de-kernel gtest_main)
+add_dependencies(wire_tests properties_parser_tests)
+add_test(NAME properties_parser_tests COMMAND properties_parser_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(properties_parser_tests PROPERTIES TIMEOUT 30)
+
 # Verify that every real main returns failure for invalid startup input,
 # instead of aborting, falling through into managers, or starting workers.
 add_dependencies(wire_tests gameserver loginserver sharedserver)

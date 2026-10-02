@@ -236,6 +236,26 @@ TEST_F(ServerConfigurationTest, LoadsAndAppliesTheParsedLoginOffset) {
     EXPECT_EQ(&published, &de::kernelContext().config());
 }
 
+TEST_F(ServerConfigurationTest, AppliesAnOverrideWhoseBaseIsOnTheUnterminatedLastLine) {
+    writeConfig("LoginServerBasePort : 9900\nLoginServerBaseUDPPort : 9800\nLoginServerBaseID : 10");
+    const auto config = de::loadServerConfiguration({filename, 3});
+    EXPECT_EQ("9903", config->getProperty("LoginServerPort"));
+    EXPECT_EQ("9803", config->getProperty("LoginServerUDPPort"));
+    EXPECT_EQ("13", config->getProperty("LoginServerID"));
+    EXPECT_EQ(&published, &de::kernelContext().config());
+}
+
+TEST_F(ServerConfigurationTest, ADirectoryReadFailsWithoutReplacingPublishedConfiguration) {
+    EXPECT_THROW(de::loadServerConfiguration({directory, std::nullopt}), IOException);
+    EXPECT_EQ(&published, &de::kernelContext().config());
+}
+
+TEST_F(ServerConfigurationTest, AnUnterminatedParseErrorDoesNotPublishEarlierEntries) {
+    writeConfig("HomePath : /tmp/darkeden\nmissing separator");
+    EXPECT_THROW(de::loadServerConfiguration({filename, std::nullopt}), IOException);
+    EXPECT_EQ(&published, &de::kernelContext().config());
+}
+
 TEST_F(ServerConfigurationTest, MissingFileDoesNotReplaceThePublishedConfiguration) {
     EXPECT_THROW(de::loadServerConfiguration({filename, std::nullopt}), FileNotExistException);
     EXPECT_EQ(&published, &de::kernelContext().config());

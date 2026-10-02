@@ -16,6 +16,9 @@ cat > malformed.conf <<'EOF'
 HomePath : /unused
 missing separator
 EOF
+printf 'HomePath : /unused\nmissing separator' > malformed-final.conf
+printf 'HomePath : /unused\n : value\n' > missing-key.conf
+mkdir config-directory
 cat > login.conf <<'EOF'
 LoginServerBasePort : 9900
 LoginServerBaseUDPPort : 9800
@@ -45,6 +48,9 @@ for server_binary in "$@"; do
     expect_failure "$server_binary" "$server_name wrong flag" "Usage : $server_name" -x missing.conf
     expect_failure "$server_binary" "$server_name missing file" "missing.conf" -f missing.conf
     expect_failure "$server_binary" "$server_name malformed file" "missing separator" -f malformed.conf
+    expect_failure "$server_binary" "$server_name malformed final line" "missing separator" -f malformed-final.conf
+    expect_failure "$server_binary" "$server_name missing key" "missing key" -f missing-key.conf
+    expect_failure "$server_binary" "$server_name unreadable directory" "error reading properties" -f config-directory
 done
 
 expect_failure "$2" "loginserver malformed offset" "Invalid loginserver -i offset" -f login.conf -i 3junk

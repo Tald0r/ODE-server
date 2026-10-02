@@ -11,6 +11,10 @@
 
 #include <stdlib.h> // atoi()
 
+#include <filesystem>
+
+#include "PropertiesParser.h"
+
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
 const char Properties::Comment = '#';
@@ -45,61 +49,18 @@ void Properties::load() {
     if (m_Filename.empty())
         throw Error("filename not specified");
 
+    // Some file stream implementations treat reading a directory as normal
+    // EOF. Reject it here so startup cannot publish an empty configuration.
+    std::error_code statusError;
+    if (std::filesystem::is_directory(m_Filename, statusError))
+        throw IOException("error reading properties: path is a directory");
+
     ifstream ifile(m_Filename.c_str(), ios::in);
 
     if (!ifile)
         throw FileNotExistException(m_Filename.c_str());
 
-    while (true) {
-        string line;
-        getline(ifile, line);
-
-        if (ifile.eof())
-            break;
-
-        // It is a comment line or an empty line, so skip it.
-        if (line.size() == 0 || line[0] == Comment)
-            continue;
-
-        // Find the start of the key (the first character that is not white space).
-        size_t key_begin = line.find_first_not_of(WhiteSpaces);
-
-        // If key_begin is npos, no such character was found.
-        // That is, the line is nothing but white space, so skip it.
-        if (key_begin == string::npos)
-            continue;
-
-        // Find the separator that divides the key and the value.
-        // find_last_not_of() is used rather than searching for sep from key_end,
-        // so that key_end, the character just before sep, is found. ^^;
-        size_t sep = line.find(Separator, key_begin);
-
-        // If no Separator is found, treat it as a parse error.
-        if (sep == string::npos)
-            throw IOException("missing separator");
-
-        // Find key_end, the character just before sep.
-        size_t key_end = line.find_last_not_of(WhiteSpaces, sep - 1);
-
-        // Find value_begin after sep.
-        size_t value_begin = line.find_first_not_of(WhiteSpaces, sep + 1);
-
-        // The key has no value; it is an empty line.
-        if (value_begin == string::npos)
-            throw IOException("missing value");
-
-        // Find value_end, the last character that is not white space.
-        // ( If value_begin is empty, value_end is empty too.)
-        size_t value_end = line.find_last_not_of(WhiteSpaces);
-
-        // Using key_begin,key_end and value_begin,value_end,
-        // take the key and the value out of the line as substrings.
-        string key = line.substr(key_begin, key_end - key_begin + 1);
-        string value = line.substr(value_begin, value_end - value_begin + 1);
-
-        // Register the property.
-        setProperty(key, value);
-    }
+    de::readProperties(ifile, *this);
 
     ifile.close();
 

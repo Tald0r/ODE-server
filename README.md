@@ -127,6 +127,8 @@ runtimes. Smaller rule tests remain available as individual CMake targets.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
+`properties_parser_tests` checks configuration grammar, final lines without a
+newline and read failures using in-memory streams.
 `server_lifecycle_tests` exercises the shared initialization, start and stop
 sequence, including partial startup, shutdown requests, exception reporting
 and worker failure status. It also links without a server runtime or database.
