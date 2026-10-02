@@ -138,6 +138,15 @@ add_test(NAME world_catalogue_tests COMMAND world_catalogue_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(world_catalogue_tests PROPERTIES TIMEOUT 30)
 
+# Common game-server rows and flags, linked independently of executable startup.
+add_executable(server_catalogue_tests EXCLUDE_FROM_ALL
+    server_catalogue_test.cpp support/AllocationProbe.cpp support/server_runtime_main.cpp)
+target_link_libraries(server_catalogue_tests PRIVATE ServerCore Database ${MYSQL_LIBRARY} gtest)
+add_dependencies(wire_tests server_catalogue_tests)
+add_test(NAME server_catalogue_tests COMMAND server_catalogue_tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(server_catalogue_tests PROPERTIES TIMEOUT 30)
+
 add_executable(server_startup_tests EXCLUDE_FROM_ALL server_startup_test.cpp)
 target_link_libraries(server_startup_tests PRIVATE ServerStartup gtest_main)
 add_dependencies(wire_tests server_startup_tests)

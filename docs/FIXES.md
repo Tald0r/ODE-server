@@ -441,11 +441,32 @@ Unchecked MAX arithmetic and row-field narrowing can also admit invalid storage
 bounds. Non-PK and castle-following overlays mutate the live catalogue after the
 base rows, so failures in later queries, lookups or reporting leave partial
 state. `clear` retains dimensions after releasing arrays, making subsequent
-cleanup/lookups unsafe. Task 2.44 tracks explicit repository inputs and complete
-owned preparation, with an audit of the raw traversal APIs used by game/login
-readers before changing their representation.
+cleanup/lookups unsafe. Further audit found that `GameServerInfo` initializes only its non-PK flag;
+`m_CastleFollowingServerID` remains unset for rows with no overlay. Siege-war
+propagation reads that field for catalogue rows in other groups. The loader
+also narrows `FollowServerID` through `ServerGroupID_t` (a byte) before storing
+it in `ServerID_t` (a word), even though the schema column is an unsigned
+smallint. The row diagnostic also prints the group ID under `ServerStat`.
 
-> **Status:** recorded, not fixed (refactor/login-routing-catalogues)
+Ten regressions reproduced cold/world-zero failures, lost previous state,
+partial publication, undefined/truncated following IDs, stale dimensions and
+allocation/reload leaks. The explicit-repository loader now prepares owned rows,
+traversal storage and complete overlays before swapping. Failed loads preserve
+borrowed rows and matrix identity; clear is allocation-free and resets dimensions.
+MAX/row IDs are checked before arithmetic/indexing, status is checked against its
+enum and negative ports cannot become unsigned values. Ports keep their stored
+unsigned width; this does not add endpoint-range/host validation. World zero has
+storage, and the existing padded traversal dimensions remain available to audited
+readers. Unused raw add/delete APIs are removed; matrix traversal is borrowed and
+must not be mutated or freed by callers.
+
+Castle following defaults to zero without an overlay and retains its full word
+width; diagnostics report actual status and include world zero. Twenty-four
+standalone production tests cover query/reporting/validation failures, overlays,
+all stored ID boundaries, repeated cleanup, allocation refusal and retry. Loads
+and clear remain quiescent; final init reporting still follows publication.
+
+> **Status:** fixed (refactor/common-server-catalogue)
 
 ## Normalized server-selection worlds do not reach character lookup (2026-10-02)
 
@@ -459,6 +480,17 @@ the session/character-query boundary needs its own tests and consistent
 world refusal or update policy.
 
 > **Status:** recorded, not fixed (refactor/login-world-topology)
+
+## Character selection checks slot length without checking the stored slot format (2026-10-02)
+
+`decideSelectPC` rejects slot text only when its length differs from five, then
+subtracts `'0'` from the last character. A five-character value with a wrong
+prefix or a nondigit therefore reaches routing with an invalid last-slot value.
+Existing tests cover wrong lengths and normal `SLOT1`/`SLOT2`/`SLOT3` rows but
+not these cases. Task 2.46 tracks format validation and an audit of the supported
+slot range across creation/listing before pinning its rejection contract.
+
+> **Status:** recorded, not fixed (refactor/common-server-catalogue)
 
 ## Login group and population catalogues lack safe scoped ownership (2026-10-02)
 
