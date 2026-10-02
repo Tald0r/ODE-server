@@ -138,6 +138,9 @@ check fatal diagnostics, failure status and handler restoration without a server
 and final reporting using an explicit context and controlled actions. It checks
 configuration lifetime and restoration, rejected input and failure status without
 starting a server or connecting to a database.
+`server_worker_shutdown_tests` exercises the three servers' shared auxiliary
+worker drain with real cooperative threads, checking stop-before-join order,
+partial startup, dependency lifetime and retained failure reporting.
 
 ## Build natively on macOS
 

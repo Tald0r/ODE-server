@@ -26,6 +26,7 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 | SIGTERM/SIGINT request shutdown from any thread, and the process deadline bounds blocked initialization and cleanup | `server_process_shutdown_tests`, over the `ServerProcessShutdown` guard used by all three entry points and the shared lifecycle runner | a missed signal, a clean exit after the deadline, a deadline firing before any request or after guard destruction, or signal handlers left installed after the guard's scope |
 | Fatal allocation handlers report failure without C++ heap allocation or normal process teardown | `server_fatal_handler_tests`, over the shared `ServerFatalHandlers` guard, with allocation faults confined to subprocesses | a successful allocation-failure exit, recursive allocation while reporting, an exit callback running, a lost diagnostic or a handler left installed after its scope |
 | Application configuration is published only after a successful load, stays alive through cleanup and the result, and restores its previous context binding on scope exit | `server_application_tests`, over the shared `ServerApplication` used by all three entry points | actions running after a configuration error, an incorrect effective login override, a lost binding or failure status, an incorrect drain diagnostic, or unflushed final output |
+| Server shutdown requests every auxiliary worker's stop before draining game zones or joining any auxiliary worker; retained worker failures remain visible after all joins | `server_worker_shutdown_tests`, over `ServerWorkerShutdown` used by all three runtimes | a join before all stop requests, a lost or incorrectly named failure, skipped joins after a retained run failure, or a successful lifecycle exit after worker failure |
 | No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
 | A critical section is never unlocked by hand | `tests/tools/critical_section_audit.pl`, ctest `critical_section_audit` | the file and line of the hand-written `unlock()` |
 | Zone-group state is touched only under that group's mutex | `ZoneGroup::assertOwned()` under `DE_OWNERSHIP_CHECKS` (Debug builds only) | `abort()` at the gateway |
@@ -326,6 +327,18 @@ are plain message lines without timestamp formatting. Login/shared report
 allocation failure to stderr and `_Exit(EXIT_FAILURE)`, preserving their
 existing terminate handlers. `server_fatal_handler_tests` injects allocation
 failure on main and worker threads in child processes with core dumps disabled.
+
+`ServerWorkerShutdown` provides `stopServerWorkers` for all three servers'
+auxiliary workers. After stopping the foreground loop, each server supplies
+borrowed workers and its error stream. The helper requests every stop, runs an
+optional action (gameserver drains its zone pool here), then joins and reports
+retained run failures in order. An explicit diagnostic name preserves the
+login/shared `GameServerManager` label. Stop, extra-drain and join exceptions
+still propagate to the lifecycle's failed-drain handling; worker run failures
+are reported while remaining joins continue. Ownership, the server's stop
+idempotence and the process deadline stay with their existing callers.
+`server_worker_shutdown_tests` uses real cooperative workers, including partial
+startup and injected failures, without linking a runtime or database.
 
 ### Key Directory Structure
 
