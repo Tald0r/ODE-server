@@ -13,6 +13,30 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Server startup kept advancing after a worker requested shutdown (2026-10-02)
+
+`ServerLifecycle` checked shutdown before entering a server's `start`, but
+the game, login and shared server methods then unconditionally started their
+background components and entered the main loop. A shutdown request or an
+asynchronous worker failure during those starts could still launch later
+components and announce main-loop startup before lifecycle cleanup.
+
+All three methods now use `ServerStartSequence`, which preserves startup order
+and checks the process request before each background action and the main
+loop. The game's lair initialization and start are separate actions. The helper
+does not clear failure state or translate exceptions; the lifecycle still
+requests shutdown and drains the workers, including partially started groups.
+These checks do not interrupt an action already in flight or make checking and
+launching atomic with signal delivery.
+
+After extraction, 11 regression cases failed with the original unconditional
+sequence. The suite now covers requests before/during each action, all three
+exception kinds at each action, and real managed workers composed with the
+lifecycle and drain helpers. It checks skipped later starts, preserved failure
+status and retained worker diagnostics, and cleanup after start/main-loop errors.
+
+> **Status:** fixed (refactor/server-start-sequence)
+
 ## Player socket replacement destroyed live state before allocation succeeded (2026-10-02)
 
 `Player::setSocket` published its incoming socket and deleted each old stream
