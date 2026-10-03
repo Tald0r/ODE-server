@@ -526,15 +526,34 @@ exception policy, refusal sending, ownership, four allocation sweeps and retry.
 
 ## Kick caches have no account identity and share the live selected world (2026-10-02)
 
-Kick readiness, character name and slot are cached without an account key.
-Changing a player's ID does not invalidate them, and kick preparation reads
+Kick readiness, character name and slot were cached without an account key.
+Changing a player's ID did not invalidate them, and kick preparation read
 the cached world through the same field that world/server selection changes.
 An existing cache can therefore supply an earlier account's name or combine
-old group/slot/name data with a newly selected world. The preparation extraction
-retains these cache storage conventions; an account-bound saved target and
-identity/location-change tests are the next task.
+old group/slot/name data with a newly selected world. Four regressions reproduced
+stale data after an account change, live selection rewriting kick routing, an
+earlier verification name remaining visible and a skipped new-account query.
 
-> **Status:** recorded, not fixed (refactor/login-kick-preparation)
+`LoginKickCache` now owns the complete account key and saved target separately
+from live selection. Every read matches the current player ID, including changes
+through the base `Player`, and verification uses that matched entry. Replacement
+prepares all owned data before swapping; failure preserves previous pointers.
+Successful refusal clears the cache, while failed sending preserves it. Cache
+and preparation tests cover exact keys, selection changes, stale production
+verification, replacement allocation failures, cleanup and retry.
+
+> **Status:** fixed (refactor/account-bound-kick-cache)
+
+## LoginPlayer initializes a shadow group instead of the live selection (2026-10-02)
+
+`LoginPlayer` declared its own `m_ServerGroupID` for the kick cache, shadowing
+the base `Player` field used by `getServerGroupID()`. Its constructor initialized
+only the cache field, leaving the live selected group indeterminate until a
+selection handler assigned it. The owned kick target removes that shadow, and
+construction now explicitly initializes the base selected group to zero. A
+runtime case checks the initial world/group and absent kick target.
+
+> **Status:** fixed (refactor/account-bound-kick-cache)
 
 ## Kick dispatch stops at a missing group before reaching configured groups (2026-10-02)
 

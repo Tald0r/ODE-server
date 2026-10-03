@@ -45,11 +45,9 @@ void GLKickVerifyHandler::execute(GLKickVerify* pPacket)
 
         if (pLoginPlayer != NULL) // not strictly needed since NoSuch is used..
         {
-            // The character names must match.
-            const string& name1 = pLoginPlayer->getLastCharacterName();
-            const string& name2 = pPacket->getPCName();
-
-            if (name1.size() != 0 && name2.size() != 0 && name1 == name2) {
+            // Verify against the current account's saved kick target.
+            const auto* target = pLoginPlayer->getLoginKickTarget();
+            if (target && !target->characterName.empty() && target->characterName == pPacket->getPCName()) {
                 pLoginPlayer->sendLCLoginOK();
             } else {
                 // A different person. Nothing to worry about.

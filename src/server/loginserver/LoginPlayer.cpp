@@ -65,10 +65,8 @@ LoginPlayer::LoginPlayer(Socket* pSocket)
     getCurrentTime(m_ExpireTime);
     m_ExpireTime.tv_sec += maxIdleSec;
 
-    m_bSetWorldGroupID = false;
     m_WorldID = 1;
-    m_ServerGroupID = 0;
-    m_LastSlot = 0;
+    setServerGroupID(0);
 
     m_isAdult = true;
 

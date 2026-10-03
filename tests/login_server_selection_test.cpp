@@ -304,10 +304,8 @@ TEST(LoginServerSelection, EmptyCharacterListsStillCompleteSelectionAndSendARepl
 
 TEST(LoginServerSelection, SelectionLeavesOtherSessionDataAndCharacterPersistenceAlone) {
     SelectionPlayer player;
-    player.setGroupID(44);
-    player.setWorldGroupID(true);
-    player.setLastSlot(3);
-    player.setLastCharacterName("previous character");
+    const de::LoginKickTarget savedTarget{11, 44, 3, "previous character"};
+    player.cacheLoginKickTarget(savedTarget);
     player.setFailureCount(2);
     player.setGameServerIP("192.0.2.10");
     const auto account = player.getID();
@@ -317,10 +315,8 @@ TEST(LoginServerSelection, SelectionLeavesOtherSessionDataAndCharacterPersistenc
     de::selectLoginServer(player, 4, topology, characters);
 
     EXPECT_EQ(player.getID(), account);
-    EXPECT_EQ(player.getGroupID(), 44);
-    EXPECT_TRUE(player.isSetWorldGroupID());
-    EXPECT_EQ(player.getLastSlot(), 3u);
-    EXPECT_EQ(player.getLastCharacterName(), "previous character");
+    ASSERT_NE(player.getLoginKickTarget(), nullptr);
+    EXPECT_EQ(*player.getLoginKickTarget(), savedTarget);
     EXPECT_EQ(player.getFailureCount(), 2u);
     EXPECT_EQ(player.getGameServerIP(), "192.0.2.10");
     EXPECT_TRUE(characters.insertedSlayers.empty());

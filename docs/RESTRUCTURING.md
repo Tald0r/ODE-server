@@ -1332,31 +1332,37 @@ visibility can't express.
     with cleanup/retry.
 
 - [x] **2.49 Extract login kick location/character resolution.**
-  > **Status:** done (this commit) — `de::prepareLoginKick` takes the real player
+  > **Status:** done (#334) — `de::prepareLoginKick` takes the real player
   > and explicit account/character repositories and returns an owned target.
   > Saved world/group IDs are checked before narrowing, slots must be 0–3, and
   > the cached path reads its actual saved slot. Slot zero (the schema default)
   > requires an already known name; unnamed characters use slots 1–3 in the
   > existing Slayer index lookup. Missing location/name data sends
   > `ALREADY_CONNECTED`, then resets status/identity. Query/validation/allocation
-  > failure preserves the cache; the potentially throwing name assignment
-  > precedes publication of numeric fields. `sendLGKickCharacter` now consumes
-  > the target before its existing dispatch loop. Cache identity and dispatch
-  > membership remain the next two tasks.
-  - Owner: 20 `LoginKickPreparation` runtime cases. Seven regressions failed
+  > failure preserves the cache. `sendLGKickCharacter` consumes the target before
+  > its dispatch loop; cache identity is owned by 2.50 and dispatch membership
+  > remains 2.51.
+  - Owner: 29 `LoginKickPreparation` runtime cases (including 2.50's account
+    binding cases). Seven regressions failed
     against the extracted flow before repair. Coverage includes boundary IDs,
     slot zero and 1–3, invalid fields, cached/named variants, missing/empty rows,
     exact query inputs, refusal ordering/serialization, exception identity,
     owned results, retries and four 64-position allocation sweeps.
 
-- [ ] **2.50 Bind kick caches to their account and saved location.**
-  > **Status:** not started — the readiness flag/name/slot have no account key,
-  > and cached world reads share the session's live world field. Reusing a player
-  > for another account or changing its selected world can reuse incompatible
-  > kick metadata. Give the cached target an explicit owner identity and a
-  > location independent of subsequent selection, with transactional replacement.
-  - Planned owner: runtime cache cases across identity/location changes, complete
-    and missing rows, replacement failure and retry.
+- [x] **2.50 Bind kick caches to their account and saved location.**
+  > **Status:** done (this commit) — `LoginKickCache` owns an account key and
+  > saved target, preparing replacement before a nonthrowing swap. Every player
+  > read matches its current identity, including assignment through `Player`;
+  > live selection cannot rewrite the saved location. Complete entries skip
+  > both queries, and a failed replacement preserves the old entry and borrowed
+  > pointers. A successful refusal clears the entry before resetting identity;
+  > failed sends preserve it. `GLKickVerifyHandler` reads the matched target.
+  > Removing the shadow group member also initializes the actual live group.
+  - Owner: seven `LoginKickCache` cases and the account/location/refusal cases
+    in `LoginKickPreparation`, plus selection's saved-target preservation test.
+    Four regressions failed before repair. Tests include exact account keys,
+    owned/aliased inputs, allocation failures during same/new-account replacement,
+    pointer preservation, repeated cleanup, retry and stale production verification.
 
 - [ ] **2.51 Extract kick destination preparation and dispatch.**
   > **Status:** not started — `sendLGKickCharacter` walks every group number up

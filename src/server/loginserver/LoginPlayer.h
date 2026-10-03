@@ -13,6 +13,7 @@
 #include <deque>
 
 #include "GCReconnectLogin.h"
+#include "LoginKickCache.h"
 #include "Mutex.h"
 #include "Packet.h"
 #include "PaySystem.h"
@@ -115,36 +116,16 @@ public:
         m_WorldID = WorldID;
     }
 
-    // ID of the current server
-    WorldID_t getGroupID() const {
-        return m_ServerGroupID;
+    // Only the current account can read its saved kick target, including when
+    // identity was assigned through Player. Live world/group selection is separate.
+    const de::LoginKickTarget* getLoginKickTarget() const noexcept {
+        return m_LoginKickCache.find(m_ID);
     }
-    void setGroupID(ServerGroupID_t ServerGroupID) {
-        m_ServerGroupID = ServerGroupID;
+    void cacheLoginKickTarget(const de::LoginKickTarget& target) {
+        m_LoginKickCache.store(m_ID, target);
     }
-
-    // ID of the current server
-    uint getLastSlot() const {
-        return m_LastSlot;
-    }
-    void setLastSlot(uint lastSlot) {
-        m_LastSlot = lastSlot;
-    }
-
-    // Have WorldID and GroupID been set?
-    bool isSetWorldGroupID() const {
-        return m_bSetWorldGroupID;
-    }
-    void setWorldGroupID(bool bSet) {
-        m_bSetWorldGroupID = bSet;
-    }
-
-    // Name of the character that connected last
-    const string& getLastCharacterName() const {
-        return m_LastCharacterName;
-    }
-    void setLastCharacterName(const string& name) {
-        m_LastCharacterName = name;
+    void clearLoginKickTarget() noexcept {
+        m_LoginKickCache.clear();
     }
 
     const string& getZipcode() const {
@@ -204,11 +185,8 @@ private:
     mutable Mutex m_Mutex;
 
     // Current world ID
-    bool m_bSetWorldGroupID;
     WorldID_t m_WorldID;
-    ServerGroupID_t m_ServerGroupID;
-    uint m_LastSlot;
-    string m_LastCharacterName;
+    de::LoginKickCache m_LoginKickCache;
 
     // Because of LoginPlayerData.
     string m_SSN;
