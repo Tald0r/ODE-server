@@ -918,6 +918,29 @@ repository call, exception identity and publication only after sending.
 
 > **Status:** fixed (refactor/login-character-name-query)
 
+## Account-name queries can reply about an ID different from the lookup (2026-10-02)
+
+`CLQueryPlayerIDHandler` read the packet ID again after the repository returned.
+The extracted old flow reproduced a callback changing Rowan to Willow and
+receiving a reply that paired Willow with Rowan's existence result.
+
+`LoginAccountNameQuery` now owns one requested ID before lookup and uses it in
+the reply. The handler supplies the default repository and sender; tests keep
+the existing name probe, repeated-query behavior, reply bytes and exception
+identity, including real output and allocation cleanup without server startup.
+
+> **Status:** fixed (refactor/login-account-name-query)
+
+## Character-list refresh publishes character management before lookup and sending (2026-10-02)
+
+`CLGetPCListHandler` sets `LPS_PC_MANAGEMENT` before calling the character-list
+assembler, then sets it again after sending. A lookup or send exception therefore
+leaves the handler's caller observing the advanced phase despite the failed
+refresh. Task 2.65 tracks explicit repository/sender composition and publication
+after sending, with failure and allocation regression coverage.
+
+> **Status:** recorded, not fixed (refactor/login-account-name-query)
+
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 
 `GLKickVerifyHandler` matched the account-owned character name without checking

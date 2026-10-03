@@ -1605,14 +1605,31 @@ visibility can't express.
     identity, partial sends/retry, literal boundary reply bytes, the production
     handler guard and two 32-position allocation cleanup/retry sweeps.
 
-- [ ] **2.64 Extract account-name availability queries.**
-  > **Status:** not started — `CLQueryPlayerIDHandler` still looks up and replies
-  > inline through the default account repository and live player. Extract the
-  > lookup/reply/phase flow with explicit collaborators and an owned account
-  > name so a callback cannot change the reply's subject after lookup.
-  - Owner to add: existing/missing names, request snapshots, exact reply bytes,
-    query/send exception identity, repeated queries, publication after sending
-    and allocation cleanup without executable startup or a database.
+- [x] **2.64 Extract account-name availability queries.**
+  > **Status:** done (refactor/login-account-name-query) —
+  > `LoginAccountNameQuery` takes explicit repository and sender inputs and owns
+  > the requested ID before lookup. The handler supplies production adapters.
+  > Each call uses the existing account-name probe, without character-name
+  > restrictions or account writes. The reply keeps the original subject even
+  > if a callback changes the packet. Registration is published only after
+  > sending returns; lookup/send exceptions and partial output remain visible.
+  > Repeated queries see current repository results and preserve player identity,
+  > location and acquired-account ownership. Admission and decoded string bounds
+  > remain the caller's contract.
+  - Owner: eight runtime cases cover the reproduced snapshot regression, both
+    results, distinct lookup policy, repeated queries, publication timing,
+    query/supplied/production sender exception identity, partial output/retry,
+    real boundary reply bytes and four 24-position allocation sweeps.
+
+- [ ] **2.65 Extract the character-list refresh handler flow.**
+  > **Status:** not started — `CLGetPCListHandler` uses the explicit list
+  > assembler but still selects its default repository and sends inline. It
+  > publishes character management before lookup as well as after sending.
+  > Extract repository/sender composition, own the selected world/account and
+  > publish the phase only when the complete reply has been sent successfully.
+  - Owner to add: owned inputs, complete/empty lists, query/send failures,
+    preserved assembler exception policy, reply bytes, publication timing and
+    allocation cleanup without executable startup or a database.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
