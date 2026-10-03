@@ -33,6 +33,7 @@
 #include "KernelContext.h"
 #include "LCLoginError.h"
 #include "LCLoginOK.h"
+#include "LoginCompletion.h"
 #include "LoginDecision.h"
 #include "LoginPlayer.h"
 #include "PasswordHash.h"
@@ -46,7 +47,6 @@
 #define SYMBOL_TEST_CLIENT '#'       // the in-house test build
 #define SYMBOL_NET_MARBLE_CLIENT '@' // a connection coming from NetMarble
 
-void addLoginPlayerData(const string& ID, const string& ip, const string& SSN, const string& zipcode);
 
 #ifdef __LOGIN_SERVER__
 namespace {
@@ -327,10 +327,7 @@ void CLLoginHandler::execute(CLLogin* pPacket, Player* pPlayer)
                 repo.markPremiumEventReceived(ID);
             }
 
-            LCLoginOK lcLoginOK;
-            lcLoginOK.setFamily(accepted.family);
-            lcLoginOK.setAdult(accepted.adult);
-            lcLoginOK.setLastDays(accepted.lastDays);
+            auto lcLoginOK = de::makeLoginOK(accepted.adult, accepted.family, accepted.lastDays);
 
             pLoginPlayer->sendPacket(&lcLoginOK);
             pLoginPlayer->setPlayerStatus(LPS_WAITING_FOR_CL_GET_PC_LIST);
@@ -341,33 +338,13 @@ void CLLoginHandler::execute(CLLogin* pPacket, Player* pPlayer)
         throw Error("CLLoginHandler : " + error.message());
     }
 
-    // Needed elsewhere too, so it is its own function. by sigi. 2002.5.8
-    addLoginPlayerData(ID, connectIP, SSN, zipcode);
+    de::recordLogin(repo, ID, connectIP, VSDateTime::currentDateTime());
 
 #endif
 
     __END_DEBUG_EX __END_CATCH
 }
 
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// add LoginPlayerdata
-//
-// Records the login in USERINFO's LoginPlayerData for the connection
-// statistics.
-//
-//////////////////////////////////////////////////////////////////////////////
-void addLoginPlayerData(const string& ID, const string& ip, const string& SSN, const string& zipcode) {
-#ifdef __LOGIN_SERVER__
-    // The per-login statistics row: account, address, and the current
-    // date and time as two texts. SSN and zipcode are no longer recorded.
-    // A SQL failure leaves as END_DB's DatabaseError.
-    string currentDT = VSDateTime::currentDateTime().toDateTime();
-
-    defaultLoginAccountRepository().insertLoginRecord(ID, ip, currentDT.substr(0, 10), currentDT.substr(11));
-#endif
-}
 
 bool CLLoginHandler::checkNetMarbleClient(CLLogin* pPacket, Player* pPlayer)
 

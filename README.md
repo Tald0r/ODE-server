@@ -208,6 +208,11 @@ Kick retries take explicit time, a request result and a completion action. Fresh
 attempts reset their count; refused, failed or superseded requests cannot advance
 it. Tests pin the three-retry fallback, deadline boundaries, completion failures,
 account/target changes, allocation cleanup and production refusal/disconnect.
+Kick-login completion takes an account repository, statistics clock and
+diagnostics explicitly. Both login paths share fully initialized success replies
+and timestamped statistics writes. Runtime tests cover success/refusal ordering,
+packet bytes, safe refusal disconnect, partial effects, broken diagnostics and
+allocation cleanup without MySQL or `main`.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
