@@ -505,16 +505,48 @@ layout changes were needed.
 
 ## Login kick lookup can use uninitialized location fields (2026-10-02)
 
-`LoginPlayer::sendLGKickCharacter` declares local world/server/slot values
-without initialization. A missing `loadLastLocation` row leaves them unset
-before character/server lookup. When the session already has cached location
-fields, the branch copies the world/group but never assigns `lastSlot` from
-`getLastSlot()`; an empty cached character name then passes that uninitialized
-slot to `loadSlayerNameInSlot`. Found during the slot-contract audit; these paths
-need an explicit location/character decision with missing-row and cached-slot
-tests before changing the kick flow.
+`LoginPlayer::sendLGKickCharacter` left routing fields uninitialized when
+`loadLastLocation` found no row and never copied `getLastSlot()` on the cached
+path. It also published the loaded location before a character query could
+fail and accepted empty successful names or narrowed invalid stored fields.
+Seven regressions failed against the extracted flow before repair (temporary
+zero-initialization made the missing assignments deterministic for testing).
 
-> **Status:** recorded, not fixed (fix/character-selection-slots)
+`de::prepareLoginKick` now receives explicit repositories, refuses a missing
+location before further queries, uses the actual cached slot and validates
+saved IDs/slots before narrowing. `LastSlot = 0` is the schema's default and
+requires an already known name; unnamed lookup uses only slots 1–3. Missing or
+empty character data receives the existing `ALREADY_CONNECTED` reply, followed
+by the existing status/identity reset. A complete owned target is prepared before
+publishing the cache, with throwing string assignment before numeric fields.
+Twenty runtime tests cover exact inputs, boundaries, missing/cached data,
+exception policy, refusal sending, ownership, four allocation sweeps and retry.
+
+> **Status:** fixed (refactor/login-kick-preparation)
+
+## Kick caches have no account identity and share the live selected world (2026-10-02)
+
+Kick readiness, character name and slot are cached without an account key.
+Changing a player's ID does not invalidate them, and kick preparation reads
+the cached world through the same field that world/server selection changes.
+An existing cache can therefore supply an earlier account's name or combine
+old group/slot/name data with a newly selected world. The preparation extraction
+retains these cache storage conventions; an account-bound saved target and
+identity/location-change tests are the next task.
+
+> **Status:** recorded, not fixed (refactor/login-kick-preparation)
+
+## Kick dispatch stops at a missing group before reaching configured groups (2026-10-02)
+
+`LoginPlayer::sendLGKickCharacter` probes group numbers from zero to the common
+catalogue's global maximum. The first missing server-1 lookup clears the player
+ID and returns, even if that world has valid higher group IDs. A world with only
+group 9 therefore never receives a kick when the loop first probes group 0.
+Earlier groups can already have received packets when a later hole stops the
+loop. Dispatch needs actual membership, prepared destinations and explicit
+tests for empty catalogues, missing first-server references and send ordering.
+
+> **Status:** recorded, not fixed (refactor/login-kick-preparation)
 
 ## Character-list assembly leaks records before packet attachment (2026-10-02)
 

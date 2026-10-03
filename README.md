@@ -184,6 +184,10 @@ The server-selection flow also runs with supplied topology and repository
 inputs. Tests verify that normalized world/group IDs reach the session and
 character query together, refusals preserve state, and character management
 follows successful sending, including real serialization and failure/retry.
+Kick preparation resolves saved or cached locations through explicit repositories,
+validates IDs and account slots, and caches a complete character target before
+datagram dispatch. Tests cover missing data, cached slots, refusal serialization,
+exception identity and cache preservation/cleanup through allocation failures.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
