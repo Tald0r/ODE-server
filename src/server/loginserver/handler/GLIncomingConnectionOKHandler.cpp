@@ -58,14 +58,7 @@ void GLIncomingConnectionOKHandler::execute(GLIncomingConnectionOK* pPacket)
         } else {
         }
 
-        // Close the connection.
-        pLoginPlayer->disconnect_nolog(UNDISCONNECTED);
-
-        // Remove it from the LPM.
-        loginPlayers.deletePlayer_NOLOCKED(pLoginPlayer->getSocket()->getSOCKET());
-
-        // Delete the LoginPlayer object.
-        SAFE_DELETE(pLoginPlayer);
+        loginPlayers.retirePlayer_NOLOCKED(pLoginPlayer->getSocket()->getSOCKET(), UNDISCONNECTED);
 
         __LEAVE_CRITICAL_SECTION(loginPlayers)
     } catch (NoSuchElementException& nsee) {

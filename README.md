@@ -219,6 +219,12 @@ the acquired account across later failures or ID changes. Disconnect takes
 explicit transport actions and persistence, attempts every cleanup step, and
 retains failed logouts for retry. Tests cover all phases, first-error preservation,
 registration, completion retry, production socket closure and allocation faults.
+Login-player retirement removes table membership and polling before cleanup.
+An allocation-free owner keeps failed account logouts for retries at five-second
+monotonic deadlines; completed cleanup releases the player immediately. Runtime
+tests cover broken cleanup/reporting, deadline boundaries, descriptor reuse,
+manager locks, real I/O and both incoming-reply handlers. Pending teardown is
+local and iterative; outstanding database cleanup does not survive process exit.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

@@ -1469,14 +1469,31 @@ visibility can't express.
     registration writes, completion retry, actual socket closure and three new
     64-position allocation sweeps. Decision targets still link without transport.
 
-- [ ] **2.56 Extract login-player retirement from manager loops.**
-  > **Status:** not started — manager loops still disconnect, delete and remove
-  > players inline. A disconnect exception skips subsequent deletion/removal and
-  > can leave a closed END player registered. Extract retirement with explicit
-  > cleanup/reporting dependencies and define who retains failed account cleanup,
-  > preserving descriptor-table ownership and keeping successful cleanup final.
-  - Owner to add: removal after transport/reporting failure, failed logout
-    ownership, descriptor reuse, repeated retirement, and manager-lock release.
+- [x] **2.56 Extract login-player retirement from manager loops.**
+  > **Status:** done (refactor/login-player-retirement) — `LoginPlayerRetirement`
+  > accepts explicit disconnect/reporting actions and monotonic time. Managers
+  > detach table/poll membership before adopting players without allocation.
+  > Retirement always ends/closes locally, reports failures best effort and
+  > retains only outstanding account owners. Failed logout retries once per due
+  > call, no earlier than five seconds after its previous attempt; successful
+  > logout is final. The client heartbeat drives retries. All I/O loops and both
+  > incoming-reply handlers share retirement; the error handler keeps lookup and
+  > retirement under one lock. Descriptor extremes support an empty listenerless
+  > manager. Quiescent teardown drains pending owners iteratively without database
+  > access; retry state is local to this process, not durable logout recovery.
+  - Owner: 21 runtime cases covering three reproduced regressions, real I/O and
+    handler paths, broken diagnostics/cleanup, account identity, inclusive retry
+    deadlines, descriptor reuse, lock ownership, allocation failures and scoped
+    release. The urgent TCP poll case runs on Linux; native macOS skips it.
+
+- [ ] **2.57 Extract incoming game-connection reply handling.**
+  > **Status:** not started — success/error replies still combine account lookup,
+  > phase admission, reconnect assembly and retirement inside process-context
+  > handlers. A success reply retires a matching account even outside the pending
+  > phase; reply construction/sending failures skip retirement. Extract the flow
+  > with explicit manager and reply dependencies and preserve scoped locking.
+  - Owner to add: stale/duplicate reply refusal, matched pending accounts,
+    reconnect packet fields, failure cleanup, lock release and allocation retry.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

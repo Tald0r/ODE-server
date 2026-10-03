@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 #include <algorithm>
+#include <mutex>
 
 #include "AcceptedServerConnection.h"
 #include "Assert.h"
@@ -78,6 +79,7 @@ LoginPlayerManager::~LoginPlayerManager() noexcept {
         player = nullptr;
     }
     m_nPlayers = 0;
+    m_Retirement.clear();
 
     __END_CATCH_NO_RETHROW
 
@@ -178,18 +180,15 @@ void LoginPlayerManager::processExceptions() {
         if (m_PollSet.isUrgent(i) && i != m_ServerFD) {
             Assert(m_pPlayers[i] != NULL);
 
-            StringStream msg;
-            msg << "OOB from " << m_pPlayers[i]->toString();
-            cout << msg.toString() << endl;
-
-            // Flush the output buffer.
-            m_pPlayers[i]->disconnect(UNDISCONNECTED);
-
-            // Delete the player object.
-            delete m_pPlayers[i];
-
-            // Remove the player from the player manager.
-            deletePlayer_NOLOCKED(i);
+            std::exception_ptr failure;
+            try {
+                StringStream msg;
+                msg << "OOB from " << m_pPlayers[i]->toString();
+                cout << msg.toString() << endl;
+            } catch (...) {
+                failure = std::current_exception();
+            }
+            retirePlayer_NOLOCKED(i, UNDISCONNECTED, std::move(failure));
         }
     }
 
@@ -225,29 +224,12 @@ void LoginPlayerManager::processInputs() {
                 try {
                     if (m_pPlayers[i]->getSocket()->getSockError()) {
                         // The connection is already gone, so the output buffer must not be flushed.
-                        m_pPlayers[i]->disconnect(DISCONNECTED);
-
-                        // Delete the player object.
-                        delete m_pPlayers[i];
-
-                        // Remove the player from the player manager.
-                        deletePlayer_NOLOCKED(i);
+                        retirePlayer_NOLOCKED(i, DISCONNECTED);
                     } else {
                         m_pPlayers[i]->processInput();
                     }
-                } catch (ConnectException& ce) {
-                    // The socket is blocking, so no exception other than ConnectException and Error can occur.
-
-                    cout << ce.toString() << endl;
-
-                    // The connection is already gone, so the output buffer must not be flushed.
-                    m_pPlayers[i]->disconnect(DISCONNECTED);
-
-                    // Delete the player object.
-                    delete m_pPlayers[i];
-
-                    // Remove the player from the player manager.
-                    deletePlayer_NOLOCKED(i);
+                } catch (const ConnectException&) {
+                    retirePlayer_NOLOCKED(i, DISCONNECTED, std::current_exception());
                 }
             }
         }
@@ -274,39 +256,11 @@ void LoginPlayerManager::processCommands() {
         if (m_pPlayers[i] != NULL && i != m_ServerFD) {
             try {
                 m_pPlayers[i]->processCommand();
-            } catch (ProtocolException& pe) {
-                //--------------------------------------------------
-                // There are three kinds of ProtocolException.
-                //
-                // - InvalidProtocolException : protocol error
-                // - DisconnectException : close the connection
-                // - InsufficiendDataException : the packet arrived only partially
-                //
-                // In all of these the connection to the client is still up,
-                // so disconnect must be called with the UNDISCONNECTED parameter
-                // to flush the output buffer.
-                //
-                //--------------------------------------------------
-
-                cout << pe.toString() << endl;
-
-                m_pPlayers[i]->disconnect(UNDISCONNECTED);
-
-                // Delete the player object.
-                delete m_pPlayers[i];
-
-                // Remove the player from the player manager.
-                deletePlayer_NOLOCKED(i);
-            } catch (ConnectException& ce) {
-                cout << ce.toString() << endl;
-
-                m_pPlayers[i]->disconnect(DISCONNECTED);
-
-                // Delete the player object.
-                delete m_pPlayers[i];
-
-                // Remove the player from the player manager.
-                deletePlayer_NOLOCKED(i);
+            } catch (const ProtocolException&) {
+                // The transport is still up, so flush any final reply.
+                retirePlayer_NOLOCKED(i, UNDISCONNECTED, std::current_exception());
+            } catch (const ConnectException&) {
+                retirePlayer_NOLOCKED(i, DISCONNECTED, std::current_exception());
             }
         }
     }
@@ -331,28 +285,10 @@ void LoginPlayerManager::processOutputs() {
 
             try {
                 m_pPlayers[i]->processOutput();
-            } catch (ConnectException& ce) {
-                cout << ce.toString() << endl;
-
-                // The connection is already gone, so the output buffer must not be flushed.
-                m_pPlayers[i]->disconnect(DISCONNECTED);
-
-                // Delete the player object.
-                delete m_pPlayers[i];
-
-                // Remove the player from the player manager.
-                deletePlayer_NOLOCKED(i);
-            } catch (ProtocolException& pe) {
-                cout << pe.toString() << endl;
-
-                // The connection is already gone, so the output buffer must not be flushed.
-                m_pPlayers[i]->disconnect(DISCONNECTED);
-
-                // Delete the player object.
-                delete m_pPlayers[i];
-
-                // Remove the player from the player manager.
-                deletePlayer_NOLOCKED(i);
+            } catch (const ConnectException&) {
+                retirePlayer_NOLOCKED(i, DISCONNECTED, std::current_exception());
+            } catch (const ProtocolException&) {
+                retirePlayer_NOLOCKED(i, DISCONNECTED, std::current_exception());
             }
         }
     }
@@ -434,7 +370,7 @@ void LoginPlayerManager::addPlayer_NOLOCKED(Player* pPlayer) {
     SOCKET fd = pPlayer->getSocket()->getSOCKET();
 
     // Readjust m_MinFD and m_MaxFD.
-    m_MinFD = min(fd, m_MinFD);
+    m_MinFD = m_MinFD < 0 ? fd : min(fd, m_MinFD);
     m_MaxFD = max(fd, m_MaxFD);
 
     // Watch the new descriptor. It is reported ready no earlier than the next
@@ -469,49 +405,22 @@ void LoginPlayerManager::deletePlayer_NOLOCKED(SOCKET fd) {
 
     PlayerManager::deletePlayer(fd);
 
-    Assert(m_pPlayers[fd] == NULL);
-
-    // Readjust m_MinFD and m_MaxFD.
-    // The fd == m_MinFD && fd == m_MaxFD case is handled by the first if.
-    if (fd == m_MinFD) {
-        // Find the smallest fd from the front.
-        // Note that the m_MinFD slot is NULL at this point.
-        const de::DescriptorRange walk = de::descriptorRange((int)m_MinFD, (int)m_MaxFD, (int)nMaxPlayers);
-        int i = walk.first;
-        for (; i <= walk.last; i++) {
-            if (m_pPlayers[i] != NULL || i == m_ServerFD) {
-                m_MinFD = i;
-                break;
-            }
-        }
-
-        // When no suitable m_MinFD was found,
-        // this is the m_MinFD == m_MaxFD case.
-        // Set both to -1 then.
-        if (i > walk.last)
-            m_MinFD = m_MaxFD = -1;
-    } else if (fd == m_MaxFD) {
-        // Find the largest fd from the back.
-        // Watch out for ServerFD! ( for ServerFD the Player pointer is NULL. )
-        const de::DescriptorRange walk = de::descriptorRange((int)m_MinFD, (int)m_MaxFD, (int)nMaxPlayers);
-        int i = walk.last;
-        for (; i >= walk.first; i--) {
-            if (m_pPlayers[i] != NULL || i == m_ServerFD) {
-                m_MaxFD = i;
-                break;
-            }
-        }
-
-        // When no suitable m_MinFD was found,
-        if (i < walk.first) {
-            throw UnknownError("m_MinFD & m_MaxFD problem.");
-        }
-    }
-
     // Stop watching the descriptor. This also drops the readiness the last poll
     // reported for it, because otherwise an object that is gone could still be
     // processed later.
     m_PollSet.unwatch(fd);
+
+    // After the validated removal, bookkeeping must not throw: callers may
+    // already be transferring the detached player to its next owner.
+    if (fd == m_MinFD || fd == m_MaxFD) {
+        m_MinFD = m_MaxFD = m_ServerFD;
+        for (SOCKET i = 0; i < static_cast<SOCKET>(nMaxPlayers); ++i) {
+            if (m_pPlayers[i]) {
+                m_MinFD = m_MinFD < 0 ? i : min(i, m_MinFD);
+                m_MaxFD = max(i, m_MaxFD);
+            }
+        }
+    }
 
     __END_CATCH
 }
@@ -524,6 +433,43 @@ void LoginPlayerManager::deletePlayer(SOCKET fd) {
     deletePlayer_NOLOCKED(fd);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
+}
+
+bool LoginPlayerManager::retirePlayer(SOCKET fd, bool flush, de::LoginRetirementTime now,
+                                      const de::LoginRetirementActions& actions, std::exception_ptr reason) {
+    std::lock_guard guard(m_Mutex);
+    return retirePlayer_NOLOCKED(fd, flush, now, actions, std::move(reason));
+}
+
+bool LoginPlayerManager::retirePlayer_NOLOCKED(SOCKET fd, bool flush, de::LoginRetirementTime now,
+                                               const de::LoginRetirementActions& actions, std::exception_ptr reason) {
+    if (!de::fitsDescriptorTable(fd, nMaxPlayers) || !m_pPlayers[fd])
+        return false;
+    auto* player = dynamic_cast<LoginPlayer*>(m_pPlayers[fd]);
+    if (!player)
+        return false;
+    deletePlayer_NOLOCKED(fd);
+    m_Retirement.retire(de::LoginConnection(player), flush, now, actions, std::move(reason));
+    return true;
+}
+
+bool LoginPlayerManager::retirePlayer_NOLOCKED(SOCKET fd, bool flush, std::exception_ptr reason) {
+    return retirePlayer_NOLOCKED(fd, flush, std::chrono::steady_clock::now(), de::defaultLoginRetirementActions(),
+                                 std::move(reason));
+}
+
+void LoginPlayerManager::retryRetiredPlayers(de::LoginRetirementTime now, const de::LoginRetirementActions& actions) {
+    std::lock_guard guard(m_Mutex);
+    m_Retirement.retry(now, actions);
+}
+
+void LoginPlayerManager::retryRetiredPlayers() {
+    retryRetiredPlayers(std::chrono::steady_clock::now(), de::defaultLoginRetirementActions());
+}
+
+std::size_t LoginPlayerManager::pendingRetirements() const {
+    std::lock_guard guard(m_Mutex);
+    return m_Retirement.size();
 }
 
 

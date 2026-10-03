@@ -12,6 +12,7 @@
 // include files
 #include "DescriptorPollSet.h"
 #include "Exception.h"
+#include "LoginPlayerRetirement.h"
 #include "PlayerManager.h"
 #include "ProxyAcceptor.h"
 #include "ServerSocket.h"
@@ -75,9 +76,21 @@ public:
     void addPlayer(Player* pPlayer);
     void addPlayer_NOLOCKED(Player* pPlayer);
 
-    // Delete the player object.
+    // Remove a table entry without destroying the player.
     void deletePlayer(SOCKET fd);
     void deletePlayer_NOLOCKED(SOCKET fd);
+
+    // Detach before cleanup, and retain failed account logout outside the
+    // descriptor table. NOLOCKED requires this manager's lock. Supplied
+    // actions run under it and must not reenter the manager/retirement queue.
+    bool retirePlayer(SOCKET fd, bool flush, de::LoginRetirementTime now, const de::LoginRetirementActions& actions,
+                      std::exception_ptr reason = {});
+    bool retirePlayer_NOLOCKED(SOCKET fd, bool flush, de::LoginRetirementTime now,
+                               const de::LoginRetirementActions& actions, std::exception_ptr reason = {});
+    bool retirePlayer_NOLOCKED(SOCKET fd, bool flush, std::exception_ptr reason = {});
+    void retryRetiredPlayers(de::LoginRetirementTime now, const de::LoginRetirementActions& actions);
+    void retryRetiredPlayers();
+    std::size_t pendingRetirements() const;
 
     // Access a player object.
     using PlayerManager::getPlayer;
@@ -128,6 +141,7 @@ private:
     de::LoginContext& m_Context;
     std::unique_ptr<ReconnectLoginInfoManager> m_pReconnectLoginInfoManager;
     ReconnectLoginInfoManager* m_PreviousReconnectLoginInfoManager = nullptr;
+    de::LoginPlayerRetirement m_Retirement;
 };
 
 #endif
