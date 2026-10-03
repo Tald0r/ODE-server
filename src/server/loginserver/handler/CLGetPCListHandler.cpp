@@ -8,12 +8,8 @@
 
 #ifdef __LOGIN_SERVER__
 #include "Assert1.h"
-#include "DB.h"
-#include "GameServerInfoManager.h"
-#include "LCPCList.h"
-#include "LoginCharacterList.h"
+#include "LoginCharacterListRefresh.h"
 #include "LoginPlayer.h"
-#include "OptionInfo.h"
 #include "repository/LoginCharacterRepository.h"
 #endif
 
@@ -33,17 +29,8 @@ void CLGetPCListHandler::execute(CLGetPCList* pPacket, Player* pPlayer)
 
     LoginPlayer* pLoginPlayer = dynamic_cast<LoginPlayer*>(pPlayer);
 
-    pLoginPlayer->setPlayerStatus(LPS_PC_MANAGEMENT);
-
-
-    //----------------------------------------------------------------------
-    // Now build and send the LCPCList packet
-    //----------------------------------------------------------------------
-    auto lcPCList = de::makeLoginCharacterList(pLoginPlayer->getWorldID(), pLoginPlayer->getID(),
-                                               defaultLoginCharacterRepository());
-    pLoginPlayer->sendPacket(lcPCList.get());
-    pLoginPlayer->setPlayerStatus(LPS_PC_MANAGEMENT);
-
+    de::refreshLoginCharacterList(*pLoginPlayer, defaultLoginCharacterRepository(),
+                                  de::defaultLoginCharacterListRefreshActions());
 
 #endif
 

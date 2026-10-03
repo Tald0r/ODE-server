@@ -933,13 +933,30 @@ identity, including real output and allocation cleanup without server startup.
 
 ## Character-list refresh publishes character management before lookup and sending (2026-10-02)
 
-`CLGetPCListHandler` sets `LPS_PC_MANAGEMENT` before calling the character-list
-assembler, then sets it again after sending. A lookup or send exception therefore
-leaves the handler's caller observing the advanced phase despite the failed
-refresh. Task 2.65 tracks explicit repository/sender composition and publication
-after sending, with failure and allocation regression coverage.
+`CLGetPCListHandler` set `LPS_PC_MANAGEMENT` before calling the character-list
+assembler, then set it again after sending. Three regressions reproduced the
+advanced phase during lookup/sending and after either operation failed.
 
-> **Status:** recorded, not fixed (refactor/login-account-name-query)
+`LoginCharacterListRefresh` now owns the selected world/account and the complete
+reply through an explicit sender. It publishes character management only after
+the sender returns, retaining the assembler's exception mapping and unchanged
+sender exceptions. Fourteen runtime cases cover empty/complete lists, snapshots,
+query/serialization/send failures, account ownership, partial output and five
+allocation cleanup/retry sweeps without executable startup or a database.
+
+> **Status:** fixed (refactor/login-character-list-refresh)
+
+## Registration location read-back narrows unchecked IDs and does not publish the world (2026-10-02)
+
+By inspection, `CLRegisterPlayerHandler` converts the returned integer world and
+group directly to byte-sized IDs. It uses those narrowed values for group lookup
+and publishes only the group on the player. When the stored world differs from
+the session's current world, the reply can name a group in one world while a
+subsequent character-list query uses the other. Out-of-range IDs can wrap before
+the lookup. Task 2.66 tracks checked location preparation/publication with
+registration-flow regression tests; this refresh extraction does not alter it.
+
+> **Status:** recorded, not fixed (refactor/login-character-list-refresh)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 
