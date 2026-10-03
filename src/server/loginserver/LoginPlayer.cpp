@@ -19,6 +19,7 @@
 #include "LCLoginOK.h"
 #include "LGKickCharacter.h"
 #include "LoginContext.h"
+#include "LoginKickPreparation.h"
 #include "Packet.h"
 #include "PacketDispatcher.h"
 #include "PacketFactoryManager.h"
@@ -437,63 +438,17 @@ Packet* LoginPlayer::getOldPacket(PacketID_t packetID) {
 void LoginPlayer::sendLGKickCharacter() {
     cout << "send LGKickCharacter" << endl;
 
-    // Send the Game server a message asking it to remove the character.
+    const auto target = de::prepareLoginKick(*this, defaultLoginAccountRepository(), defaultLoginCharacterRepository());
+    if (!target)
+        return;
+
     LGKickCharacter lgKickCharacter;
-
-    string characterName = getLastCharacterName();
-    int serverID, serverGroupID, worldID, lastSlot;
-
+    const auto& characterName = target->characterName;
+    const int worldID = target->worldID;
+    const int serverID = 1;
+    int serverGroupID;
     string gameServerIP;
     uint gameServerPort;
-
-    //----------------------------------------------------------------------
-    // Get from the DB the WorldID, ServerID and LastSlot this player
-    // last connected with.
-    //----------------------------------------------------------------------
-    if (!isSetWorldGroupID()) {
-        int currentWorldID = 0;
-        int currentServerGroupID = 0;
-        int currentLastSlot = 0;
-
-        if (defaultLoginAccountRepository().loadLastLocation(getID(), currentWorldID, currentServerGroupID,
-                                                             currentLastSlot)) {
-            serverID = 1; // always 1 for now
-            worldID = currentWorldID;
-            serverGroupID = currentServerGroupID;
-            lastSlot = currentLastSlot;
-
-            setWorldID(worldID);
-            setGroupID(serverGroupID);
-            setLastSlot(lastSlot);
-            setWorldGroupID(true); // the values are now set
-        }
-    } else {
-        serverID = 1; // always 1 for now
-        worldID = getWorldID();
-        serverGroupID = getGroupID();
-    }
-
-    //----------------------------------------------------------------------
-    // The character in the last slot, when the caller did not name one.
-    //----------------------------------------------------------------------
-    if (characterName.size() == 0) {
-        string name;
-
-        if (defaultLoginCharacterRepository().loadSlayerNameInSlot(m_WorldID, getID(), lastSlot, name)) {
-            characterName = name;
-            setLastCharacterName(characterName);
-        } else {
-            cout << "No CharacterName" << endl;
-
-            LCLoginError lcLoginError;
-            lcLoginError.setErrorID(ALREADY_CONNECTED);
-            sendPacket(&lcLoginError);
-
-            setPlayerStatus(LPS_BEGIN_SESSION);
-            setID("NONE"); // keeps disconnect() from writing LOGOFF
-            return;
-        }
-    }
 
     //----------------------------------------------------------------------
     // Find out the GameServer's information.
