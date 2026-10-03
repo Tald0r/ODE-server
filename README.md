@@ -272,6 +272,11 @@ Account registration takes explicit hashing, connection settings, catalogue
 lookup, persistence, replies and diagnostics. Tests cover refusal/retry policy,
 partial writes and cleanup ownership, checked world/group publication after
 sending, real production adapters and allocation failure without server startup.
+Web and NetMarble authentication now take explicit repository, password, reply
+and diagnostic actions. Tests cover credential snapshots, hash migration,
+account creation, web-key consumption before free-pass publication, refusal
+bytes, partial writes and allocation cleanup. Diagnostic failures cannot change
+these authentication results, and web-key mismatch logs omit both credentials.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

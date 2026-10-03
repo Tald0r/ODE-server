@@ -142,7 +142,7 @@ bool isBlockedIP(const std::string& ip, LoginAccountRepository& repository) {
 }
 
 Outcome<void, LoginRejection> decideWebLoginKey(const std::string& playerID, const std::string& key,
-                                                LoginAccountRepository& repository) {
+                                                LoginAccountRepository& repository, const WebLoginKeyActions& actions) {
     typedef Outcome<void, LoginRejection> Result;
 
     std::string storedKey;
@@ -153,9 +153,11 @@ Outcome<void, LoginRejection> decideWebLoginKey(const std::string& playerID, con
         return Result::Rejected(refusal(LoginRejectReason::WebLoginKeyNotFound));
 
     if (storedKey != key) {
-        filelog("keydiff.txt", "db key: %s, packet key: %s, Player ID: %s", storedKey.c_str(), key.c_str(),
-                playerID.c_str());
-        std::cout << "33333" << std::endl;
+        try {
+            if (actions.mismatch)
+                actions.mismatch(playerID);
+        } catch (...) {
+        }
         return Result::Rejected(refusal(LoginRejectReason::WebLoginKeyMismatch));
     }
 

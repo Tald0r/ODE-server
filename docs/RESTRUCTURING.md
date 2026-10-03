@@ -1660,12 +1660,34 @@ visibility can't express.
     invalid profile inputs, explicit hashing order/failures and real Argon2
     verification. The packet decoder's existing sex-byte guard is unchanged.
 
-- [ ] **2.67 Extract the login handler and authentication adapters.**
+- [x] **2.67 Extract the login authentication and refusal adapters.**
+  > **Status:** done (refactor/login-authentication) — `LoginAuthentication`
+  > owns account/credential inputs before web or NetMarble callbacks. Supplied
+  > password, repository, reply and diagnostic actions cover verification,
+  > migration, account creation, web-key consumption and all twelve refusal
+  > sites without startup. The web free pass publishes only after key deletion
+  > returns; NetMarble publication follows verification or acknowledged writes.
+  > Publication allocates nothing. Diagnostic failures cannot change results;
+  > mismatch reporting receives only the account and the default log omits keys.
+  > Refusal bytes, database-clock age policy, operation exception boundaries,
+  > existing free-pass/account ownership and earlier write effects remain.
+  > A consumed key cannot be retried after its acknowledgement fails. The main
+  > login orchestration and ordinary-password adapter continue in task 2.68.
+  - Owner: 28 runtime cases cover five reproduced regressions, all refusal
+    bytes/sites, input snapshots, write/publication order, exception matrices,
+    partial effects/output, existing cleanup ownership, real Argon2 and default
+    logs, eight 96-position allocation sweeps and five 16-position diagnostic
+    sweeps. Two additional standalone web-decision cases cover diagnostic input,
+    selection and failure containment.
+
+- [ ] **2.68 Extract the remaining login handler flow and password adapter.**
   > **Status:** not started — `CLLoginHandler` still coordinates normalization,
-  > web/NetMarble authorization, password migration, decision/session adaptation,
-  > kick/success dispatch and reporting through process contexts. Extract
+  > authentication gates, ordinary password migration, decision/session
+  > adaptation, kick/success dispatch and reporting through process contexts. Use
+  > the extracted authentication/refusal adapters while supplying the remaining
   > explicit repository, configuration, time, password and dispatch actions,
-  > retaining gate order and acquired-account cleanup ownership.
+  > retaining gate order and acquired-account cleanup ownership. Address the
+  > recorded free-pass state carried across attempts and ordinary rehash logger.
   - Owner to add: ordinary/web/test/NetMarble paths, owned inputs, refusal bytes,
     authentication/write order, kick/success publication, exception/reporting
     failures, partial effects and allocation cleanup without executable startup.

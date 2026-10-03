@@ -1007,6 +1007,63 @@ or reconciliation of uncertain writes requires a separate persistence design.
 
 > **Status:** recorded, not fixed (refactor/login-registration)
 
+## Web login grants a free pass before acknowledging key consumption (2026-10-03)
+
+The web-login helper set the player's free-pass flag before deleting the accepted
+key. A deletion failure therefore left new authorization on a failed attempt.
+A regression test reproduced this with a throwing repository. The extracted
+`LoginAuthentication` flow consumes the owned key first and grants the free pass
+without allocation only after deletion returns. Existing free-pass state is
+preserved on failure. Tests also cover deletion that takes effect before throwing:
+the key remains consumed, no new free pass is granted and retry is refused.
+
+> **Status:** fixed (refactor/login-authentication)
+
+## Authentication diagnostics can change accepted passwords and suppress refusals (2026-10-03)
+
+NetMarble rehash failures were intended to keep an already accepted password,
+but a throwing logger could reject it or propagate a different error. New-account
+console output could prevent hashing/insertion. Refusal logging could interrupt
+the caller's subsequent bookkeeping, and mismatch diagnostics could suppress the
+web refusal. Four regression cases reproduced those paths. The extracted optional
+diagnostics are best effort; operational verification, persistence and sending
+retain their original exception boundaries. Production logs, console output and
+allocation failures have runtime coverage.
+
+> **Status:** fixed (refactor/login-authentication)
+
+## Ordinary-password rehash reporting can still replace acceptance (2026-10-03)
+
+By inspection, `checkStoredPassword` catches a hashing failure after accepting
+the stored credential, then calls the file logger without containing diagnostic
+errors. A throwing logger can still replace that accepted result. Task 2.68
+tracks its explicit password/reporting adapter and a regression owner.
+
+> **Status:** recorded, not fixed (refactor/login-authentication)
+
+## Web-key mismatch diagnostics write both credentials to disk (2026-10-03)
+
+`decideWebLoginKey` wrote the stored key and the submitted key to `keydiff.txt` on
+a mismatch. It now supplies only the account to an explicit optional diagnostic.
+The production adapter logs the mismatch and account without either key, while
+retaining the existing console marker and numbered login-failure line. Tests
+check the diagnostic arguments and the actual log text in an isolated directory.
+
+> **Status:** fixed (refactor/login-authentication)
+
+## A prior free pass survives into another login attempt (2026-10-03)
+
+By inspection, `CLLoginHandler` reads the player's existing free-pass flag after
+the current authentication gate. Neither an ordinary-client gate nor a rejected
+web/NetMarble attempt clears that flag or binds it to an account. If a successfully
+authorized web attempt later returns to the beginning phase, a different account
+on the same connection can reach the free-pass projection without its ordinary
+password check. The extracted adapters preserve existing state; task 2.68 must
+give per-attempt authorization an explicit owner and add an end-to-end regression
+when extracting the main login flow.
+
+> **Status:** recorded, not fixed (refactor/login-authentication)
+
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 
 `GLKickVerifyHandler` matched the account-owned character name without checking

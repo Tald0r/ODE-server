@@ -8,6 +8,7 @@
 #ifndef __LOGIN_DECISION_H__
 #define __LOGIN_DECISION_H__
 
+#include <functional>
 #include <string>
 
 #include "LoginAccountOwnership.h"
@@ -27,6 +28,7 @@
 //   NotPayAccount             NOT_PAY_ACCOUNT     6
 //   AlreadyConnected          ALREADY_CONNECTED   7
 //   AlreadyLoggedOnElsewhere  ALREADY_CONNECTED   8
+//   NetMarbleAuthorization    INVALID_ID_PASSWORD 9
 //   WebLoginKeyMismatch       INVALID_ID_PASSWORD 10
 //   WebLoginKeyNotFound       NOT_FOUND_KEY       11
 //   WebLoginKeyExpired        KEY_EXPIRED         12
@@ -34,8 +36,7 @@
 // NotPayAccount is produced only by a build with a pay system compiled in
 // and FreePassAccountMissing only by a NetMarble free-pass login, so
 // neither is possible in this build. Number 9 belongs to the NetMarble
-// authorization refusal, which stays in the handler with the rest of its
-// path. Nothing sends CHILDGUARD_DENYED.
+// authentication adapter. Nothing sends CHILDGUARD_DENYED.
 enum class LoginRejectReason {
     IPBlocked,
     MalformedID,
@@ -47,7 +48,8 @@ enum class LoginRejectReason {
     AlreadyLoggedOnElsewhere,
     WebLoginKeyMismatch,
     WebLoginKeyNotFound,
-    WebLoginKeyExpired
+    WebLoginKeyExpired,
+    NetMarbleAuthorization
 };
 
 // A refusal, with the session bookkeeping that goes with it. The reply
@@ -178,12 +180,19 @@ struct PasswordCheck {
 // none of 0, 1 or 2 blocks outright.
 [[nodiscard]] bool isBlockedIP(const std::string& ip, LoginAccountRepository& repository);
 
+struct WebLoginKeyActions {
+    // Optional diagnostic. Receives only the account, never either credential.
+    std::function<void(const std::string&)> mismatch;
+};
+
 // Check a web login's key against the one the site stored for the account.
 // The key must match and be at most five minutes old, measured by the
 // database's own clock against the row's CreateTime. On acceptance the
-// handler marks the session free-pass and deletes the key.
+// caller consumes the key before granting a free pass. Mismatch reporting is
+// best effort; it cannot replace the refusal.
 [[nodiscard]] Outcome<void, LoginRejection> decideWebLoginKey(const std::string& playerID, const std::string& key,
-                                                              LoginAccountRepository& repository);
+                                                              LoginAccountRepository& repository,
+                                                              const WebLoginKeyActions& actions);
 
 // Is a birthday at least eighteen years before `now`? The birthday is the
 // Korean YYMMDD taken off a registration number. It is compared as a plain
