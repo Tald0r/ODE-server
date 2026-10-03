@@ -14,9 +14,8 @@
 #include "DatabaseError.h"
 #include "GameServerManager.h"
 #include "KernelContext.h"
-#include "LCLoginError.h"
-#include "LCLoginOK.h"
 #include "LGKickCharacter.h"
+#include "LoginCompletion.h"
 #include "LoginContext.h"
 #include "LoginKickDispatch.h"
 #include "LoginKickPreparation.h"
@@ -27,6 +26,7 @@
 #include "PacketValidator.h"
 #include "Profile.h"
 #include "ServerContext.h"
+#include "VSDateTime.h"
 #include "repository/LoginAccountRepository.h"
 #include "repository/LoginCharacterRepository.h"
 
@@ -38,10 +38,6 @@ static int maxIdleSec = 60 * 15; // disconnect automatically after 15 idle minut
 
 // Time check that works around the 'already connected' problem.
 static uint maxWaitForKickCharacter = 3; // seconds to wait for the GameServer's answer.
-
-
-// Function in CLLoginHandler.cpp.
-void addLoginPlayerData(const string& ID, const string& ip, const string& SSN, const string& zipcode);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -467,37 +463,12 @@ bool LoginPlayer::resendLGKickCharacter() {
 //
 //////////////////////////////////////////////////////////////////////
 void LoginPlayer::sendLCLoginOK() {
-    try {
-        string connectIP = getSocket()->getHost();
-
-        // LogOn flips to LOGON; a row that did not change belongs to a
-        // session already logged on.
-        if (!defaultLoginAccountRepository().setLoggedOn(getID())) {
-            filelog("MultiLogin.log", "Multiple login attempt suspected : [%s:%s]", getID().c_str(), connectIP.c_str());
-
-            LCLoginError lcLoginError;
-            lcLoginError.setErrorID(ALREADY_CONNECTED);
-            sendPacket(&lcLoginError);
-
-            setPlayerStatus(LPS_BEGIN_SESSION);
-            return;
-        }
-
-        defaultLoginAccountRepository().setLoginIP(connectIP, getID());
-
-        LCLoginOK lcLoginOK;
-        lcLoginOK.setAdult(isAdult());
-        lcLoginOK.setLastDays(0xffff);
-
-        sendPacket(&lcLoginOK);
-
-        setPlayerStatus(LPS_WAITING_FOR_CL_GET_PC_LIST);
-
-        addLoginPlayerData(m_ID, connectIP, m_SSN, m_Zipcode);
-    } catch (Throwable& t) {
-        filelog("loginOKError.txt", "%s", t.toString().c_str());
-        throw;
-    }
+    de::completeLoginKick(
+        *this, defaultLoginAccountRepository(), [] { return VSDateTime::currentDateTime(); },
+        {[](const std::string& account, const std::string& ip) {
+             filelog("MultiLogin.log", "Multiple login attempt suspected : [%s:%s]", account.c_str(), ip.c_str());
+         },
+         [](const Throwable& error) { filelog("loginOKError.txt", "%s", error.toString().c_str()); }});
 }
 
 

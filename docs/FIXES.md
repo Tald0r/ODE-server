@@ -634,6 +634,60 @@ Verification admission and lock ownership are covered separately below.
 
 > **Status:** fixed (refactor/login-kick-retry)
 
+## Kick-login completion refusal retains another session's identity (2026-10-02)
+
+When `setLoggedOn` returned false, completion sent `ALREADY_CONNECTED` and
+returned to the initial phase while retaining the account ID. A later disconnect
+could then mark the other session's LOGON row LOGOFF. The new completion
+regression failed before repair. `completeLoginKick` now suppresses that identity
+after the refusal reply succeeds and before returning to BEGIN. A failed reply
+retains the waiting phase, whose disconnect already suppresses the identity.
+Runtime tests exercise both disconnections without a default database.
+
+> **Status:** fixed (refactor/login-kick-completion)
+
+## Login success sends include uninitialized family and status fields (2026-10-02)
+
+By inspection, kick completion initialized only adult and last-days values in
+`LCLoginOK`, leaving its family flag and status byte indeterminate. Ordinary
+login initialized family but also omitted status. The packet constructor only
+initialized last-days. Both production paths now use `makeLoginOK`, which sets
+every field. Kick completion uses the kick decision's default family value
+false; both paths use zero for the unused status byte. The current client reads
+family and has only a commented-out status consumer in `LCLoginOKHandler`.
+Runtime tests serialize all flag combinations and representative last-days
+values. Packet classes, sizes, wire goldens and factory inventory are unchanged.
+
+> **Status:** fixed (refactor/login-kick-completion)
+
+## Login-completion diagnostics can hide the reply or original error (2026-10-02)
+
+The multiple-login diagnostic ran before the refusal reply without protection,
+and the failure diagnostic could replace the original `Throwable` while
+formatting or writing it. Two regressions reproduced these paths. Completion
+now accepts explicit diagnostic actions and treats reporting as best effort.
+Refusal still sends its error, while all completion failures retain their exact
+exception identity. Only `Throwable` failures are reported, as before; database
+and standard exceptions continue to propagate. Runtime tests cover each failure
+stage and diagnostic exception type, including allocation failures.
+
+> **Status:** fixed (refactor/login-kick-completion)
+
+## Partial kick-login completion loses acquired-account ownership (2026-10-02)
+
+Completion writes LOGON and LoginIP before sending its success reply, then
+publishes the next phase and writes login statistics. The extracted tests pin
+the existing partial effects: an IP-update or reply failure leaves the LOGON
+write committed while the player still waits for kick verification. By source
+inspection, disconnect suppresses every waiting identity, so it cannot clean up
+a row this attempt already acquired. No database rollback or ownership marker
+is introduced by the completion extraction. Task 2.55 records the explicit
+ownership/cleanup flow needed to distinguish this account from an existing game
+session that must not be logged off. Statistics failures occur after phase
+publication and cannot trigger duplicate kick completion.
+
+> **Status:** recorded, not fixed (refactor/login-kick-completion)
+
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 
 `GLKickVerifyHandler` matched the account-owned character name without checking

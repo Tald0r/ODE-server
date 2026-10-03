@@ -1400,7 +1400,7 @@ visibility can't express.
     loopback delivery and disconnect without database startup.
 
 - [x] **2.53 Extract kick retry and verification admission.**
-  > **Status:** done (refactor/login-kick-retry; verification #338) — `verifyLoginKick`
+  > **Status:** done (#339; verification #338) — `verifyLoginKick`
   > takes an explicit manager and completion action. It requires the waiting
   > phase, a real account identity and an exact account-owned target name. Missing
   > or out-of-range descriptors are ignored. A scoped lock protects lookup and
@@ -1429,17 +1429,34 @@ visibility can't express.
     capped completion retries, exact exception identity, mutation ownership,
     production polling/refusal/disconnect and two 64-position allocation sweeps.
 
-- [ ] **2.54 Extract login completion and login statistics.**
-  > **Status:** not started — `LoginPlayer::sendLCLoginOK` still reaches default
-  > account persistence and `addLoginPlayerData` directly. Extract the completion
-  > sequence with explicit account and statistics dependencies, preserving the
-  > already-connected refusal, packet fields and publication order. Audit partial
-  > repository/send/statistics failures and error reporting separately from the
-  > kick retry/verification admission that invokes it.
-  - Owner to add: runtime completion tests without MySQL or `main`, covering
-    accepted/refused account transitions, reply serialization, session state,
-    statistics ordering and exception/allocation cleanup. `addLoginPlayerData`
-    inserts a dated login record; its SSN/zipcode arguments are unused.
+- [x] **2.54 Extract login completion and login statistics.**
+  > **Status:** done (refactor/login-kick-completion) — `completeLoginKick` takes
+  > an account repository, statistics clock and diagnostic actions. It snapshots
+  > reply inputs before writes and preserves LOGON/IP/reply/phase/clock/statistics
+  > ordering. Refusal sends before suppressing identity and returning to BEGIN;
+  > diagnostics cannot prevent a refusal or replace the original exception.
+  > Successful effects remain visible after later failures. `makeLoginOK` fully
+  > initializes both login paths' packets, including the unused status byte and
+  > kick completion's default family flag. `recordLogin` uses an explicit local
+  > timestamp and repository, replacing `addLoginPlayerData` and its unused
+  > SSN/zipcode parameters. Partial acquired-account cleanup remains 2.55.
+  - Owner: 16 `LoginCompletion` runtime cases. Three refusal/reporting regressions
+    failed before repair; uninitialized packet fields were found by inspection.
+    Tests cover serialized fields, all failure stages and exact causes, preserved
+    partial effects, refusal/disconnect, local date/time boundaries, two 64-position
+    allocation sweeps, real retry/verification composition and duplicate rejection
+    even when statistics fail. Existing wire goldens and inventory stay unchanged.
+
+- [ ] **2.55 Extract acquired login-account ownership and disconnect cleanup.**
+  > **Status:** not started — after kick completion changes a row to LOGON,
+  > an IP-update or reply failure leaves the player in the kick-wait phase.
+  > Disconnect suppresses every waiting identity, losing the distinction between
+  > an existing game session and a row acquired by this login attempt. Extract
+  > cleanup with an explicit account repository and represent that ownership
+  > across partial completion, refusal, fresh attempts and account changes.
+  - Owner to add: no logout for an unacquired or refused account, cleanup of a
+    successfully acquired account after later failure, normal completion/logout,
+    exact exception identity, repeated cleanup and allocation-safe publication.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
