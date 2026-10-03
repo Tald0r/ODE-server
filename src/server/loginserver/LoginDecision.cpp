@@ -264,7 +264,9 @@ Outcome<LoginAccepted, LoginRejection> decideLogin(const LoginRequest& request, 
 
     // Only a LOGOFF row flips to LOGON; a row that did not change is held
     // by another session, possibly on another login server.
-    if (!repository.markLoggedOn(request.connectIP, request.loginServerID, accepted.playerID))
+    if (!session.accountOwnership().acquire(accepted.playerID, [&] {
+            return repository.markLoggedOn(request.connectIP, request.loginServerID, accepted.playerID);
+        }))
         return Result::Rejected(refusal(LoginRejectReason::AlreadyLoggedOnElsewhere, true));
 
     accepted.adult = decideAdult(request, accepted.ssn, now);

@@ -678,15 +678,54 @@ stage and diagnostic exception type, including allocation failures.
 Completion writes LOGON and LoginIP before sending its success reply, then
 publishes the next phase and writes login statistics. The extracted tests pin
 the existing partial effects: an IP-update or reply failure leaves the LOGON
-write committed while the player still waits for kick verification. By source
-inspection, disconnect suppresses every waiting identity, so it cannot clean up
-a row this attempt already acquired. No database rollback or ownership marker
-is introduced by the completion extraction. Task 2.55 records the explicit
-ownership/cleanup flow needed to distinguish this account from an existing game
-session that must not be logged off. Statistics failures occur after phase
+write committed while the player still waits for kick verification. Disconnect
+previously suppressed every waiting identity, losing the acquired row. Normal
+login and registration could also write LOGON before publishing the player ID.
+
+`LoginAccountOwnership` now prepares its identity before the write and publishes
+it without allocation after acknowledgement. All four login acquisition paths
+use it; later errors, live-ID changes and fresh attempts cannot lose or overwrite
+that owner. Kick completion can retry an acquired row without falsely treating
+its existing LOGON value as another session. Disconnect releases the recorded
+account independently of phase. Refused or unacknowledged writes create no owner;
+repository SQL and ambiguous outcomes are unchanged. Tests cover partial
+completion, normal/reconnect decisions, registration, replacement refusal and
+allocation-safe publication. Statistics failures still occur after phase
 publication and cannot trigger duplicate kick completion.
 
-> **Status:** recorded, not fixed (refactor/login-kick-completion)
+> **Status:** fixed (refactor/login-account-ownership)
+
+## Login disconnect infers ownership from the mutable ID and can abandon cleanup (2026-10-02)
+
+Outside kick waiting, disconnect treated any non-NONE player ID as an acquired
+account. Reconnect stores an ID before key/expiry verification and before its
+conditional LOGON update, so those refusals could log off a row held elsewhere.
+Changing an ID could also redirect cleanup away from the acquired row. Flush or
+close errors skipped the remaining cleanup, while repeat disconnect asserted on
+END. Four regressions reproduced lost partial-acquisition cleanup, unacquired-ID
+logout, flush failure abandoning cleanup and logout using a replacement ID.
+
+`disconnectLoginPlayer` uses explicit transport actions and a repository, logs
+off only the acquired owner, and attempts close/logout after earlier failures.
+It publishes END and suppresses the live identity before logout, rethrows the
+first failure unchanged, and retains ownership after a failed logout so callers
+can retry. Successful logout is not repeated; END players are not flushed again.
+Both production disconnect names use this helper. Nineteen new runtime cases
+cover the owner and cleanup flow, including actual socket closure and three
+allocation sweeps; login/reconnect/completion tests pin acquisition publication.
+
+> **Status:** fixed (refactor/login-account-ownership)
+
+## Login-player manager removal is skipped when disconnect throws (2026-10-02)
+
+By inspection, the exception/input/command/output loops call disconnect before
+deleting and removing a player. A cleanup exception bypasses those following
+steps, potentially retaining an END player with a closed descriptor in the
+manager. The extracted disconnect now attempts all local cleanup, but the
+manager still needs an explicit retirement path and a policy for retaining or
+reporting failed account cleanup. Task 2.56 owns that follow-up.
+
+> **Status:** recorded, not fixed (refactor/login-account-ownership)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 

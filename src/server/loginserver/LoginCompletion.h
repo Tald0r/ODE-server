@@ -27,10 +27,12 @@ LCLoginOK makeLoginOK(bool adult, bool family, WORD lastDays);
 void recordLogin(LoginAccountRepository& accounts, const std::string& account, const std::string& ip,
                  const VSDateTime& now);
 // The caller admits the pending kick and serializes session access. Snapshot
-// reply inputs before account writes. Success orders LOGON, IP, reply, phase,
+// reply inputs before account writes. Success acquires LOGON ownership before IP, reply, phase,
 // clock and statistics. Refusal suppresses identity and returns to BEGIN only
 // after its reply succeeds. Return true only after statistics return normally.
-// This is not a database transaction: successful writes/sends and the published
+// A retry of an already acquired account skips the LOGON write. A different
+// account cannot replace an outstanding owner. This is not a database transaction:
+// successful writes/sends, acquired ownership and the published
 // phase survive later failures. Diagnostics are best effort; Throwable failures
 // are reported, and all exception types propagate with their original identity.
 bool completeLoginKick(LoginPlayer& player, LoginAccountRepository& accounts, const LoginStatisticsClock& clock,

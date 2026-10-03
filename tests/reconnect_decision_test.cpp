@@ -20,6 +20,10 @@ namespace {
 // The session state the decision sets, recorded rather than applied.
 class FakeReconnectSession : public ReconnectSession {
 public:
+    de::LoginAccountOwnership ownership;
+    de::LoginAccountOwnership& accountOwnership() noexcept override {
+        return ownership;
+    }
     static constexpr int kUnset = -1;
 
     int worldID = kUnset;
@@ -153,6 +157,7 @@ TEST(DecideReconnectLogin, ARowThatAnotherSessionTookFirstIsRefused) {
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(ReconnectRejectReason::AlreadyLoggedOnElsewhere, outcome.rejection().reason);
+    EXPECT_EQ(session.ownership.account(), nullptr);
     EXPECT_EQ(1, repository.markLoggedOnForReconnectCalls);
     // The account id stands; only an account in a game loses it.
     EXPECT_TRUE(session.ids.empty());
@@ -182,10 +187,11 @@ TEST(DecideReconnectLogin, AnAccessRefusalStillLeavesTheRowMarkedLoggedOn) {
 
     ASSERT_TRUE(outcome.isRejected());
     // The compare-and-set runs before the access check, so a refused
-    // account is left LOGON for the logout sweep to clear.
+    // account retains ownership so disconnect can release it.
     ASSERT_EQ(1u, repository.markedLoggedOnForReconnect.size());
     EXPECT_EQ(12, repository.markedLoggedOnForReconnect[0].first);
     EXPECT_EQ(kPlayerID, repository.markedLoggedOnForReconnect[0].second);
+    EXPECT_TRUE(session.ownership.owns(kPlayerID));
 }
 
 TEST(DecideReconnectLogin, AnAccessRefusalOnARowThatIsNeitherLogoffNorInGameMarksNothing) {
@@ -222,6 +228,7 @@ TEST(DecideReconnectLogin, ALoggedOffAllowedAccountIsAccepted) {
     EXPECT_EQ(4, outcome.events().serverGroupID);
     EXPECT_EQ(2, session.worldID);
     EXPECT_EQ(4, session.serverGroupID);
+    EXPECT_TRUE(session.ownership.owns(kPlayerID));
 }
 
 TEST(DecideReconnectLogin, AnAcceptedReconnectMarksTheRowLoggedOnForThisLoginServer) {

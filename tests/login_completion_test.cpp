@@ -334,6 +334,7 @@ TEST(LoginCompletion, EveryFailureStagePreservesTheCauseAndAlreadyCompletedEffec
             EXPECT_EQ(completion.player.getID(), "account");
             EXPECT_EQ(completion.accounts.records, 0u);
             EXPECT_EQ(completion.failureReports, kind < 2 ? 1u : 0u);
+            EXPECT_EQ(completion.player.loginAccountOwnership().owns("account"), stage != Stage::Acquire);
             completion.trace.failureStage = Stage::None;
             completion.player.setPlayerStatus(LPS_WAITING_FOR_GL_KICK_VERIFY);
             ASSERT_TRUE(completion.run());
@@ -514,7 +515,8 @@ int checkAllocationFailure(std::size_t failAt, bool refusal) {
     }
     probe.stopFailing();
     // A rejected diagnostic allocation is deliberately suppressed on refusal.
-    if ((failed && !probe.rejected()) || (failAt == 64 && failed) || probe.outstanding() != 0 ||
+    const auto retained = completion->player.loginAccountOwnership().account() ? 1u : 0u;
+    if ((failed && !probe.rejected()) || (failAt == 64 && failed) || probe.outstanding() != retained ||
         accepted != (!failed && !refusal))
         return 1;
     const bool sent = completion->player.sent != 0;

@@ -15,6 +15,8 @@ bool isPending(const LoginPlayer& player, const std::string& account) {
 } // namespace
 
 bool beginLoginKick(LoginPlayer& player, const LoginKickRequest& send) {
+    if (player.loginAccountOwnership().account())
+        throw DisconnectException("login account already acquired");
     player.m_KickCharacterCount = 0;
     ++player.m_KickCharacterAttempt;
     return send(player);

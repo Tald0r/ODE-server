@@ -45,12 +45,14 @@ decideReconnectLogin(const ReconnectRequest& request, LoginAccountRepository& re
     if (account.logOn == "LOGOFF") {
         // LogOn flips to LOGON for a LOGOFF row; a row that did not change
         // belongs to a session already logged on.
-        if (!repository.markLoggedOnForReconnect(request.loginServerID, request.playerID))
+        if (!session.accountOwnership().acquire(request.playerID, [&] {
+                return repository.markLoggedOnForReconnect(request.loginServerID, request.playerID);
+            }))
             return Result::Rejected(refusal(ReconnectRejectReason::AlreadyLoggedOnElsewhere));
     }
 
-    // The account is marked logged on before this, so a refused account
-    // leaves its row LOGON for the logout sweep to clear.
+    // Acquisition precedes this check. A refused account retains ownership so
+    // disconnect can release precisely the row this attempt acquired.
     if (account.access != "ALLOW")
         return Result::Rejected(refusal(ReconnectRejectReason::AccessNotAllowed));
 

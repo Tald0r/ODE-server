@@ -15,6 +15,7 @@
 #include "KernelContext.h"
 #include "LCRegisterPlayerError.h"
 #include "LCRegisterPlayerOK.h"
+#include "LoginAccountSession.h"
 #include "LoginContext.h"
 #include "LoginPlayer.h"
 #include "Properties.h"
@@ -135,11 +136,9 @@ void CLRegisterPlayerHandler::execute(CLRegisterPlayer* pPacket, Player* pPlayer
 
         const LoginNewAccount account = std::move(outcome).events();
 
-        repo.insertAccount(account);
-
-        // The new account is logged on at once.
-        repo.markLoggedOnAfterRegister(pLoginPlayer->getSocket()->getHost(),
-                                       de::kernelContext().config().getPropertyInt("LoginServerID"), request.playerID);
+        de::registerLoginAccount(pLoginPlayer->loginAccountOwnership(), repo, account,
+                                 pLoginPlayer->getSocket()->getHost(),
+                                 de::kernelContext().config().getPropertyInt("LoginServerID"));
 
         int currentWorldID = 0;
         int currentServerGroupID = 0;

@@ -14,6 +14,7 @@
 #include <deque>
 
 #include "GCReconnectLogin.h"
+#include "LoginAccountOwnership.h"
 #include "LoginKickCache.h"
 #include "LoginKickRetry.h"
 #include "Mutex.h"
@@ -134,6 +135,13 @@ public:
         m_LoginKickCache.clear();
     }
 
+    de::LoginAccountOwnership& loginAccountOwnership() noexcept {
+        return m_LoginAccountOwnership;
+    }
+    const de::LoginAccountOwnership& loginAccountOwnership() const noexcept {
+        return m_LoginAccountOwnership;
+    }
+
     const string& getZipcode() const {
         return m_Zipcode;
     }
@@ -198,6 +206,7 @@ private:
     // Current world ID
     WorldID_t m_WorldID;
     de::LoginKickCache m_LoginKickCache;
+    de::LoginAccountOwnership m_LoginAccountOwnership;
 
     // Because of LoginPlayerData.
     string m_SSN;
