@@ -10,6 +10,8 @@
 #include "GLIncomingConnectionError.h"
 
 #ifdef __LOGIN_SERVER__
+#include <mutex>
+
 #include "Assert1.h"
 #include "LoginContext.h"
 #include "LoginPlayer.h"
@@ -27,34 +29,14 @@ void GLIncomingConnectionErrorHandler::execute(GLIncomingConnectionError* pPacke
     __BEGIN_TRY __BEGIN_DEBUG_EX
 #ifdef __LOGIN_SERVER__
 
-        // Handle login player connection failure.
-        //
-        // *CAUTION*
-        //
-        // Rare case: the login player may disappear before being processed because the
-        // login server is heavily loaded. In that situation setPlayerStatus() could be
-        // called on an invalid player. This should not happen under normal conditions
-        // since the incoming connection is not a user-triggered input.
-        //
-        // In short, this indicates the login server could not accept the incoming
-        // request. The most likely reason is a timeout while reading the handshake.
         try {
         LoginPlayerManager& loginPlayers = de::loginContext().loginPlayers();
-
-        LoginPlayer* pLoginPlayer = loginPlayers.getPlayer(pPacket->getPlayerID());
+        std::lock_guard guard(loginPlayers);
+        LoginPlayer* pLoginPlayer = loginPlayers.getPlayer_NOLOCKED(pPacket->getPlayerID());
 
         Assert(pLoginPlayer->getPlayerStatus() == LPS_AFTER_SENDING_LG_INCOMING_CONNECTION);
 
-        // This player's login failed, so close the connection.
-
-        // Close the connection.
-        pLoginPlayer->disconnect(UNDISCONNECTED);
-
-        // Remove it from the LPM.
-        loginPlayers.deletePlayer(pLoginPlayer->getSocket()->getSOCKET());
-
-        // Delete the LoginPlayer object.
-        SAFE_DELETE(pLoginPlayer);
+        loginPlayers.retirePlayer_NOLOCKED(pLoginPlayer->getSocket()->getSOCKET(), UNDISCONNECTED);
     } catch (NoSuchElementException& nsee) {
     }
 

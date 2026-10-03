@@ -10,11 +10,13 @@
 #define __LOGIN_PLAYER_H__
 
 // include files
+#include <chrono>
 #include <cstdint>
 #include <deque>
 
 #include "GCReconnectLogin.h"
 #include "LoginAccountOwnership.h"
+#include "LoginConnectionOwner.h"
 #include "LoginKickCache.h"
 #include "LoginKickRetry.h"
 #include "Mutex.h"
@@ -23,6 +25,10 @@
 #include "Player.h"
 #include "PlayerStatus.h"
 #include "Timeval.h"
+
+namespace de {
+class LoginPlayerRetirement;
+}
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -183,6 +189,7 @@ public:
     }
 
 private:
+    friend class de::LoginPlayerRetirement;
     friend bool de::beginLoginKick(LoginPlayer&, const de::LoginKickRequest&);
     friend bool de::retryLoginKick(LoginPlayer&, const Timeval&, const de::LoginKickRequest&,
                                    const std::function<void(LoginPlayer&)>&);
@@ -207,6 +214,8 @@ private:
     WorldID_t m_WorldID;
     de::LoginKickCache m_LoginKickCache;
     de::LoginAccountOwnership m_LoginAccountOwnership;
+    de::LoginConnection m_RetirementNext;
+    std::chrono::steady_clock::time_point m_RetirementDeadline{};
 
     // Because of LoginPlayerData.
     string m_SSN;

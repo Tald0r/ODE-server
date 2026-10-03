@@ -718,14 +718,44 @@ allocation sweeps; login/reconnect/completion tests pin acquisition publication.
 
 ## Login-player manager removal is skipped when disconnect throws (2026-10-02)
 
-By inspection, the exception/input/command/output loops call disconnect before
-deleting and removing a player. A cleanup exception bypasses those following
-steps, potentially retaining an END player with a closed descriptor in the
-manager. The extracted disconnect now attempts all local cleanup, but the
-manager still needs an explicit retirement path and a policy for retaining or
-reporting failed account cleanup. Task 2.56 owns that follow-up.
+The exception/input/command/output loops called disconnect before deletion and
+removal, so a cleanup exception retained a closed END player in the table.
+Diagnostics could also skip cleanup. Regression cases reproduced retained
+membership and loss of failed account ownership.
 
-> **Status:** recorded, not fixed (refactor/login-account-ownership)
+`LoginPlayerRetirement` now takes detached ownership without allocation, forces
+END/socket closure despite cleanup failure and reports errors best effort. Only
+outstanding account owners remain queued; the client heartbeat retries them at
+five-second monotonic deadlines without flushing. Success removes the owner.
+The I/O loops and both incoming-reply handlers use retirement. The error reply
+also holds the lookup lock through retirement, fixing its raw-pointer lifetime
+gap. Scoped destruction releases pending local resources without database work;
+failed logout state does not survive process exit.
+
+> **Status:** fixed (refactor/login-player-retirement)
+
+## Removing the last login player can throw after clearing its table slot (2026-10-02)
+
+A manager without a listener started with minimum descriptor -1. Admission took
+the minimum with -1, keeping it invalid. Removing its last player cleared the
+table, then threw while searching for a maximum descriptor, skipping removal
+from polling. A regression reproduced the exception. Admission now initializes
+the minimum from the first player; removal clears readiness and recomputes both
+extremes without throwing after the validated table change. Runtime cases cover
+both extremes, empty managers and descriptor reuse.
+
+> **Status:** fixed (refactor/login-player-retirement)
+
+## Incoming game-connection success replies retire accounts outside their pending phase (2026-10-02)
+
+By inspection, `GLIncomingConnectionOKHandler` gates only the reconnect send on
+`LPS_AFTER_SENDING_LG_INCOMING_CONNECTION`, then retires the account regardless of
+phase. A late success reply can therefore close a different phase of the same
+account. Conversely, reconnect construction/sending failure skips retirement.
+The error handler asserts on an unexpected phase instead of refusing a stale
+reply. Task 2.57 owns extracting admission, reply assembly and failure cleanup.
+
+> **Status:** recorded, not fixed (refactor/login-player-retirement)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 

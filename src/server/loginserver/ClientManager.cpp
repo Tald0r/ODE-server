@@ -154,6 +154,7 @@ void ClientManager::run() {
         endProfileEx("LPM_OUTPUT");
 
         beginProfileEx("LPM_HEARTBEAT");
+        m_pLoginPlayerManager->retryRetiredPlayers();
         de::loginContext().reconnectLogins().heartbeat();
         endProfileEx("LPM_HEARTBEAT");
 

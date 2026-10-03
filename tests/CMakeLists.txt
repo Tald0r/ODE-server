@@ -133,6 +133,7 @@ target_sources(login_server_runtime_tests PRIVATE
     login_kick_retry_test.cpp
     login_completion_test.cpp
     login_account_session_test.cpp
+    login_player_retirement_test.cpp
     support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 target_sources(shared_server_runtime_tests PRIVATE
