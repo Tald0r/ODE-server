@@ -1,5 +1,6 @@
 #include "LoginCharacterCreation.h"
 
+#include <cstdlib>
 #include <utility>
 
 #include "CLCreatePC.h"
@@ -8,6 +9,7 @@
 #include "LCCreatePCError.h"
 #include "LCCreatePCOK.h"
 #include "LoginPlayer.h"
+#include "Utility.h"
 
 namespace de {
 namespace {
@@ -36,7 +38,13 @@ BYTE refusalCode(CreatePCRejection rejection) {
 const LoginCharacterCreationActions& defaultLoginCharacterCreationActions() {
     static const LoginCharacterCreationActions actions{
         +[](LoginPlayer& player, LCCreatePCError& packet) { player.sendPacket(&packet); },
-        +[](LoginPlayer& player, LCCreatePCOK& packet) { player.sendPacket(&packet); }};
+        +[](LoginPlayer& player, LCCreatePCOK& packet) { player.sendPacket(&packet); },
+        {+[] { return static_cast<unsigned>(std::rand()); },
+         +[](const CreatePCRequest& request) {
+             filelog("CreatePC.log", "Illegal PC Create [%s:%s] : %u/%u/%u", request.playerID.c_str(),
+                     request.name.c_str(), static_cast<unsigned>(request.str), static_cast<unsigned>(request.dex),
+                     static_cast<unsigned>(request.inte));
+         }}};
     return actions;
 }
 
@@ -59,7 +67,7 @@ bool createLoginCharacter(LoginPlayer& player, CLCreatePC& packet, LoginCharacte
 
     LCCreatePCError refusal;
     try {
-        auto result = decideCreatePC(request, repository, balance);
+        auto result = decideCreatePC(request, repository, balance, actions.decision);
         if (result.isRejected()) {
             refusal.setErrorID(refusalCode(result.rejection()));
             actions.sendRefusal(player, refusal);

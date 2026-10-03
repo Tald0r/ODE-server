@@ -5,7 +5,6 @@
 
 #include "CharacterCreation.h"
 
-#include <cstdlib>
 #include <cstring>
 
 #include "PCSlayerInfo.h"
@@ -28,6 +27,15 @@ const char* const kInvalidID[kInvalidIDCount] = {
     "\xed\x85\x8c\xec\x8a\xa4\xed\x84\xb0", // teseuteo, "tester"
     "\xec\xa7\x81\xec\x9b\x90",             // jigwon, "staff member"
     "GM"};
+
+void reportLowOusters(const CreatePCActions& actions, const CreatePCRequest& request) noexcept {
+    if (!actions.reportLowOusters)
+        return;
+    try {
+        actions.reportLowOusters(request);
+    } catch (...) {
+    }
+}
 
 } // namespace
 
@@ -108,8 +116,10 @@ int CreatePCBalanceCache::attrAccumExp(LoginCharacterRepository& repository, Wor
     return m_AttrAccumExp[attr][level];
 }
 
-Outcome<CreatedCharacter, CreatePCRejection>
-decideCreatePC(const CreatePCRequest& request, LoginCharacterRepository& repository, CreatePCBalanceCache& balance) {
+Outcome<CreatedCharacter, CreatePCRejection> decideCreatePC(const CreatePCRequest& request,
+                                                            LoginCharacterRepository& repository,
+                                                            CreatePCBalanceCache& balance,
+                                                            const CreatePCActions& actions) {
     typedef Outcome<CreatedCharacter, CreatePCRejection> Result;
 
     // Names the system uses, or that impersonate staff, are refused with
@@ -165,14 +175,13 @@ decideCreatePC(const CreatePCRequest& request, LoginCharacterRepository& reposit
         if (nSTR != 20 || nDEX != 20 || nINT != 20) {
             invalidAttr = true;
         } else {
-            nSTR = 5 + rand() % 16; // 5~20
-            nDEX = 5 + rand() % (21 - nSTR);
+            nSTR = 5 + actions.random() % 16;
+            nDEX = 5 + actions.random() % (21 - nSTR);
             nINT = 30 - nSTR - nDEX;
         }
     } else if (request.race == RACE_OUSTERS) {
         if (nSTR < 10 || nDEX < 10 || nINT < 10) {
-            filelog("CreatePC.log", "Illegal PC Create [%s:%s] : %u/%u/%u", request.playerID.c_str(),
-                    request.name.c_str(), nSTR, nDEX, nINT);
+            reportLowOusters(actions, request);
         }
 
         if (nSTR + nDEX + nINT != 45)
