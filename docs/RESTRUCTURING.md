@@ -1539,14 +1539,30 @@ visibility can't express.
     effects, production composition and four 64-position allocation sweeps;
     two standalone decision cases own diagnostic failures and call ordering.
 
-- [ ] **2.60 Extract the character-creation handler flow.**
-  > **Status:** not started — `decideCreatePC` is testable, but `CLCreatePCHandler`
-  > still owns request assembly, rejection mapping, packet attribute updates,
-  > ordered persistence and reply/status publication. Extract this orchestration
-  > with an explicit balance cache, repository and reply actions.
-  - Owner to add: refusal/fatal mappings, all race write sequences, packet/session
-    state after partial persistence or send failure, exception translation and
-    scoped cleanup/retry without executable startup or a database.
+- [x] **2.60 Extract the character-creation handler flow.**
+  > **Status:** done (refactor/login-character-creation) — `LoginCharacterCreation`
+  > snapshots packet/session inputs and takes an explicit repository, balance
+  > cache and refusal/success actions. The handler keeps its process-lifetime
+  > cache and delegates the complete flow. Packet attributes are updated before
+  > the Slayer, race and flag-set inserts; the session advances only after success
+  > sending returns. Existing rejection codes, fatal messages and the broad
+  > database-error reply boundary are preserved. Earlier inserts and rolled
+  > packet attributes remain after later failure; this is not a transaction.
+  > Tests require no database or process-context publication. The decision still
+  > uses the process random generator and file logger, tracked by task 2.61.
+  - Owner: 14 runtime cases cover every race/slot, reachable rejections, literal
+    reply bytes, owned input snapshots, nine-stage exception matrices, rolled
+    attributes, partial persistence/retry, scoped/shared caches, default output,
+    the production refusal boundary and four 96-position allocation sweeps.
+
+- [ ] **2.61 Make character-creation randomness and diagnostics explicit.**
+  > **Status:** not started — the creation decision still calls `rand()` for
+  > Vampire attributes and `filelog` for low Ousters attributes. Supply those
+  > collaborators explicitly while keeping the default production distribution
+  > and diagnostic text. Document the reporting/failure contract.
+  - Owner to add: deterministic draw boundaries and call order, unchanged
+    attribute rows, Ousters reporting arguments and outcome/failure behavior,
+    plus runtime composition without process random or logging state.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

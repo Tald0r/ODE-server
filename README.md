@@ -241,6 +241,11 @@ repositories and reply actions. It snapshots session/packet inputs, preserves
 legacy refusal bytes and exception mapping, and keeps diagnostics best effort.
 Tests cover every rejection, each race, partial writes, retained account ownership,
 broken production output and allocation failure without executable startup.
+Character creation likewise takes an explicit repository, balance cache and reply
+actions. Tests pin race/slot persistence order, packet attribute updates, refusal
+bytes, exception boundaries and publication only after a successful reply. Earlier
+inserts remain visible after later failure; retry and allocation tests exercise
+that existing boundary. Default replies still use the real player output stream.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

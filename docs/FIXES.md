@@ -816,6 +816,25 @@ persistence effects, with 16 runtime cases and two standalone diagnostic cases.
 
 > **Status:** fixed (refactor/login-character-selection)
 
+## Character creation can leave partial rows after a later failure (2026-10-02)
+
+`CLCreatePCHandler` issued independent Slayer, Vampire/Ousters and flag-set
+inserts, then sent success. The repository has no aggregate transaction or
+compensation for this operation. A later insert failure therefore leaves earlier
+rows behind; the generic error reply retains the old session phase. Retrying a
+name whose Slayer insert succeeded is refused as already registered, so it does
+not complete the missing companion rows. A failed success reply can similarly
+leave all rows persisted while the phase remains unchanged.
+
+The `LoginCharacterCreation` extraction preserves this behavior and records it in
+runtime tests over supplied persistence failures, including retry after a failed
+read versus retry after an acknowledged insert. Vampire attribute updates also
+remain in the request packet after a later failure. Atomic creation/recovery needs
+a repository-level operation and database-backed failure coverage; this extraction
+does not change persistence semantics.
+
+> **Status:** recorded, not fixed (refactor/login-character-creation)
+
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 
 `GLKickVerifyHandler` matched the account-owned character name without checking
