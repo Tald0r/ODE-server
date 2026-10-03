@@ -246,6 +246,10 @@ actions. Tests pin race/slot persistence order, packet attribute updates, refusa
 bytes, exception boundaries and publication only after a successful reply. Earlier
 inserts remain visible after later failure; retry and allocation tests exercise
 that existing boundary. Default replies still use the real player output stream.
+The creation decision also takes explicit raw random draws and optional Ousters
+diagnostics. Deterministic tests cover all 136 legal Vampire attribute spreads,
+draw ordering and cache reuse after failure. Production keeps its two-draw modulo
+rules and log text; failed diagnostics cannot change acceptance or rejection.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

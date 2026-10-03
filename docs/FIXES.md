@@ -835,6 +835,26 @@ does not change persistence semantics.
 
 > **Status:** recorded, not fixed (refactor/login-character-creation)
 
+## Character-creation diagnostics can interrupt acceptance or attribute rejection (2026-10-02)
+
+The creation decision called `filelog` directly when any Ousters attribute was
+below ten. That branch only reports suspicious input: a total of 45 still
+creates the character, and any other total is an attribute rejection. A logging
+exception escaped before either outcome. Four regressions reproduced the
+failure through supplied reporting callbacks and allocation failure in the real
+production file logger, including a reporter database error being translated
+into an unrelated generic refusal.
+
+`CreatePCActions` now supplies random draws and reporting explicitly. Reporting
+is optional and best effort, at its original position before sum validation;
+its failure cannot replace the decision or a later repository exception. The
+runtime keeps the same file/message and random sequence. Random-source failures
+still propagate and preserve completed cache fills and consumed draws. Tests
+cover every legal Vampire attribute spread, production random/logging adapters,
+reporting failures and allocation cleanup/retry.
+
+> **Status:** fixed (refactor/character-creation-inputs)
+
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 
 `GLKickVerifyHandler` matched the account-owned character name without checking

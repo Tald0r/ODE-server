@@ -3,11 +3,11 @@
 
 #include <functional>
 
+#include "CharacterCreation.h"
+
 class CLCreatePC;
-class CreatePCBalanceCache;
 class LCCreatePCError;
 class LCCreatePCOK;
-class LoginCharacterRepository;
 class LoginPlayer;
 
 namespace de {
@@ -15,6 +15,7 @@ namespace de {
 struct LoginCharacterCreationActions {
     std::function<void(LoginPlayer&, LCCreatePCError&)> sendRefusal;
     std::function<void(LoginPlayer&, LCCreatePCOK&)> sendSuccess;
+    CreatePCActions decision;
 };
 
 const LoginCharacterCreationActions& defaultLoginCharacterCreationActions();

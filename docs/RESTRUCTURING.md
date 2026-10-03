@@ -1548,21 +1548,37 @@ visibility can't express.
   > sending returns. Existing rejection codes, fatal messages and the broad
   > database-error reply boundary are preserved. Earlier inserts and rolled
   > packet attributes remain after later failure; this is not a transaction.
-  > Tests require no database or process-context publication. The decision still
-  > uses the process random generator and file logger, tracked by task 2.61.
+  > Tests require no database or process-context publication. The decision
+  > receives explicit random/reporting actions through task 2.61.
   - Owner: 14 runtime cases cover every race/slot, reachable rejections, literal
     reply bytes, owned input snapshots, nine-stage exception matrices, rolled
     attributes, partial persistence/retry, scoped/shared caches, default output,
     the production refusal boundary and four 96-position allocation sweeps.
 
-- [ ] **2.61 Make character-creation randomness and diagnostics explicit.**
-  > **Status:** not started — the creation decision still calls `rand()` for
-  > Vampire attributes and `filelog` for low Ousters attributes. Supply those
-  > collaborators explicitly while keeping the default production distribution
-  > and diagnostic text. Document the reporting/failure contract.
-  - Owner to add: deterministic draw boundaries and call order, unchanged
-    attribute rows, Ousters reporting arguments and outcome/failure behavior,
-    plus runtime composition without process random or logging state.
+- [x] **2.61 Make character-creation randomness and diagnostics explicit.**
+  > **Status:** done (refactor/character-creation-inputs) — `decideCreatePC`
+  > requires `CreatePCActions`: raw unsigned draws and optional low-Ousters
+  > reporting. Runtime composition supplies `std::rand` and the existing file
+  > logger. Valid Vampire requests still consume exactly two draws with the same
+  > modulo rules, including a one-choice second draw. Random-source failures
+  > propagate without rewinding draws or earlier cache fills. Reporting happens
+  > before Ousters sum validation and is best effort; it cannot hide acceptance,
+  > rejection or a later repository error. The default file and message remain
+  > unchanged, while supplied actions leave process random/log state alone.
+  - Owner: 42 standalone decision/cache/name cases, including exhaustive 136-spread
+    Vampire coverage and seven added cases; 22 creation runtime cases include
+    eight additions, four reproduced reporting failures, seeded production
+    sequence checks, exact log text, random/reporting exception matrices, six
+    96-position allocation sweeps and a 16-position production logging sweep.
+
+- [ ] **2.62 Extract the character-deletion handler flow.**
+  > **Status:** not started — `decideDeletePC` already takes a repository, while
+  > the handler snapshots the packet/session, maps refusals, logs, records and
+  > purges rows, then sends a reply and advances the session. Move this
+  > orchestration behind explicit persistence, reply and diagnostic inputs.
+  - Owner to add: every rejection byte, diagnostic failure, record/purge order,
+    exception translation, partial effects and reply/status publication without
+    executable startup or a database.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

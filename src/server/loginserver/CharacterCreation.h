@@ -8,6 +8,7 @@
 #ifndef __CHARACTER_CREATION_H__
 #define __CHARACTER_CREATION_H__
 
+#include <functional>
 #include <string>
 
 #include "Outcome.h"
@@ -69,6 +70,15 @@ struct CreatePCRequest {
     Race_t race = RACE_SLAYER;
 };
 
+struct CreatePCActions {
+    // Raw nonnegative draws, reduced by the decision with the legacy modulo
+    // rules. Required only for a valid Vampire request; exactly two draws are
+    // consumed even when the second modulo has only one possible result.
+    std::function<unsigned()> random;
+    // Optional best-effort diagnostic. Its failures cannot change the result.
+    std::function<void(const CreatePCRequest&)> reportLowOusters;
+};
+
 // The rows an accepted creation writes. Every character gets the Slayer
 // row; hasOustersRow says whether the second row is the Ousters one or
 // the Vampire one.
@@ -120,14 +130,16 @@ private:
 //
 // The repository is passed in because two of the rejections and all of
 // the starting stats are database reads; the writes stay with the caller,
-// so this function is a pure decision over whatever the repository
-// answers and needs no database in a test.
+// so this function decides over supplied reads and random draws and needs no
+// database, process random state or log file in a test. Callbacks are synchronous
+// and must not mutate the request. Reporting cannot replace an operation failure.
 //
-// A repository that fails its query throws (the DB layer's own const
-// char*); that is a server fault, not a player-facing rejection, and is
-// left to the caller.
-[[nodiscard]] Outcome<CreatedCharacter, CreatePCRejection>
-decideCreatePC(const CreatePCRequest& request, LoginCharacterRepository& repository, CreatePCBalanceCache& balance);
+// Repository and random-source failures propagate unchanged. Earlier cache
+// fills and consumed draws are retained after failure; they cannot be rolled back.
+[[nodiscard]] Outcome<CreatedCharacter, CreatePCRejection> decideCreatePC(const CreatePCRequest& request,
+                                                                          LoginCharacterRepository& repository,
+                                                                          CreatePCBalanceCache& balance,
+                                                                          const CreatePCActions& actions);
 
 // Is the name free of the reserved tokens (NONE, GM, the Korean staff
 // words)? Shared with CLQueryCharacterNameHandler.

@@ -6,14 +6,21 @@
 // (tests/integration/mysql_loginserver_repository_test.cpp) is the
 // authority on what the real repository answers.
 
+#include <exception>
+#include <limits>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
 #include "CharacterCreation.h"
+#include "Exception.h"
 #include "FakeLoginCharacterRepository.h"
 
 namespace {
+
+const CreatePCActions kActions{+[] { return 0u; }, {}};
 
 // A request that is accepted as-is by a repository with no rows: a
 // slayer with 10/10/10.
@@ -76,7 +83,7 @@ TEST(DecideCreatePC, ReservedNameIsRefusedBeforeAnyRepositoryRead) {
     CreatePCBalanceCache balance;
 
     Outcome<CreatedCharacter, CreatePCRejection> outcome =
-        decideCreatePC(slayerRequest("theGMan"), repository, balance);
+        decideCreatePC(slayerRequest("theGMan"), repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::ReservedName, outcome.rejection());
@@ -92,7 +99,7 @@ TEST(DecideCreatePC, EveryReservedTokenIsRefusedAsASubstring) {
         CreatePCBalanceCache balance;
 
         Outcome<CreatedCharacter, CreatePCRejection> outcome =
-            decideCreatePC(slayerRequest(names[i]), repository, balance);
+            decideCreatePC(slayerRequest(names[i]), repository, balance, kActions);
 
         ASSERT_TRUE(outcome.isRejected()) << names[i];
         EXPECT_EQ(CreatePCRejection::ReservedName, outcome.rejection()) << names[i];
@@ -104,7 +111,8 @@ TEST(DecideCreatePC, ATakenNameIsRefused) {
     CreatePCBalanceCache balance;
     repository.existingNames.insert("Rowan");
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(slayerRequest(), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome =
+        decideCreatePC(slayerRequest(), repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::NameTaken, outcome.rejection());
@@ -116,7 +124,8 @@ TEST(DecideCreatePC, AnOccupiedSlotIsRefused) {
     CreatePCBalanceCache balance;
     repository.occupiedSlots.insert(std::make_pair(std::string("account"), std::string("SLOT2")));
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(slayerRequest(), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome =
+        decideCreatePC(slayerRequest(), repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::SlotOccupied, outcome.rejection());
@@ -129,7 +138,8 @@ TEST(DecideCreatePC, AnotherSlotOfTheSameAccountIsFree) {
     fillBalance(repository);
     repository.occupiedSlots.insert(std::make_pair(std::string("account"), std::string("SLOT1")));
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(slayerRequest(), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome =
+        decideCreatePC(slayerRequest(), repository, balance, kActions);
 
     EXPECT_TRUE(outcome.isOk());
 }
@@ -147,7 +157,7 @@ TEST(DecideCreatePC, ASlotOutsideTheThreeSlotsIsRefused) {
         CreatePCRequest request = slayerRequest();
         request.slot = slots[i];
 
-        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
         ASSERT_TRUE(outcome.isRejected()) << slots[i];
         EXPECT_EQ(CreatePCRejection::InvalidSlot, outcome.rejection()) << slots[i];
@@ -169,7 +179,7 @@ TEST(DecideCreatePC, EveryRealSlotIsAccepted) {
         CreatePCRequest request = slayerRequest();
         request.slot = slots[i];
 
-        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
         ASSERT_TRUE(outcome.isOk()) << texts[i];
         EXPECT_EQ(texts[i], outcome.events().slayer.slot);
@@ -189,7 +199,7 @@ TEST(DecideCreatePC, AHairStyleOutsideTheThreeStylesIsRefused) {
         CreatePCRequest request = slayerRequest();
         request.hairStyle = hairStyles[i];
 
-        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
         ASSERT_TRUE(outcome.isRejected()) << hairStyles[i];
         EXPECT_EQ(CreatePCRejection::InvalidHairStyle, outcome.rejection()) << hairStyles[i];
@@ -209,7 +219,7 @@ TEST(DecideCreatePC, EveryRealHairStyleIsAccepted) {
         CreatePCRequest request = slayerRequest();
         request.hairStyle = hairStyles[i];
 
-        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
         ASSERT_TRUE(outcome.isOk()) << texts[i];
         EXPECT_EQ(texts[i], outcome.events().slayer.hairStyle);
@@ -234,7 +244,7 @@ TEST(DecideCreatePC, SlayerAttributesOutsideFiveToTwentyAreRefused) {
         request.dex = cases[i].dex;
         request.inte = cases[i].inte;
 
-        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
         ASSERT_TRUE(outcome.isRejected()) << i;
         EXPECT_EQ(CreatePCRejection::InvalidAttributes, outcome.rejection()) << i;
@@ -251,7 +261,7 @@ TEST(DecideCreatePC, SlayerAttributesSummingAboveThirtyAreRefused) {
     request.dex = 6;
     request.inte = 5;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::InvalidAttributes, outcome.rejection());
@@ -267,7 +277,7 @@ TEST(DecideCreatePC, SlayerAttributesSummingBelowThirtyAreAccepted) {
     request.dex = 5;
     request.inte = 5;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     EXPECT_TRUE(outcome.isOk());
 }
@@ -285,7 +295,7 @@ TEST(DecideCreatePC, AVampireThatIsNotTwentyTwentyTwentyIsRefused) {
         request.dex = attrs[i][1];
         request.inte = attrs[i][2];
 
-        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
         ASSERT_TRUE(outcome.isRejected()) << i;
         EXPECT_EQ(CreatePCRejection::InvalidAttributes, outcome.rejection()) << i;
@@ -300,13 +310,13 @@ TEST(DecideCreatePC, OustersAttributesNotSummingToFortyFiveAreRefused) {
     CreatePCRequest request = oustersRequest();
     request.inte = 16;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::InvalidAttributes, outcome.rejection());
 }
 
-TEST(DecideCreatePC, OustersBelowTenAreLoggedButStillAcceptedWhenTheySumToFortyFive) {
+TEST(DecideCreatePC, OustersBelowTenAreAcceptedWhenTheySumToFortyFive) {
     FakeLoginCharacterRepository repository;
     CreatePCBalanceCache balance;
     fillBalance(repository);
@@ -316,7 +326,7 @@ TEST(DecideCreatePC, OustersBelowTenAreLoggedButStillAcceptedWhenTheySumToFortyF
     request.dex = 15;
     request.inte = 5;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     EXPECT_EQ(25, outcome.events().slayer.str);
@@ -331,7 +341,7 @@ TEST(DecideCreatePC, AnUnknownRaceIsRefused) {
     CreatePCRequest request = slayerRequest();
     request.race = 3;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::UnknownRace, outcome.rejection());
@@ -350,7 +360,7 @@ TEST(DecideCreatePC, AnUnknownRaceSkipsTheAttributeRulesEntirely) {
     request.dex = 1;
     request.inte = 1;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::UnknownRace, outcome.rejection());
@@ -368,7 +378,7 @@ TEST(DecideCreatePC, ReservedNameWinsOverEveryOtherReason) {
     request.race = 3;
     request.str = 99;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::ReservedName, outcome.rejection());
@@ -380,7 +390,8 @@ TEST(DecideCreatePC, ATakenNameWinsOverAnOccupiedSlot) {
     repository.existingNames.insert("Rowan");
     repository.occupiedSlots.insert(std::make_pair(std::string("account"), std::string("SLOT2")));
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(slayerRequest(), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome =
+        decideCreatePC(slayerRequest(), repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::NameTaken, outcome.rejection());
@@ -395,7 +406,7 @@ TEST(DecideCreatePC, ATakenNameWinsOverAnOutOfRangeSlot) {
     request.slot = 9;
     request.hairStyle = 9;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::NameTaken, outcome.rejection());
@@ -409,7 +420,7 @@ TEST(DecideCreatePC, AnOutOfRangeSlotWinsOverAnOutOfRangeHairStyle) {
     request.slot = 9;
     request.hairStyle = 9;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::InvalidSlot, outcome.rejection());
@@ -424,7 +435,7 @@ TEST(DecideCreatePC, AnOutOfRangeSlotWinsOverAnOccupiedSlotAndInvalidAttributes)
     request.slot = 9;
     request.str = 99;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::InvalidSlot, outcome.rejection());
@@ -438,7 +449,7 @@ TEST(DecideCreatePC, AnOccupiedSlotWinsOverInvalidAttributes) {
     CreatePCRequest request = slayerRequest();
     request.str = 1;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::SlotOccupied, outcome.rejection());
@@ -455,7 +466,7 @@ TEST(DecideCreatePC, InvalidAttributesWinOverAnUnknownRaceWhenTheRaceIsAKnownOne
     CreatePCRequest request = vampireRequest();
     request.str = 19;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(CreatePCRejection::InvalidAttributes, outcome.rejection());
@@ -468,7 +479,8 @@ TEST(DecideCreatePC, ASlayerGetsASlayerRowAVampireRowAndTheSlayerFlagSet) {
     CreatePCBalanceCache balance;
     fillBalance(repository);
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(slayerRequest(), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome =
+        decideCreatePC(slayerRequest(), repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     const CreatedCharacter& created = outcome.events();
@@ -536,7 +548,7 @@ TEST(DecideCreatePC, AFemaleSlayerHasNoSexBit) {
     request.sex = FEMALE;
     request.hairStyle = HAIR_STYLE1;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     EXPECT_EQ("FEMALE", outcome.events().slayer.sex);
@@ -544,35 +556,46 @@ TEST(DecideCreatePC, AFemaleSlayerHasNoSexBit) {
     EXPECT_EQ(0u, outcome.events().vampire.shape);
 }
 
-TEST(DecideCreatePC, AVampireRollsItsSlayerAttributes) {
-    // The vampire itself is a flat 20/20/20; the Slayer row it also gets
-    // is rolled to a legal slayer spread the client never picked.
-    for (int i = 0; i < 200; i++) {
-        FakeLoginCharacterRepository repository;
-        CreatePCBalanceCache balance;
-        fillBalance(repository);
-
-        Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(vampireRequest(), repository, balance);
-
-        ASSERT_TRUE(outcome.isOk());
-        const CreatedCharacter& created = outcome.events();
-
-        EXPECT_GE(created.str, 5);
-        EXPECT_LE(created.str, 20);
-        EXPECT_GE(created.dex, 5);
-        EXPECT_LE(created.dex, 20);
-        EXPECT_GE(created.inte, 5);
-        EXPECT_LE(created.inte, 20);
-        EXPECT_EQ(30, created.str + created.dex + created.inte);
-
-        EXPECT_EQ("VAMPIRE", created.slayer.race);
-        EXPECT_EQ(created.str, created.slayer.str);
-        EXPECT_EQ(created.dex, created.slayer.dex);
-        EXPECT_EQ(created.inte, created.slayer.inte);
-        EXPECT_EQ(created.str * 2, created.slayer.hp);
-        EXPECT_EQ(created.inte * 2, created.slayer.mp);
-        EXPECT_FALSE(created.hasOustersRow);
-        EXPECT_EQ(LOGIN_FLAGSET_OTHER, created.flagSet);
+TEST(DecideCreatePC, EveryLegalVampireRollUsesTwoDrawsBeforeAttributeReads) {
+    for (unsigned str = 5; str <= 20; ++str) {
+        for (unsigned dex = 5; dex <= 25 - str; ++dex) {
+            SCOPED_TRACE(::testing::Message() << str << "/" << dex);
+            FakeLoginCharacterRepository repository;
+            CreatePCBalanceCache balance;
+            fillBalance(repository);
+            unsigned draws = 0;
+            const CreatePCActions actions{[&] {
+                                              EXPECT_EQ(repository.rankGoalExpCalls, 3);
+                                              EXPECT_EQ(repository.vampireGoalExpCalls, 1);
+                                              EXPECT_EQ(repository.oustersGoalExpCalls, 1);
+                                              EXPECT_EQ(repository.attrGoalExpCalls, 0);
+                                              EXPECT_EQ(repository.attrAccumExpCalls, 0);
+                                              return draws++ == 0 ? str - 5 : dex - 5;
+                                          },
+                                          {}};
+            auto outcome = decideCreatePC(vampireRequest(), repository, balance, actions);
+            ASSERT_TRUE(outcome.isOk());
+            const auto& created = outcome.events();
+            const unsigned inte = 30 - str - dex;
+            EXPECT_EQ(draws, 2u);
+            EXPECT_EQ(created.str, str);
+            EXPECT_EQ(created.dex, dex);
+            EXPECT_EQ(created.inte, inte);
+            EXPECT_EQ(created.slayer.race, "VAMPIRE");
+            EXPECT_EQ(created.slayer.str, str);
+            EXPECT_EQ(created.slayer.dex, dex);
+            EXPECT_EQ(created.slayer.inte, inte);
+            EXPECT_EQ(created.slayer.strGoalExp, 100 + str);
+            EXPECT_EQ(created.slayer.dexGoalExp, 200 + dex);
+            EXPECT_EQ(created.slayer.intGoalExp, 300 + inte);
+            EXPECT_EQ(created.slayer.strExp, 10000 + str - 1);
+            EXPECT_EQ(created.slayer.dexExp, 20000 + dex - 1);
+            EXPECT_EQ(created.slayer.intExp, 30000 + inte - 1);
+            EXPECT_EQ(created.slayer.hp, str * 2);
+            EXPECT_EQ(created.slayer.mp, inte * 2);
+            EXPECT_FALSE(created.hasOustersRow);
+            EXPECT_EQ(created.flagSet, LOGIN_FLAGSET_OTHER);
+        }
     }
 }
 
@@ -581,7 +604,8 @@ TEST(DecideCreatePC, AnOustersGetsAnOustersRowInsteadOfAVampireOne) {
     CreatePCBalanceCache balance;
     fillBalance(repository);
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(oustersRequest(), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome =
+        decideCreatePC(oustersRequest(), repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     const CreatedCharacter& created = outcome.events();
@@ -614,7 +638,7 @@ TEST(DecideCreatePC, AnOustersWithAZeroAttributeReadsTheLevelBelowZero) {
     request.dex = 0;
     request.inte = 0;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(request, repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     EXPECT_EQ(0, outcome.events().slayer.dexExp);
@@ -628,12 +652,13 @@ TEST(CreatePCBalanceCache, TheLevelOneGoalsAreReadOnce) {
     CreatePCBalanceCache balance;
     fillBalance(repository);
 
-    Outcome<CreatedCharacter, CreatePCRejection> first = decideCreatePC(slayerRequest("Rowan"), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> first =
+        decideCreatePC(slayerRequest("Rowan"), repository, balance, kActions);
     ASSERT_TRUE(first.isOk());
 
     CreatePCRequest second = slayerRequest("Briar");
     second.slot = SLOT3;
-    Outcome<CreatedCharacter, CreatePCRejection> secondOutcome = decideCreatePC(second, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> secondOutcome = decideCreatePC(second, repository, balance, kActions);
     ASSERT_TRUE(secondOutcome.isOk());
 
     // Three rank types, read once each.
@@ -650,14 +675,15 @@ TEST(CreatePCBalanceCache, ADifferentLevelIsANewRead) {
     CreatePCBalanceCache balance;
     fillBalance(repository);
 
-    Outcome<CreatedCharacter, CreatePCRejection> first = decideCreatePC(slayerRequest("Rowan"), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> first =
+        decideCreatePC(slayerRequest("Rowan"), repository, balance, kActions);
     ASSERT_TRUE(first.isOk());
 
     CreatePCRequest second = slayerRequest("Briar");
     second.slot = SLOT3;
     second.str = 11;
     second.dex = 9;
-    Outcome<CreatedCharacter, CreatePCRejection> secondOutcome = decideCreatePC(second, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> secondOutcome = decideCreatePC(second, repository, balance, kActions);
     ASSERT_TRUE(secondOutcome.isOk());
 
     // STR 11 and DEX 9 are new levels; INT stays at 10.
@@ -671,13 +697,14 @@ TEST(CreatePCBalanceCache, AMissingRankRowLeavesMinusOneAndIsRetried) {
     fillBalance(repository);
     repository.rankGoalExp.erase(0);
 
-    Outcome<CreatedCharacter, CreatePCRejection> first = decideCreatePC(slayerRequest("Rowan"), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> first =
+        decideCreatePC(slayerRequest("Rowan"), repository, balance, kActions);
     ASSERT_TRUE(first.isOk());
     EXPECT_EQ(-1, first.events().slayer.rankGoalExp);
 
     CreatePCRequest second = slayerRequest("Briar");
     second.slot = SLOT3;
-    Outcome<CreatedCharacter, CreatePCRejection> secondOutcome = decideCreatePC(second, repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> secondOutcome = decideCreatePC(second, repository, balance, kActions);
     ASSERT_TRUE(secondOutcome.isOk());
 
     // The Slayer rank row was asked for again; the two that answered were
@@ -690,7 +717,8 @@ TEST(CreatePCBalanceCache, AMissingAttributeRowLeavesZero) {
     CreatePCBalanceCache balance;
     repository.rankGoalExp[0] = 1000;
 
-    Outcome<CreatedCharacter, CreatePCRejection> outcome = decideCreatePC(slayerRequest(), repository, balance);
+    Outcome<CreatedCharacter, CreatePCRejection> outcome =
+        decideCreatePC(slayerRequest(), repository, balance, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     EXPECT_EQ(0, outcome.events().slayer.strGoalExp);
@@ -711,6 +739,178 @@ TEST(IsAvailableID, AReservedTokenAnywhereInTheNameIsNot) {
     EXPECT_FALSE(isAvailableID("NONE"));
     EXPECT_FALSE(isAvailableID("aGMb"));
     EXPECT_FALSE(isAvailableID("직원1"));
+}
+
+TEST(DecideCreatePC, ReportingFailureCannotRejectLowOustersWhoseAttributesStillSumToFortyFive) {
+    FakeLoginCharacterRepository repository;
+    CreatePCBalanceCache balance;
+    auto request = oustersRequest();
+    request.str = 5;
+    request.dex = 20;
+    request.inte = 20;
+    const CreatePCActions actions{{}, [](const CreatePCRequest&) { throw std::runtime_error("report failed"); }};
+    EXPECT_NO_THROW(EXPECT_TRUE(decideCreatePC(request, repository, balance, actions).isOk()));
+}
+
+TEST(DecideCreatePC, ReportingFailureCannotHideAnInvalidAttributeRejection) {
+    FakeLoginCharacterRepository repository;
+    CreatePCBalanceCache balance;
+    auto request = oustersRequest();
+    request.str = 5;
+    const CreatePCActions actions{{}, [](const CreatePCRequest&) { throw std::bad_alloc(); }};
+    EXPECT_NO_THROW(EXPECT_EQ(decideCreatePC(request, repository, balance, actions).rejection(),
+                              CreatePCRejection::InvalidAttributes));
+}
+
+TEST(DecideCreatePC, RawDrawsPreserveModuloReductionIncludingTheSingleChoiceSecondDraw) {
+    struct Sample {
+        unsigned first;
+        unsigned second;
+        int str;
+        int dex;
+        int inte;
+    };
+    const Sample samples[] = {{16, 16, 5, 5, 20},
+                              {32, 31, 5, 20, 5},
+                              {31, 123, 20, 5, 5},
+                              {std::numeric_limits<unsigned>::max(), std::numeric_limits<unsigned>::max(), 20, 5, 5}};
+    for (const auto& sample : samples) {
+        FakeLoginCharacterRepository repository;
+        CreatePCBalanceCache balance;
+        unsigned draws = 0;
+        const CreatePCActions actions{[&] { return draws++ == 0 ? sample.first : sample.second; }, {}};
+        auto result = decideCreatePC(vampireRequest(), repository, balance, actions);
+        ASSERT_TRUE(result.isOk());
+        EXPECT_EQ(result.events().str, sample.str);
+        EXPECT_EQ(result.events().dex, sample.dex);
+        EXPECT_EQ(result.events().inte, sample.inte);
+        EXPECT_EQ(draws, 2u);
+    }
+}
+
+TEST(DecideCreatePC, RandomDrawsAreSkippedForEarlierRefusalsAndOtherRaces) {
+    for (int gate = 0; gate < 8; ++gate) {
+        FakeLoginCharacterRepository repository;
+        CreatePCBalanceCache balance;
+        auto request = vampireRequest();
+        if (gate == 0)
+            request.name = "NONE";
+        if (gate == 1)
+            repository.existingNames.insert(request.name);
+        if (gate == 2)
+            request.slot = SLOT_MAX;
+        if (gate == 3)
+            request.hairStyle = 3;
+        if (gate == 4)
+            repository.occupiedSlots.insert({request.playerID, "SLOT2"});
+        if (gate == 5)
+            request.str = 19;
+        if (gate == 6)
+            request = slayerRequest();
+        if (gate == 7)
+            request = oustersRequest();
+        unsigned draws = 0;
+        const CreatePCActions actions{[&] {
+                                          ++draws;
+                                          return 0u;
+                                      },
+                                      {}};
+        auto result = decideCreatePC(request, repository, balance, actions);
+        EXPECT_EQ(result.isOk(), gate >= 6);
+        EXPECT_EQ(draws, 0u);
+    }
+}
+
+TEST(DecideCreatePC, RandomFailuresKeepTheirIdentityAndDoNotRewindEarlierCacheFills) {
+    const std::exception_ptr failures[] = {std::make_exception_ptr(Error("random unavailable")),
+                                           std::make_exception_ptr(std::runtime_error("draw failed")),
+                                           std::make_exception_ptr(std::bad_alloc())};
+    for (const auto& failure : failures) {
+        for (unsigned failAt : {1u, 2u}) {
+            FakeLoginCharacterRepository repository;
+            CreatePCBalanceCache balance;
+            fillBalance(repository);
+            unsigned draws = 0;
+            const CreatePCActions actions{[&] {
+                                              if (++draws == failAt)
+                                                  std::rethrow_exception(failure);
+                                              return 0u;
+                                          },
+                                          {}};
+            try {
+                (void)decideCreatePC(vampireRequest(), repository, balance, actions);
+                FAIL() << "random failure was swallowed";
+            } catch (...) {
+                EXPECT_EQ(std::current_exception(), failure);
+            }
+            EXPECT_EQ(draws, failAt);
+            EXPECT_EQ(repository.rankGoalExpCalls, 3);
+            EXPECT_EQ(repository.attrGoalExpCalls, 0);
+            EXPECT_TRUE(decideCreatePC(vampireRequest(), repository, balance, actions).isOk());
+            EXPECT_EQ(draws, failAt + 2);
+            EXPECT_EQ(repository.rankGoalExpCalls, 3);
+        }
+    }
+}
+
+TEST(DecideCreatePC, OnlyLowOustersAreReportedOnceBeforeAttributeValidation) {
+    struct Attributes {
+        Attr_t str;
+        Attr_t dex;
+        Attr_t inte;
+        bool report;
+        bool accepted;
+    };
+    const Attributes cases[] = {{9, 16, 20, true, true},  {16, 9, 20, true, true},   {20, 16, 9, true, true},
+                                {9, 9, 27, true, true},   {10, 15, 20, false, true}, {0, 0, 45, true, true},
+                                {9, 15, 20, true, false}, {15, 15, 15, false, true}};
+    for (const auto& input : cases) {
+        FakeLoginCharacterRepository repository;
+        CreatePCBalanceCache balance;
+        fillBalance(repository);
+        auto request = oustersRequest();
+        request.str = input.str;
+        request.dex = input.dex;
+        request.inte = input.inte;
+        unsigned reports = 0;
+        const CreatePCActions actions{{}, [&](const CreatePCRequest& reported) {
+                                          ++reports;
+                                          EXPECT_EQ(reported.playerID, "account");
+                                          EXPECT_EQ(reported.name, "Sylph");
+                                          EXPECT_EQ(reported.worldID, 1);
+                                          EXPECT_EQ(reported.serverGroupID, 2);
+                                          EXPECT_EQ(reported.str, input.str);
+                                          EXPECT_EQ(reported.dex, input.dex);
+                                          EXPECT_EQ(reported.inte, input.inte);
+                                          EXPECT_EQ(repository.rankGoalExpCalls, 3);
+                                          EXPECT_EQ(repository.attrGoalExpCalls, 0);
+                                      }};
+        auto result = decideCreatePC(request, repository, balance, actions);
+        EXPECT_EQ(result.isOk(), input.accepted);
+        EXPECT_EQ(reports, input.report ? 1u : 0u);
+    }
+}
+
+TEST(DecideCreatePC, AFailedReportCannotHideTheNextRepositoryFailure) {
+    class FailedAttributes : public FakeLoginCharacterRepository {
+    public:
+        bool loadAttrGoalExp(WorldID_t, LoginAttrTable, int, int&) override {
+            std::rethrow_exception(failure);
+        }
+        std::exception_ptr failure = std::make_exception_ptr(Error("attribute lookup failed"));
+    } repository;
+    CreatePCBalanceCache balance;
+    auto request = oustersRequest();
+    request.str = 5;
+    request.dex = 20;
+    request.inte = 20;
+    const CreatePCActions actions{{}, [](const CreatePCRequest&) { throw NoSuchElementException("report failed"); }};
+    try {
+        (void)decideCreatePC(request, repository, balance, actions);
+        FAIL() << "attribute failure was swallowed";
+    } catch (...) {
+        EXPECT_EQ(std::current_exception(), repository.failure);
+    }
 }
 
 } // namespace
