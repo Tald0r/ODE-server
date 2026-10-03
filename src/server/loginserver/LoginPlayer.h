@@ -107,6 +107,9 @@ public:
         return m_KickCharacterCount;
     }
     void setExpireTimeForKickCharacter();
+    const Timeval& getExpireTimeForKickCharacter() const noexcept {
+        return m_ExpireTimeForKickCharacter;
+    }
 
     // ID of the current world
     WorldID_t getWorldID() const {
@@ -196,7 +199,7 @@ private:
 
     // Time to wait for the forced disconnect in the 'already connected' case
     uint m_KickCharacterCount;
-    Timeval m_ExpireTimeForKickCharacter;
+    Timeval m_ExpireTimeForKickCharacter{};
 
     // Treated as verified elsewhere (Netmarble), so a FreePass is granted.
     bool m_bFreePass;

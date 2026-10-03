@@ -47,7 +47,7 @@ public:
     void run() override;
 
     void sendDatagram(Datagram* pDatagram);
-    void sendPacket(string host, uint port, DatagramPacket* pPacket);
+    void sendPacket(string host, uint port, const DatagramPacket* pPacket);
 
 private:
     // UDP server socket

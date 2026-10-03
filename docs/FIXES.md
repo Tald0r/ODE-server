@@ -557,15 +557,47 @@ runtime case checks the initial world/group and absent kick target.
 
 ## Kick dispatch stops at a missing group before reaching configured groups (2026-10-02)
 
-`LoginPlayer::sendLGKickCharacter` probes group numbers from zero to the common
+`LoginPlayer::sendLGKickCharacter` probed group numbers from zero to the common
 catalogue's global maximum. The first missing server-1 lookup clears the player
 ID and returns, even if that world has valid higher group IDs. A world with only
 group 9 therefore never receives a kick when the loop first probes group 0.
 Earlier groups can already have received packets when a later hole stops the
-loop. Dispatch needs actual membership, prepared destinations and explicit
-tests for empty catalogues, missing first-server references and send ordering.
+loop. An unloaded catalogue instead starts a verification wait without sending.
+Three regressions reproduced these paths in the extracted dispatch loop.
 
-> **Status:** recorded, not fixed (refactor/login-kick-preparation)
+`dispatchLoginKick` now copies destinations from occupied groups in the saved
+world before sending. Every occupied group must have server 1; a missing row
+refuses before any send, and no destinations uses the same identity suppression
+without starting a wait. Sender exceptions preserve status/deadline; normal
+returns precede the wait. Sixteen runtime cases cover sparse/boundary routing,
+owned snapshots, reloads, exception identity, allocation/serialization failure,
+cleanup/retry, deadline ordering and the production UDP path.
+
+> **Status:** fixed (refactor/login-kick-dispatch)
+
+## Login datagram failures are hidden from callers and ports can narrow (2026-10-02)
+
+`GameServerManager::sendPacket` catches and logs `Throwable` from serialization
+and socket sending, then returns normally. Kick dispatch cannot tell a failed
+send from a completed attempt and can begin waiting for a packet that was never
+sent. The common catalogue also permits unsigned ports above 65535, while
+`Datagram::setPort` passes them through 16-bit `htons`. Explicit send outcomes
+and endpoint validation need a separate transport extraction with failure tests.
+
+> **Status:** recorded, not fixed (refactor/login-kick-dispatch)
+
+## Kick retry and verification can advance an attempt that is no longer pending (2026-10-02)
+
+The kick timeout branch calls `sendLGKickCharacter`, increments the retry count
+and eventually calls `sendLCLoginOK` even when kick preparation or destination
+refusal cleared the account ID. `GLKickVerifyHandler` now checks the account-bound
+target but still admits a matching name without checking waiting status, allowing
+duplicate/late replies to reach completion. Its manual manager lock is released
+only normally or for `Throwable`; a standard exception can leave it locked.
+An extracted attempt/completion flow needs explicit time and outcome tests before
+these retry, admission and exception-handling policies are changed.
+
+> **Status:** recorded, not fixed (refactor/login-kick-dispatch)
 
 ## Character-list assembly leaks records before packet attachment (2026-10-02)
 
