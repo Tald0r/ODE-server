@@ -236,6 +236,11 @@ fields before publishing the pending phase and public address. Send failures
 restore local state; successful sends precede the account and character writes,
 whose failures preserve the sent request. Runtime tests cover configured port
 fallback, owned snapshots, real UDP delivery, reply composition and allocation cleanup.
+The complete character-selection flow also runs with supplied topology, rules,
+repositories and reply actions. It snapshots session/packet inputs, preserves
+legacy refusal bytes and exception mapping, and keeps diagnostics best effort.
+Tests cover every rejection, each race, partial writes, retained account ownership,
+broken production output and allocation failure without executable startup.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

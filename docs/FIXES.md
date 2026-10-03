@@ -800,6 +800,22 @@ caller. Eighteen runtime cases include actual UDP and reply-flow composition.
 
 > **Status:** fixed (refactor/login-incoming-request)
 
+## Character-selection diagnostics can prevent a refusal or incoming request (2026-10-02)
+
+`decideSelectPC` wrote non-PK and routing messages directly to `std::cout`.
+When output had exceptions enabled, a failed write escaped before returning the
+refusal or selected character. Three regressions reproduced lost non-PK refusal,
+skipped accepted dispatch and failure through the actual production output action.
+
+Selection diagnostics now use optional explicit callbacks whose failures are
+contained at the decision boundary. The runtime supplies the same message text;
+standalone decisions need no output stream. Reporting failures cannot replace a
+later repository/topology/send error. The extracted `LoginCharacterSelection`
+flow preserves rejection bytes, fatal messages, exception translation and partial
+persistence effects, with 16 runtime cases and two standalone diagnostic cases.
+
+> **Status:** fixed (refactor/login-character-selection)
+
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 
 `GLKickVerifyHandler` matched the account-owned character name without checking

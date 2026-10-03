@@ -7,12 +7,14 @@
 // (tests/integration/mysql_loginserver_repository_test.cpp) is the
 // authority on what the real repository answers.
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "CharacterSelection.h"
+#include "Exception.h"
 #include "FakeLoginCharacterRepository.h"
 
 namespace {
@@ -571,6 +573,65 @@ TEST(DecideSelectPC, EachRaceKeepsItsOwnTableInThePayload) {
         EXPECT_EQ(9, outcome.events().serverID);
         EXPECT_EQ(3, outcome.events().slot);
     }
+}
+
+TEST(DecideSelectPC, FailedDiagnosticsPreserveBothRefusalAndAcceptedRouting) {
+    for (bool refused : {false, true}) {
+        FakeLoginCharacterRepository repository;
+        FakeSelectPCTopology topology;
+        topology.nonPKServer = true;
+        repository.addSelectableCharacter(LOGIN_RACE_TABLE_SLAYER, "account", "Rowan", 2101, "SLOT2", refused ? 81 : 30,
+                                          3);
+        unsigned groupReports = 0;
+        unsigned routeReports = 0;
+        const SelectPCDiagnostics diagnostics{[&](WorldID_t world, ServerGroupID_t group) {
+                                                  EXPECT_EQ(world, 1);
+                                                  EXPECT_EQ(group, 2);
+                                                  ++groupReports;
+                                                  throw std::runtime_error("group report failed");
+                                              },
+                                              [&](WorldID_t world, ServerGroupID_t group, ServerID_t server) {
+                                                  EXPECT_EQ(world, 1);
+                                                  EXPECT_EQ(group, 2);
+                                                  EXPECT_EQ(server, FakeSelectPCTopology::kDefaultServerID);
+                                                  ++routeReports;
+                                                  throw NoSuchElementException("route report failed");
+                                              }};
+        auto result = decideSelectPC(slayerRequest(), repository, topology, diagnostics);
+        ASSERT_EQ(result.isRejected(), refused);
+        if (refused)
+            EXPECT_EQ(result.rejection(), SelectPCRejection::NonPKServerLimit);
+        else
+            EXPECT_EQ(result.events().serverID, FakeSelectPCTopology::kDefaultServerID);
+        EXPECT_EQ(groupReports, 1u);
+        EXPECT_EQ(routeReports, refused ? 0u : 1u);
+    }
+}
+
+TEST(DecideSelectPC, DiagnosticsFollowOnlyTheExecutedNonPKAndOrdinaryRoutingPaths) {
+    FakeLoginCharacterRepository repository;
+    FakeSelectPCTopology topology;
+    addRowan(repository);
+    unsigned groupReports = 0;
+    unsigned routeReports = 0;
+    const SelectPCDiagnostics diagnostics{[&](WorldID_t, ServerGroupID_t) { ++groupReports; },
+                                          [&](WorldID_t, ServerGroupID_t, ServerID_t) { ++routeReports; }};
+    auto request = slayerRequest();
+    request.agreedToTerms = false;
+    EXPECT_TRUE(decideSelectPC(request, repository, topology, diagnostics).isRejected());
+    EXPECT_EQ(groupReports, 0u);
+    EXPECT_EQ(routeReports, 0u);
+    request.agreedToTerms = true;
+    EXPECT_TRUE(decideSelectPC(request, repository, topology, diagnostics).isOk());
+    EXPECT_EQ(groupReports, 0u);
+    EXPECT_EQ(routeReports, 1u);
+    repository.addSelectableCharacter(LOGIN_RACE_TABLE_SLAYER, "account", "Rowan", 20000, "SLOT2", 30, 1);
+    topology.nonPKServer = true;
+    auto result = decideSelectPC(request, repository, topology, diagnostics);
+    ASSERT_TRUE(result.isOk());
+    EXPECT_EQ(result.events().serverID, 1);
+    EXPECT_EQ(groupReports, 1u);
+    EXPECT_EQ(routeReports, 1u);
 }
 
 } // namespace
