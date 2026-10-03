@@ -8,17 +8,15 @@
 
 #ifdef __LOGIN_SERVER__
 #include "Assert.h"
-#include "GameWorldInfoManager.h"
-#include "LCQueryResultCharacterName.h"
+#include "LoginCharacterNameQuery.h"
 #include "LoginPlayer.h"
 #include "ServerContext.h"
 #include "repository/LoginCharacterRepository.h"
 #endif
 
-bool isAvailableID(const char* pID);
 
 //////////////////////////////////////////////////////////////////////////////
-// Look a given player id up in the DB and tell the client whether it exists.
+// Check a character name in the selected world and reply with its availability.
 //////////////////////////////////////////////////////////////////////////////
 void CLQueryCharacterNameHandler::execute(CLQueryCharacterName* pPacket, Player* pPlayer) {
     __BEGIN_TRY __BEGIN_DEBUG_EX
@@ -30,30 +28,8 @@ void CLQueryCharacterNameHandler::execute(CLQueryCharacterName* pPacket, Player*
 
     LoginPlayer* pLoginPlayer = dynamic_cast<LoginPlayer*>(pPlayer);
 
-    WorldID_t WorldID = pLoginPlayer->getWorldID();
-
-    Assert(WorldID <= de::serverContext().worldInfos().getSize());
-
-    // A SQL failure leaves as END_DB's DatabaseError, the way the
-    // SQLQueryException did.
-    bool bExists = defaultLoginCharacterRepository().slayerNameExists(WorldID, pPacket->getCharacterName());
-
-    LCQueryResultCharacterName lcQueryResultCharacterName;
-
-    lcQueryResultCharacterName.setCharacterName(pPacket->getCharacterName());
-
-    lcQueryResultCharacterName.setExist(bExists);
-
-    // A name reserved for staff is reported as taken.
-    if (!isAvailableID(pPacket->getCharacterName().c_str())) {
-        lcQueryResultCharacterName.setExist(true);
-    }
-
-    pLoginPlayer->sendPacket(&lcQueryResultCharacterName);
-
-    // The client may query several names; the status stays where the
-    // character list is expected next.
-    pLoginPlayer->setPlayerStatus(LPS_WAITING_FOR_CL_GET_PC_LIST);
+    de::queryLoginCharacterName(*pLoginPlayer, *pPacket, de::serverContext().worldInfos(),
+                                defaultLoginCharacterRepository(), de::defaultLoginCharacterNameQueryActions());
 
 #endif
 

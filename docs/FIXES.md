@@ -892,15 +892,31 @@ database-backed failure coverage; no rollback is introduced here.
 
 ## Character-name queries validate world IDs against catalogue count (2026-10-02)
 
-By inspection, `CLQueryCharacterNameHandler` still asserts
+`CLQueryCharacterNameHandler` asserted
 `worldID <= GameWorldInfoManager::getSize()`, whose result is the number of map
-entries. Worlds 1 and 7 therefore reject a query in configured world 7, while
-missing IDs below the count can reach the repository. World/server selection
-already uses actual membership, so this remaining handler guard disagrees with
-valid selection. Task 2.63 tracks explicit query orchestration and a membership
-check with sparse/missing-world regression coverage.
+entries. Worlds 1 and 7 therefore rejected a query in configured world 7, while
+missing IDs below the count could reach the repository. Regressions also
+reproduced world zero passing with an empty catalogue.
 
-> **Status:** recorded, not fixed (refactor/login-character-deletion)
+`LoginCharacterNameQuery` now checks actual membership before lookup, retaining
+the assertion/logging boundary for missing worlds. It admits configured sparse,
+zero and boundary IDs without adding a world-status gate. Runtime coverage pins
+reload behavior, the production handler guard and allocation cleanup/retry.
+
+> **Status:** fixed (refactor/login-character-name-query)
+
+## Character-name queries reread the packet after repository lookup (2026-10-02)
+
+The query flow read the name separately for lookup, reply and reserved-name
+validation. A supplied repository callback changing the packet from Rowan to GM
+therefore made the old flow report GM as reserved after querying Rowan. The
+reverse mutation could also bypass the original name's reserved-name policy.
+
+The extracted flow owns one name before lookup and uses it for both the reply
+and policy. Regression coverage exercises both mutations while preserving one
+repository call, exception identity and publication only after sending.
+
+> **Status:** fixed (refactor/login-character-name-query)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 

@@ -256,6 +256,10 @@ session publication after sending. Reporting failures cannot skip replies;
 earlier persistence effects remain after later failure, and retry does not resume
 an already retired character. Real output/audit checks and allocation sweeps run
 without executable startup or a database.
+Character-name availability uses explicit world, repository and sender inputs.
+It checks configured world IDs, owns the queried name through callbacks and
+preserves the existing lookup and reserved-name rules. Runtime tests cover
+sparse/boundary worlds, real reply bytes, failures and publication after sending.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
