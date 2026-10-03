@@ -855,6 +855,53 @@ reporting failures and allocation cleanup/retry.
 
 > **Status:** fixed (refactor/character-creation-inputs)
 
+## Character-deletion diagnostics can skip replies or deletion work (2026-10-02)
+
+The handler formatted/logged the request before lookup, logged wrong-owner
+attempts before their refusal, and wrote refusal/database messages before
+sending. An exception from any of those operations could skip the intended reply
+or prevent deletion entirely. Five regressions reproduced the paths, including
+rejected production console output.
+
+`LoginCharacterDeletion` owns request inputs and uses independently best-effort
+request, audit, refusal and database diagnostics. A failed audit still permits
+the console report and refusal; diagnostic failures cannot replace the operation
+outcome. The extracted flow preserves reply bytes, default message text,
+persistence order and the existing database-error fallback policy. Nineteen
+runtime cases include actual player output, audit-file allocation failures,
+partial effects and cleanup/retry sweeps.
+
+> **Status:** fixed (refactor/login-character-deletion)
+
+## A failed deletion after Slayer retirement cannot be resumed by the same request (2026-10-02)
+
+The deletion decision retires the Slayer index before the handler records
+DeleteChar and purges the remaining world rows. These operations span separate
+repository calls/connections, and the purge itself has no transaction. A later
+failure retains the retirement and any earlier writes. Retrying begins with an
+ACTIVE-row lookup, so the retired character is refused as missing instead of
+finishing the record or purge. A success-reply failure likewise retains completed
+persistence while leaving the session phase unchanged.
+
+The extraction preserves and tests this boundary, including failure after an
+operation has already applied effects and retry before versus after retirement.
+Resumable or atomic deletion needs an explicit persistence/recovery design and
+database-backed failure coverage; no rollback is introduced here.
+
+> **Status:** recorded, not fixed (refactor/login-character-deletion)
+
+## Character-name queries validate world IDs against catalogue count (2026-10-02)
+
+By inspection, `CLQueryCharacterNameHandler` still asserts
+`worldID <= GameWorldInfoManager::getSize()`, whose result is the number of map
+entries. Worlds 1 and 7 therefore reject a query in configured world 7, while
+missing IDs below the count can reach the repository. World/server selection
+already uses actual membership, so this remaining handler guard disagrees with
+valid selection. Task 2.63 tracks explicit query orchestration and a membership
+check with sparse/missing-world regression coverage.
+
+> **Status:** recorded, not fixed (refactor/login-character-deletion)
+
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 
 `GLKickVerifyHandler` matched the account-owned character name without checking

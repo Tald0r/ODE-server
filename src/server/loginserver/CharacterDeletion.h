@@ -18,7 +18,7 @@
 // handler answers with:
 //
 //   NoSuchCharacter   NOT_FOUND_PLAYER
-//   NotTheOwner       the packet's error id is left as it was
+//   NotTheOwner       zero (the packet's default error id)
 //   SlotMismatch      NOT_FOUND_ID
 //
 // NotTheOwner is the one no client can produce by playing: the character
@@ -54,9 +54,8 @@ struct DeletePCRequest {
 // refusals: it retires the Slayer row that indexes the character, and the
 // caller purges the rest only once it has.
 //
-// A repository that fails its query throws (the DB layer's own const
-// char*); that is a server fault, not a player-facing rejection, and is
-// left to the caller.
+// Repository failures propagate unchanged for the caller to handle. A successful
+// retirement is a persistence effect and cannot be rolled back by this decision.
 [[nodiscard]] Outcome<void, DeletePCRejection> decideDeletePC(const DeletePCRequest& request,
                                                               LoginCharacterPurgeRepository& repository);
 

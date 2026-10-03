@@ -138,6 +138,7 @@ target_sources(login_server_runtime_tests PRIVATE
     login_incoming_request_test.cpp
     login_character_selection_test.cpp
     login_character_creation_test.cpp
+    login_character_deletion_test.cpp
     support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 target_sources(shared_server_runtime_tests PRIVATE

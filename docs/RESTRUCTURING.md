@@ -1571,14 +1571,34 @@ visibility can't express.
     sequence checks, exact log text, random/reporting exception matrices, six
     96-position allocation sweeps and a 16-position production logging sweep.
 
-- [ ] **2.62 Extract the character-deletion handler flow.**
-  > **Status:** not started — `decideDeletePC` already takes a repository, while
-  > the handler snapshots the packet/session, maps refusals, logs, records and
-  > purges rows, then sends a reply and advances the session. Move this
-  > orchestration behind explicit persistence, reply and diagnostic inputs.
-  - Owner to add: every rejection byte, diagnostic failure, record/purge order,
-    exception translation, partial effects and reply/status publication without
-    executable startup or a database.
+- [x] **2.62 Extract the character-deletion handler flow.**
+  > **Status:** done (refactor/login-character-deletion) — `LoginCharacterDeletion`
+  > takes explicit persistence, reply actions and optional diagnostics. It owns
+  > packet/session snapshots before callbacks, preserves all three rejection
+  > bytes and retires the Slayer index before deletion recording and purging.
+  > The phase advances only after success sending returns. Database failures
+  > retain the current refusal code; errors sending that fallback escape without
+  > another attempt. Other failures preserve identity. Diagnostics are attempted
+  > independently and cannot skip replies. Earlier persistence effects and
+  > caller-owned account cleanup remain after failure; retry cannot resume a
+  > character whose index row is already retired. Slots retain the decoder's
+  > range precondition. The handler only supplies production collaborators.
+  - Owner: 19 runtime cases cover five reproduced reporting failures, every
+    rejection/slot, boundary worlds, snapshots, six-stage operation failures,
+    four-site diagnostic failures, partial effects/retry, real reply bytes and
+    console/audit text, seven 64-position allocation sweeps and a 16-position
+    production audit sweep. The 11 standalone decision cases remain unchanged.
+
+- [ ] **2.63 Extract character-name availability queries.**
+  > **Status:** not started — `CLQueryCharacterNameHandler` still composes the
+  > catalogue guard, repository lookup, reserved-name policy and reply/status
+  > publication inline. Its world guard compares an ID with catalogue count,
+  > rejecting sparse configured IDs and admitting missing IDs below that count.
+  > Extract explicit catalogue/repository/reply dependencies and use actual
+  > world membership while preserving lookup and reserved-name policy.
+  - Owner to add: sparse/missing/boundary worlds, query/name snapshots, reserved
+    names, reply bytes, send/query failures, session publication and allocation
+    cleanup without executable startup or a database.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

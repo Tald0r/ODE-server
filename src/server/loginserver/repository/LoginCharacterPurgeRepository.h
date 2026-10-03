@@ -49,8 +49,8 @@
 // in the tree.
 //
 // The character name, the account id and the slot text are interpolated
-// raw. The slot indexes Slot2String unchecked; CLDeletePC::read does not
-// range-check the byte it comes from.
+// raw. The slot indexes Slot2String unchecked here; callers must preserve the
+// slot range enforced by CLDeletePC::read.
 class LoginCharacterPurgeRepository {
 public:
     virtual ~LoginCharacterPurgeRepository() {}

@@ -250,6 +250,12 @@ The creation decision also takes explicit raw random draws and optional Ousters
 diagnostics. Deterministic tests cover all 136 legal Vampire attribute spreads,
 draw ordering and cache reuse after failure. Production keeps its two-draw modulo
 rules and log text; failed diagnostics cannot change acceptance or rejection.
+Character deletion takes explicit persistence, replies and diagnostics as well.
+Tests pin refusal bytes, retirement/record/purge order, owned request fields and
+session publication after sending. Reporting failures cannot skip replies;
+earlier persistence effects remain after later failure, and retry does not resume
+an already retired character. Real output/audit checks and allocation sweeps run
+without executable startup or a database.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
