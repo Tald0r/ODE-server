@@ -1364,7 +1364,7 @@ visibility can't express.
     pointer preservation, repeated cleanup, retry and stale production verification.
 
 - [x] **2.51 Extract kick destination preparation and dispatch.**
-  > **Status:** done (this commit) — `dispatchLoginKick` takes the real player,
+  > **Status:** done (#336) — `dispatchLoginKick` takes the real player,
   > prepared target, catalogue and synchronous sender. It copies server-1
   > destinations for occupied groups in ascending order before sending, so gaps
   > are skipped and missing first-server rows cannot cause partial broadcasts.
@@ -1373,22 +1373,31 @@ visibility can't express.
   > successful sender returns precede the three-second wait. The deadline starts
   > at zero and is inspectable. Retry broadcasts again from the first destination.
   > Manager locking already serializes command handling and kick verification.
-  > The production sender retains its existing suppressed-`Throwable` behavior;
-  > explicit send results and retry/verification admission remain below.
-  - Owner: 16 `LoginKickDispatch` runtime cases. Three regressions failed before
+  > Explicit send results belong to 2.52; retry/verification admission remains 2.53.
+  - Owner: 17 `LoginKickDispatch` runtime cases, including 2.52's failed production
+    sends. Three regressions failed before
     repair. Tests cover sparse/boundary IDs, server-1 selection, missing/empty
     catalogues, owned snapshots, reloads, deadline ordering, exact exception
     identity, two 64-position allocation sweeps, serialization/refusal/retry and
     a production `LoginPlayer`/sender loopback UDP delivery without DB startup.
 
-- [ ] **2.52 Extract login datagram sending with an explicit result.**
-  > **Status:** not started — `GameServerManager::sendPacket` logs and suppresses
-  > `Throwable`, so callers cannot distinguish a failed serialization/send from
-  > a completed attempt. Catalogue UDP ports retain their unsigned width while
-  > the datagram writer narrows to 16 bits. Extract preparation and transport
-  > dependencies, validate endpoints and define how failures reach kick dispatch.
-  - Planned owner: controlled serialization/transport failures, endpoint boundaries,
-    error reporting, resource cleanup, retry and real loopback delivery.
+- [x] **2.52 Extract login datagram sending with an explicit result.**
+  > **Status:** done (this commit) — `sendLoginDatagram` takes the packet,
+  > endpoint, synchronous transport and diagnostic stream. Canonical decimal IPv4
+  > addresses and ports 1..65535 are checked before packet access. Only an exact
+  > frame byte count succeeds; there is no implicit resend. `Throwable` failures
+  > return false after best-effort reporting, while other exception types propagate
+  > with their identity. Partial frames are destroyed before reporting. The
+  > production manager translates false to `ConnectException`; kick sending clears
+  > the attempted account identity before that exception reaches disconnect, so
+  > it cannot mark an existing game session logged off. Datagram delivery itself
+  > still needs the existing peer acknowledgement.
+  - Owner: 16 `LoginDatagramSend` cases plus failed production sends in
+    `LoginKickDispatch`. Five regressions reproduced the previous behavior.
+    Coverage includes platform-independent address syntax, port and frame
+    boundaries, serialization/transport/reporting failures, exception identity,
+    four 64-position allocation sweeps, repeated cleanup, retry, existing UDP
+    loopback delivery and disconnect without database startup.
 
 - [ ] **2.53 Extract kick retry and verification admission.**
   > **Status:** not started — the timeout branch increments its retry count and

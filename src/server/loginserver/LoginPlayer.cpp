@@ -440,10 +440,17 @@ void LoginPlayer::sendLGKickCharacter() {
     if (!target)
         return;
 
-    de::dispatchLoginKick(*this, *target, de::serverContext().serverInfos(),
-                          [](const std::string& host, uint port, const LGKickCharacter& packet) {
-                              de::loginContext().gameServers().sendPacket(host, port, &packet);
-                          });
+    try {
+        de::dispatchLoginKick(*this, *target, de::serverContext().serverInfos(),
+                              [](const std::string& host, uint port, const LGKickCharacter& packet) {
+                                  de::loginContext().gameServers().sendPacket(host, port, &packet);
+                              });
+    } catch (const ConnectException&) {
+        // The manager disconnects this failed attempt. Its identity must not
+        // mark the account's existing game session LOGOFF, even on the first send.
+        setID("NONE");
+        throw;
+    }
 }
 
 

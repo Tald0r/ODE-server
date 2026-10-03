@@ -19,6 +19,7 @@
 #include "KernelContext.h"
 #include "LGKickCharacter.h"
 #include "ListenerStartup.h"
+#include "LoginDatagramSend.h"
 #include "PacketDispatcher.h"
 #include "Properties.h"
 #include "ServerContext.h"
@@ -178,30 +179,9 @@ void GameServerManager::sendDatagram(Datagram* pDatagram) {
 //////////////////////////////////////////////////////////////////////
 // send datagram-packet to datagram-socket
 //////////////////////////////////////////////////////////////////////
-void GameServerManager::sendPacket(string host, uint port, const DatagramPacket* pPacket) {
-    __BEGIN_TRY
-    __BEGIN_DEBUG
-
-    try {
-        //	try
-        // Keep one datagram object and set the destination peer's host
-        // and port on it.
-        Datagram datagram;
-
-        datagram.setHost(host);
-        datagram.setPort(port);
-
-        // Put the datagram packet into the datagram.
-        datagram.write(pPacket);
-
-        // Send the datagram through the datagram socket.
-        m_pDatagramSocket->send(&datagram);
-    } catch (Throwable& t) {
-        cout << "====================================================================" << endl;
-        cout << t.toString() << endl;
-        cout << "====================================================================" << endl;
-    }
-
-    __END_DEBUG
-    __END_CATCH
+void GameServerManager::sendPacket(const string& host, uint port, const DatagramPacket* pPacket) {
+    Assert(pPacket != nullptr);
+    if (!de::sendLoginDatagram(
+            host, port, *pPacket, [&](Datagram& datagram) { return m_pDatagramSocket->send(&datagram); }, cout))
+        throw ConnectException("GameServerManager::sendPacket failed");
 }
