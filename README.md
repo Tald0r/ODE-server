@@ -225,6 +225,11 @@ monotonic deadlines; completed cleanup releases the player immediately. Runtime
 tests cover broken cleanup/reporting, deadline boundaries, descriptor reuse,
 manager locks, real I/O and both incoming-reply handlers. Pending teardown is
 local and iterative; outstanding database cleanup does not survive process exit.
+Incoming game-connection replies use an explicit manager, sender and retirement
+actions. Only a matching pending account is consumed; late and duplicate replies
+leave other phases alone. Runtime tests pin the saved public reconnect address,
+port/key bytes, lock ownership and cleanup after send/allocation failure. Failed
+reply writes close without flushing; failed logout remains in the retirement owner.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
