@@ -1621,15 +1621,31 @@ visibility can't express.
     query/supplied/production sender exception identity, partial output/retry,
     real boundary reply bytes and four 24-position allocation sweeps.
 
-- [ ] **2.65 Extract the character-list refresh handler flow.**
-  > **Status:** not started — `CLGetPCListHandler` uses the explicit list
-  > assembler but still selects its default repository and sends inline. It
-  > publishes character management before lookup as well as after sending.
-  > Extract repository/sender composition, own the selected world/account and
-  > publish the phase only when the complete reply has been sent successfully.
-  - Owner to add: owned inputs, complete/empty lists, query/send failures,
-    preserved assembler exception policy, reply bytes, publication timing and
-    allocation cleanup without executable startup or a database.
+- [x] **2.65 Extract the character-list refresh handler flow.**
+  > **Status:** done (refactor/login-character-list-refresh) —
+  > `LoginCharacterListRefresh` owns the selected world/account and composes the
+  > existing assembler with an explicit repository and sender. The complete
+  > reply stays owned through synchronous sending; the session enters character
+  > management only after sending returns. Query/preparation/send failures retain
+  > the original phase and account cleanup owner. Database failures during
+  > assembly keep the existing disconnect message, while sender exceptions
+  > propagate unchanged. Empty and repeated refreshes preserve policy, and
+  > partial output remains visible after a later sender failure. Admission is
+  > still the caller's responsibility; the handler supplies production adapters.
+  - Owner: 14 runtime cases cover three reproduced publication regressions,
+    all three races, empty/repeated replies, boundary selections, owned inputs,
+    five-stage exception identity, missing/duplicate records, real frames,
+    serialization/partial-send retry and five 96-position allocation sweeps.
+
+- [ ] **2.66 Extract the account-registration handler flow.**
+  > **Status:** not started — `CLRegisterPlayerHandler` still coordinates
+  > decision, acquisition, location read-back, group lookup, replies and failure
+  > counts inline through process contexts. The decision uses implicit password
+  > hashing. Supply these collaborators explicitly, preserve acquired-account
+  > cleanup and partial-write boundaries, and test registration without startup.
+  - Owner to add: validation/refusal bytes, hashing failures, repeated-attempt
+    limits, owned request/configuration inputs, acquisition/read-back ordering,
+    checked location publication, diagnostic/send failures and allocation retry.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

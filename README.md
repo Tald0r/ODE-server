@@ -264,6 +264,10 @@ Account-name availability likewise takes an explicit repository and sender,
 owns the requested ID through lookup/reply, and publishes the registration phase
 only after sending. Tests preserve its distinct lookup policy, repeated-query
 behavior, exact reply bytes and caller-owned account cleanup after failures.
+Character-list refresh now owns the selected world/account and takes explicit
+repository and sender inputs. It keeps the reply alive through sending and enters
+character management only after the sender returns. Runtime tests cover complete
+and empty lists, exception mapping, real output, retry and allocation cleanup.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
