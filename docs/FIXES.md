@@ -470,17 +470,20 @@ and clear remain quiescent; final init reporting still follows publication.
 
 ## Normalized server-selection worlds do not reach character lookup (2026-10-02)
 
-`decideSelectServer` reports the normalized world used to look up a group, but
-`CLSelectServerHandler` writes only the selected group to the session.
-The handler passes the session's existing world to `makeLoginCharacterList`
-for its character repository queries. A stale/missing session world can
-therefore normalize to an existing world's group while the next lookup still
-uses the stale world.
-This pre-existing handler behavior is retained by the topology extraction;
-the session/character-query boundary needs its own tests and consistent
-world refusal or update policy.
+`decideSelectServer` returned a normalized world/group, but the handler applied
+only the group before querying characters with the session's stale world.
+Three runtime regressions reproduced the mismatch on success, query failure
+and send failure.
 
-> **Status:** recorded, not fixed (refactor/login-world-topology)
+The extracted `de::selectLoginServer` flow applies both selected IDs before
+building the character list. Refusals and topology errors preserve the original
+session; an accepted location stays published if later lookup/sending fails,
+and character-management status follows only a successful send. Seventeen
+runtime tests cover sparse/boundary IDs, real catalogue reloads, observer state,
+exception policy, real serialization, allocation cleanup and retry. The
+existing group-down policy, refusal diagnostics and account-write policy remain.
+
+> **Status:** fixed (refactor/login-server-selection-flow)
 
 ## Character selection checks slot length without checking the stored slot format (2026-10-02)
 

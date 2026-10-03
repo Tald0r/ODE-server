@@ -270,7 +270,7 @@ TEST_F(LoginWorldTopologyTest, MissingPopulationIsAConfigurationErrorOnlyWhenBui
     LoginWorldTopology otherTopology(worlds, groups, otherUsers);
     EXPECT_TRUE(decideSelectWorld(7, otherTopology).isOk());
     EXPECT_TRUE(decideSelectServer({7, 4}, otherTopology).isOk());
-    EXPECT_THROW(serverListFor(7, {}, otherTopology), NoSuchElementException);
+    EXPECT_THROW((void)serverListFor(7, {}, otherTopology), NoSuchElementException);
     // A failed list build cannot change the supplied metadata or another view's counts.
     users.getUserInfo(4, 7)->setUserNum(1100);
     otherUsers.load(repository);
