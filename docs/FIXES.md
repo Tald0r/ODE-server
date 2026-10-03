@@ -948,15 +948,64 @@ allocation cleanup/retry sweeps without executable startup or a database.
 
 ## Registration location read-back narrows unchecked IDs and does not publish the world (2026-10-02)
 
-By inspection, `CLRegisterPlayerHandler` converts the returned integer world and
-group directly to byte-sized IDs. It uses those narrowed values for group lookup
-and publishes only the group on the player. When the stored world differs from
-the session's current world, the reply can name a group in one world while a
-subsequent character-list query uses the other. Out-of-range IDs can wrap before
-the lookup. Task 2.66 tracks checked location preparation/publication with
-registration-flow regression tests; this refresh extraction does not alter it.
+`CLRegisterPlayerHandler` converted the returned integer world and group directly
+to byte-sized IDs and published only the group, before group lookup or sending.
+Three regression cases reproduced wrapped locations, successful registration
+retaining the old world, and group/send failures leaving a partial selection.
 
-> **Status:** recorded, not fixed (refactor/login-character-list-refresh)
+`LoginRegistration` validates both IDs before narrowing and prepares the complete
+reply before sending. Identity, world, group and phase publish together afterward
+without allocation. Later failure retains the acquired account cleanup owner and
+earlier persistence; tests cover zero/boundary IDs, real replies and partial sends.
+
+> **Status:** fixed (refactor/login-registration)
+
+## Registration hashing diagnostics can replace the intended disconnect (2026-10-02)
+
+After sending the hashing-failure refusal, the handler called the file logger
+before throwing its disconnect. A diagnostic DatabaseError entered the broad
+database fallback, sent a second refusal and counted a retryable failure instead.
+Other diagnostic exceptions replaced the disconnect reason. The reproduced path
+now uses an optional best-effort callback, keeping the single refusal and original
+disconnect. Production log text and diagnostic allocation failures are covered.
+
+> **Status:** fixed (refactor/login-registration)
+
+## An exhausted registration failure counter can wrap past its limit (2026-10-02)
+
+The retry helper incremented the unsigned counter before comparing it with three.
+An existing maximum value wrapped to zero and admitted another attempt. It now
+checks the current counter first, preserving the first three retryable refusals
+and the fourth-refusal disconnect while refusing every already-exhausted value.
+
+> **Status:** fixed (refactor/login-registration)
+
+## Registration decision inputs need representable values before profile validation (2026-10-02)
+
+The decision request stored sex as a two-value enum. Attempting to validate an
+unsupported enum value in a standalone request already loads an invalid enum;
+the pinned toolchain exposed this before the new validation could run. The packet
+decoder already rejects unsupported wire bytes before conversion, so decoded
+production packets retain their existing guard and behavior.
+
+The decision request now carries an integer and checks supported values before
+hashing, repository lookup or type-table indexing. Direct callers can supply
+invalid profile data without first creating an invalid enum. Tests cover negative
+and out-of-range integers; valid mapping and earlier validation precedence stay.
+
+> **Status:** fixed (refactor/login-registration)
+
+## A partial registration cannot be restarted and failed write acknowledgements retain effects (2026-10-02)
+
+Registration inserts the account and marks LOGON before location read-back and
+sending. Later failures retain those writes, and retrying the same ID is refused
+as already registered. A completed acquisition keeps its cleanup owner until the
+caller releases it. If a write applies its effect and then throws, acquisition
+has not been acknowledged and no cleanup owner is published, even if LOGON was
+applied. The extraction tests these existing boundaries; resumable registration
+or reconciliation of uncertain writes requires a separate persistence design.
+
+> **Status:** recorded, not fixed (refactor/login-registration)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 

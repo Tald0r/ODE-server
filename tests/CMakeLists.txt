@@ -142,6 +142,7 @@ target_sources(login_server_runtime_tests PRIVATE
     login_character_deletion_test.cpp
     login_character_name_query_test.cpp
     login_account_name_query_test.cpp
+    login_registration_test.cpp
     support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 target_sources(shared_server_runtime_tests PRIVATE
@@ -1002,7 +1003,7 @@ set_tests_properties(game_frame_gate_tests PROPERTIES TIMEOUT 60)
 # RegisterPlayerRefusal> over a fake LoginAccountRepository, so every
 # refusal, the precedence between them and the Player row an accepted
 # registration produces are testable with no database. PasswordHash is
-# linked because the decision hashes the password with the real argon2id;
+# linked for the explicit hashing adapter tested with the real argon2id;
 # de-kernel carries the type tables. Pulling the transport or the login
 # server's own state into the decision would break this link.
 add_executable(registration_tests EXCLUDE_FROM_ALL
