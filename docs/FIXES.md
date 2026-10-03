@@ -610,18 +610,39 @@ helper's transport and resource-ownership checks.
 
 > **Status:** recorded, not fixed (refactor/login-datagram-send)
 
-## Kick retry and verification can advance an attempt that is no longer pending (2026-10-02)
+## Kick retry can advance an attempt that is no longer pending (2026-10-02)
 
 The kick timeout branch calls `sendLGKickCharacter`, increments the retry count
 and eventually calls `sendLCLoginOK` even when kick preparation or destination
-refusal cleared the account ID. `GLKickVerifyHandler` now checks the account-bound
-target but still admits a matching name without checking waiting status, allowing
-duplicate/late replies to reach completion. Its manual manager lock is released
-only normally or for `Throwable`; a standard exception can leave it locked.
-An extracted attempt/completion flow needs explicit time and outcome tests before
-these retry, admission and exception-handling policies are changed.
+refusal cleared the account ID. Its retry count is initialized only when the
+player is constructed, so a later authenticated attempt can inherit the earlier
+count. An extracted attempt/completion flow needs explicit time and outcome tests
+before these retry policies are changed. Verification admission and lock ownership
+are covered separately below.
 
 > **Status:** recorded, not fixed (refactor/login-kick-dispatch)
+
+## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
+
+`GLKickVerifyHandler` matched the account-owned character name without checking
+waiting status, allowing duplicate or late replies to enter login completion.
+Its manual manager lock remained locked on a standard exception. Conversely,
+failed lock acquisition entered a catch that unlocked a lock owned by the caller.
+Four regressions reproduced these paths and the extracted helper hiding completion
+errors before the repair.
+
+`verifyLoginKick` now receives the manager and completion action explicitly. It
+admits only waiting sessions with a nonempty, unsuppressed account identity and
+matching saved target. Descriptor bounds are checked before narrowing. A scoped
+lock spans lookup and completion and preserves ownership on every exception.
+The packet handler retains its existing `Throwable` catch at the boundary;
+completion still owns any state changes it makes. Sixteen runtime tests cover
+admission, flags, identity/descriptor changes, duplicates, error identity, lock
+ownership and allocation cleanup/retry. The wire carries no attempt nonce, so
+an old reply identical to a later pending attempt's descriptor/name cannot be
+distinguished without a protocol change.
+
+> **Status:** fixed (refactor/login-kick-verification)
 
 ## Character-list assembly leaks records before packet attachment (2026-10-02)
 

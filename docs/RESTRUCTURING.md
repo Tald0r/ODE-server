@@ -1382,7 +1382,7 @@ visibility can't express.
     a production `LoginPlayer`/sender loopback UDP delivery without DB startup.
 
 - [x] **2.52 Extract login datagram sending with an explicit result.**
-  > **Status:** done (this commit) — `sendLoginDatagram` takes the packet,
+  > **Status:** done (#337) — `sendLoginDatagram` takes the packet,
   > endpoint, synchronous transport and diagnostic stream. Canonical decimal IPv4
   > addresses and ports 1..65535 are checked before packet access. Only an exact
   > frame byte count succeeds; there is no implicit resend. `Throwable` failures
@@ -1400,14 +1400,25 @@ visibility can't express.
     loopback delivery and disconnect without database startup.
 
 - [ ] **2.53 Extract kick retry and verification admission.**
-  > **Status:** not started — the timeout branch increments its retry count and
-  > may finish login even when the retried kick cleared the account identity.
-  > Verification matches the account-bound name but does not require a waiting
-  > status, and its manual lock pair can miss unlocking on non-`Throwable`
-  > exceptions. Extract explicit time/attempt/completion dependencies and require
-  > a current pending attempt before advancing login.
-  - Planned owner: refused/failed retries, count/deadline boundaries, duplicate or
-    stale verification, account changes, completion failures and lock cleanup.
+  > **Status:** in progress (retry extraction remains) — `verifyLoginKick` now
+  > takes an explicit manager and completion action. It requires the waiting
+  > phase, a real account identity and an exact account-owned target name. Missing
+  > or out-of-range descriptors are ignored. A scoped lock protects lookup and
+  > completion, propagates completion exceptions and preserves an existing lock
+  > when acquisition fails. The packet handler keeps its `Throwable` catch at the
+  > boundary. Both completed kicks and already-absent replies remain accepted.
+  > Completion owns its session changes; identical replies for a later pending
+  > attempt on the same descriptor/name remain indistinguishable without a wire
+  > nonce. The timeout branch still increments its count and may finish login
+  > after a retry clears the account ID. Extract that time/attempt/completion flow
+  > next, including fresh-attempt counter reset and failure policy.
+  - Owner for verification: 16 `LoginKickVerification` runtime cases. Four
+    regressions failed before repair. Tests cover every nonwaiting phase, exact
+    names, account changes, both reply flags, descriptor bounds, duplicate replies,
+    completion ownership, exception identity, lock ownership and three 64-position
+    allocation sweeps with cleanup/retry.
+  - Remaining owner: refused/failed retries, count/deadline boundaries, fresh
+    attempts, account changes and completion failures through explicit time/actions.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
