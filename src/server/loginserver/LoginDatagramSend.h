@@ -14,6 +14,9 @@ namespace de {
 
 using LoginDatagramTransport = std::function<uint(Datagram&)>;
 
+// Throws Error for a noncanonical IPv4 address or a port outside 1..65535.
+void validateLoginDatagramEndpoint(const std::string& host, uint port);
+
 // Serialize and send one frame using a supplied synchronous transport. The
 // transport borrows the datagram without mutation only until it returns.
 // Require a canonical decimal IPv4 address, port 1..65535 and an exact frame byte count.

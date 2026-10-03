@@ -1503,14 +1503,34 @@ visibility can't express.
     send/reporting/serialization failures, retained logout, lock ownership, both
     production boundaries and two 24-position allocation sweeps.
 
-- [ ] **2.58 Extract selected-character game-connection requests.**
-  > **Status:** not started — `CLSelectPCHandler` still composes the incoming
-  > datagram, saves the public game address, publishes pending status, selects a
-  > deployment-specific UDP port and writes account/character location inline.
-  > Extract those actions with explicit transport, configuration and repositories.
-  > Keep reply-visible publication before dispatch and define failure ownership.
-  - Owner to add: endpoint/packet fields, publication ordering, unsupported
-    deployment-user behavior, send/persistence failures and allocation cleanup.
+- [x] **2.58 Extract selected-character game-connection requests.**
+  > **Status:** done (refactor/login-incoming-request) — `LoginIncomingRequest`
+  > takes explicit catalogue, configuration, repositories, sender and diagnostics.
+  > It validates the current selection, slot, packet lengths and endpoint before
+  > publishing the public address and pending phase. `excel96` retains catalogue
+  > UDP routing; every other user uses the checked configured port. Destination
+  > reporting is best effort. Send exceptions restore the previous phase/address
+  > without allocation and preserve the cause; successful dispatch precedes the
+  > account location and character group writes, using owned snapshots. A later
+  > persistence failure keeps the sent request published and is not replayable
+  > as another selection; the caller retains acquired-account cleanup ownership.
+  > Sender callbacks cannot retire/mutate the player, and callers serialize with
+  > reply processing. Remote delivery and acknowledged earlier writes cannot be
+  > rolled back. The handler keeps its existing exception translation boundary.
+  - Owner: 18 runtime cases covering three reproduced regressions, deployment
+    port selection, endpoint/field/slot limits, every stale phase, real datagram
+    bytes, catalogue/request mutation, send/persistence/reporting failures,
+    accepted decisions for every race, reply composition under the manager lock,
+    production UDP delivery and two 48-position allocation sweeps.
+
+- [ ] **2.59 Extract the character-selection handler flow.**
+  > **Status:** not started — decision and incoming dispatch have explicit
+  > dependencies, but `CLSelectPCHandler` still constructs the selection snapshot,
+  > maps rejections to replies/exceptions and translates persistence/topology
+  > failures inline. Extract their orchestration so the complete flow can run
+  > against supplied collaborators without publishing process contexts.
+  - Owner to add: every rejection mapping, reply failure, successful dispatch,
+    exception translation and retained state/ownership after partial effects.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
