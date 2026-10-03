@@ -10,10 +10,12 @@
 #define __LOGIN_PLAYER_H__
 
 // include files
+#include <cstdint>
 #include <deque>
 
 #include "GCReconnectLogin.h"
 #include "LoginKickCache.h"
+#include "LoginKickRetry.h"
 #include "Mutex.h"
 #include "Packet.h"
 #include "PaySystem.h"
@@ -107,6 +109,7 @@ public:
         return m_KickCharacterCount;
     }
     void setExpireTimeForKickCharacter();
+    void setExpireTimeForKickCharacter(const Timeval& now) noexcept;
     const Timeval& getExpireTimeForKickCharacter() const noexcept {
         return m_ExpireTimeForKickCharacter;
     }
@@ -172,6 +175,11 @@ public:
     }
 
 private:
+    friend bool de::beginLoginKick(LoginPlayer&, const de::LoginKickRequest&);
+    friend bool de::retryLoginKick(LoginPlayer&, const Timeval&, const de::LoginKickRequest&,
+                                   const std::function<void(LoginPlayer&)>&);
+    bool resendLGKickCharacter();
+
     // previous packet queue
     deque<Packet*> m_PacketHistory;
 
@@ -198,7 +206,9 @@ private:
     bool m_isAdult;
 
     // Time to wait for the forced disconnect in the 'already connected' case
-    uint m_KickCharacterCount;
+    uint m_KickCharacterCount = 0;
+    // Local invalidation for callbacks that start a fresh attempt; not a wire nonce.
+    std::uint64_t m_KickCharacterAttempt = 0;
     Timeval m_ExpireTimeForKickCharacter{};
 
     // Treated as verified elsewhere (Netmarble), so a FreePass is granted.

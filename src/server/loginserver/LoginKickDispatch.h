@@ -23,7 +23,8 @@ using LoginKickSend = std::function<void(const std::string& host, uint port, con
 // without changing status/deadline. Other failures preserve session state.
 // Waiting and its deadline follow all sender returns. A sender may already have
 // sent earlier datagrams when a later call fails; retry starts a new broadcast.
-void dispatchLoginKick(LoginPlayer& player, const LoginKickTarget& target, const GameServerInfoManager& servers,
+// Return true after publication, false after destination refusal.
+bool dispatchLoginKick(LoginPlayer& player, const LoginKickTarget& target, const GameServerInfoManager& servers,
                        const LoginKickSend& send);
 
 } // namespace de

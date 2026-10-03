@@ -204,6 +204,10 @@ Kick verification takes a supplied player manager and completion action, admits
 only waiting sessions with a matching account-owned target, and holds a scoped
 manager lock through completion. Tests cover duplicate/late replies, identity
 changes, descriptor boundaries and exception/allocation failure cleanup.
+Kick retries take explicit time, a request result and a completion action. Fresh
+attempts reset their count; refused, failed or superseded requests cannot advance
+it. Tests pin the three-retry fallback, deadline boundaries, completion failures,
+account/target changes, allocation cleanup and production refusal/disconnect.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
