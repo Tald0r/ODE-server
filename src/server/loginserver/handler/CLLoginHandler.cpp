@@ -33,10 +33,10 @@
 #include "KernelContext.h"
 #include "LCLoginError.h"
 #include "LCLoginOK.h"
+#include "LoginAuthentication.h"
 #include "LoginCompletion.h"
 #include "LoginDecision.h"
 #include "LoginPlayer.h"
-#include "PasswordHash.h"
 #include "Properties.h"
 #include "UserInfoManager.h"
 #include "repository/LoginAccountRepository.h"
@@ -50,89 +50,6 @@
 
 #ifdef __LOGIN_SERVER__
 namespace {
-
-// Rewrites the account's stored password as a fresh argon2id hash. A hashing
-// failure is logged and otherwise ignored: the password was already accepted
-// against the stored value, and the next login retries. A SQL failure leaves
-// as END_DB's DatabaseError.
-void storePasswordHash(const string& ID, const string& password) {
-    string hashed;
-    try {
-        hashed = de::password::hash(password);
-    } catch (const std::exception& e) {
-        filelog("loginfail.txt", "Password rehash failed, PlayerID : %s : %s", ID.c_str(), e.what());
-        return;
-    }
-    defaultLoginAccountRepository().updatePassword(hashed, ID);
-}
-
-// The LCLoginError code and the numbered loginfail.txt line each refusal
-// answers with. Number 9 is the NetMarble authorization refusal below.
-void replyLoginError(LoginPlayer* pLoginPlayer, const string& reportedID, LoginRejectReason reason) {
-    BYTE errorID = ETC_ERROR;
-    const char* name = "ETC_ERROR";
-    int site = 0;
-
-    switch (reason) {
-    case LoginRejectReason::IPBlocked:
-        errorID = IP_DENYED;
-        name = "IP_DENYED";
-        site = 1;
-        break;
-    case LoginRejectReason::MalformedID:
-        errorID = INVALID_ID_PASSWORD;
-        name = "INVALID_ID_PASSWORD";
-        site = 2;
-        break;
-    case LoginRejectReason::UnknownAccountOrPassword:
-        errorID = INVALID_ID_PASSWORD;
-        name = "INVALID_ID_PASSWORD";
-        site = 3;
-        break;
-    case LoginRejectReason::FreePassAccountMissing:
-        site = 4;
-        break;
-    case LoginRejectReason::AccessNotAllowed:
-        site = 5;
-        break;
-    case LoginRejectReason::NotPayAccount:
-        errorID = NOT_PAY_ACCOUNT;
-        name = "NOT_PAY_ACCOUNT";
-        site = 6;
-        break;
-    case LoginRejectReason::AlreadyConnected:
-        errorID = ALREADY_CONNECTED;
-        name = "ALREADY_CONNECTED";
-        site = 7;
-        break;
-    case LoginRejectReason::AlreadyLoggedOnElsewhere:
-        errorID = ALREADY_CONNECTED;
-        name = "ALREADY_CONNECTED";
-        site = 8;
-        break;
-    case LoginRejectReason::WebLoginKeyMismatch:
-        errorID = INVALID_ID_PASSWORD;
-        name = "INVALID_ID_PASSWORD";
-        site = 10;
-        break;
-    case LoginRejectReason::WebLoginKeyNotFound:
-        errorID = NOT_FOUND_KEY;
-        name = "NOT_FOUND_KEY";
-        site = 11;
-        break;
-    case LoginRejectReason::WebLoginKeyExpired:
-        errorID = KEY_EXPIRED;
-        name = "KEY_EXPIRED";
-        site = 12;
-        break;
-    }
-
-    LCLoginError lcLoginError;
-    lcLoginError.setErrorID(errorID);
-    pLoginPlayer->sendPacket(&lcLoginError);
-
-    filelog("loginfail.txt", "Error Code: %s, %d, PlayerID : %s", name, site, reportedID.c_str());
-}
 
 // LoginSession over the LoginPlayer the login is running for.
 class LoginPlayerSession : public LoginSession {
@@ -205,7 +122,8 @@ void CLLoginHandler::execute(CLLogin* pPacket, Player* pPlayer)
     LoginAccountRepository& repo = defaultLoginAccountRepository();
 
     if (isBlockedIP(connectIP, repo)) {
-        replyLoginError(pLoginPlayer, pPacket->getID(), LoginRejectReason::IPBlocked);
+        de::sendLoginRefusal(*pLoginPlayer, pPacket->getID(), LoginRejectReason::IPBlocked,
+                             de::defaultLoginAuthenticationActions());
         return;
     }
 
@@ -278,12 +196,14 @@ void CLLoginHandler::execute(CLLogin* pPacket, Player* pPlayer)
         if (outcome.isRejected()) {
             const LoginRejection rejection = std::move(outcome).rejection();
 
-            replyLoginError(pLoginPlayer, pPacket->getID(), rejection.reason);
+            de::sendLoginRefusal(*pLoginPlayer, pPacket->getID(), rejection.reason,
+                                 de::defaultLoginAuthenticationActions());
 
             if (rejection.reason == LoginRejectReason::FreePassAccountMissing) {
                 // The account has no row, so its Access column reads empty
                 // and the account check answers a second time.
-                replyLoginError(pLoginPlayer, pPacket->getID(), LoginRejectReason::AccessNotAllowed);
+                de::sendLoginRefusal(*pLoginPlayer, pPacket->getID(), LoginRejectReason::AccessNotAllowed,
+                                     de::defaultLoginAuthenticationActions());
             }
 
             if (rejection.touchesFailureCount) {
@@ -356,26 +276,8 @@ bool CLLoginHandler::checkNetMarbleClient(CLLogin* pPacket, Player* pPlayer)
     __BEGIN_TRY __BEGIN_DEBUG_EX
 #ifdef __LOGIN_SERVER__
 
-        bool isNetmarble = pPacket->isNetmarble();
-
-    if (isNetmarble) // by sigi. 2002.10.23
-    {
-        LoginPlayer* pLoginPlayer = dynamic_cast<LoginPlayer*>(pPlayer);
-
-        bool bFreePass = checkFreePass(pPacket, pPlayer);
-
-        if (!bFreePass) {
-            LCLoginError lcLoginError;
-            lcLoginError.setErrorID(INVALID_ID_PASSWORD);
-            pLoginPlayer->sendPacket(&lcLoginError);
-            filelog("loginfail.txt", "Error Code: INVALID_ID_PASSWORD, 9, PlayerID : %s", pPacket->getID().c_str());
-
-            return false;
-        }
-
-        // Some of the checks hand the session a free pass.
-        pLoginPlayer->setFreePass(true);
-    }
+        return de::authorizeNetMarbleLogin(*dynamic_cast<LoginPlayer*>(pPlayer), *pPacket,
+                                           defaultLoginAccountRepository(), de::defaultLoginAuthenticationActions());
 
 #endif
     __END_DEBUG_EX __END_CATCH
@@ -394,41 +296,8 @@ bool CLLoginHandler::checkFreePass(CLLogin* pPacket, Player* pPlayer)
         Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
-    // The NetMarble password is checked against the stored hash; an
-    // account with no row is created on the spot with the hashed
-    // password. A SQL failure leaves as END_DB's DatabaseError.
-    try {
-        LoginAccountRepository& repo = defaultLoginAccountRepository();
-
-        string stored;
-        if (repo.loadPasswordHash(pPacket->getID(), stored)) {
-            const de::password::Verify verdict = de::password::verify(stored, pPacket->getPassword());
-            if (verdict != de::password::Verify::Rejected) {
-                if (verdict == de::password::Verify::AcceptedRehash)
-                    storePasswordHash(pPacket->getID(), pPacket->getPassword());
-                return true;
-            }
-        } else {
-            // A new NetMarble user is always admitted. SpecialEventCount
-            // starts at 2, as if the event item had already been given.
-            cout << "NetMarble New Player: " << pPacket->getID().c_str() << endl;
-
-            string hashed;
-            try {
-                hashed = de::password::hash(pPacket->getPassword());
-            } catch (const std::exception& e) {
-                filelog("loginfail.txt", "Password hashing failed, PlayerID : %s : %s", pPacket->getID().c_str(),
-                        e.what());
-                return false;
-            }
-
-            repo.insertNetMarbleAccount(pPacket->getID(), hashed);
-
-            return true;
-        }
-    } catch (Throwable& t) {
-        return false;
-    }
+    return de::verifyNetMarblePassword(*pPacket, defaultLoginAccountRepository(),
+                                       de::defaultLoginAuthenticationActions());
 
 #endif
 
@@ -445,27 +314,8 @@ bool CLLoginHandler::checkWebLogin(CLLogin* pPacket, Player* pPlayer) {
     Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
-    LoginPlayer* pLoginPlayer = dynamic_cast<LoginPlayer*>(pPlayer);
-
-    // The web login key must match the one the site stored for the
-    // account, and be at most five minutes old. A SQL failure leaves as
-    // END_DB's DatabaseError.
-    try {
-        LoginAccountRepository& repo = defaultLoginAccountRepository();
-
-        Outcome<void, LoginRejection> outcome = decideWebLoginKey(pPacket->getID(), pPacket->getPassword(), repo);
-
-        if (outcome.isRejected()) {
-            replyLoginError(pLoginPlayer, pPacket->getID(), outcome.rejection().reason);
-            return false;
-        }
-
-        pLoginPlayer->setFreePass(true);
-
-        repo.deleteWebLoginKey(pPacket->getID());
-    } catch (Throwable& t) {
-        return false;
-    }
+    return de::authorizeWebLogin(*dynamic_cast<LoginPlayer*>(pPlayer), *pPacket, defaultLoginAccountRepository(),
+                                 de::defaultLoginAuthenticationActions());
 
 #endif
 

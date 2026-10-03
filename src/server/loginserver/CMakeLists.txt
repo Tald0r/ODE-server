@@ -48,6 +48,7 @@ set(LOGINSERVER_RUNTIME_SOURCES
     LoginCharacterNameQuery.cpp
     LoginAccountNameQuery.cpp
     LoginRegistration.cpp
+    LoginAuthentication.cpp
     LoginPacketDispatch.cpp
     CharacterCreation.cpp
     CharacterDeletion.cpp

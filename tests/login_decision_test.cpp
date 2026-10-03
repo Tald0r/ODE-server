@@ -9,10 +9,16 @@
 // hashes here are computed at test time or taken from upstream's own
 // vectors (tests/password_hash_test.cpp pins those).
 
+#include <exception>
+#include <new>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
+#include "DatabaseError.h"
+#include "Exception.h"
 #include "FakeLoginAccountRepository.h"
 #include "LoginDecision.h"
 #include "PasswordHash.h"
@@ -222,7 +228,7 @@ TEST(IsBlockedIP, TheFirstMatchingEntryDecides) {
 TEST(DecideWebLoginKey, NoRowForTheAccountIsRefusedAsAMissingKey) {
     FakeLoginAccountRepository repository;
 
-    Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "abcd", repository);
+    Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "abcd", repository, {});
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(LoginRejectReason::WebLoginKeyNotFound, outcome.rejection().reason);
@@ -237,7 +243,7 @@ TEST(DecideWebLoginKey, AKeyThatDoesNotMatchIsRefusedAsABadPassword) {
     row.now = "2010-06-15 12:00:10";
     repository.webLoginKeys["rowan"] = row;
 
-    Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "efgh", repository);
+    Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "efgh", repository, {});
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(LoginRejectReason::WebLoginKeyMismatch, outcome.rejection().reason);
@@ -253,7 +259,7 @@ TEST(DecideWebLoginKey, TheKeyLivesForExactlyFiveMinutes) {
         row.now = "2010-06-15 12:05:00"; // 300 seconds
         repository.webLoginKeys["rowan"] = row;
 
-        Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "abcd", repository);
+        Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "abcd", repository, {});
         EXPECT_TRUE(outcome.isOk());
     }
 
@@ -262,7 +268,7 @@ TEST(DecideWebLoginKey, TheKeyLivesForExactlyFiveMinutes) {
         row.now = "2010-06-15 12:05:01"; // 301 seconds
         repository.webLoginKeys["rowan"] = row;
 
-        Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "abcd", repository);
+        Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "abcd", repository, {});
         ASSERT_TRUE(outcome.isRejected());
         EXPECT_EQ(LoginRejectReason::WebLoginKeyExpired, outcome.rejection().reason);
     }
@@ -276,7 +282,7 @@ TEST(DecideWebLoginKey, AMismatchIsAnsweredBeforeTheAgeIsLookedAt) {
     row.now = "2010-06-15 23:00:00";
     repository.webLoginKeys["rowan"] = row;
 
-    Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "efgh", repository);
+    Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "efgh", repository, {});
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(LoginRejectReason::WebLoginKeyMismatch, outcome.rejection().reason);
@@ -290,10 +296,42 @@ TEST(DecideWebLoginKey, TheDecisionDoesNotDeleteTheKey) {
     row.now = "2010-06-15 12:00:10";
     repository.webLoginKeys["rowan"] = row;
 
-    Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "abcd", repository);
+    Outcome<void, LoginRejection> outcome = decideWebLoginKey("rowan", "abcd", repository, {});
 
     EXPECT_TRUE(outcome.isOk());
     EXPECT_TRUE(repository.deletedWebLoginKeys.empty());
+}
+
+TEST(DecideWebLoginKey, OnlyAMismatchReportsTheAccountWithoutExposingEitherKey) {
+    for (int mode = 0; mode < 4; ++mode) {
+        FakeLoginAccountRepository repository;
+        if (mode != 0)
+            repository.webLoginKeys["rowan"] = {"stored-key", "2026-09-01 12:00:00",
+                                                mode == 2 ? "2026-09-01 12:05:01" : "2026-09-01 12:00:30"};
+        std::vector<std::string> reported;
+        WebLoginKeyActions actions{[&](const std::string& account) { reported.push_back(account); }};
+        const auto outcome =
+            decideWebLoginKey("rowan", mode == 1 ? "different-key" : "stored-key", repository, actions);
+        EXPECT_EQ(outcome.isOk(), mode == 3);
+        EXPECT_EQ(reported, mode == 1 ? std::vector<std::string>{"rowan"} : std::vector<std::string>{});
+        EXPECT_TRUE(repository.deletedWebLoginKeys.empty());
+    }
+}
+
+TEST(DecideWebLoginKey, EveryMismatchDiagnosticFailureKeepsTheOriginalRefusal) {
+    const std::exception_ptr failures[] = {std::make_exception_ptr(Error("diagnostic failed")),
+                                           std::make_exception_ptr(DatabaseError("diagnostic failed")),
+                                           std::make_exception_ptr(std::runtime_error("diagnostic failed")),
+                                           std::make_exception_ptr(std::bad_alloc())};
+    for (const auto& failure : failures) {
+        FakeLoginAccountRepository repository;
+        repository.webLoginKeys["rowan"] = {"stored-key", "2026-09-01 12:00:00", "2026-09-01 12:00:30"};
+        WebLoginKeyActions actions{[&](const std::string&) { std::rethrow_exception(failure); }};
+        const auto outcome = decideWebLoginKey("rowan", "different-key", repository, actions);
+        ASSERT_TRUE(outcome.isRejected());
+        EXPECT_EQ(outcome.rejection().reason, LoginRejectReason::WebLoginKeyMismatch);
+        EXPECT_TRUE(repository.deletedWebLoginKeys.empty());
+    }
 }
 
 // --- isAdultByBirthday ----------------------------------------------------
