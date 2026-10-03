@@ -37,8 +37,7 @@ const int defaultLoginPlayerOutputStreamSize = 4096;
 static int maxIdleSec = 60 * 15; // disconnect automatically after 15 idle minutes.
 
 // Time check that works around the 'already connected' problem.
-static uint maxWaitForKickCharacter = 3;      // seconds to wait for the GameServer's answer.
-static uint maxWaitForKickCharacterCount = 3; // retry 3 times when the GameServer does not answer.
+static uint maxWaitForKickCharacter = 3; // seconds to wait for the GameServer's answer.
 
 
 // Function in CLLoginHandler.cpp.
@@ -69,8 +68,6 @@ LoginPlayer::LoginPlayer(Socket* pSocket)
     setServerGroupID(0);
 
     m_isAdult = true;
-
-    m_KickCharacterCount = 0;
 
     m_bFreePass = false;
 
@@ -107,8 +104,13 @@ LoginPlayer::~LoginPlayer() noexcept {
 //
 //////////////////////////////////////////////////////////////////////
 void LoginPlayer::setExpireTimeForKickCharacter() {
-    getCurrentTime(m_ExpireTimeForKickCharacter);
+    Timeval now;
+    getCurrentTime(now);
+    setExpireTimeForKickCharacter(now);
+}
 
+void LoginPlayer::setExpireTimeForKickCharacter(const Timeval& now) noexcept {
+    m_ExpireTimeForKickCharacter = now;
     m_ExpireTimeForKickCharacter.tv_sec += maxWaitForKickCharacter;
 }
 
@@ -126,17 +128,9 @@ void LoginPlayer::processCommand(bool Option) {
         Timeval currentTime;
         getCurrentTime(currentTime);
 
-        // timeout check
-        if (currentTime >= getExpireTimeForKickCharacter()) {
-            // Send KickCharacter again.
-            sendLGKickCharacter();
-
-            // Retry several times when there is no answer.
-            // Once the limit is reached, assume the GameServer is dead and send LoginOK.
-            if (++m_KickCharacterCount >= maxWaitForKickCharacterCount) {
-                sendLCLoginOK();
-            }
-        }
+        de::retryLoginKick(
+            *this, currentTime, [](LoginPlayer& player) { return player.resendLGKickCharacter(); },
+            [](LoginPlayer& player) { player.sendLCLoginOK(); });
 
         return;
     }
@@ -434,17 +428,26 @@ Packet* LoginPlayer::getOldPacket(PacketID_t packetID) {
 //
 //////////////////////////////////////////////////////////////////////////////
 void LoginPlayer::sendLGKickCharacter() {
+    de::beginLoginKick(*this, [](LoginPlayer& player) { return player.resendLGKickCharacter(); });
+}
+
+bool LoginPlayer::resendLGKickCharacter() {
     cout << "send LGKickCharacter" << endl;
 
     const auto target = de::prepareLoginKick(*this, defaultLoginAccountRepository(), defaultLoginCharacterRepository());
     if (!target)
-        return;
+        return false;
 
     try {
-        de::dispatchLoginKick(*this, *target, de::serverContext().serverInfos(),
-                              [](const std::string& host, uint port, const LGKickCharacter& packet) {
-                                  de::loginContext().gameServers().sendPacket(host, port, &packet);
-                              });
+        const bool sent = de::dispatchLoginKick(*this, *target, de::serverContext().serverInfos(),
+                                                [](const std::string& host, uint port, const LGKickCharacter& packet) {
+                                                    de::loginContext().gameServers().sendPacket(host, port, &packet);
+                                                });
+        // Destination refusal already suppressed the identity. End this wait so
+        // the client can retry login and ordinary idle expiry resumes.
+        if (!sent)
+            setPlayerStatus(LPS_BEGIN_SESSION);
+        return sent;
     } catch (const ConnectException&) {
         // The manager disconnects this failed attempt. Its identity must not
         // mark the account's existing game session LOGOFF, even on the first send.

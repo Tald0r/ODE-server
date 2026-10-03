@@ -10,7 +10,7 @@
 
 namespace de {
 
-void dispatchLoginKick(LoginPlayer& player, const LoginKickTarget& target, const GameServerInfoManager& servers,
+bool dispatchLoginKick(LoginPlayer& player, const LoginKickTarget& target, const GameServerInfoManager& servers,
                        const LoginKickSend& send) {
     struct Destination {
         std::string host;
@@ -28,12 +28,12 @@ void dispatchLoginKick(LoginPlayer& player, const LoginKickTarget& target, const
     } catch (const NoSuchElementException&) {
         std::cout << "No GameServerInfo" << std::endl;
         player.setID("NONE"); // Disconnect must not log off the existing session.
-        return;
+        return false;
     }
     if (destinations.empty()) {
         std::cout << "No GameServerInfo" << std::endl;
         player.setID("NONE");
-        return;
+        return false;
     }
 
     LGKickCharacter packet;
@@ -44,6 +44,7 @@ void dispatchLoginKick(LoginPlayer& player, const LoginKickTarget& target, const
 
     player.setExpireTimeForKickCharacter();
     player.setPlayerStatus(LPS_WAITING_FOR_GL_KICK_VERIFY);
+    return true;
 }
 
 } // namespace de

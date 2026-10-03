@@ -1399,8 +1399,8 @@ visibility can't express.
     four 64-position allocation sweeps, repeated cleanup, retry, existing UDP
     loopback delivery and disconnect without database startup.
 
-- [ ] **2.53 Extract kick retry and verification admission.**
-  > **Status:** in progress (retry extraction remains) — `verifyLoginKick` now
+- [x] **2.53 Extract kick retry and verification admission.**
+  > **Status:** done (refactor/login-kick-retry; verification #338) — `verifyLoginKick`
   > takes an explicit manager and completion action. It requires the waiting
   > phase, a real account identity and an exact account-owned target name. Missing
   > or out-of-range descriptors are ignored. A scoped lock protects lookup and
@@ -1409,16 +1409,37 @@ visibility can't express.
   > boundary. Both completed kicks and already-absent replies remain accepted.
   > Completion owns its session changes; identical replies for a later pending
   > attempt on the same descriptor/name remain indistinguishable without a wire
-  > nonce. The timeout branch still increments its count and may finish login
-  > after a retry clears the account ID. Extract that time/attempt/completion flow
-  > next, including fresh-attempt counter reset and failure policy.
+  > nonce. `beginLoginKick` resets the count for each authenticated fresh attempt;
+  > `retryLoginKick` takes explicit time and request/completion actions. It owns
+  > account/target snapshots before sending and counts only successful resends
+  > for the same pending local attempt. Completion follows the third retry, and
+  > the counter saturates there on further completion failures. Each successful
+  > request publishes its deadline; callbacks own their mutations and exceptions
+  > propagate. Production destination refusal leaves waiting state so ordinary
+  > login input and idle expiry resume without completing or logging off the
+  > existing account. The local attempt generation does not change the wire.
   - Owner for verification: 16 `LoginKickVerification` runtime cases. Four
     regressions failed before repair. Tests cover every nonwaiting phase, exact
     names, account changes, both reply flags, descriptor bounds, duplicate replies,
     completion ownership, exception identity, lock ownership and three 64-position
     allocation sweeps with cleanup/retry.
-  - Remaining owner: refused/failed retries, count/deadline boundaries, fresh
-    attempts, account changes and completion failures through explicit time/actions.
+  - Owner for retries: 21 `LoginKickRetry` runtime cases. Five regressions failed
+    before repair. Tests cover refusal, fresh resets, inclusive microsecond
+    deadlines, every nonwaiting phase, account/target/reentrant-attempt changes,
+    capped completion retries, exact exception identity, mutation ownership,
+    production polling/refusal/disconnect and two 64-position allocation sweeps.
+
+- [ ] **2.54 Extract login completion and login statistics.**
+  > **Status:** not started — `LoginPlayer::sendLCLoginOK` still reaches default
+  > account persistence and `addLoginPlayerData` directly. Extract the completion
+  > sequence with explicit account and statistics dependencies, preserving the
+  > already-connected refusal, packet fields and publication order. Audit partial
+  > repository/send/statistics failures and error reporting separately from the
+  > kick retry/verification admission that invokes it.
+  - Owner to add: runtime completion tests without MySQL or `main`, covering
+    accepted/refused account transitions, reply serialization, session state,
+    statistics ordering and exception/allocation cleanup. `addLoginPlayerData`
+    inserts a dated login record; its SSN/zipcode arguments are unused.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

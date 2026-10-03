@@ -616,11 +616,23 @@ The kick timeout branch calls `sendLGKickCharacter`, increments the retry count
 and eventually calls `sendLCLoginOK` even when kick preparation or destination
 refusal cleared the account ID. Its retry count is initialized only when the
 player is constructed, so a later authenticated attempt can inherit the earlier
-count. An extracted attempt/completion flow needs explicit time and outcome tests
-before these retry policies are changed. Verification admission and lock ownership
-are covered separately below.
+count. Five regression cases reproduced refused sends advancing the count,
+completion after destination refusal, inherited counts, sends for a suppressed
+identity and unbounded counts after repeated completion failures.
 
-> **Status:** recorded, not fixed (refactor/login-kick-dispatch)
+`beginLoginKick` now resets the count before every fresh attempt.
+`retryLoginKick` takes explicit time and request/completion actions, snapshots
+the account and target before requesting a resend, and counts only successful
+requests for the same pending local attempt. The counter saturates at the
+three-retry fallback; completion failures retain that successful send and its
+new deadline. Callback mutations and exceptions remain observable. Production
+destination refusal returns to the initial login phase, keeping the suppressed
+identity so disconnect cannot log off the existing game session. Twenty-one
+runtime cases cover the boundaries, fresh/reentrant attempts, state changes,
+exception identity, allocation cleanup and production refusal/disconnect.
+Verification admission and lock ownership are covered separately below.
+
+> **Status:** fixed (refactor/login-kick-retry)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 
