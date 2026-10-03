@@ -180,6 +180,10 @@ Character-list assembly takes explicit world, account and repository inputs and
 returns an owned `LCPCList` for the handlers to send. Runtime tests cover every
 race and slot, field/query mappings, reply independence and cleanup/retry after
 validation, duplicate, repository, allocation and error-reporting failures.
+The server-selection flow also runs with supplied topology and repository
+inputs. Tests verify that normalized world/group IDs reach the session and
+character query together, refusals preserve state, and character management
+follows successful sending, including real serialization and failure/retry.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

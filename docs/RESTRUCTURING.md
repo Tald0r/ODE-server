@@ -1314,14 +1314,22 @@ visibility can't express.
     order, empty/maximal replies, exception identity/translation, independent
     replies, repeated cleanup and two 64-position allocation sweeps with retry.
 
-- [ ] **2.48 Extract the server-selection session/reply flow.**
-  > **Status:** not started — `CLSelectServerHandler` applies the decision's
-  > group but ignores its normalized world before querying character rows.
-  > Compose selection, explicit character-list assembly and session changes in
-  > a testable flow; ensure the selected world/group and query world agree while
-  > preserving refusal and successful-send ordering.
-  - Planned owner: login runtime flow cases covering sparse-world normalization,
-    refusal, query/send failure and the session observed by each collaborator.
+- [x] **2.48 Extract the server-selection session/reply flow.**
+  > **Status:** done (this commit) — `de::selectLoginServer` composes the existing
+  > decision, explicit character-list builder and real `LoginPlayer` state with
+  > supplied topology/repository inputs. Both normalized location fields are
+  > applied before character lookup; query/send failures retain that location
+  > and the previous status. Character management follows successful sending.
+  > Refusals and topology failures leave the session unchanged. The handler now
+  > supplies collaborators; refusal logs, exception translation and account-write
+  > policy are preserved. World-closure and population checks remain outside
+  > server-group selection as before.
+  - Owner: 17 `LoginServerSelection` runtime cases over real session state,
+    production catalogues, packet assembly and serialization. Three regressions
+    failed on the previous stale-world flow. Coverage includes sparse and
+    boundary IDs, reloads, refusal, query/send/serialization failures, exception
+    identity, state observed during each step and a 64-position allocation sweep
+    with cleanup/retry.
 
 - [ ] **2.49 Extract login kick location/character resolution.**
   > **Status:** not started — `LoginPlayer::sendLGKickCharacter` combines

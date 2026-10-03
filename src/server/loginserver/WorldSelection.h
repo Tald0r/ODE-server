@@ -131,8 +131,8 @@ struct SelectServerRequest {
 // checked against actual membership: a missing world or group falls back
 // to the highest configured ID in its table, including requests in gaps.
 struct SelectedServer {
-    // The world the group was looked up in. The session's own world is not
-    // rewritten to it.
+    // The world the group was looked up in; the caller applies both IDs
+    // before querying that world's characters.
     WorldID_t worldID = 0;
     ServerGroupID_t serverGroupID = 0;
 };

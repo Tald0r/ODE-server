@@ -124,6 +124,7 @@ target_sources(login_server_runtime_tests PRIVATE
     login_connection_test.cpp login_world_list_test.cpp login_catalogue_test.cpp login_world_topology_test.cpp
     login_server_list_test.cpp login_routing_catalogue_test.cpp login_character_topology_test.cpp
     login_character_list_test.cpp
+    login_server_selection_test.cpp
     support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 target_sources(shared_server_runtime_tests PRIVATE
