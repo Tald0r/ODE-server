@@ -41,6 +41,7 @@ set(LOGINSERVER_RUNTIME_SOURCES
     LoginPlayerRetirement.cpp
     LoginIncomingReply.cpp
     LoginIncomingRequest.cpp
+    LoginCharacterSelection.cpp
     LoginPacketDispatch.cpp
     CharacterCreation.cpp
     CharacterDeletion.cpp

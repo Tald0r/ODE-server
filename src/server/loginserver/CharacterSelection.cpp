@@ -5,8 +5,6 @@
 
 #include "CharacterSelection.h"
 
-#include <iostream>
-
 namespace {
 
 // Quest zones are instanced by the game servers and are not in the login
@@ -21,10 +19,21 @@ const ServerID_t kFirstServerID = 1;
 const int kNonPKMaxLevel = 80;
 const int kNonPKBannedCompetence = 3;
 
+template <typename Callback, typename... Args> void report(const Callback& callback, Args... args) noexcept {
+    if (!callback)
+        return;
+    try {
+        callback(args...);
+    } catch (...) {
+    }
+}
+
 } // namespace
 
-Outcome<SelectedCharacter, SelectPCRejection>
-decideSelectPC(const SelectPCRequest& request, LoginCharacterRepository& repository, SelectPCTopology& topology) {
+Outcome<SelectedCharacter, SelectPCRejection> decideSelectPC(const SelectPCRequest& request,
+                                                             LoginCharacterRepository& repository,
+                                                             SelectPCTopology& topology,
+                                                             const SelectPCDiagnostics& diagnostics) {
     typedef Outcome<SelectedCharacter, SelectPCRejection> Result;
 
     // The terms come before anything else the account may do.
@@ -60,8 +69,7 @@ decideSelectPC(const SelectPCRequest& request, LoginCharacterRepository& reposit
     }
 
     if (topology.isNonPKServer(request.worldID, request.serverGroupID)) {
-        std::cout << "WorldID:" << (int)(request.worldID) << " ServerGroupID:" << (int)(request.serverGroupID)
-                  << std::endl;
+        report(diagnostics.nonPKGroup, request.worldID, request.serverGroupID);
 
         if (pc.level > kNonPKMaxLevel && pc.competence == kNonPKBannedCompetence)
             return Result::Rejected(SelectPCRejection::NonPKServerLimit);
@@ -90,8 +98,7 @@ decideSelectPC(const SelectPCRequest& request, LoginCharacterRepository& reposit
     } else {
         selected.serverID = topology.zoneServerID(pc.zoneID);
 
-        std::cout << "WorldID " << (int)request.worldID << ", ServerGroupID : " << (int)request.serverGroupID
-                  << ", ServerID : " << (int)selected.serverID << std::endl;
+        report(diagnostics.routed, request.worldID, request.serverGroupID, selected.serverID);
     }
 
     return Result::Ok(selected);

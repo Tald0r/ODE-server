@@ -8,6 +8,7 @@
 #ifndef __CHARACTER_SELECTION_H__
 #define __CHARACTER_SELECTION_H__
 
+#include <functional>
 #include <string>
 
 #include "Outcome.h"
@@ -97,6 +98,11 @@ public:
     virtual ServerID_t zoneServerID(ZoneID_t zoneID) = 0;
 };
 
+struct SelectPCDiagnostics {
+    std::function<void(WorldID_t, ServerGroupID_t)> nonPKGroup;
+    std::function<void(WorldID_t, ServerGroupID_t, ServerID_t)> routed;
+};
+
 // Decide whether a character may enter the game, and through which game
 // server.
 //
@@ -107,8 +113,11 @@ public:
 // over whatever the collaborators answer and needs no database in a test.
 //
 // Repository failures propagate unchanged to the caller; they are server
-// faults, not player-facing rejections.
-[[nodiscard]] Outcome<SelectedCharacter, SelectPCRejection>
-decideSelectPC(const SelectPCRequest& request, LoginCharacterRepository& repository, SelectPCTopology& topology);
+// faults, not player-facing rejections. Optional diagnostics are best effort;
+// their failures cannot change a result or replace a repository/topology error.
+[[nodiscard]] Outcome<SelectedCharacter, SelectPCRejection> decideSelectPC(const SelectPCRequest& request,
+                                                                           LoginCharacterRepository& repository,
+                                                                           SelectPCTopology& topology,
+                                                                           const SelectPCDiagnostics& diagnostics = {});
 
 #endif

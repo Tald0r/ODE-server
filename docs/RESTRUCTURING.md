@@ -1523,14 +1523,30 @@ visibility can't express.
     accepted decisions for every race, reply composition under the manager lock,
     production UDP delivery and two 48-position allocation sweeps.
 
-- [ ] **2.59 Extract the character-selection handler flow.**
-  > **Status:** not started — decision and incoming dispatch have explicit
-  > dependencies, but `CLSelectPCHandler` still constructs the selection snapshot,
-  > maps rejections to replies/exceptions and translates persistence/topology
-  > failures inline. Extract their orchestration so the complete flow can run
-  > against supplied collaborators without publishing process contexts.
-  - Owner to add: every rejection mapping, reply failure, successful dispatch,
-    exception translation and retained state/ownership after partial effects.
+- [x] **2.59 Extract the character-selection handler flow.**
+  > **Status:** done (refactor/login-character-selection) —
+  > `LoginCharacterSelection` snapshots the session, packet and optional rules,
+  > then composes the decision with refusal or incoming dispatch using explicit
+  > collaborators. The production handler only supplies its dependencies; it
+  > resolves the sender only when dispatch is reached. All six rejection mappings,
+  > disabled external gates, database/missing-data exception translation and
+  > partial-write semantics are retained. Selection diagnostics are supplied
+  > callbacks with a best-effort boundary, so broken output cannot skip a refusal
+  > or dispatch. Callers retain session/account ownership and serialize replies.
+  - Owner: 16 runtime cases covering three reproduced reporting regressions,
+    every phase/rejection, literal refusal bytes, all races and slots, optional
+    caps, owned packet/rule snapshots, seven-stage exception matrices, partial
+    effects, production composition and four 64-position allocation sweeps;
+    two standalone decision cases own diagnostic failures and call ordering.
+
+- [ ] **2.60 Extract the character-creation handler flow.**
+  > **Status:** not started — `decideCreatePC` is testable, but `CLCreatePCHandler`
+  > still owns request assembly, rejection mapping, packet attribute updates,
+  > ordered persistence and reply/status publication. Extract this orchestration
+  > with an explicit balance cache, repository and reply actions.
+  - Owner to add: refusal/fatal mappings, all race write sequences, packet/session
+    state after partial persistence or send failure, exception translation and
+    scoped cleanup/retry without executable startup or a database.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
