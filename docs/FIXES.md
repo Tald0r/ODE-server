@@ -770,21 +770,35 @@ By inspection, `GLIncomingConnectionOK::write` converts account length to BYTE
 before checking its 1–20 limit. The error writer does the same for message/account
 lengths before checking 1–127. A 257-byte string therefore passes as length 1,
 while the writer emits the whole string, breaking framing and factory budgets.
-These writers need validation before narrowing, with datagram and client-wire
-coverage; their byte policy is unchanged by the reply-flow extraction.
+The same narrowing occurs in `LGIncomingConnection` for account/name/client-IP
+fields. Its extracted login producer now validates full lengths before building
+the request, but the packet writers themselves remain unchanged. They need
+validation before narrowing, with datagram and client-wire coverage.
 
-> **Status:** recorded, not fixed (refactor/login-incoming-reply)
+> **Status:** recorded, not fixed (refactor/login-incoming-request)
 
 ## Character selection publishes a pending request even when its deployment user sends no datagram (2026-10-02)
 
-By inspection, `CLSelectPCHandler` publishes the incoming-connection phase before
-its deployment-user switch. Only five user strings send the request; any other
-configuration falls through to account/character location writes without sending
-or leaving that phase. Address copying also follows phase publication and can
-throw after it. Task 2.58 owns extracting request preparation, dispatch and the
-associated failure/publication policy.
+`CLSelectPCHandler` published the incoming-connection phase before a switch that
+sent only for five user strings. Other configurations still wrote account and
+character location, leaving the session waiting for an unsent request. Address
+copying and destination diagnostics could also fail after phase publication, and
+send failure left the new phase/address behind. Three regressions reproduced
+silent dispatch omission, failed-send state retention and diagnostics skipping send.
 
-> **Status:** recorded, not fixed (refactor/login-incoming-reply)
+`LoginIncomingRequest` now prepares owned packet, endpoint and write inputs first.
+`excel96` keeps the catalogue UDP port; all other users use the configured port.
+Complete decimal ports and canonical IPv4 destinations are checked before
+publication, with invalid values retaining a connection-failure boundary. Packet
+lengths and selected slots are checked without narrowing. Diagnostics cannot
+block sending. The address and pending phase precede dispatch; a failed send
+restores their previous values without allocation. The account location and
+character group writes follow sender return in their original order, using
+snapshots even if borrowed request/catalogue inputs change. Persistence failures
+retain the sent request and earlier writes; account cleanup remains owned by the
+caller. Eighteen runtime cases include actual UDP and reply-flow composition.
+
+> **Status:** fixed (refactor/login-incoming-request)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 

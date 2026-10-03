@@ -230,6 +230,12 @@ actions. Only a matching pending account is consumed; late and duplicate replies
 leave other phases alone. Runtime tests pin the saved public reconnect address,
 port/key bytes, lock ownership and cleanup after send/allocation failure. Failed
 reply writes close without flushing; failed logout remains in the retirement owner.
+Selected-character incoming requests take explicit catalogue, configuration,
+repositories and sender inputs. Preparation validates the destination and packet
+fields before publishing the pending phase and public address. Send failures
+restore local state; successful sends precede the account and character writes,
+whose failures preserve the sent request. Runtime tests cover configured port
+fallback, owned snapshots, real UDP delivery, reply composition and allocation cleanup.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

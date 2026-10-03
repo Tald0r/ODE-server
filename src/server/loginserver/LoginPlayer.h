@@ -184,6 +184,11 @@ public:
     void setGameServerIP(const string& ip) {
         m_gameServerIP = ip;
     }
+    // Prepare the replacement before the call; publication and rollback only move ownership.
+    string exchangeGameServerIP(string ip) noexcept {
+        m_gameServerIP.swap(ip);
+        return ip;
+    }
     const string& getGameServerIP() {
         return m_gameServerIP;
     }

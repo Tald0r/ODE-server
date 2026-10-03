@@ -12,17 +12,14 @@
 #include "Assert1.h"
 #include "CharacterSelection.h"
 #include "DatabaseError.h"
-#include "GameServerInfo.h"
-#include "GameServerInfoManager.h"
 #include "GameServerManager.h"
 #include "KernelContext.h"
-#include "LCReconnect.h"
 #include "LCSelectPCError.h"
 #include "LGIncomingConnection.h"
 #include "LoginCharacterTopology.h"
 #include "LoginContext.h"
+#include "LoginIncomingRequest.h"
 #include "LoginPlayer.h"
-#include "Properties.h"
 #include "ServerContext.h"
 #include "repository/LoginAccountRepository.h"
 #include "repository/LoginCharacterRepository.h"
@@ -103,61 +100,17 @@ void CLSelectPCHandler::execute(CLSelectPC* pPacket, Player* pPlayer)
 
         const SelectedCharacter selected = std::move(outcome).events();
 
-        GameServerInfo* pGameServerInfo = de::serverContext().serverInfos().getGameServerInfo(
-            selected.serverID, pLoginPlayer->getServerGroupID(), WorldID);
-
-        //----------------------------------------------------------------------
-        // Tell the game server to expect this incoming connection.
-        //----------------------------------------------------------------------
-        LGIncomingConnection lgIncomingConnection;
-        lgIncomingConnection.setClientIP(pLoginPlayer->getSocket()->getHost());
-        lgIncomingConnection.setPlayerID(pLoginPlayer->getID());
-        lgIncomingConnection.setPCName(pPacket->getPCName());
-
-        //--------------------------------------------------------------------------------
-        //
-        // *CAUTION*
-        //
-        // Mind the order of LoginPlayer::setPlayerStatus() and
-        // GameServerManager::sendPacket(). Calling setPlayerStatus() after
-        // sendPacket() would read more naturally, but then the game server's
-        // GLIncomingConnectionXXX packet can come back and run its handler
-        // before setPlayerStatus() is reached. So the status is set first and
-        // the UDP packet sent afterwards.
-        //
-        //--------------------------------------------------------------------------------
-        pLoginPlayer->setPlayerStatus(LPS_AFTER_SENDING_LG_INCOMING_CONNECTION);
-
-        // by tiancaiamao: when gameserver is behind docker, it may have a docker internal IP 172.20.0.1 and a outside
-        // IP in database GameServerInfo table. The outside IP should be used.
-        pLoginPlayer->setGameServerIP(pGameServerInfo->getIP());
-
         GameServerManager& gameServers = de::loginContext().gameServers();
-
-        if (config.getProperty("User") == "excel96")
-            gameServers.sendPacket(pGameServerInfo->getIP(), pGameServerInfo->getUDPPort(), &lgIncomingConnection);
-        else if (config.getProperty("User") == "beowulf")
-            gameServers.sendPacket(pGameServerInfo->getIP(), config.getPropertyInt("GameServerUDPPort"),
-                                   &lgIncomingConnection);
-        else if (config.getProperty("User") == "crazydog")
-            gameServers.sendPacket(pGameServerInfo->getIP(), config.getPropertyInt("GameServerUDPPort"),
-                                   &lgIncomingConnection);
-        else if (config.getProperty("User") == "elcastle") {
-            cout << "gameserver ip: " << pGameServerInfo->getIP()
-                 << ", port: " << config.getPropertyInt("GameServerUDPPort") << endl;
-            gameServers.sendPacket(pGameServerInfo->getIP(), config.getPropertyInt("GameServerUDPPort"),
-                                   &lgIncomingConnection);
-        } else if (config.getProperty("User") == "elca")
-            gameServers.sendPacket(pGameServerInfo->getIP(), config.getPropertyInt("GameServerUDPPort"),
-                                   &lgIncomingConnection);
-
-        // The slot the account played last, on the account row; the group
-        // on all three race rows of the name.
-        defaultLoginAccountRepository().setCurrentLocation(WorldID, pLoginPlayer->getServerGroupID(), selected.slot,
-                                                           pLoginPlayer->getID());
-
-        defaultLoginCharacterRepository().setCharacterServerGroup(WorldID, pLoginPlayer->getServerGroupID(),
-                                                                  pPacket->getPCName());
+        de::requestLoginIncomingConnection(
+            *pLoginPlayer, request, selected,
+            {de::serverContext().serverInfos(), config, defaultLoginAccountRepository(),
+             defaultLoginCharacterRepository(),
+             [&gameServers](const std::string& host, uint port, const LGIncomingConnection& packet) {
+                 gameServers.sendPacket(host, port, &packet);
+             },
+             [](const std::string& host, uint port) {
+                 cout << "gameserver ip: " << host << ", port: " << port << endl;
+             }});
     } catch (const DatabaseError& error) {
         // A SQL failure arrives as END_DB's DatabaseError carrying the line
         // it wrote to DBError.log; the reason travels with the disconnect.
