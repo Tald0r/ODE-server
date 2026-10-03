@@ -748,14 +748,43 @@ both extremes, empty managers and descriptor reuse.
 
 ## Incoming game-connection success replies retire accounts outside their pending phase (2026-10-02)
 
-By inspection, `GLIncomingConnectionOKHandler` gates only the reconnect send on
-`LPS_AFTER_SENDING_LG_INCOMING_CONNECTION`, then retires the account regardless of
-phase. A late success reply can therefore close a different phase of the same
-account. Conversely, reconnect construction/sending failure skips retirement.
-The error handler asserts on an unexpected phase instead of refusing a stale
-reply. Task 2.57 owns extracting admission, reply assembly and failure cleanup.
+`GLIncomingConnectionOKHandler` gated only the reconnect send on the pending
+phase, then retired the account regardless of phase. A late success reply could
+close another phase of the same account. Conversely, reconnect construction/send
+failure skipped retirement. The error handler asserted on an unexpected phase.
+Three regressions reproduced these paths.
 
-> **Status:** recorded, not fixed (refactor/login-player-retirement)
+`LoginIncomingReply` now gates both reply kinds before any action, with one scoped
+lock from account lookup through retirement. Reconnect preparation/send failures
+retire the admitted player, report the original cause best effort and skip flush
+so a partial reply is not sent. The saved public game address and unsigned
+port/key fields keep their wire representation. Sixteen runtime cases cover the
+flow and both production handlers, including allocation failure/retry. The wire
+has no nonce to distinguish identical replies for a later pending account attempt.
+
+> **Status:** fixed (refactor/login-incoming-reply)
+
+## Incoming game-connection datagram writers narrow string lengths before validating them (2026-10-02)
+
+By inspection, `GLIncomingConnectionOK::write` converts account length to BYTE
+before checking its 1–20 limit. The error writer does the same for message/account
+lengths before checking 1–127. A 257-byte string therefore passes as length 1,
+while the writer emits the whole string, breaking framing and factory budgets.
+These writers need validation before narrowing, with datagram and client-wire
+coverage; their byte policy is unchanged by the reply-flow extraction.
+
+> **Status:** recorded, not fixed (refactor/login-incoming-reply)
+
+## Character selection publishes a pending request even when its deployment user sends no datagram (2026-10-02)
+
+By inspection, `CLSelectPCHandler` publishes the incoming-connection phase before
+its deployment-user switch. Only five user strings send the request; any other
+configuration falls through to account/character location writes without sending
+or leaving that phase. Address copying also follows phase publication and can
+throw after it. Task 2.58 owns extracting request preparation, dispatch and the
+associated failure/publication policy.
+
+> **Status:** recorded, not fixed (refactor/login-incoming-reply)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 

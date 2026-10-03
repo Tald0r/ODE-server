@@ -1486,14 +1486,31 @@ visibility can't express.
     deadlines, descriptor reuse, lock ownership, allocation failures and scoped
     release. The urgent TCP poll case runs on Linux; native macOS skips it.
 
-- [ ] **2.57 Extract incoming game-connection reply handling.**
-  > **Status:** not started — success/error replies still combine account lookup,
-  > phase admission, reconnect assembly and retirement inside process-context
-  > handlers. A success reply retires a matching account even outside the pending
-  > phase; reply construction/sending failures skip retirement. Extract the flow
-  > with explicit manager and reply dependencies and preserve scoped locking.
-  - Owner to add: stale/duplicate reply refusal, matched pending accounts,
-    reconnect packet fields, failure cleanup, lock release and allocation retry.
+- [x] **2.57 Extract incoming game-connection reply handling.**
+  > **Status:** done (refactor/login-incoming-reply) — `LoginIncomingReply` takes
+  > explicit manager, send/retirement actions and monotonic time. Both production
+  > handlers admit only a matching nonempty, non-NONE account in the pending
+  > phase. Missing, stale and duplicate replies do nothing. Success prepares an
+  > owned reconnect reply using the saved public address and existing port/key
+  > widths; preparation/send failure still retires, reports its original cause
+  > and skips flushing. A game refusal retires without sending. A scoped lock
+  > spans lookup through retirement; pre-admission allocation/lock failures leave
+  > the player available for retry. Failed logout retains its retirement owner.
+  > The wire has no attempt nonce, so identical replies for another pending
+  > attempt on the same account remain indistinguishable.
+  - Owner: 16 runtime cases covering three reproduced regressions, all other
+    phases, identity mismatches, literal reconnect bytes, duplicate replies,
+    send/reporting/serialization failures, retained logout, lock ownership, both
+    production boundaries and two 24-position allocation sweeps.
+
+- [ ] **2.58 Extract selected-character game-connection requests.**
+  > **Status:** not started — `CLSelectPCHandler` still composes the incoming
+  > datagram, saves the public game address, publishes pending status, selects a
+  > deployment-specific UDP port and writes account/character location inline.
+  > Extract those actions with explicit transport, configuration and repositories.
+  > Keep reply-visible publication before dispatch and define failure ownership.
+  - Owner to add: endpoint/packet fields, publication ordering, unsupported
+    deployment-user behavior, send/persistence failures and allocation cleanup.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
