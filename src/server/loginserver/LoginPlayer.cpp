@@ -12,13 +12,13 @@
 
 #include "Assert.h"
 #include "DatabaseError.h"
-#include "GameServerInfoManager.h"
 #include "GameServerManager.h"
 #include "KernelContext.h"
 #include "LCLoginError.h"
 #include "LCLoginOK.h"
 #include "LGKickCharacter.h"
 #include "LoginContext.h"
+#include "LoginKickDispatch.h"
 #include "LoginKickPreparation.h"
 #include "Packet.h"
 #include "PacketDispatcher.h"
@@ -127,7 +127,7 @@ void LoginPlayer::processCommand(bool Option) {
         getCurrentTime(currentTime);
 
         // timeout check
-        if (currentTime >= m_ExpireTimeForKickCharacter) {
+        if (currentTime >= getExpireTimeForKickCharacter()) {
             // Send KickCharacter again.
             sendLGKickCharacter();
 
@@ -440,51 +440,10 @@ void LoginPlayer::sendLGKickCharacter() {
     if (!target)
         return;
 
-    LGKickCharacter lgKickCharacter;
-    const auto& characterName = target->characterName;
-    const int worldID = target->worldID;
-    const int serverID = 1;
-    int serverGroupID;
-    string gameServerIP;
-    uint gameServerPort;
-
-    //----------------------------------------------------------------------
-    // Find out the GameServer's information.
-    //
-    // Send it to every Server in that World
-    //----------------------------------------------------------------------
-    for (int i = 0; i < de::serverContext().serverInfos().getMaxServerGroupID(); i++) {
-        serverGroupID = i;
-
-        try {
-            cout << "World=" << worldID << ", " << "Group=" << serverGroupID << ", " << "Server=" << serverID << endl;
-
-            GameServerInfo* pGameServerInfo =
-                de::serverContext().serverInfos().getGameServerInfo(serverID, serverGroupID, worldID);
-
-            if (pGameServerInfo != NULL) {
-                gameServerIP = pGameServerInfo->getIP();
-                gameServerPort = pGameServerInfo->getUDPPort();
-
-                cout << "IP=" << gameServerIP.c_str() << ", Port=" << gameServerPort << endl;
-            }
-        } catch (NoSuchElementException&) {
-            cout << "No GameServerInfo" << endl;
-
-            setID("NONE"); // so that disconnect does not set it to LOGOFF
-
-            return;
-        }
-
-        lgKickCharacter.setID(getSocket()->getSOCKET()); // SocketFD. For the lookup
-        lgKickCharacter.setPCName(characterName);
-
-        cout << "( " << gameServerIP.c_str() << ", " << gameServerPort << " )" << endl;
-        de::loginContext().gameServers().sendPacket(gameServerIP, gameServerPort, &lgKickCharacter);
-    }
-
-    setExpireTimeForKickCharacter();
-    setPlayerStatus(LPS_WAITING_FOR_GL_KICK_VERIFY);
+    de::dispatchLoginKick(*this, *target, de::serverContext().serverInfos(),
+                          [](const std::string& host, uint port, const LGKickCharacter& packet) {
+                              de::loginContext().gameServers().sendPacket(host, port, &packet);
+                          });
 }
 
 

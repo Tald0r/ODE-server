@@ -191,6 +191,10 @@ exception identity and cache preservation/cleanup through allocation failures.
 The saved kick target owns its account key and location separately from live
 selection. Tests cover identity changes through the base player, stale verify
 replies, atomic replacement, borrowed pointer stability and refusal cleanup.
+Kick dispatch takes a supplied catalogue and sender, prepares owned destinations
+for occupied groups before sending, and starts its wait after sender returns.
+Runtime tests cover sparse/boundary groups, missing first-server rows, reloads,
+send/allocation failures, deadline ordering and the production UDP path.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

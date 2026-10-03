@@ -178,7 +178,7 @@ void GameServerManager::sendDatagram(Datagram* pDatagram) {
 //////////////////////////////////////////////////////////////////////
 // send datagram-packet to datagram-socket
 //////////////////////////////////////////////////////////////////////
-void GameServerManager::sendPacket(string host, uint port, DatagramPacket* pPacket) {
+void GameServerManager::sendPacket(string host, uint port, const DatagramPacket* pPacket) {
     __BEGIN_TRY
     __BEGIN_DEBUG
 

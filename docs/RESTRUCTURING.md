@@ -1340,8 +1340,7 @@ visibility can't express.
   > existing Slayer index lookup. Missing location/name data sends
   > `ALREADY_CONNECTED`, then resets status/identity. Query/validation/allocation
   > failure preserves the cache. `sendLGKickCharacter` consumes the target before
-  > its dispatch loop; cache identity is owned by 2.50 and dispatch membership
-  > remains 2.51.
+  > dispatch; cache identity is owned by 2.50 and dispatch membership by 2.51.
   - Owner: 29 `LoginKickPreparation` runtime cases (including 2.50's account
     binding cases). Seven regressions failed
     against the extracted flow before repair. Coverage includes boundary IDs,
@@ -1350,7 +1349,7 @@ visibility can't express.
     owned results, retries and four 64-position allocation sweeps.
 
 - [x] **2.50 Bind kick caches to their account and saved location.**
-  > **Status:** done (this commit) — `LoginKickCache` owns an account key and
+  > **Status:** done (#335) — `LoginKickCache` owns an account key and
   > saved target, preparing replacement before a nonthrowing swap. Every player
   > read matches its current identity, including assignment through `Player`;
   > live selection cannot rewrite the saved location. Complete entries skip
@@ -1364,14 +1363,42 @@ visibility can't express.
     owned/aliased inputs, allocation failures during same/new-account replacement,
     pointer preservation, repeated cleanup, retry and stale production verification.
 
-- [ ] **2.51 Extract kick destination preparation and dispatch.**
-  > **Status:** not started — `sendLGKickCharacter` walks every group number up
-  > to the global maximum and returns on the first missing first-server row, so
-  > sparse groups can prevent a valid destination from receiving the kick.
-  > Prepare destinations from actual catalogue membership with explicit send
-  > dependencies, and pin empty/missing-reference and session/timer ordering.
-  - Planned owner: runtime cases over real sparse catalogues, supplied senders,
-    packet contents, refusal, send failures and retry.
+- [x] **2.51 Extract kick destination preparation and dispatch.**
+  > **Status:** done (this commit) — `dispatchLoginKick` takes the real player,
+  > prepared target, catalogue and synchronous sender. It copies server-1
+  > destinations for occupied groups in ascending order before sending, so gaps
+  > are skipped and missing first-server rows cannot cause partial broadcasts.
+  > Empty/missing destinations retain the existing identity suppression and
+  > leave status/deadline unchanged. Other failures preserve session state;
+  > successful sender returns precede the three-second wait. The deadline starts
+  > at zero and is inspectable. Retry broadcasts again from the first destination.
+  > Manager locking already serializes command handling and kick verification.
+  > The production sender retains its existing suppressed-`Throwable` behavior;
+  > explicit send results and retry/verification admission remain below.
+  - Owner: 16 `LoginKickDispatch` runtime cases. Three regressions failed before
+    repair. Tests cover sparse/boundary IDs, server-1 selection, missing/empty
+    catalogues, owned snapshots, reloads, deadline ordering, exact exception
+    identity, two 64-position allocation sweeps, serialization/refusal/retry and
+    a production `LoginPlayer`/sender loopback UDP delivery without DB startup.
+
+- [ ] **2.52 Extract login datagram sending with an explicit result.**
+  > **Status:** not started — `GameServerManager::sendPacket` logs and suppresses
+  > `Throwable`, so callers cannot distinguish a failed serialization/send from
+  > a completed attempt. Catalogue UDP ports retain their unsigned width while
+  > the datagram writer narrows to 16 bits. Extract preparation and transport
+  > dependencies, validate endpoints and define how failures reach kick dispatch.
+  - Planned owner: controlled serialization/transport failures, endpoint boundaries,
+    error reporting, resource cleanup, retry and real loopback delivery.
+
+- [ ] **2.53 Extract kick retry and verification admission.**
+  > **Status:** not started — the timeout branch increments its retry count and
+  > may finish login even when the retried kick cleared the account identity.
+  > Verification matches the account-bound name but does not require a waiting
+  > status, and its manual lock pair can miss unlocking on non-`Throwable`
+  > exceptions. Extract explicit time/attempt/completion dependencies and require
+  > a current pending attempt before advancing login.
+  - Planned owner: refused/failed retries, count/deadline boundaries, duplicate or
+    stale verification, account changes, completion failures and lock cleanup.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
