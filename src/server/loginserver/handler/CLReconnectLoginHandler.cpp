@@ -34,6 +34,10 @@ class ReconnectPlayerSession : public ReconnectSession {
 public:
     explicit ReconnectPlayerSession(LoginPlayer* pLoginPlayer) : m_pLoginPlayer(pLoginPlayer) {}
 
+    de::LoginAccountOwnership& accountOwnership() noexcept override {
+        return m_pLoginPlayer->loginAccountOwnership();
+    }
+
     void setWorldID(int worldID) override {
         m_pLoginPlayer->setWorldID((WorldID_t)worldID);
     }

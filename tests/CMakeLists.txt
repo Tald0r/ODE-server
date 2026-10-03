@@ -132,6 +132,7 @@ target_sources(login_server_runtime_tests PRIVATE
     login_kick_verification_test.cpp
     login_kick_retry_test.cpp
     login_completion_test.cpp
+    login_account_session_test.cpp
     support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 target_sources(shared_server_runtime_tests PRIVATE
@@ -851,8 +852,8 @@ set_tests_properties(critical_section_audit PROPERTIES TIMEOUT 60)
 # against a fake LoginAccountRepository with no database. PasswordHash is
 # linked because the password check runs against the real argon2id
 # implementation; de-kernel carries VSDateTime and filelog. Pulling the
-# transport or the login server's own state into the decision would break
-# this link. The refusal logs (keydiff.txt) and the days-left log
+# transport or LoginPlayer into the decision would break this link; the account
+# owner is a value-only header shared with the runtime. The refusal logs (keydiff.txt) and the days-left log
 # (PayPlayDateLog.txt) are appended in the working directory, hence the
 # build-tree WORKING_DIRECTORY (same reason as scheduler_tests).
 add_executable(login_decision_tests EXCLUDE_FROM_ALL

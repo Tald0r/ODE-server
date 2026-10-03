@@ -213,6 +213,12 @@ diagnostics explicitly. Both login paths share fully initialized success replies
 and timestamped statistics writes. Runtime tests cover success/refusal ordering,
 packet bytes, safe refusal disconnect, partial effects, broken diagnostics and
 allocation cleanup without MySQL or `main`.
+Normal login, reconnect, registration and kick completion share an explicit
+account owner. It prepares identity storage before acquiring LOGON and retains
+the acquired account across later failures or ID changes. Disconnect takes
+explicit transport actions and persistence, attempts every cleanup step, and
+retains failed logouts for retry. Tests cover all phases, first-error preservation,
+registration, completion retry, production socket closure and allocation faults.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

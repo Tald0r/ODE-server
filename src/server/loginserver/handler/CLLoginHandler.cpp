@@ -139,6 +139,10 @@ class LoginPlayerSession : public LoginSession {
 public:
     explicit LoginPlayerSession(LoginPlayer* pLoginPlayer) : m_pLoginPlayer(pLoginPlayer) {}
 
+    de::LoginAccountOwnership& accountOwnership() noexcept override {
+        return m_pLoginPlayer->loginAccountOwnership();
+    }
+
     void setServerGroupID(int serverGroupID) override {
         m_pLoginPlayer->setServerGroupID((ServerGroupID_t)serverGroupID);
     }

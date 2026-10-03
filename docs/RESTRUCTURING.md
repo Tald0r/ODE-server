@@ -1430,7 +1430,7 @@ visibility can't express.
     production polling/refusal/disconnect and two 64-position allocation sweeps.
 
 - [x] **2.54 Extract login completion and login statistics.**
-  > **Status:** done (refactor/login-kick-completion) — `completeLoginKick` takes
+  > **Status:** done (#340) — `completeLoginKick` takes
   > an account repository, statistics clock and diagnostic actions. It snapshots
   > reply inputs before writes and preserves LOGON/IP/reply/phase/clock/statistics
   > ordering. Refusal sends before suppressing identity and returning to BEGIN;
@@ -1439,7 +1439,7 @@ visibility can't express.
   > initializes both login paths' packets, including the unused status byte and
   > kick completion's default family flag. `recordLogin` uses an explicit local
   > timestamp and repository, replacing `addLoginPlayerData` and its unused
-  > SSN/zipcode parameters. Partial acquired-account cleanup remains 2.55.
+  > SSN/zipcode parameters. Acquired-account cleanup is owned by 2.55.
   - Owner: 16 `LoginCompletion` runtime cases. Three refusal/reporting regressions
     failed before repair; uninitialized packet fields were found by inspection.
     Tests cover serialized fields, all failure stages and exact causes, preserved
@@ -1447,16 +1447,36 @@ visibility can't express.
     allocation sweeps, real retry/verification composition and duplicate rejection
     even when statistics fail. Existing wire goldens and inventory stay unchanged.
 
-- [ ] **2.55 Extract acquired login-account ownership and disconnect cleanup.**
-  > **Status:** not started — after kick completion changes a row to LOGON,
-  > an IP-update or reply failure leaves the player in the kick-wait phase.
-  > Disconnect suppresses every waiting identity, losing the distinction between
-  > an existing game session and a row acquired by this login attempt. Extract
-  > cleanup with an explicit account repository and represent that ownership
-  > across partial completion, refusal, fresh attempts and account changes.
-  - Owner to add: no logout for an unacquired or refused account, cleanup of a
-    successfully acquired account after later failure, normal completion/logout,
-    exact exception identity, repeated cleanup and allocation-safe publication.
+- [x] **2.55 Extract acquired login-account ownership and disconnect cleanup.**
+  > **Status:** done (refactor/login-account-ownership) — `LoginAccountOwnership`
+  > prepares its account string before writing and publishes without allocation
+  > after acknowledgement. Normal login, reconnect, registration and kick
+  > completion all use it. Refused or throwing acquisitions publish no owner;
+  > subsequent failures preserve acknowledged ownership independently of live ID
+  > and phase. Kick completion retries its own acquired row without reacquiring;
+  > a fresh kick or acquisition cannot overwrite an outstanding owner.
+  > `disconnectLoginPlayer` takes explicit persistence and flush/close actions,
+  > attempts every cleanup step and rethrows the first failure unchanged. END and
+  > identity suppression precede logout. Failed logout retains its owner; repeat
+  > calls retry close/logout, skip flush on END and never repeat successful logout.
+  > Both production disconnect names use this flow and keep database-error
+  > translation at the boundary. Destruction remains local; SQL semantics and
+  > unacknowledged/ambiguous write outcomes are unchanged.
+  - Owner: 19 new ownership/session runtime cases, a new post-acquisition login
+    decision regression, and strengthened login/reconnect/completion cases. Four
+    cleanup regressions failed before repair. Coverage includes every unowned
+    phase, changed IDs, first-error/cleanup combinations, repeated release,
+    registration writes, completion retry, actual socket closure and three new
+    64-position allocation sweeps. Decision targets still link without transport.
+
+- [ ] **2.56 Extract login-player retirement from manager loops.**
+  > **Status:** not started — manager loops still disconnect, delete and remove
+  > players inline. A disconnect exception skips subsequent deletion/removal and
+  > can leave a closed END player registered. Extract retirement with explicit
+  > cleanup/reporting dependencies and define who retains failed account cleanup,
+  > preserving descriptor-table ownership and keeping successful cleanup final.
+  - Owner to add: removal after transport/reporting failure, failed logout
+    ownership, descriptor reuse, repeated retirement, and manager-lock release.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

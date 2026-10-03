@@ -15,6 +15,7 @@
 #include "GameServerManager.h"
 #include "KernelContext.h"
 #include "LGKickCharacter.h"
+#include "LoginAccountSession.h"
 #include "LoginCompletion.h"
 #include "LoginContext.h"
 #include "LoginKickDispatch.h"
@@ -271,35 +272,11 @@ void LoginPlayer::processCommand(bool Option) {
 void LoginPlayer::disconnect(bool bDisconnected) {
     __BEGIN_TRY
 
-    if (bDisconnected == UNDISCONNECTED) {
-        // Send whatever data is left in the output buffer.
-        m_pOutputStream->flush();
-    }
-
-    // Close the socket connection.
-    m_pSocket->close();
-
-    // The 'already connected' case, waiting for the character to be kicked.
-    if (m_PlayerStatus == LPS_WAITING_FOR_GL_KICK_VERIFY) {
-        m_ID = "NONE";
-    }
-
-    // Set the player's status to logout.
-    Assert(m_PlayerStatus != LPS_END_SESSION);
-    m_PlayerStatus = LPS_END_SESSION;
-
-    // Having an id set means the login went through.
-    // In the 'already connected' case..
-    // Not while waiting for the character to be kicked, since the ID may be set then
-    if (m_ID != "NONE") {
-        try {
-            defaultLoginAccountRepository().markLoggedOff(m_ID);
-        } catch (const DatabaseError& error) {
-            // A SQL failure arrives as END_DB's DatabaseError carrying the
-            // line it wrote to DBError.log; rethrown as the Error the callers
-            // expect, with that line in it.
-            throw Error("LoginPlayer::disconnect : " + error.message());
-        }
+    try {
+        de::disconnectLoginPlayer(*this, defaultLoginAccountRepository(), bDisconnected == UNDISCONNECTED,
+                                  {[this] { m_pOutputStream->flush(); }, [this] { m_pSocket->close(); }});
+    } catch (const DatabaseError& error) {
+        throw Error("LoginPlayer::disconnect : " + error.message());
     }
 
     __END_CATCH
@@ -309,41 +286,8 @@ void LoginPlayer::disconnect(bool bDisconnected) {
 // Keep the log out of the DB.
 //--------------------------------------------------------------------------------
 void LoginPlayer::disconnect_nolog(bool bDisconnected) {
-    __BEGIN_TRY
-
-    if (bDisconnected == UNDISCONNECTED) {
-        // Send whatever data is left in the output buffer.
-        m_pOutputStream->flush();
-    }
-
-    // Close the socket connection.
-    m_pSocket->close();
-
-    // The 'already connected' case, waiting for the character to be kicked.
-    if (m_PlayerStatus == LPS_WAITING_FOR_GL_KICK_VERIFY) {
-        m_ID = "NONE";
-    }
-
-    // Set the player's status to logout.
-    Assert(m_PlayerStatus != LPS_END_SESSION);
-    m_PlayerStatus = LPS_END_SESSION;
-
-    // Having an id set means the login went through.
-    // In the 'already connected' case..
-    // Not while waiting for the character to be kicked, since the ID may be set then
-    if (m_ID != "NONE") {
-        try {
-            defaultLoginAccountRepository().markLoggedOff(m_ID);
-        } catch (const DatabaseError& error) {
-            // A SQL failure arrives as END_DB's DatabaseError carrying the
-            // line it wrote to DBError.log; rethrown as the Error the callers
-            // expect, with that line in it.
-            throw Error("LoginPlayer::disconnect : " + error.message());
-        }
-    }
-
-
-    __END_CATCH
+    // The legacy entry points have identical cleanup semantics.
+    disconnect(bDisconnected);
 }
 
 //--------------------------------------------------------------------------------

@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "LoginAccountOwnership.h"
 #include "Outcome.h"
 #include "VSDateTime.h"
 #include "repository/LoginAccountRepository.h"
@@ -137,6 +138,7 @@ struct LoginAccepted {
 class LoginSession {
 public:
     virtual ~LoginSession() {}
+    virtual de::LoginAccountOwnership& accountOwnership() noexcept = 0;
 
     virtual void setServerGroupID(int serverGroupID) = 0;
 

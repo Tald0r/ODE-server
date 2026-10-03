@@ -30,7 +30,8 @@ bool completeLoginKick(LoginPlayer& player, LoginAccountRepository& accounts, co
         const auto account = player.getID();
         const auto ip = player.getSocket()->getHost();
         auto reply = makeLoginOK(player.isAdult(), false, 0xffff);
-        if (!accounts.setLoggedOn(account)) {
+        auto& ownership = player.loginAccountOwnership();
+        if (!ownership.owns(account) && !ownership.acquire(account, [&] { return accounts.setLoggedOn(account); })) {
             try {
                 if (diagnostics.refused)
                     diagnostics.refused(account, ip);

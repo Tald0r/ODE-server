@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "LoginAccountOwnership.h"
 #include "Outcome.h"
 #include "repository/LoginAccountRepository.h"
 
@@ -64,6 +65,7 @@ struct ReconnectAccepted {
 class ReconnectSession {
 public:
     virtual ~ReconnectSession() {}
+    virtual de::LoginAccountOwnership& accountOwnership() noexcept = 0;
 
     // The account's current world and group, set as soon as the row is
     // read and kept even by a refusal after that point.

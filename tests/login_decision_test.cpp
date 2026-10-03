@@ -34,6 +34,10 @@ VSDateTime at(int year, int month, int day, int hour = 12, int minute = 0, int s
 // date columns; a test states them outright so the boundaries are exact.
 class FakeLoginSession : public LoginSession {
 public:
+    de::LoginAccountOwnership ownership;
+    de::LoginAccountOwnership& accountOwnership() noexcept override {
+        return ownership;
+    }
     int serverGroupID = -1;
     int setServerGroupIDCalls = 0;
 
@@ -492,6 +496,7 @@ TEST(DecideLogin, ARowThatDoesNotFlipToLOGONIsHeldByAnotherSession) {
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(LoginRejectReason::AlreadyLoggedOnElsewhere, outcome.rejection().reason);
+    EXPECT_EQ(session.ownership.account(), nullptr);
     EXPECT_TRUE(outcome.rejection().beginSession);
     EXPECT_FALSE(outcome.rejection().touchesFailureCount);
 }
@@ -605,6 +610,7 @@ TEST(DecideLogin, AnOrdinaryLoginIsAcceptedAndFlipsTheRowToLOGON) {
     EXPECT_EQ("10.0.0.1", repository.markedLoggedOn[0].ip);
     EXPECT_EQ(7, repository.markedLoggedOn[0].loginServerID);
     EXPECT_EQ("rowan", repository.markedLoggedOn[0].playerID);
+    EXPECT_TRUE(session.ownership.owns("rowan"));
 }
 
 TEST(DecideLogin, TheRowSpellingOfTheAccountReplacesTheRequestedOne) {
@@ -620,6 +626,7 @@ TEST(DecideLogin, TheRowSpellingOfTheAccountReplacesTheRequestedOne) {
     ASSERT_TRUE(outcome.isOk());
     EXPECT_EQ("Rowan", outcome.events().playerID);
     EXPECT_EQ("Rowan", repository.markedLoggedOn[0].playerID);
+    EXPECT_TRUE(session.ownership.owns("Rowan"));
 }
 
 TEST(DecideLogin, AnAccountInAGameFromTheSameAddressAsksForACharacterKick) {
@@ -913,6 +920,21 @@ TEST(DecideLogin, TheComebackEventIsNotLookedAtOnAPathThatDoesNotReply) {
     EXPECT_EQ(LoginNextStep::KickCharacter, outcome.events().next);
     EXPECT_FALSE(outcome.events().grantPremiumWeek);
     EXPECT_EQ(0, repository.hasUnclaimedPremiumEventCalls);
+    EXPECT_EQ(session.ownership.account(), nullptr);
+}
+
+TEST(DecideLogin, AFailureAfterAcquisitionRetainsOwnershipForDisconnect) {
+    class Accounts : public FakeLoginAccountRepository {
+    public:
+        bool hasUnclaimedPremiumEvent(const std::string&) override {
+            throw Error("event lookup failed");
+        }
+    } repository;
+    FakeLoginSession session;
+    repository.accounts["rowan"] = FakeLoginAccountRepository::allowedAccount("Rowan");
+    EXPECT_THROW(decideLogin(passwordRequest(), repository, session, at(2010, 6, 15)), Error);
+    EXPECT_TRUE(session.ownership.owns("Rowan"));
+    EXPECT_EQ(repository.markedLoggedOn.size(), 1u);
 }
 
 } // namespace
