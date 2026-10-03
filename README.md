@@ -200,6 +200,10 @@ It validates canonical IPv4 endpoints, checks the full byte count, and reports
 failure without hiding serialization errors or depending on executable startup.
 Tests cover malformed endpoints, incomplete sends, throwing diagnostics,
 allocation cleanup and safe disconnection after a failed kick send.
+Kick verification takes a supplied player manager and completion action, admits
+only waiting sessions with a matching account-owned target, and holds a scoped
+manager lock through completion. Tests cover duplicate/late replies, identity
+changes, descriptor boundaries and exception/allocation failure cleanup.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
