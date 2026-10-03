@@ -577,14 +577,38 @@ cleanup/retry, deadline ordering and the production UDP path.
 
 ## Login datagram failures are hidden from callers and ports can narrow (2026-10-02)
 
-`GameServerManager::sendPacket` catches and logs `Throwable` from serialization
-and socket sending, then returns normally. Kick dispatch cannot tell a failed
+`GameServerManager::sendPacket` caught and logged `Throwable` from serialization
+and socket sending, then returned normally. Kick dispatch could not tell a failed
 send from a completed attempt and can begin waiting for a packet that was never
 sent. The common catalogue also permits unsigned ports above 65535, while
-`Datagram::setPort` passes them through 16-bit `htons`. Explicit send outcomes
-and endpoint validation need a separate transport extraction with failure tests.
+`Datagram::setPort` passes them through 16-bit `htons`. The wrapper ignored the
+returned byte count too, including the zero that `SocketAPI::sendto_ex` returns
+for a nonblocking socket that would block. Malformed hosts could become broadcast
+addresses, and embedded NULs truncated input before validation.
 
-> **Status:** recorded, not fixed (refactor/login-kick-dispatch)
+`sendLoginDatagram` now validates canonical decimal IPv4 text and ports before
+reading the packet, then requires an exact full-frame send count. A native test
+also caught macOS accepting leading zeroes in `inet_pton`; canonical round-trip
+checking prevents the legacy setter from interpreting them as octal. `Throwable`
+failures return false after reporting, with diagnostics unable to hide the
+failure. Other exceptions propagate unchanged. The manager turns a false result
+into `ConnectException`, and kick sending clears the attempted account identity
+before disconnect can log off the existing game session. Five regression cases
+failed before repair. Sixteen helper tests and production dispatch checks cover
+endpoints, packet bytes, incomplete sends, failures, ownership, cleanup and retry.
+
+> **Status:** fixed (refactor/login-datagram-send)
+
+## Kick datagram writing checks an already narrowed name length (2026-10-02)
+
+By inspection, `LGKickCharacter::write` converts the character name size to
+`BYTE` before checking its 1..20 limit. A 257-byte name therefore passes with a
+length prefix of one while the writer emits all 257 bytes; the resulting frame
+exceeds the receiver's factory budget. Validate the full string size before
+narrowing and add writer-boundary coverage. This is separate from the send
+helper's transport and resource-ownership checks.
+
+> **Status:** recorded, not fixed (refactor/login-datagram-send)
 
 ## Kick retry and verification can advance an attempt that is no longer pending (2026-10-02)
 

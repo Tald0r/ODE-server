@@ -47,7 +47,9 @@ public:
     void run() override;
 
     void sendDatagram(Datagram* pDatagram);
-    void sendPacket(string host, uint port, const DatagramPacket* pPacket);
+    // Normal return means a complete local UDP send. A reported send failure
+    // throws ConnectException so callers cannot advance a failed handshake.
+    void sendPacket(const string& host, uint port, const DatagramPacket* pPacket);
 
 private:
     // UDP server socket

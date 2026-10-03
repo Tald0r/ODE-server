@@ -491,7 +491,7 @@ uint boundPort(DatagramSocket& socket) {
     return ntohs(address.sin_port);
 }
 
-int checkProductionDispatch() {
+int checkProductionDispatch(int failure = 0) {
     ::alarm(5);
     DatagramSocket receiver(0);
     uint senderPort;
@@ -507,10 +507,28 @@ int checkProductionDispatch() {
     KickServerRepository repository;
     repository.rows.front().ip = "127.0.0.1";
     repository.rows.front().udpPort = boundPort(receiver);
+    if (failure == 2)
+        repository.rows.front().udpPort += 65536;
     GameServerInfoManager servers;
     servers.load(repository);
     de::serverContext().setGameServerInfoManager(&servers);
     DispatchPlayer player;
+    if (failure == 1)
+        player.cacheLoginKickTarget({7, 9, 3, std::string(21, 'c')});
+    if (failure != 0) {
+        bool failed = false;
+        try {
+            player.sendLGKickCharacter();
+        } catch (const ConnectException&) {
+            failed = true;
+        }
+        if (!failed || player.getID() != "NONE" || player.getPlayerStatus() != LPS_BEGIN_SESSION ||
+            player.getExpireTimeForKickCharacter() != Timeval{})
+            return 5;
+        // Failure must not let disconnect mark the existing account LOGOFF.
+        player.disconnect(DISCONNECTED);
+        return player.getPlayerStatus() == LPS_END_SESSION ? 0 : 6;
+    }
     player.sendLGKickCharacter();
     pollfd ready{receiver.getSOCKET(), POLLIN, 0};
     if (::poll(&ready, 1, 2000) != 1 || !(ready.revents & POLLIN))
@@ -537,6 +555,13 @@ int checkProductionDispatch() {
 
 TEST(LoginKickDispatch, TheProductionPlayerAndSenderReachASparseGroupOverLoopbackUDP) {
     ASSERT_EXIT(std::_Exit(checkProductionDispatch()), ::testing::ExitedWithCode(0), "");
+}
+
+TEST(LoginKickDispatch, FailedProductionSendsCannotStartWaitingOrLogOffTheExistingAccount) {
+    for (const int failure : {1, 2}) {
+        SCOPED_TRACE(failure);
+        ASSERT_EXIT(std::_Exit(checkProductionDispatch(failure)), ::testing::ExitedWithCode(0), "");
+    }
 }
 
 } // namespace

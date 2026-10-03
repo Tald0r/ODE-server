@@ -195,6 +195,11 @@ Kick dispatch takes a supplied catalogue and sender, prepares owned destinations
 for occupied groups before sending, and starts its wait after sender returns.
 Runtime tests cover sparse/boundary groups, missing first-server rows, reloads,
 send/allocation failures, deadline ordering and the production UDP path.
+Datagram sending also runs with a supplied transport and diagnostic stream.
+It validates canonical IPv4 endpoints, checks the full byte count, and reports
+failure without hiding serialization errors or depending on executable startup.
+Tests cover malformed endpoints, incomplete sends, throwing diagnostics,
+allocation cleanup and safe disconnection after a failed kick send.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
