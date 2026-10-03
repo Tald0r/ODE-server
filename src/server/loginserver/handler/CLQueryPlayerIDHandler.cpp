@@ -8,7 +8,7 @@
 
 #ifdef __LOGIN_SERVER__
 #include "Assert1.h"
-#include "LCQueryResultPlayerID.h"
+#include "LoginAccountNameQuery.h"
 #include "LoginPlayer.h"
 #include "repository/LoginAccountRepository.h"
 #endif
@@ -28,21 +28,8 @@ void CLQueryPlayerIDHandler::execute(CLQueryPlayerID* pPacket, Player* pPlayer)
 
     LoginPlayer* pLoginPlayer = dynamic_cast<LoginPlayer*>(pPlayer);
 
-    // A SQL failure leaves as END_DB's DatabaseError, the way the
-    // SQLQueryException did.
-    bool bExists = defaultLoginAccountRepository().accountNameExists(pPacket->getPlayerID());
-
-    LCQueryResultPlayerID lcQueryResultPlayerID;
-
-    lcQueryResultPlayerID.setPlayerID(pPacket->getPlayerID());
-
-    lcQueryResultPlayerID.setExist(bExists);
-
-    pLoginPlayer->sendPacket(&lcQueryResultPlayerID);
-
-    // The client may query several ids; the status stays where the
-    // registration is expected next.
-    pLoginPlayer->setPlayerStatus(LPS_WAITING_FOR_CL_REGISTER_PLAYER);
+    de::queryLoginAccountName(*pLoginPlayer, *pPacket, defaultLoginAccountRepository(),
+                              de::defaultLoginAccountNameQueryActions());
 
 #endif
 

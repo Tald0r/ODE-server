@@ -260,6 +260,10 @@ Character-name availability uses explicit world, repository and sender inputs.
 It checks configured world IDs, owns the queried name through callbacks and
 preserves the existing lookup and reserved-name rules. Runtime tests cover
 sparse/boundary worlds, real reply bytes, failures and publication after sending.
+Account-name availability likewise takes an explicit repository and sender,
+owns the requested ID through lookup/reply, and publishes the registration phase
+only after sending. Tests preserve its distinct lookup policy, repeated-query
+behavior, exact reply bytes and caller-owned account cleanup after failures.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
