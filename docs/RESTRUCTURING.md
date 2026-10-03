@@ -1589,16 +1589,30 @@ visibility can't express.
     console/audit text, seven 64-position allocation sweeps and a 16-position
     production audit sweep. The 11 standalone decision cases remain unchanged.
 
-- [ ] **2.63 Extract character-name availability queries.**
-  > **Status:** not started — `CLQueryCharacterNameHandler` still composes the
-  > catalogue guard, repository lookup, reserved-name policy and reply/status
-  > publication inline. Its world guard compares an ID with catalogue count,
-  > rejecting sparse configured IDs and admitting missing IDs below that count.
-  > Extract explicit catalogue/repository/reply dependencies and use actual
-  > world membership while preserving lookup and reserved-name policy.
-  - Owner to add: sparse/missing/boundary worlds, query/name snapshots, reserved
-    names, reply bytes, send/query failures, session publication and allocation
-    cleanup without executable startup or a database.
+- [x] **2.63 Extract character-name availability queries.**
+  > **Status:** done (refactor/login-character-name-query) —
+  > `LoginCharacterNameQuery` takes explicit catalogue, repository and sender
+  > inputs. It checks actual world membership before lookup and owns the name
+  > through callbacks. Every admitted request performs one lookup, including
+  > reserved names; the existing case-sensitive substring policy then applies.
+  > Missing worlds retain the assertion/logging boundary. Repository/send
+  > exceptions propagate, and the phase advances only after sending returns.
+  > Configured zero, sparse, boundary and closed worlds preserve query policy;
+  > reloads affect the next call. Callers retain player/account ownership and
+  > serialize access; string bounds remain the decoder's contract.
+  - Owner: 11 runtime cases cover three reproduced regressions, membership,
+    reloads and name snapshots, reserved/existing names, query/send exception
+    identity, partial sends/retry, literal boundary reply bytes, the production
+    handler guard and two 32-position allocation cleanup/retry sweeps.
+
+- [ ] **2.64 Extract account-name availability queries.**
+  > **Status:** not started — `CLQueryPlayerIDHandler` still looks up and replies
+  > inline through the default account repository and live player. Extract the
+  > lookup/reply/phase flow with explicit collaborators and an owned account
+  > name so a callback cannot change the reply's subject after lookup.
+  - Owner to add: existing/missing names, request snapshots, exact reply bytes,
+    query/send exception identity, repeated queries, publication after sending
+    and allocation cleanup without executable startup or a database.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
