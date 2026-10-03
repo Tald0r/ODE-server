@@ -16,6 +16,7 @@ std::nullopt_t refuseKick(LoginPlayer& player, const char* diagnostic) {
     LCLoginError error;
     error.setErrorID(ALREADY_CONNECTED);
     player.sendPacket(&error);
+    player.clearLoginKickTarget();
     player.setPlayerStatus(LPS_BEGIN_SESSION);
     player.setID("NONE"); // Disconnect must not write LOGOFF for this account.
     return std::nullopt;
@@ -26,10 +27,12 @@ std::nullopt_t refuseKick(LoginPlayer& player, const char* diagnostic) {
 std::optional<LoginKickTarget> prepareLoginKick(LoginPlayer& player, LoginAccountRepository& accounts,
                                                 LoginCharacterRepository& characters) {
     const auto account = player.getID();
-    LoginKickTarget target{player.getWorldID(), player.getGroupID(), player.getLastSlot(),
-                           player.getLastCharacterName()};
+    const auto* cached = player.getLoginKickTarget();
+    const bool hadLocation = cached != nullptr;
+    const bool hadName = cached && !cached->characterName.empty();
+    LoginKickTarget target = cached ? *cached : LoginKickTarget{};
 
-    if (!player.isSetWorldGroupID()) {
+    if (!hadLocation) {
         int currentWorldID = 0;
         int currentGroupID = 0;
         int currentLastSlot = 0;
@@ -56,13 +59,11 @@ std::optional<LoginKickTarget> prepareLoginKick(LoginPlayer& player, LoginAccoun
             return refuseKick(player, "No CharacterName");
     }
 
-    // The string assignment can fail; complete it before the nonthrowing cache
-    // fields so failed preparation never publishes a partial location.
-    player.setLastCharacterName(target.characterName);
-    player.setWorldID(target.worldID);
-    player.setGroupID(target.groupID);
-    player.setLastSlot(target.lastSlot);
-    player.setWorldGroupID(true);
+    // Prepare both account identity and target before replacing the cache.
+    if (!hadLocation || !hadName)
+        player.cacheLoginKickTarget(target);
+    if (!hadLocation)
+        player.setWorldID(target.worldID);
     return std::optional<LoginKickTarget>{std::move(target)};
 }
 

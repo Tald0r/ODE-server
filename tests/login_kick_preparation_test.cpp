@@ -11,9 +11,12 @@
 #include <gtest/gtest.h>
 
 #include "DatabaseError.h"
+#include "GLKickVerify.h"
 #include "LCLoginError.h"
+#include "LoginContext.h"
 #include "LoginKickPreparation.h"
 #include "LoginPlayer.h"
+#include "LoginPlayerManager.h"
 #include "Socket.h"
 #include "SocketOutputStream.h"
 #include "support/AllocationProbe.h"
@@ -24,6 +27,7 @@ namespace {
 
 struct KickCache {
     WorldID_t world;
+    WorldID_t savedWorld;
     ServerGroupID_t group;
     uint slot;
     bool ready;
@@ -32,21 +36,29 @@ struct KickCache {
 };
 
 KickCache cache(const LoginPlayer& player) {
-    return {player.getWorldID(), player.getGroupID(), player.getLastSlot(), player.isSetWorldGroupID(),
+    const auto* target = player.getLoginKickTarget();
+    return {player.getWorldID(),
+            target ? target->worldID : WorldID_t(0),
+            target ? target->groupID : ServerGroupID_t(0),
+            target ? target->lastSlot : 0,
+            target != nullptr,
             player.getPlayerStatus()};
 }
 
-constexpr KickCache kInitial{3, 4, 2, false, LPS_WAITING_FOR_GL_KICK_VERIFY};
-constexpr KickCache kPrepared{7, 9, 3, true, LPS_WAITING_FOR_GL_KICK_VERIFY};
+const std::string& cachedName(const LoginPlayer& player) {
+    static const std::string empty;
+    const auto* target = player.getLoginKickTarget();
+    return target ? target->characterName : empty;
+}
+
+constexpr KickCache kInitial{3, 0, 0, 0, false, LPS_WAITING_FOR_GL_KICK_VERIFY};
+constexpr KickCache kPrepared{7, 7, 9, 3, true, LPS_WAITING_FOR_GL_KICK_VERIFY};
 
 class KickPlayer : public LoginPlayer {
 public:
     KickPlayer() : LoginPlayer(new Socket()) {
         setID(expectedAccount);
         setWorldID(kInitial.world);
-        setGroupID(kInitial.group);
-        setLastSlot(kInitial.slot);
-        setWorldGroupID(kInitial.ready);
         setServerGroupID(55);
         setPlayerStatus(kInitial.status);
     }
@@ -71,7 +83,7 @@ public:
         return {m_pOutputStream->getBuffer(), m_pOutputStream->length()};
     }
 
-    const std::string expectedAccount = std::string(64, 'a');
+    std::string expectedAccount = std::string(64, 'a');
     KickCache observed{};
     bool sentWithAccount = false;
     unsigned attempts = 0;
@@ -158,7 +170,7 @@ TEST(LoginKickPreparation, UncachedReadsSeeTheOriginalSessionUntilACompleteTarge
     EXPECT_EQ(target->lastSlot, 3u);
     EXPECT_EQ(target->characterName, characters.name);
     EXPECT_EQ(cache(player), kPrepared);
-    EXPECT_EQ(player.getLastCharacterName(), characters.name);
+    EXPECT_EQ(cachedName(player), characters.name);
     EXPECT_EQ(player.getID(), player.expectedAccount);
     EXPECT_EQ(player.getServerGroupID(), 55);
     EXPECT_EQ(player.attempts, 0u);
@@ -166,7 +178,7 @@ TEST(LoginKickPreparation, UncachedReadsSeeTheOriginalSessionUntilACompleteTarge
 
 TEST(LoginKickPreparation, CachedLocationUsesItsStoredSlotAndSkipsTheAccountQuery) {
     KickPlayer player;
-    player.setWorldGroupID(true);
+    player.cacheLoginKickTarget({3, 4, 2, {}});
     const auto before = cache(player);
     KickAccounts accounts(player);
     KickCharacters characters(player);
@@ -182,7 +194,7 @@ TEST(LoginKickPreparation, CachedLocationUsesItsStoredSlotAndSkipsTheAccountQuer
     EXPECT_EQ(target->groupID, 4);
     EXPECT_EQ(target->lastSlot, 2u);
     EXPECT_EQ(cache(player), before);
-    EXPECT_EQ(player.getLastCharacterName(), characters.name);
+    EXPECT_EQ(cachedName(player), characters.name);
 }
 
 TEST(LoginKickPreparation, MissingLocationRefusesBeforeAnyCharacterQueryOrCachePublication) {
@@ -201,8 +213,8 @@ TEST(LoginKickPreparation, MissingLocationRefusesBeforeAnyCharacterQueryOrCacheP
     EXPECT_EQ(player.errorID, ALREADY_CONNECTED);
     EXPECT_EQ(player.sent, 1u);
     EXPECT_EQ(player.getID(), "NONE");
-    EXPECT_EQ(cache(player), (KickCache{3, 4, 2, false, LPS_BEGIN_SESSION}));
-    EXPECT_TRUE(player.getLastCharacterName().empty());
+    EXPECT_EQ(cache(player), (KickCache{3, 0, 0, 0, false, LPS_BEGIN_SESSION}));
+    EXPECT_TRUE(cachedName(player).empty());
 }
 
 TEST(LoginKickPreparation, MissingCharacterRefusesWithoutPublishingTheLoadedLocation) {
@@ -220,8 +232,8 @@ TEST(LoginKickPreparation, MissingCharacterRefusesWithoutPublishingTheLoadedLoca
     EXPECT_EQ(player.errorID, ALREADY_CONNECTED);
     EXPECT_EQ(player.sent, 1u);
     EXPECT_EQ(player.getID(), "NONE");
-    EXPECT_EQ(cache(player), (KickCache{3, 4, 2, false, LPS_BEGIN_SESSION}));
-    EXPECT_TRUE(player.getLastCharacterName().empty());
+    EXPECT_EQ(cache(player), (KickCache{3, 0, 0, 0, false, LPS_BEGIN_SESSION}));
+    EXPECT_TRUE(cachedName(player).empty());
 }
 
 TEST(LoginKickPreparation, AnEmptySuccessfulCharacterLookupIsStillMissingACharacter) {
@@ -235,7 +247,7 @@ TEST(LoginKickPreparation, AnEmptySuccessfulCharacterLookupIsStillMissingACharac
     EXPECT_FALSE(target);
     EXPECT_EQ(player.sent, 1u);
     EXPECT_EQ(player.errorID, ALREADY_CONNECTED);
-    EXPECT_EQ(cache(player), (KickCache{3, 4, 2, false, LPS_BEGIN_SESSION}));
+    EXPECT_EQ(cache(player), (KickCache{3, 0, 0, 0, false, LPS_BEGIN_SESSION}));
     EXPECT_EQ(player.getID(), "NONE");
 }
 
@@ -252,7 +264,7 @@ TEST(LoginKickPreparation, InvalidSavedFieldsAreRefusedBeforeNarrowingOrPublishi
 
             EXPECT_EQ(cache(player), kInitial);
             EXPECT_EQ(player.getID(), player.expectedAccount);
-            EXPECT_TRUE(player.getLastCharacterName().empty());
+            EXPECT_TRUE(cachedName(player).empty());
             EXPECT_EQ(characters.reads, 0u);
             EXPECT_EQ(player.attempts, 0u);
         }
@@ -261,8 +273,7 @@ TEST(LoginKickPreparation, InvalidSavedFieldsAreRefusedBeforeNarrowingOrPublishi
 
 TEST(LoginKickPreparation, CachedLocationAndNameSkipBothRepositoryQueries) {
     KickPlayer player;
-    player.setWorldGroupID(true);
-    player.setLastCharacterName("cached character");
+    player.cacheLoginKickTarget({3, 4, 2, "cached character"});
     const auto before = cache(player);
     KickAccounts accounts(player);
     KickCharacters characters(player);
@@ -279,9 +290,11 @@ TEST(LoginKickPreparation, CachedLocationAndNameSkipBothRepositoryQueries) {
     EXPECT_EQ(player.attempts, 0u);
 }
 
-TEST(LoginKickPreparation, KnownNamesStillLoadAnUncachedLocationWithoutACharacterQuery) {
+TEST(LoginKickPreparation, AnEarlierAccountsKnownNameCannotSkipTheNewCharacterQuery) {
     KickPlayer player;
-    player.setLastCharacterName("cached character");
+    player.cacheLoginKickTarget({3, 4, 2, "cached character"});
+    player.expectedAccount = "new account";
+    player.setID(player.expectedAccount);
     KickAccounts accounts(player);
     KickCharacters characters(player);
 
@@ -291,9 +304,9 @@ TEST(LoginKickPreparation, KnownNamesStillLoadAnUncachedLocationWithoutACharacte
     EXPECT_EQ(target->worldID, 7);
     EXPECT_EQ(target->groupID, 9);
     EXPECT_EQ(target->lastSlot, 3u);
-    EXPECT_EQ(target->characterName, "cached character");
+    EXPECT_EQ(target->characterName, characters.name);
     EXPECT_EQ(accounts.reads, 1u);
-    EXPECT_EQ(characters.reads, 0u);
+    EXPECT_EQ(characters.reads, 1u);
     EXPECT_EQ(cache(player), kPrepared);
 }
 
@@ -312,7 +325,7 @@ TEST(LoginKickPreparation, RepositoryExceptionsPreserveTheirIdentityAndTheUnpubl
         }
         EXPECT_EQ(caught, failure);
         EXPECT_EQ(cache(player), kInitial);
-        EXPECT_TRUE(player.getLastCharacterName().empty());
+        EXPECT_TRUE(cachedName(player).empty());
         EXPECT_EQ(player.getID(), player.expectedAccount);
         EXPECT_EQ(player.attempts, 0u);
     }
@@ -331,9 +344,7 @@ TEST(LoginKickPreparation, StoredAndCachedBoundaryLocationsKeepEveryOneBasedSlot
                     accounts.savedSlot = slot;
                     if (cached) {
                         player.setWorldID(world);
-                        player.setGroupID(group);
-                        player.setLastSlot(slot);
-                        player.setWorldGroupID(true);
+                        player.cacheLoginKickTarget({world, group, slot, {}});
                     }
                     const auto before = cache(player);
 
@@ -347,7 +358,7 @@ TEST(LoginKickPreparation, StoredAndCachedBoundaryLocationsKeepEveryOneBasedSlot
                     EXPECT_EQ(characters.querySlot, static_cast<int>(slot));
                     EXPECT_EQ(characters.observed, before);
                     EXPECT_EQ(accounts.reads, cached ? 0u : 1u);
-                    EXPECT_EQ(cache(player), (KickCache{world, group, slot, true, kInitial.status}));
+                    EXPECT_EQ(cache(player), (KickCache{world, world, group, slot, true, kInitial.status}));
                 }
             }
         }
@@ -358,20 +369,18 @@ TEST(LoginKickPreparation, TheDefaultZeroSlotRequiresAnAlreadyKnownCharacterName
     for (const bool cached : {false, true}) {
         for (const bool named : {false, true}) {
             KickPlayer player;
-            player.setLastSlot(0);
-            player.setWorldGroupID(cached);
-            if (named)
-                player.setLastCharacterName("known character");
+            if (cached)
+                player.cacheLoginKickTarget({3, 4, 0, named ? "known character" : ""});
             KickAccounts accounts(player);
             accounts.savedSlot = 0;
             KickCharacters characters(player);
 
             const auto target = de::prepareLoginKick(player, accounts, characters);
 
-            EXPECT_EQ(target.has_value(), named);
+            EXPECT_EQ(target.has_value(), cached && named);
             EXPECT_EQ(characters.reads, 0u);
-            EXPECT_EQ(player.sent, named ? 0u : 1u);
-            if (named) {
+            EXPECT_EQ(player.sent, cached && named ? 0u : 1u);
+            if (cached && named) {
                 ASSERT_TRUE(target);
                 EXPECT_EQ(target->lastSlot, 0u);
                 EXPECT_EQ(target->characterName, "known character");
@@ -380,6 +389,8 @@ TEST(LoginKickPreparation, TheDefaultZeroSlotRequiresAnAlreadyKnownCharacterName
                 EXPECT_EQ(player.errorID, ALREADY_CONNECTED);
                 EXPECT_EQ(player.getPlayerStatus(), LPS_BEGIN_SESSION);
                 EXPECT_EQ(player.getID(), "NONE");
+                player.setID(player.expectedAccount);
+                EXPECT_EQ(player.getLoginKickTarget(), nullptr);
             }
         }
     }
@@ -390,16 +401,13 @@ TEST(LoginKickPreparation, UnsupportedSlotsAreConfigurationErrorsEvenWithAKnownN
         for (const bool cached : {false, true}) {
             for (const uint slot : {4u, 255u, std::numeric_limits<uint>::max()}) {
                 KickPlayer player;
-                player.setWorldGroupID(cached);
                 if (cached)
-                    player.setLastSlot(slot);
-                if (named)
-                    player.setLastCharacterName("known character");
+                    player.cacheLoginKickTarget({3, 4, slot, named ? "known character" : ""});
                 KickAccounts accounts(player);
                 accounts.savedSlot = slot == std::numeric_limits<uint>::max() ? -1 : static_cast<int>(slot);
                 KickCharacters characters(player);
                 const auto before = cache(player);
-                const auto previousName = player.getLastCharacterName();
+                const auto previousName = cachedName(player);
 
                 try {
                     (void)de::prepareLoginKick(player, accounts, characters);
@@ -408,7 +416,7 @@ TEST(LoginKickPreparation, UnsupportedSlotsAreConfigurationErrorsEvenWithAKnownN
                     EXPECT_EQ(error.getMessage(), "invalid last character slot");
                 }
                 EXPECT_EQ(cache(player), before);
-                EXPECT_EQ(player.getLastCharacterName(), previousName);
+                EXPECT_EQ(cachedName(player), previousName);
                 EXPECT_EQ(characters.reads, 0u);
                 EXPECT_EQ(player.attempts, 0u);
             }
@@ -416,9 +424,12 @@ TEST(LoginKickPreparation, UnsupportedSlotsAreConfigurationErrorsEvenWithAKnownN
     }
 }
 
-TEST(LoginKickPreparation, AKnownCharacterStillNeedsAResolvedLocation) {
+TEST(LoginKickPreparation, RefusingANewAccountClearsTheEarlierAccountsTarget) {
     KickPlayer player;
-    player.setLastCharacterName("known character");
+    const auto previousAccount = player.getID();
+    player.cacheLoginKickTarget({3, 4, 2, "known character"});
+    player.expectedAccount = "new account";
+    player.setID(player.expectedAccount);
     KickAccounts accounts(player);
     accounts.found = false;
     KickCharacters characters(player);
@@ -429,8 +440,10 @@ TEST(LoginKickPreparation, AKnownCharacterStillNeedsAResolvedLocation) {
     EXPECT_EQ(characters.reads, 0u);
     EXPECT_EQ(player.errorID, ALREADY_CONNECTED);
     EXPECT_EQ(player.sent, 1u);
-    EXPECT_EQ(player.getLastCharacterName(), "known character");
-    EXPECT_EQ(cache(player), (KickCache{3, 4, 2, false, LPS_BEGIN_SESSION}));
+    EXPECT_TRUE(cachedName(player).empty());
+    EXPECT_EQ(cache(player), (KickCache{3, 0, 0, 0, false, LPS_BEGIN_SESSION}));
+    player.setID(previousAccount);
+    EXPECT_EQ(player.getLoginKickTarget(), nullptr);
 }
 
 int checkQueryFailure(int stage, const std::exception_ptr& failure) {
@@ -438,7 +451,7 @@ int checkQueryFailure(int stage, const std::exception_ptr& failure) {
     KickAccounts accounts(*player);
     KickCharacters characters(*player);
     if (stage == 2)
-        player->setWorldGroupID(true);
+        player->cacheLoginKickTarget({3, 4, 2, {}});
     (stage == 0 ? accounts.failure : characters.failure) = failure;
     const auto before = cache(*player);
     AllocationProbe probe;
@@ -448,12 +461,12 @@ int checkQueryFailure(int stage, const std::exception_ptr& failure) {
     } catch (...) {
         caught = std::current_exception() == failure;
     }
-    if (!caught || cache(*player) != before || !player->getLastCharacterName().empty() || player->attempts != 0 ||
+    if (!caught || cache(*player) != before || !cachedName(*player).empty() || player->attempts != 0 ||
         probe.outstanding() != 0)
         return 1;
     accounts.failure = characters.failure = nullptr;
     auto retry = de::prepareLoginKick(*player, accounts, characters);
-    if (!retry || retry->characterName != characters.name || player->getLastCharacterName() != characters.name)
+    if (!retry || retry->characterName != characters.name || cachedName(*player) != characters.name)
         return 2;
     retry.reset();
     player.reset();
@@ -504,9 +517,8 @@ int checkRefusalFailure(Missing missing, const std::exception_ptr& failure) {
     } catch (...) {
         caught = std::current_exception() == failure;
     }
-    if (!caught || cache(*player) != kInitial || player->observed != kInitial ||
-        !player->getLastCharacterName().empty() || !player->sentWithAccount || player->sent != 0 ||
-        player->attempts != 1 || probe.outstanding() != 0)
+    if (!caught || cache(*player) != kInitial || player->observed != kInitial || !cachedName(*player).empty() ||
+        !player->sentWithAccount || player->sent != 0 || player->attempts != 1 || probe.outstanding() != 0)
         return 1;
     player->failure = nullptr;
     const auto refused = de::prepareLoginKick(*player, accounts, characters);
@@ -528,18 +540,28 @@ TEST(LoginKickPreparation, FailedRefusalSendsPreserveSessionIdentityAndCanRetryT
     }
 }
 
-int checkAllocationFailure(std::size_t failAt, bool cached, bool named) {
+int checkAllocationFailure(std::size_t failAt, int mode) {
     auto player = std::make_unique<KickPlayer>();
-    player->setWorldGroupID(cached);
-    if (named)
-        player->setLastCharacterName(std::string(96, 'n'));
+    const bool cached = mode == 1 || mode == 2;
+    const bool named = mode == 2;
+    if (mode != 0)
+        player->cacheLoginKickTarget({3, 4, 2, mode == 1 ? "" : std::string(96, 'n')});
+    if (mode == 3) {
+        player->expectedAccount = std::string(72, 'b');
+        player->setID(player->expectedAccount);
+    }
     KickAccounts accounts(*player);
     KickCharacters characters(*player);
     const auto before = cache(*player);
-    const auto previousName = player->getLastCharacterName();
+    const auto previousName = cachedName(*player);
+    const auto* previous = player->getLoginKickTarget();
     const auto expectedName = named ? previousName : characters.name;
-    const KickCache prepared{cached ? before.world : WorldID_t(7), cached ? before.group : ServerGroupID_t(9),
-                             cached ? before.slot : 3u, true, before.status};
+    const KickCache prepared{cached ? before.world : WorldID_t(7),
+                             cached ? before.savedWorld : WorldID_t(7),
+                             cached ? before.group : ServerGroupID_t(9),
+                             cached ? before.slot : 3u,
+                             true,
+                             before.status};
     AllocationProbe probe(failAt);
     bool failed = false;
     std::optional<de::LoginKickTarget> target;
@@ -552,8 +574,8 @@ int checkAllocationFailure(std::size_t failAt, bool cached, bool named) {
     if (failed != probe.rejected() || (failAt == 64 && failed))
         return 1;
     if (failed) {
-        if (target || cache(*player) != before || player->getLastCharacterName() != previousName ||
-            probe.outstanding() != 0)
+        if (target || cache(*player) != before || cachedName(*player) != previousName ||
+            player->getLoginKickTarget() != previous || probe.outstanding() != 0)
             return 2;
     } else if (!target || cache(*player) != prepared || target->characterName != expectedName) {
         return 3;
@@ -562,7 +584,7 @@ int checkAllocationFailure(std::size_t failAt, bool cached, bool named) {
     auto retry = de::prepareLoginKick(*player, accounts, characters);
     if (!retry || retry->worldID != prepared.world || retry->groupID != prepared.group ||
         retry->lastSlot != prepared.slot || retry->characterName != expectedName || cache(*player) != prepared ||
-        player->getLastCharacterName() != expectedName || player->attempts != 0)
+        cachedName(*player) != expectedName || player->attempts != 0)
         return 4;
     retry.reset();
     player.reset();
@@ -570,13 +592,10 @@ int checkAllocationFailure(std::size_t failAt, bool cached, bool named) {
 }
 
 TEST(LoginKickPreparation, AllocationFailuresPreserveTheCacheAndCleanUpBeforeEveryRetry) {
-    for (const bool cached : {false, true}) {
-        for (const bool named : {false, true}) {
-            for (std::size_t failAt = 1; failAt <= 64; ++failAt) {
-                SCOPED_TRACE(::testing::Message() << cached << "/" << named << "/" << failAt);
-                ASSERT_EXIT(std::_Exit(checkAllocationFailure(failAt, cached, named)), ::testing::ExitedWithCode(0),
-                            "");
-            }
+    for (int mode = 0; mode < 4; ++mode) {
+        for (std::size_t failAt = 1; failAt <= 64; ++failAt) {
+            SCOPED_TRACE(::testing::Message() << mode << "/" << failAt);
+            ASSERT_EXIT(std::_Exit(checkAllocationFailure(failAt, mode)), ::testing::ExitedWithCode(0), "");
         }
     }
 }
@@ -629,9 +648,7 @@ TEST(LoginKickPreparation, ReturnedTargetsOwnTheirValuesAcrossLaterCacheChanges)
     ASSERT_TRUE(target);
 
     player.setWorldID(255);
-    player.setGroupID(255);
-    player.setLastSlot(1);
-    player.setLastCharacterName("different character");
+    player.cacheLoginKickTarget({255, 255, 1, "different character"});
     characters.name = "different row";
 
     EXPECT_EQ(target->worldID, 7);
@@ -647,7 +664,7 @@ TEST(LoginKickPreparation, ANewAuthenticatedAttemptAfterRefusalCanResolveFreshLo
         KickCharacters characters(player);
         makeMissing(missing, accounts, characters);
         EXPECT_FALSE(de::prepareLoginKick(player, accounts, characters));
-        EXPECT_FALSE(player.isSetWorldGroupID());
+        EXPECT_EQ(player.getLoginKickTarget(), nullptr);
         player.setID(player.expectedAccount);
         accounts.found = characters.found = true;
         accounts.savedWorld = accounts.savedGroup = 255;
@@ -661,9 +678,169 @@ TEST(LoginKickPreparation, ANewAuthenticatedAttemptAfterRefusalCanResolveFreshLo
         EXPECT_EQ(target->groupID, 255);
         EXPECT_EQ(target->lastSlot, 1u);
         EXPECT_EQ(target->characterName, "retry character");
-        EXPECT_EQ(cache(player), (KickCache{255, 255, 1, true, LPS_BEGIN_SESSION}));
+        EXPECT_EQ(cache(player), (KickCache{255, 255, 255, 1, true, LPS_BEGIN_SESSION}));
         EXPECT_EQ(player.sent, 1u);
     }
+}
+
+TEST(LoginKickPreparation, ChangingAccountThroughTheBasePlayerForcesFreshLocationAndCharacterReads) {
+    KickPlayer player;
+    KickAccounts accounts(player);
+    KickCharacters characters(player);
+    ASSERT_TRUE(de::prepareLoginKick(player, accounts, characters));
+    player.expectedAccount = "another account";
+    static_cast<Player&>(player).setID(player.expectedAccount);
+    accounts.savedWorld = 17;
+    accounts.savedGroup = 19;
+    accounts.savedSlot = 1;
+    characters.name = "another character";
+
+    const auto target = de::prepareLoginKick(player, accounts, characters);
+
+    ASSERT_TRUE(target);
+    EXPECT_EQ(accounts.reads, 2u);
+    EXPECT_EQ(characters.reads, 2u);
+    EXPECT_TRUE(accounts.correctAccount);
+    EXPECT_TRUE(characters.correctAccount);
+    EXPECT_EQ(target->worldID, 17);
+    EXPECT_EQ(target->groupID, 19);
+    EXPECT_EQ(target->lastSlot, 1u);
+    EXPECT_EQ(target->characterName, characters.name);
+}
+
+TEST(LoginKickPreparation, LiveWorldAndGroupSelectionDoNotRewriteTheSavedKickLocation) {
+    KickPlayer player;
+    KickAccounts accounts(player);
+    KickCharacters characters(player);
+    ASSERT_TRUE(de::prepareLoginKick(player, accounts, characters));
+    player.setWorldID(255);
+    player.setServerGroupID(244);
+
+    const auto target = de::prepareLoginKick(player, accounts, characters);
+
+    ASSERT_TRUE(target);
+    EXPECT_EQ(target->worldID, 7);
+    EXPECT_EQ(target->groupID, 9);
+    EXPECT_EQ(target->lastSlot, 3u);
+    EXPECT_EQ(player.getWorldID(), 255);
+    EXPECT_EQ(player.getServerGroupID(), 244);
+    EXPECT_EQ(accounts.reads, 1u);
+    EXPECT_EQ(characters.reads, 1u);
+}
+
+TEST(LoginKickPreparation, ChangingAccountHidesTheEarlierKickVerificationName) {
+    KickPlayer player;
+    KickAccounts accounts(player);
+    KickCharacters characters(player);
+    ASSERT_TRUE(de::prepareLoginKick(player, accounts, characters));
+    static_cast<Player&>(player).setID("another account");
+    EXPECT_EQ(player.getLoginKickTarget(), nullptr);
+}
+
+TEST(LoginKickPreparation, ANewAccountsQueryFailureCannotFallBackToThePreviousTarget) {
+    KickPlayer player;
+    KickAccounts accounts(player);
+    KickCharacters characters(player);
+    ASSERT_TRUE(de::prepareLoginKick(player, accounts, characters));
+    static_cast<Player&>(player).setID("another account");
+    accounts.failure = std::make_exception_ptr(std::runtime_error("query failed"));
+
+    EXPECT_THROW((void)de::prepareLoginKick(player, accounts, characters), std::runtime_error);
+    EXPECT_EQ(accounts.reads, 2u);
+    EXPECT_EQ(player.attempts, 0u);
+}
+
+TEST(LoginKickPreparation, ResolvingACachedNameDoesNotChangeTheLiveSelection) {
+    KickPlayer player;
+    player.cacheLoginKickTarget({7, 9, 2, {}});
+    player.setWorldID(255);
+    player.setServerGroupID(244);
+    KickAccounts accounts(player);
+    KickCharacters characters(player);
+
+    const auto target = de::prepareLoginKick(player, accounts, characters);
+
+    ASSERT_TRUE(target);
+    EXPECT_EQ(target->worldID, 7);
+    EXPECT_EQ(target->groupID, 9);
+    EXPECT_EQ(characters.queryWorld, 7);
+    EXPECT_EQ(characters.querySlot, 2);
+    EXPECT_EQ(accounts.reads, 0u);
+    EXPECT_EQ(player.getWorldID(), 255);
+    EXPECT_EQ(player.getServerGroupID(), 244);
+}
+
+TEST(LoginKickPreparation, RefusalClearsAnIncompleteCacheOnlyAfterSuccessfulSending) {
+    KickPlayer player;
+    player.cacheLoginKickTarget({7, 9, 2, {}});
+    const auto* saved = player.getLoginKickTarget();
+    const auto before = cache(player);
+    KickAccounts accounts(player);
+    KickCharacters characters(player);
+    characters.found = false;
+    player.failure = std::make_exception_ptr(std::runtime_error("send failed"));
+
+    EXPECT_THROW((void)de::prepareLoginKick(player, accounts, characters), std::runtime_error);
+    EXPECT_EQ(player.getLoginKickTarget(), saved);
+    EXPECT_EQ(cache(player), before);
+    EXPECT_EQ(player.getID(), player.expectedAccount);
+    player.failure = nullptr;
+    EXPECT_FALSE(de::prepareLoginKick(player, accounts, characters));
+    EXPECT_EQ(player.observed, before);
+    EXPECT_TRUE(player.sentWithAccount);
+    player.setID(player.expectedAccount);
+    EXPECT_EQ(player.getLoginKickTarget(), nullptr);
+}
+
+TEST(LoginKickPreparation, AFailedNewAccountLookupPreservesTheHiddenOldEntryForItsOwner) {
+    KickPlayer player;
+    const auto previousAccount = player.getID();
+    const de::LoginKickTarget previousTarget{7, 9, 2, "previous character"};
+    player.cacheLoginKickTarget(previousTarget);
+    const auto* previous = player.getLoginKickTarget();
+    player.setID("another account");
+    KickAccounts accounts(player);
+    KickCharacters characters(player);
+    accounts.failure = std::make_exception_ptr(std::runtime_error("query failed"));
+
+    EXPECT_THROW((void)de::prepareLoginKick(player, accounts, characters), std::runtime_error);
+    EXPECT_EQ(player.getLoginKickTarget(), nullptr);
+    player.setID(previousAccount);
+    EXPECT_EQ(player.getLoginKickTarget(), previous);
+    ASSERT_NE(player.getLoginKickTarget(), nullptr);
+    EXPECT_EQ(*player.getLoginKickTarget(), previousTarget);
+}
+
+TEST(LoginKickPreparation, TheProductionVerifyHandlerIgnoresAnotherAccountsCachedName) {
+    ASSERT_EXIT(
+        {
+            LoginPlayerManager manager;
+            de::loginContext().setLoginPlayerManager(&manager);
+            auto player = std::make_unique<KickPlayer>();
+            player->cacheLoginKickTarget({7, 9, 2, "previous character"});
+            static_cast<Player&>(*player).setID("another account");
+            const auto* observed = player.get();
+            GLKickVerify packet;
+            packet.setID(player->getSocket()->getSOCKET());
+            packet.setPCName("previous character");
+            manager.addPlayer(player.get());
+            player.release();
+            // A stale match would enter the database-backed login completion.
+            GLKickVerifyHandler::execute(&packet);
+            const bool intact = observed->getID() == "another account" && observed->attempts == 0 &&
+                                observed->getPlayerStatus() == kInitial.status;
+            de::loginContext().setLoginPlayerManager(nullptr);
+            std::_Exit(intact ? 0 : 1);
+        },
+        ::testing::ExitedWithCode(0), "");
+}
+
+TEST(LoginKickPreparation, NewPlayersStartWithAnInitializedLiveGroupAndNoSavedTarget) {
+    LoginPlayer player(new Socket());
+    player.setPlayerStatus(LPS_END_SESSION);
+    EXPECT_EQ(player.getServerGroupID(), 0);
+    EXPECT_EQ(player.getWorldID(), 1);
+    EXPECT_EQ(player.getLoginKickTarget(), nullptr);
 }
 
 } // namespace

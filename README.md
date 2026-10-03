@@ -188,6 +188,9 @@ Kick preparation resolves saved or cached locations through explicit repositorie
 validates IDs and account slots, and caches a complete character target before
 datagram dispatch. Tests cover missing data, cached slots, refusal serialization,
 exception identity and cache preservation/cleanup through allocation failures.
+The saved kick target owns its account key and location separately from live
+selection. Tests cover identity changes through the base player, stale verify
+replies, atomic replacement, borrowed pointer stability and refusal cleanup.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
