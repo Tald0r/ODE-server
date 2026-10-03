@@ -268,6 +268,10 @@ Character-list refresh now owns the selected world/account and takes explicit
 repository and sender inputs. It keeps the reply alive through sending and enters
 character management only after the sender returns. Runtime tests cover complete
 and empty lists, exception mapping, real output, retry and allocation cleanup.
+Account registration takes explicit hashing, connection settings, catalogue
+lookup, persistence, replies and diagnostics. Tests cover refusal/retry policy,
+partial writes and cleanup ownership, checked world/group publication after
+sending, real production adapters and allocation failure without server startup.
 
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.

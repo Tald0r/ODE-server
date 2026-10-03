@@ -1637,15 +1637,38 @@ visibility can't express.
     five-stage exception identity, missing/duplicate records, real frames,
     serialization/partial-send retry and five 96-position allocation sweeps.
 
-- [ ] **2.66 Extract the account-registration handler flow.**
-  > **Status:** not started — `CLRegisterPlayerHandler` still coordinates
-  > decision, acquisition, location read-back, group lookup, replies and failure
-  > counts inline through process contexts. The decision uses implicit password
-  > hashing. Supply these collaborators explicitly, preserve acquired-account
-  > cleanup and partial-write boundaries, and test registration without startup.
-  - Owner to add: validation/refusal bytes, hashing failures, repeated-attempt
-    limits, owned request/configuration inputs, acquisition/read-back ordering,
-    checked location publication, diagnostic/send failures and allocation retry.
+- [x] **2.66 Extract the account-registration handler flow.**
+  > **Status:** done (refactor/login-registration) — `LoginRegistration` owns
+  > packet fields before callbacks and accepted connection settings before
+  > persistence. Hashing, configuration, group lookup, replies and diagnostics
+  > are explicit actions; rejected requests need no process configuration.
+  > `decideRegisterPlayer` takes an explicit hasher and refuses unsupported sex
+  > values before hashing or indexing the type table. Read-back IDs are checked
+  > before narrowing; identity, world, group and phase publish without allocation
+  > only after the success sender returns. Existing refusal bytes, the three
+  > retryable failures, database fallback and acquisition/write order remain.
+  > Hashing diagnostics are best effort, and exhausted counters cannot wrap.
+  > Earlier writes and acquired-account cleanup survive later failure; an
+  > inserted account cannot restart registration, and failed acknowledgements
+  > do not acquire cleanup ownership. Callers retain the player and serialize
+  > access. Real Argon2, group-name truncation and adult reply policy are kept.
+  - Owner: 25 runtime cases cover five reproduced flow regressions, seven-stage
+    exception matrices, all refusal bytes, snapshots, partial writes/output,
+    retries, allocation-free publication, production adapters/logging, seven
+    96-position allocation sweeps and a 16-position diagnostic sweep. The 22
+    standalone decision cases include five additions covering representable
+    invalid profile inputs, explicit hashing order/failures and real Argon2
+    verification. The packet decoder's existing sex-byte guard is unchanged.
+
+- [ ] **2.67 Extract the login handler and authentication adapters.**
+  > **Status:** not started — `CLLoginHandler` still coordinates normalization,
+  > web/NetMarble authorization, password migration, decision/session adaptation,
+  > kick/success dispatch and reporting through process contexts. Extract
+  > explicit repository, configuration, time, password and dispatch actions,
+  > retaining gate order and acquired-account cleanup ownership.
+  - Owner to add: ordinary/web/test/NetMarble paths, owned inputs, refusal bytes,
+    authentication/write order, kick/success publication, exception/reporting
+    failures, partial effects and allocation cleanup without executable startup.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

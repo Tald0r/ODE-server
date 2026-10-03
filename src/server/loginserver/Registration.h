@@ -8,6 +8,7 @@
 #ifndef __REGISTRATION_H__
 #define __REGISTRATION_H__
 
+#include <functional>
 #include <string>
 
 #include "Outcome.h"
@@ -44,7 +45,7 @@ enum class RegisterPlayerRejection {
     EmptyName,
     EmptySSN,
     // One of the profile fields would not survive being interpolated into
-    // SQL text.
+    // SQL text, or the sex does not name a supported value.
     InvalidProfileField,
     // The password could not be hashed. A server fault, not the player's,
     // but it is answered like the refusals above.
@@ -71,7 +72,8 @@ struct RegisterPlayerRequest {
     std::string playerID;
     std::string password;
     std::string name;
-    Sex sex = FEMALE;
+    // Keep unvalidated values representable until the decision checks them.
+    int sex = FEMALE;
     std::string ssn;
     std::string telephone;
     std::string cellular;
@@ -84,6 +86,11 @@ struct RegisterPlayerRequest {
     bool publicProfile = false;
 };
 
+struct RegisterPlayerActions {
+    // Return an encoded password hash. Failure details must contain no secrets.
+    std::function<std::string(const std::string&)> hashPassword;
+};
+
 // Decide whether an account may be registered, and with which row.
 //
 // The repository is passed in because the id probe is a database read; the
@@ -92,13 +99,13 @@ struct RegisterPlayerRequest {
 // answers and needs no database in a test.
 //
 // The accepted LoginNewAccount carries the argon2id hash in its password
-// field, never the plaintext. Hashing happens here, before the id probe,
-// so the plaintext is read in one place and the handler never holds it.
+// field, never the plaintext. The supplied hasher runs after validation and
+// before the id probe. Standard exceptions from hashing become a hashing
+// refusal; other failures propagate. Callbacks must not mutate the request.
 //
-// A repository that fails its query throws (the DB layer's own const
-// char*); that is a server fault, not a player-facing refusal, and is left
-// to the caller.
-[[nodiscard]] Outcome<LoginNewAccount, RegisterPlayerRefusal> decideRegisterPlayer(const RegisterPlayerRequest& request,
-                                                                                   LoginAccountRepository& repository);
+// Repository failures propagate to the caller, which owns the reply policy.
+[[nodiscard]] Outcome<LoginNewAccount, RegisterPlayerRefusal>
+decideRegisterPlayer(const RegisterPlayerRequest& request, LoginAccountRepository& repository,
+                     const RegisterPlayerActions& actions);
 
 #endif

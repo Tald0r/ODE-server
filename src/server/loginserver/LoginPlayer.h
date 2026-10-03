@@ -95,6 +95,15 @@ public:
         m_PlayerStatus = playerStatus;
     }
 
+    // Transfer a prepared identity and checked location after registration
+    // sending succeeds. Publication does not allocate or call collaborators.
+    void publishRegistration(std::string id, WorldID_t world, ServerGroupID_t group) noexcept {
+        m_ID.swap(id);
+        m_WorldID = world;
+        m_ServerGroupID = group;
+        m_PlayerStatus = LPS_WAITING_FOR_CL_GET_PC_LIST;
+    }
+
     // Number of failures
     uint getFailureCount() const {
         return m_FailureCount;

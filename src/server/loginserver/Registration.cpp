@@ -9,8 +9,6 @@
 #include <exception>
 #include <utility>
 
-#include "PasswordHash.h"
-
 namespace {
 
 // The shortest id and password an account may be registered with.
@@ -33,7 +31,8 @@ RegisterPlayerRefusal refusal(RegisterPlayerRejection reason) {
 } // namespace
 
 Outcome<LoginNewAccount, RegisterPlayerRefusal> decideRegisterPlayer(const RegisterPlayerRequest& request,
-                                                                     LoginAccountRepository& repository) {
+                                                                     LoginAccountRepository& repository,
+                                                                     const RegisterPlayerActions& actions) {
     typedef Outcome<LoginNewAccount, RegisterPlayerRefusal> Result;
 
     if (request.playerID.empty())
@@ -57,18 +56,18 @@ Outcome<LoginNewAccount, RegisterPlayerRefusal> decideRegisterPlayer(const Regis
     if (request.ssn.empty())
         return Result::Rejected(refusal(RegisterPlayerRejection::EmptySSN));
 
-    if (containsSqlMetaCharacter(request.name) || containsSqlMetaCharacter(request.ssn) ||
-        containsSqlMetaCharacter(request.telephone) || containsSqlMetaCharacter(request.cellular) ||
-        containsSqlMetaCharacter(request.zipCode) || containsSqlMetaCharacter(request.address) ||
-        containsSqlMetaCharacter(request.email) || containsSqlMetaCharacter(request.homepage) ||
-        containsSqlMetaCharacter(request.profile)) {
+    if ((request.sex != FEMALE && request.sex != MALE) || containsSqlMetaCharacter(request.name) ||
+        containsSqlMetaCharacter(request.ssn) || containsSqlMetaCharacter(request.telephone) ||
+        containsSqlMetaCharacter(request.cellular) || containsSqlMetaCharacter(request.zipCode) ||
+        containsSqlMetaCharacter(request.address) || containsSqlMetaCharacter(request.email) ||
+        containsSqlMetaCharacter(request.homepage) || containsSqlMetaCharacter(request.profile)) {
         return Result::Rejected(refusal(RegisterPlayerRejection::InvalidProfileField));
     }
 
     // Only the hash is stored; the login verifies against it in C++.
     LoginNewAccount account;
     try {
-        account.password = de::password::hash(request.password);
+        account.password = actions.hashPassword(request.password);
     } catch (const std::exception& e) {
         RegisterPlayerRefusal rejection = refusal(RegisterPlayerRejection::PasswordHashingFailed);
         rejection.detail = e.what();

@@ -11,16 +11,22 @@
 // ever passed to a gtest matcher that would print it on failure.
 
 #include <cstddef>
+#include <exception>
+#include <new>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
 #include <gtest/gtest.h>
 
+#include "Exception.h"
 #include "FakeLoginAccountRepository.h"
 #include "PasswordHash.h"
 #include "Registration.h"
 
 namespace {
+
+const RegisterPlayerActions kActions{de::password::hash};
 
 const char* const kPassword = "correct horse";
 
@@ -49,7 +55,7 @@ RegisterPlayerRequest goodRequest() {
 void expectRefusedBeforeAnyRead(const RegisterPlayerRequest& request, RegisterPlayerRejection reason) {
     FakeLoginAccountRepository repository;
 
-    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository);
+    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(reason, outcome.rejection().reason);
@@ -78,7 +84,7 @@ TEST(DecideRegisterPlayer, TheShortestAcceptedIDIsFourCharacters) {
     // then the id probe, and an unknown id is accepted.
     FakeLoginAccountRepository repository;
 
-    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository);
+    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository, kActions);
 
     EXPECT_TRUE(outcome.isOk());
 }
@@ -163,7 +169,7 @@ TEST(DecideRegisterPlayer, AnIDThatIsTakenIsRefused) {
     FakeLoginAccountRepository repository;
     repository.registeredIDs.insert("newcomer");
 
-    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(goodRequest(), repository);
+    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(goodRequest(), repository, kActions);
 
     ASSERT_TRUE(outcome.isRejected());
     EXPECT_EQ(RegisterPlayerRejection::AlreadyRegistered, outcome.rejection().reason);
@@ -174,7 +180,7 @@ TEST(DecideRegisterPlayer, AnIDThatIsTakenIsRefused) {
 TEST(DecideRegisterPlayer, TheIDProbeRunsOnceAndOnlyAfterTheValidation) {
     FakeLoginAccountRepository repository;
 
-    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(goodRequest(), repository);
+    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(goodRequest(), repository, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     EXPECT_EQ(1, repository.accountExistsCalls);
@@ -186,7 +192,7 @@ TEST(DecideRegisterPlayer, TheAcceptedRowCarriesThePacketsFields) {
     FakeLoginAccountRepository repository;
     const RegisterPlayerRequest request = goodRequest();
 
-    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository);
+    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     const LoginNewAccount account = std::move(outcome).events();
@@ -210,7 +216,7 @@ TEST(DecideRegisterPlayer, TheStoredPasswordIsAnArgon2idHashOfWhatWasSent) {
     FakeLoginAccountRepository repository;
     const RegisterPlayerRequest request = goodRequest();
 
-    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository);
+    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     const LoginNewAccount account = std::move(outcome).events();
@@ -228,12 +234,98 @@ TEST(DecideRegisterPlayer, APrivateProfileIsSpelledPRIVATE) {
     request.publicProfile = false;
     request.sex = MALE;
 
-    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository);
+    Outcome<LoginNewAccount, RegisterPlayerRefusal> outcome = decideRegisterPlayer(request, repository, kActions);
 
     ASSERT_TRUE(outcome.isOk());
     const LoginNewAccount account = std::move(outcome).events();
     EXPECT_EQ("PRIVATE", account.pub);
     EXPECT_EQ("MALE", account.sex);
+}
+
+TEST(DecideRegisterPlayer, InvalidSexIsRefusedBeforeHashingOrReading) {
+    for (int value : {-1, 2, 3, 255}) {
+        FakeLoginAccountRepository repository;
+        auto request = goodRequest();
+        request.sex = value;
+        unsigned hashes = 0;
+        const RegisterPlayerActions actions{[&](const std::string&) -> std::string {
+            ++hashes;
+            throw std::runtime_error("hash should not run");
+        }};
+        const auto result = decideRegisterPlayer(request, repository, actions);
+        ASSERT_TRUE(result.isRejected());
+        EXPECT_EQ(result.rejection().reason, RegisterPlayerRejection::InvalidProfileField);
+        EXPECT_EQ(hashes, 0u);
+        EXPECT_EQ(repository.accountExistsCalls, 0);
+    }
+}
+
+TEST(DecideRegisterPlayer, TheExplicitHasherRunsOnceBeforeTheIDProbeEvenForAnExistingID) {
+    for (bool exists : {false, true}) {
+        FakeLoginAccountRepository repository;
+        if (exists)
+            repository.registeredIDs.insert("newcomer");
+        unsigned hashes = 0;
+        const RegisterPlayerActions actions{[&](const std::string& password) {
+            EXPECT_TRUE(password == kPassword);
+            EXPECT_EQ(repository.accountExistsCalls, 0);
+            ++hashes;
+            return std::string("encoded-test-hash");
+        }};
+        const auto result = decideRegisterPlayer(goodRequest(), repository, actions);
+        EXPECT_EQ(hashes, 1u);
+        EXPECT_EQ(repository.accountExistsCalls, 1);
+        EXPECT_EQ(result.isRejected(), exists);
+        if (result.isOk())
+            EXPECT_TRUE(result.events().password == "encoded-test-hash");
+    }
+}
+
+TEST(DecideRegisterPlayer, StandardHashFailuresRemainRefusalsBeforeTheRepositoryProbe) {
+    const std::exception_ptr failures[] = {std::make_exception_ptr(std::runtime_error("synthetic hashing failure")),
+                                           std::make_exception_ptr(std::bad_alloc()),
+                                           std::make_exception_ptr(Error("synthetic throwable"))};
+    for (const auto& failure : failures) {
+        FakeLoginAccountRepository repository;
+        const RegisterPlayerActions actions{
+            [&](const std::string&) -> std::string { std::rethrow_exception(failure); }};
+        const auto result = decideRegisterPlayer(goodRequest(), repository, actions);
+        ASSERT_TRUE(result.isRejected());
+        EXPECT_EQ(result.rejection().reason, RegisterPlayerRejection::PasswordHashingFailed);
+        EXPECT_FALSE(result.rejection().detail.empty());
+        EXPECT_EQ(repository.accountExistsCalls, 0);
+    }
+}
+
+TEST(DecideRegisterPlayer, NonstandardHashFailuresKeepTheirIdentity) {
+    struct HashFailure {};
+    const auto failure = std::make_exception_ptr(HashFailure{});
+    FakeLoginAccountRepository repository;
+    const RegisterPlayerActions actions{[&](const std::string&) -> std::string { std::rethrow_exception(failure); }};
+    try {
+        (void)decideRegisterPlayer(goodRequest(), repository, actions);
+        FAIL() << "hash failure was swallowed";
+    } catch (...) {
+        EXPECT_EQ(std::current_exception(), failure);
+    }
+    EXPECT_EQ(repository.accountExistsCalls, 0);
+}
+
+TEST(DecideRegisterPlayer, RepositoryExceptionsAreNotConvertedIntoHashingRefusals) {
+    class Accounts : public FakeLoginAccountRepository {
+    public:
+        bool accountExists(const std::string&) override {
+            std::rethrow_exception(failure);
+        }
+        std::exception_ptr failure = std::make_exception_ptr(std::runtime_error("probe failed"));
+    } repository;
+    const RegisterPlayerActions actions{[](const std::string&) { return std::string("encoded-test-hash"); }};
+    try {
+        (void)decideRegisterPlayer(goodRequest(), repository, actions);
+        FAIL() << "probe failure was swallowed";
+    } catch (...) {
+        EXPECT_EQ(std::current_exception(), repository.failure);
+    }
 }
 
 } // namespace
