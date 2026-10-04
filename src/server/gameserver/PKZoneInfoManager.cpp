@@ -1,5 +1,6 @@
 #include "PKZoneInfoManager.h"
 
+#include "DiagnosticTrace.h"
 #include "StringStream.h"
 #include "Zone.h"
 #include "ZoneUtil.h"
@@ -62,7 +63,9 @@ void PKZoneInfoManager::addPKZoneInfo(PKZoneInfo* pPKZoneInfo)
         //		pZone->resetDarkLightInfo();
     }
 
-    cout << "[" << pPKZoneInfo->getZoneID() << "]" << pPKZoneInfo->toString().c_str() << endl;
+    de::diagnosticTrace([&](std::ostream& output) {
+        output << "[" << pPKZoneInfo->getZoneID() << "]" << pPKZoneInfo->toString().c_str();
+    });
 
     __END_CATCH
 }

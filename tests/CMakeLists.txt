@@ -32,6 +32,7 @@ endforeach()
 add_executable(wire_tests EXCLUDE_FROM_ALL
     support/TestStreams.cpp
     datagram_frame_test.cpp
+    diagnostic_trace_test.cpp
     outcome_test.cpp
     packet_roundtrip_test.cpp
     packet_chat_test.cpp

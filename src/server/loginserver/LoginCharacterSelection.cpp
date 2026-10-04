@@ -5,6 +5,7 @@
 
 #include "CLSelectPC.h"
 #include "DatabaseError.h"
+#include "DiagnosticTrace.h"
 #include "LCSelectPCError.h"
 #include "LoginIncomingRequest.h"
 #include "LoginPlayer.h"
@@ -35,11 +36,14 @@ const LoginCharacterSelectionActions& defaultLoginCharacterSelectionActions() {
     static const LoginCharacterSelectionActions actions{
         +[](LoginPlayer& player, LCSelectPCError& packet) { player.sendPacket(&packet); },
         {+[](WorldID_t world, ServerGroupID_t group) {
-             std::cout << "WorldID:" << int(world) << " ServerGroupID:" << int(group) << std::endl;
+             de::diagnosticTrace(
+                 [&](std::ostream& output) { output << "WorldID:" << int(world) << " ServerGroupID:" << int(group); });
          },
          +[](WorldID_t world, ServerGroupID_t group, ServerID_t server) {
-             std::cout << "WorldID " << int(world) << ", ServerGroupID : " << int(group)
-                       << ", ServerID : " << int(server) << std::endl;
+             de::diagnosticTrace([&](std::ostream& output) {
+                 output << "WorldID " << int(world) << ", ServerGroupID : " << int(group)
+                        << ", ServerID : " << int(server);
+             });
          }}};
     return actions;
 }

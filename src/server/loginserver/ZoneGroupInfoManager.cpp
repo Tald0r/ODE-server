@@ -3,11 +3,12 @@
 #include <vector>
 
 #include "DatabaseError.h"
+#include "DiagnosticTrace.h"
 #include "repository/LoginConfigRepository.h"
 
 void ZoneGroupInfoManager::init() {
     load();
-    cout << toString() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << toString(); });
 }
 
 void ZoneGroupInfoManager::load() {

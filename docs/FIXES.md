@@ -13,6 +13,29 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Routine traffic and configuration values reach production output (2026-10-04)
+
+Packet streams formatted every payload with `toString()`, login admission wrote
+its message twice, and quest evaluation wrote a line for each intermediate
+step. Login/shared startup also printed every configuration value. Normal TCP
+EOF was reported as a connection error, including unauthenticated health probes.
+
+Routine packet, admission, quest, startup catalogue/table and login progress
+now use lazy, best-effort `DARKEDEN_TRACE=1` diagnostics; packet traces contain
+only framing metadata.
+Startup acknowledges configuration without dumping values. A distinct
+`PeerClosedException` preserves existing connection cleanup while login input
+retires normal closes quietly; independent cleanup failures remain reported.
+Tests cover quiet/opt-in traffic, unchanged bytes, broken diagnostic sinks,
+startup secret exclusion and real repeated peer closes with cleanup ownership.
+Catalogue sink failures now allow complete validated replacement tables to
+publish; repository, allocation and validation failures keep their existing
+transactional behavior. Login, common and shared catalogue regressions cover
+this reporting-only change.
+Existing warning/failure and item/money audit paths remain enabled.
+
+> **Status:** fixed (fix/quiet-runtime-logging)
+
 ## Game-player handoffs lose ownership on failed destination insertion (2026-10-02)
 
 `ZonePlayerManager::heartbeat` removes a player from its outgoing queue before

@@ -1,5 +1,6 @@
 #include "GQuestStatus.h"
 
+#include "DiagnosticTrace.h"
 #include "EffectEventQuestReset.h"
 #include "GCGQuestStatusModify.h"
 #include "GQuestInfo.h"
@@ -34,20 +35,20 @@ void GQuestStatus::update() {
 
 BYTE GQuestStatus::checkMissions() {
     BYTE ret = GCGQuestStatusModify::NO_MODIFY;
-    cout << "Checking quest : " << m_QuestID << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "Checking quest : " << m_QuestID; });
     if (m_Status == DOING) {
-        cout << "Checking complete elements.." << endl;
+        de::diagnosticTrace([&](std::ostream& output) { output << "Checking complete elements.."; });
         GQuestElement::ResultType resultComplete = checkElements(GQuestInfo::COMPLETE);
         switch (resultComplete) {
         case GQuestElement::OK: {
-            cout << "Quest success : " << m_QuestID << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Quest success : " << m_QuestID; });
             m_Status = SUCCESS;
             ret = GCGQuestStatusModify::SUCCESS;
             cleanUpMissions();
             break;
         }
         case GQuestElement::FAIL: {
-            cout << "Quest failed : " << m_QuestID << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Quest failed : " << m_QuestID; });
             m_Status = FAIL;
             save();
             ret = GCGQuestStatusModify::FAIL;
@@ -55,16 +56,16 @@ BYTE GQuestStatus::checkMissions() {
             break;
         }
         case GQuestElement::WAIT:
-            cout << "Quest waiting.. : " << m_QuestID << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Quest waiting.. : " << m_QuestID; });
         default:
             break;
         }
 
-        cout << "Checking fail elements.." << endl;
+        de::diagnosticTrace([&](std::ostream& output) { output << "Checking fail elements.."; });
         GQuestElement::ResultType resultFail = checkElements(GQuestInfo::FAIL);
         switch (resultFail) {
         case GQuestElement::OK: {
-            cout << "Quest failed : " << m_QuestID << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Quest failed : " << m_QuestID; });
             m_Status = FAIL;
             save();
             ret = GCGQuestStatusModify::FAIL;
@@ -73,23 +74,23 @@ BYTE GQuestStatus::checkMissions() {
         }
         case GQuestElement::FAIL:
         case GQuestElement::WAIT:
-            cout << "Quest waiting.. : " << m_QuestID << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Quest waiting.. : " << m_QuestID; });
         default:
             break;
         }
     }
 
     if (m_Status == SUCCESS) {
-        cout << "Checking reward elements.." << endl;
+        de::diagnosticTrace([&](std::ostream& output) { output << "Checking reward elements.."; });
         GQuestElement::ResultType resultReward = checkElements(GQuestInfo::REWARD);
         switch (resultReward) {
         case GQuestElement::OK: {
-            cout << "Quest complete : " << m_QuestID << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Quest complete : " << m_QuestID; });
             m_Status = COMPLETE;
             save();
             m_pOwner->getGQuestManager()->refreshQuest();
             if (m_QuestID == 1001) {
-                cout << "complete.." << endl;
+                de::diagnosticTrace([&](std::ostream& output) { output << "complete.."; });
                 EffectEventQuestReset* pEffect = new EffectEventQuestReset(m_pOwner, 1);
                 int lastSec = 0;
                 pEffect->setDeadline((EVENT_QUEST_TIME_LIMIT - lastSec) * 10);
@@ -106,7 +107,7 @@ BYTE GQuestStatus::checkMissions() {
             break;
         }
         case GQuestElement::WAIT:
-            cout << "Quest waiting.. : " << m_QuestID << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Quest waiting.. : " << m_QuestID; });
         default:
             break;
         }
@@ -139,38 +140,41 @@ GQuestElement::ResultType GQuestStatus::checkElements(GQuestInfo::ElementType ty
 
 // Check the elements in order. The next one is checked only once the previous one completes.
 GQuestElement::ResultType GQuestStatus::checkElementsSEQ(GQuestInfo::ElementType type) {
-    cout << "Checking SEQ : " << (int)type << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "Checking SEQ : " << (int)type; });
     GQuestMission* pCurrentMission = m_MissionMap[m_ElementAdvance[type]];
     if (pCurrentMission != NULL) {
-        cout << "Checking Mission : " << pCurrentMission->getMissionName() << endl;
+        de::diagnosticTrace(
+            [&](std::ostream& output) { output << "Checking Mission : " << pCurrentMission->getMissionName(); });
         GQuestElement::ResultType result = (*m_ElementAdvance[type])->checkMission(pCurrentMission);
-        cout << "Result : " << result << endl;
+        de::diagnosticTrace([&](std::ostream& output) { output << "Result : " << result; });
         if (result == GQuestElement::FAIL)
             pCurrentMission->m_Status = MissionInfo::FAIL;
         if (result != GQuestElement::OK)
             return result;
 
-        cout << "Mission Complete" << endl;
+        de::diagnosticTrace([&](std::ostream& output) { output << "Mission Complete"; });
         pCurrentMission->m_Status = MissionInfo::SUCCESS;
         (*m_ElementAdvance[type])->whenMissionEnd(m_pOwner, pCurrentMission);
         ++m_ElementAdvance[type];
     }
 
     for (; m_ElementAdvance[type] != m_pGQuestInfo->getElements(type).end(); ++m_ElementAdvance[type]) {
-        cout << "Checking Element : " << (*(m_ElementAdvance[type]))->getElementName() << endl;
+        de::diagnosticTrace([&](std::ostream& output) {
+            output << "Checking Element : " << (*(m_ElementAdvance[type]))->getElementName();
+        });
         GQuestElement::ResultType result = (*(m_ElementAdvance[type]))->checkCondition(m_pOwner);
-        cout << "Result : " << result << endl;
+        de::diagnosticTrace([&](std::ostream& output) { output << "Result : " << result; });
         if (result == GQuestElement::WAIT) {
-            cout << "Creating new mission..." << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Creating new mission..."; });
             GQuestMission* pNewMission = (*(m_ElementAdvance[type]))->makeInitMission(m_pOwner);
             if (pNewMission == NULL)
                 return GQuestElement::FAIL;
-            cout << pNewMission->getMissionName() << " Created." << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << pNewMission->getMissionName() << " Created."; });
 
             pNewMission->m_Condition = type;
             pNewMission->m_Index = (*(m_ElementAdvance[type]))->getIndex();
 
-            cout << "Mission index is " << pNewMission->m_Index << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Mission index is " << pNewMission->m_Index; });
             if (pNewMission->m_Index == 0)
                 cout << "************ 0 index mission created!! ************" << endl;
 
@@ -192,7 +196,7 @@ GQuestElement::ResultType GQuestStatus::checkElementsSEQ(GQuestInfo::ElementType
 
 // OK if at least one succeeds. Used when checking FAIL conditions.
 GQuestElement::ResultType GQuestStatus::checkElementsOR(GQuestInfo::ElementType type) {
-    cout << "Checking OR : " << (int)type << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "Checking OR : " << (int)type; });
 
     vector<GQuestElement*>::const_iterator itr = m_pGQuestInfo->getElements(type).begin();
     vector<GQuestElement*>::const_iterator endItr = m_pGQuestInfo->getElements(type).end();
@@ -200,36 +204,38 @@ GQuestElement::ResultType GQuestStatus::checkElementsOR(GQuestInfo::ElementType 
     for (; itr != endItr;) {
         GQuestMission* pMission = m_MissionMap[itr];
         if (pMission != NULL) {
-            cout << "Checking Mission : " << pMission->getMissionName() << endl;
+            de::diagnosticTrace(
+                [&](std::ostream& output) { output << "Checking Mission : " << pMission->getMissionName(); });
             if (pMission->m_Status == MissionInfo::SUCCESS) {
-                cout << "Mission already succeeded" << endl;
+                de::diagnosticTrace([&](std::ostream& output) { output << "Mission already succeeded"; });
                 return GQuestElement::OK;
             }
 
             if (pMission->m_Status == MissionInfo::FAIL) {
-                cout << "Mission already failed" << endl;
+                de::diagnosticTrace([&](std::ostream& output) { output << "Mission already failed"; });
             } else {
                 GQuestElement::ResultType result = (*itr)->checkMission(pMission);
-                cout << "Result : " << result << endl;
+                de::diagnosticTrace([&](std::ostream& output) { output << "Result : " << result; });
                 if (result == GQuestElement::FAIL) {
-                    cout << "Mission Failed" << endl;
+                    de::diagnosticTrace([&](std::ostream& output) { output << "Mission Failed"; });
                     pMission->m_Status = MissionInfo::FAIL;
                     (*itr)->whenMissionEnd(m_pOwner, pMission);
                 }
 
                 if (result == GQuestElement::OK) {
-                    cout << "Mission Complete" << endl;
+                    de::diagnosticTrace([&](std::ostream& output) { output << "Mission Complete"; });
                     pMission->m_Status = MissionInfo::SUCCESS;
                     (*itr)->whenMissionEnd(m_pOwner, pMission);
                     return GQuestElement::OK;
                 }
             }
         } else {
-            cout << "Checking Element : " << (*itr)->getElementName() << endl;
+            de::diagnosticTrace(
+                [&](std::ostream& output) { output << "Checking Element : " << (*itr)->getElementName(); });
             GQuestElement::ResultType result = (*itr)->checkCondition(m_pOwner);
-            cout << "Result : " << result << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Result : " << result; });
             if (result == GQuestElement::WAIT) {
-                cout << "Creating new mission..." << endl;
+                de::diagnosticTrace([&](std::ostream& output) { output << "Creating new mission..."; });
                 GQuestMission* pNewMission = (*itr)->makeInitMission(m_pOwner);
                 if (pNewMission == NULL) {
                     cout << "Mission creation failed" << endl;
@@ -237,11 +243,13 @@ GQuestElement::ResultType GQuestStatus::checkElementsOR(GQuestInfo::ElementType 
                     continue;
                 }
 
-                cout << pNewMission->getMissionName() << " Created." << endl;
+                de::diagnosticTrace(
+                    [&](std::ostream& output) { output << pNewMission->getMissionName() << " Created."; });
                 pNewMission->m_Condition = type;
                 pNewMission->m_Index = (*itr)->getIndex();
 
-                cout << "Mission index is " << pNewMission->m_Index << endl;
+                de::diagnosticTrace(
+                    [&](std::ostream& output) { output << "Mission index is " << pNewMission->m_Index; });
                 if (pNewMission->m_Index == 0)
                     cout << "************ 0 index mission created!! ************" << endl;
 
@@ -265,7 +273,7 @@ GQuestElement::ResultType GQuestStatus::checkElementsOR(GQuestInfo::ElementType 
 
 // Evaluate every element at once. The ones that must wait are waited on together.
 GQuestElement::ResultType GQuestStatus::checkElementsAND(GQuestInfo::ElementType type) {
-    cout << "Checking AND : " << (int)type << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "Checking AND : " << (int)type; });
 
     vector<GQuestElement*>::const_iterator itr = m_pGQuestInfo->getElements(type).begin();
     vector<GQuestElement*>::const_iterator endItr = m_pGQuestInfo->getElements(type).end();
@@ -275,23 +283,24 @@ GQuestElement::ResultType GQuestStatus::checkElementsAND(GQuestInfo::ElementType
     for (; itr != endItr;) {
         GQuestMission* pMission = m_MissionMap[itr];
         if (pMission != NULL) {
-            cout << "Checking Mission : " << pMission->getMissionName() << endl;
+            de::diagnosticTrace(
+                [&](std::ostream& output) { output << "Checking Mission : " << pMission->getMissionName(); });
             if (pMission->m_Status == MissionInfo::FAIL) {
-                cout << "Mission already failed" << endl;
+                de::diagnosticTrace([&](std::ostream& output) { output << "Mission already failed"; });
                 return GQuestElement::FAIL;
             } else if (pMission->m_Status == MissionInfo::SUCCESS) {
-                cout << "Mission already succeeded" << endl;
+                de::diagnosticTrace([&](std::ostream& output) { output << "Mission already succeeded"; });
             } else {
                 GQuestElement::ResultType result = (*itr)->checkMission(pMission);
-                cout << "Result : " << result << endl;
+                de::diagnosticTrace([&](std::ostream& output) { output << "Result : " << result; });
                 if (result == GQuestElement::OK) {
-                    cout << "Mission Success" << endl;
+                    de::diagnosticTrace([&](std::ostream& output) { output << "Mission Success"; });
                     pMission->m_Status = MissionInfo::SUCCESS;
                     (*itr)->whenMissionEnd(m_pOwner, pMission);
                 }
 
                 if (result == GQuestElement::FAIL) {
-                    cout << "Mission Failed" << endl;
+                    de::diagnosticTrace([&](std::ostream& output) { output << "Mission Failed"; });
                     pMission->m_Status = MissionInfo::FAIL;
                     (*itr)->whenMissionEnd(m_pOwner, pMission);
                     return GQuestElement::OK;
@@ -300,11 +309,12 @@ GQuestElement::ResultType GQuestStatus::checkElementsAND(GQuestInfo::ElementType
                     ret = GQuestElement::WAIT;
             }
         } else {
-            cout << "Checking Element : " << (*itr)->getElementName() << endl;
+            de::diagnosticTrace(
+                [&](std::ostream& output) { output << "Checking Element : " << (*itr)->getElementName(); });
             GQuestElement::ResultType result = (*itr)->checkCondition(m_pOwner);
-            cout << "Result : " << result << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Result : " << result; });
             if (result == GQuestElement::WAIT) {
-                cout << "Creating new mission..." << endl;
+                de::diagnosticTrace([&](std::ostream& output) { output << "Creating new mission..."; });
                 GQuestMission* pNewMission = (*itr)->makeInitMission(m_pOwner);
                 if (pNewMission == NULL) {
                     cout << "Mission creation failed" << endl;
@@ -312,11 +322,13 @@ GQuestElement::ResultType GQuestStatus::checkElementsAND(GQuestInfo::ElementType
                     continue;
                 }
 
-                cout << pNewMission->getMissionName() << " Created." << endl;
+                de::diagnosticTrace(
+                    [&](std::ostream& output) { output << pNewMission->getMissionName() << " Created."; });
                 pNewMission->m_Condition = type;
                 pNewMission->m_Index = (*itr)->getIndex();
 
-                cout << "Mission index is " << pNewMission->m_Index << endl;
+                de::diagnosticTrace(
+                    [&](std::ostream& output) { output << "Mission index is " << pNewMission->m_Index; });
                 if (pNewMission->m_Index == 0)
                     cout << "************ 0 index mission created!! ************" << endl;
 

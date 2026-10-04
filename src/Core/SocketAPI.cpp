@@ -590,7 +590,7 @@ uint SocketAPI::recv_ex(SOCKET s, void* buf, uint len, uint flags) {
 
 #endif
     } else if (nrecv == 0) {
-        throw ConnectException("connect closed.");
+        throw PeerClosedException();
     }
 
     return nrecv;
