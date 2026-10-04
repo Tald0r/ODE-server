@@ -4,6 +4,8 @@ Guidance for Claude Code (claude.ai/code) working in this repository: the
 **DarkEden** game server, an MMORPG server written in C++20 and split into
 three cooperating processes.
 
+For a concise source map, start with the [OKF knowledge index](docs/knowledge/index.md).
+
 ## Rules and the tests that own them
 
 Every architectural rule below is owned by something that fails, never by a
