@@ -56,6 +56,29 @@ rotation, missing/unwritable/full sinks, retry after partial writes and SIGPIPE
 preservation. `shutdown_supervisor` checks shutdown order, final forwarded lines,
 child failure and absence of duplicate `.out` files.
 
+## Routine traffic and configuration values reach production output (2026-10-04)
+
+Packet streams formatted every payload with `toString()`, login admission wrote
+its message twice, and quest evaluation wrote a line for each intermediate
+step. Login/shared startup also printed every configuration value. Normal TCP
+EOF was reported as a connection error, including unauthenticated health probes.
+
+Routine packet, admission, quest, startup catalogue/table and login progress
+now use lazy, best-effort `DARKEDEN_TRACE=1` diagnostics; packet traces contain
+only framing metadata.
+Startup acknowledges configuration without dumping values. A distinct
+`PeerClosedException` preserves existing connection cleanup while login input
+retires normal closes quietly; independent cleanup failures remain reported.
+Tests cover quiet/opt-in traffic, unchanged bytes, broken diagnostic sinks,
+startup secret exclusion and real repeated peer closes with cleanup ownership.
+Catalogue sink failures now allow complete validated replacement tables to
+publish; repository, allocation and validation failures keep their existing
+transactional behavior. Login, common and shared catalogue regressions cover
+this reporting-only change.
+Existing warning/failure and item/money audit paths remain enabled.
+
+> **Status:** fixed (fix/quiet-runtime-logging)
+
 ## Game-player handoffs lose ownership on failed destination insertion (2026-10-02)
 
 `ZonePlayerManager::heartbeat` removes a player from its outgoing queue before
@@ -1117,16 +1140,20 @@ check the diagnostic arguments and the actual log text in an isolated directory.
 
 ## A prior free pass survives into another login attempt (2026-10-03)
 
-By inspection, `CLLoginHandler` reads the player's existing free-pass flag after
-the current authentication gate. Neither an ordinary-client gate nor a rejected
-web/NetMarble attempt clears that flag or binds it to an account. If a successfully
-authorized web attempt later returns to the beginning phase, a different account
-on the same connection can reach the free-pass projection without its ordinary
-password check. The extracted adapters preserve existing state; task 2.68 must
-give per-attempt authorization an explicit owner and add an end-to-end regression
-when extracting the main login flow.
+`CLLoginHandler` read a connection's previous free-pass flag after the current
+authentication gate. Three production-flow regressions reproduced a refused
+web/NetMarble account authorizing another account's ordinary login without a
+password check, including stripping an extra character from a test-client ID.
 
-> **Status:** recorded, not fixed (refactor/login-authentication)
+The extracted `LoginFlow` clears the free pass and sets the current web-login
+mode before preparing each attempt. Only authorization actually published by the
+current gate can bypass the password check; account-cleanup ownership remains
+independent. Runtime tests cover same/different-account retries, intervening
+external refusals, fresh successful authentication and input-allocation failure.
+The flow preserves gate ordering, legacy NetMarble exception handling, refusal
+bytes, reply/phase ordering and ownership after partial writes or sends.
+
+> **Status:** fixed (fix/login-attempt-authorization)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 

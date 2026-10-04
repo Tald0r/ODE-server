@@ -529,12 +529,15 @@ TEST(ServerCatalogue, EveryQueryStagePreservesExceptionIdentityCleanupAndRetry) 
 class RefusingBuffer : public std::streambuf {
 public:
     RefusingBuffer(std::string_view refused, unsigned occurrence) : refused(refused), occurrence(occurrence) {}
+    bool rejected = false;
 
 private:
     std::streamsize xsputn(const char* text, std::streamsize size) override {
         if (std::string_view(text, static_cast<std::size_t>(size)).find(refused) != std::string_view::npos &&
-            ++matches == occurrence)
+            ++matches == occurrence) {
+            rejected = true;
             return 0;
+        }
         return size;
     }
     int_type overflow(int_type value) override {
@@ -546,6 +549,7 @@ private:
 };
 
 int checkReportingFailure(std::string_view refused, unsigned occurrence) {
+    ::setenv("DARKEDEN_TRACE", "1", 1);
     ServerRepository original;
     auto next = replacement();
     next.servers.push_back(original.servers.front());
@@ -553,31 +557,33 @@ int checkReportingFailure(std::string_view refused, unsigned occurrence) {
     next.castles.push_back({1, 0, 9});
     auto manager = std::make_unique<GameServerInfoManager>();
     manager->load(original);
-    const auto* previous = manager->getGameServerInfo(1, 0, 1);
-    auto** view = manager->getGameServerInfos();
     RefusingBuffer buffer(refused, occurrence);
-    auto* previousBuffer = std::cout.rdbuf(&buffer);
-    const auto previousExceptions = std::cout.exceptions();
-    std::cout.exceptions(std::ios::badbit | std::ios::failbit);
-    AllocationProbe probe;
+    auto* previousBuffer = std::cerr.rdbuf(&buffer);
+    const auto previousExceptions = std::cerr.exceptions();
+    std::cerr.exceptions(std::ios::badbit | std::ios::failbit);
     bool failed = false;
     try {
         manager->load(next);
-    } catch (const std::ios_base::failure&) {
+    } catch (...) {
         failed = true;
     }
-    std::cout.exceptions(std::ios::goodbit);
-    std::cout.rdbuf(previousBuffer);
-    std::cout.clear();
-    std::cout.exceptions(previousExceptions);
-    if (!failed || !retained(*manager, previous, view) || probe.outstanding() != 0)
+    const bool streamHealthy = std::cerr.good();
+    std::cerr.exceptions(std::ios::goodbit);
+    std::cerr.rdbuf(previousBuffer);
+    std::cerr.clear();
+    std::cerr.exceptions(previousExceptions);
+    if (failed || !buffer.rejected || !streamHealthy)
         return 1;
-    manager->load(next);
-    manager.reset();
-    return probe.outstanding() == 0 ? 0 : 2;
+    const auto* first = manager->getGameServerInfo(1, 0, 1);
+    const auto* last = manager->getGameServerInfo(1, 3, 3);
+    return manager->getMaxWorldID() == 5 && manager->getMaxServerGroupID() == 4 && first->isNonPKServer() &&
+                   first->getCastleFollowingServerID() == 9 && last->isNonPKServer() &&
+                   last->getCastleFollowingServerID() == 45
+               ? 0
+               : 2;
 }
 
-TEST(ServerCatalogue, ThrowingDiagnosticsCannotPublishDimensionsBaseRowsOrPartialFlags) {
+TEST(ServerCatalogue, FailedOptionalDiagnosticsCannotPreventPublishingCompleteRowsAndFlags) {
     ASSERT_EXIT(std::_Exit(checkReportingFailure("MAX SERVER GROUP", 1)), ::testing::ExitedWithCode(0), "");
     for (const auto text : {"NonPK set", "follows"}) {
         for (unsigned occurrence = 1; occurrence <= 2; ++occurrence) {

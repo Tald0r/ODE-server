@@ -442,6 +442,16 @@ public:
     }
 };
 
+// A peer's orderly TCP close is distinct from resets and other I/O failures.
+// Existing connection cleanup still catches this through ConnectException.
+class PeerClosedException : public ConnectException {
+public:
+    PeerClosedException() : ConnectException("connect closed.") {}
+    string getName() const override {
+        return "PeerClosedException";
+    }
+};
+
 //////////////////////////////////////////////////////////////////////
 //
 // Protocol Exception

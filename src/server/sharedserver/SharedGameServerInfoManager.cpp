@@ -8,13 +8,14 @@
 
 #include <limits>
 
+#include "DiagnosticTrace.h"
 #include "KernelContext.h"
 #include "Properties.h"
 #include "repository/SharedConfigRepository.h"
 
 void SharedGameServerInfoManager::init() {
     load();
-    cout << toString() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << toString(); });
 }
 
 void SharedGameServerInfoManager::load() {
@@ -32,7 +33,7 @@ void SharedGameServerInfoManager::load(SharedConfigRepository& repo, int worldID
         throw Error("invalid maximum game-server GroupID");
 
     std::vector<Servers> replacement(static_cast<std::size_t>(maxGroupID) + 1);
-    cout << "MAX SERVER GROUP = " << replacement.size() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "MAX SERVER GROUP = " << replacement.size(); });
     for (const auto& row : repo.loadGameServers()) {
         if (row.worldID != worldID)
             continue;

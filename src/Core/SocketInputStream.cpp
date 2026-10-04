@@ -14,6 +14,7 @@
 #include <errno.h>
 
 #include "Assert.h"
+#include "DiagnosticTrace.h"
 #include "Packet.h"
 
 #if __LINUX__
@@ -215,7 +216,12 @@ void SocketInputStream::readPacket(Packet* pPacket) {
     if (unread != 0)
         throw InvalidProtocolException("packet read left its declared body unread");
 
-    cout << "Receive:" << pPacket->toString() << endl;
+    de::diagnosticTrace([&](std::ostream& output) {
+        PacketID_t packetID;
+        memcpy(&packetID, header, szPacketID);
+        output << "packet receive id=" << packetID << " size=" << packetSize
+               << " sequence=" << static_cast<unsigned>(static_cast<unsigned char>(header[szPacketID + szPacketSize]));
+    });
     __END_CATCH
 }
 

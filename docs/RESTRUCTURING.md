@@ -1681,23 +1681,23 @@ visibility can't express.
     selection and failure containment.
 
 - [ ] **2.68 Extract the remaining login handler flow and password adapter.**
-  > **Status:** in progress (main login flow and per-attempt authorization remain).
-  > `checkStoredPassword` now accepts explicit verification, hashing and optional
-  > reporting actions; production defaults preserve the existing password policy.
-  > Rehash diagnostic failures cannot replace an accepted password.
-  > `CLLoginHandler` still coordinates normalization,
-  > authentication gates, ordinary password migration, decision/session
-  > adaptation, kick/success dispatch and reporting through process contexts. Use
-  > the extracted authentication/refusal adapters while supplying the remaining
-  > explicit repository, configuration, time, password and dispatch actions,
-  > retaining gate order and acquired-account cleanup ownership. Address the
-  > recorded free-pass state carried across attempts.
+  > **Status:** done (ddadcb2a, 4fab6d80).
+  > `CLLoginHandler` delegates to `LoginFlow`, which owns packet inputs and uses
+  > explicit repository, configuration, time, password and dispatch actions.
+  > Each attempt clears previous external authorization before preparing inputs;
+  > only the current gate's grant can bypass the ordinary password check.
+  > Gate order, the legacy NetMarble exception boundary and acquired-account
+  > cleanup ownership are preserved. `checkStoredPassword` accepts explicit
+  > verification, hashing and optional reporting actions; production defaults
+  > preserve password policy, and rehash diagnostic failures cannot replace an
+  > accepted password.
+  - Owner: `LoginFlow` in `login_server_runtime_tests` covers ordinary/web/test/
+    NetMarble paths, cross-attempt authorization, owned inputs, refusal bytes,
+    write/dispatch/publication order, exception boundaries, partial effects and
+    input-allocation failure with cleanup ownership preserved through retry.
   - Owner: `CheckStoredPassword` in `login_decision_tests` covers real hashes,
     reporting failure containment, decoy verification, operation exception
     boundaries and rehash retry without changing persistence ownership.
-  - Owner to add: ordinary/web/test/NetMarble paths, owned inputs, refusal bytes,
-    authentication/write order, kick/success publication, exception/reporting
-    failures, partial effects and allocation cleanup without executable startup.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off

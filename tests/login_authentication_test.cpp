@@ -812,8 +812,7 @@ int checkProductionLogs() {
     std::ifstream mismatch("keydiff.txt");
     if (!std::getline(mismatch, line) || !line.ends_with(" : Web login key mismatch, Player ID: Rowan") ||
         line.find("private-database-key") != std::string::npos ||
-        line.find("private-packet-key") != std::string::npos || std::getline(mismatch, line) ||
-        logs.console() != "33333\n")
+        line.find("private-packet-key") != std::string::npos || std::getline(mismatch, line) || !logs.console().empty())
         return 4;
     return 0;
 }

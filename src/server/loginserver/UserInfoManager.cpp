@@ -3,11 +3,12 @@
 #include <utility>
 
 #include "DatabaseError.h"
+#include "DiagnosticTrace.h"
 #include "repository/LoginConfigRepository.h"
 
 void UserInfoManager::init() {
     load();
-    cout << toString() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << toString(); });
 }
 
 void UserInfoManager::load() {
