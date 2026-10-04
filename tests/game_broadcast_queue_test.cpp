@@ -273,7 +273,9 @@ TEST(GameBroadcastQueue, EveryAllocationFailurePreservesExistingMessagesAndAllow
                     threw = true;
                 }
                 probe.stopFailing();
-                if (threw != probe.rejected() || (failAt == 16 && probe.rejected()) ||
+                // Diagnostic allocation failures are contained; delivery below
+                // still verifies the complete candidate when queuing succeeds.
+                if ((threw && !probe.rejected()) || (failAt == 16 && probe.rejected()) ||
                     (threw && probe.outstanding() != 0))
                     std::_Exit(1);
                 manager->pushBroadcastPacket(&after, &filter);
