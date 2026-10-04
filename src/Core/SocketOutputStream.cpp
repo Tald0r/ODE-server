@@ -9,6 +9,7 @@
 #include "SocketOutputStream.h"
 
 #include "Assert.h"
+#include "DiagnosticTrace.h"
 #include "Packet.h"
 #include "VSDateTime.h"
 
@@ -166,8 +167,10 @@ void SocketOutputStream::writeFrame(const Packet* pPacket) {
                 declaredSize, bodySize);
     }
 
-    cout << "Send:" << packetID << "[" << bodySize << "," << (m_Sequence - 1) << "]" << " " << pPacket->toString()
-         << endl;
+    de::diagnosticTrace([&](std::ostream& output) {
+        output << "packet send id=" << packetID << " size=" << bodySize
+               << " sequence=" << static_cast<unsigned>(static_cast<SequenceSize_t>(m_Sequence - 1));
+    });
 }
 
 

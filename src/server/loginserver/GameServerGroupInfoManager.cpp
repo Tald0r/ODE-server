@@ -3,11 +3,12 @@
 #include <utility>
 
 #include "DatabaseError.h"
+#include "DiagnosticTrace.h"
 #include "repository/LoginConfigRepository.h"
 
 void GameServerGroupInfoManager::init() {
     load();
-    cout << toString() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << toString(); });
 }
 
 void GameServerGroupInfoManager::load() {
@@ -45,10 +46,13 @@ void GameServerGroupInfoManager::load(LoginConfigRepository& repo) {
         group.setGroupID(groupID);
         group.setGroupName(row.groupName);
         group.setStat(static_cast<BYTE>(row.stat));
-        cout << "addGameServerGroupInfo: " << (int)worldID << ", " << (int)groupID << " : "
-             << group.getGroupName().c_str() << endl;
+        de::diagnosticTrace([&](std::ostream& output) {
+            output << "addGameServerGroupInfo: " << (int)worldID << ", " << (int)groupID << " : "
+                   << group.getGroupName().c_str();
+        });
     }
-    // All allocation, validation and load reporting finish before publication.
+    // All allocation and validation finish before publication. Optional
+    // diagnostics cannot make a complete replacement fail.
     m_Groups.swap(replacement);
 }
 

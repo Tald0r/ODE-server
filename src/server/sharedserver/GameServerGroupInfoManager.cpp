@@ -9,11 +9,12 @@
 #include <limits>
 
 #include "DatabaseError.h"
+#include "DiagnosticTrace.h"
 #include "repository/SharedConfigRepository.h"
 
 void GameServerGroupInfoManager::init() {
     load();
-    cout << toString() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << toString(); });
 }
 
 void GameServerGroupInfoManager::load() {

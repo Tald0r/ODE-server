@@ -484,35 +484,43 @@ TEST(SharedCatalogue, GroupRowDatabaseErrorsKeepTheirExistingTranslation) {
 }
 
 class RefusingBuffer : public std::streambuf {
+public:
+    bool rejected = false;
+
+private:
     std::streamsize xsputn(const char*, std::streamsize) override {
+        rejected = true;
         return 0;
     }
 };
 
-TEST(SharedCatalogue, FailedLoadDiagnosticsCannotPublishAPartialServerCatalogue) {
+TEST(SharedCatalogue, FailedOptionalDiagnosticsCannotPreventPublishingACompleteServerCatalogue) {
     ASSERT_EXIT(
         {
+            ::setenv("DARKEDEN_TRACE", "1", 1);
             CatalogueRepository repository;
             SharedGameServerInfoManager servers;
             servers.load(repository, 1);
-            const auto* previous = servers.getGameServerInfo(101, 1);
             repository.maxGroup = 3;
             RefusingBuffer buffer;
-            auto* previousBuffer = std::cout.rdbuf(&buffer);
-            const auto previousExceptions = std::cout.exceptions();
-            std::cout.exceptions(std::ios::badbit | std::ios::failbit);
+            auto* previousBuffer = std::cerr.rdbuf(&buffer);
+            const auto previousExceptions = std::cerr.exceptions();
+            std::cerr.exceptions(std::ios::badbit | std::ios::failbit);
             bool failed = false;
             try {
                 servers.load(repository, 1);
-            } catch (const std::ios_base::failure&) {
+            } catch (...) {
                 failed = true;
             }
-            std::cout.exceptions(std::ios::goodbit);
-            std::cout.rdbuf(previousBuffer);
-            std::cout.clear();
-            std::cout.exceptions(previousExceptions);
-            const bool preserved = servers.getMaxServerGroupID() == 3 && servers.getGameServerInfo(101, 1) == previous;
-            std::_Exit(failed && preserved ? 0 : 1);
+            const bool streamHealthy = std::cerr.good();
+            std::cerr.exceptions(std::ios::goodbit);
+            std::cerr.rdbuf(previousBuffer);
+            std::cerr.clear();
+            std::cerr.exceptions(previousExceptions);
+            const bool published = servers.getMaxServerGroupID() == 4 &&
+                                   servers.getGameServerInfo(101, 1)->getNickname() == "first" &&
+                                   servers.getGameServerInfo(102, 2)->getNickname() == "second";
+            std::_Exit(!failed && buffer.rejected && streamHealthy && published ? 0 : 1);
         },
         ::testing::ExitedWithCode(0), "");
 }

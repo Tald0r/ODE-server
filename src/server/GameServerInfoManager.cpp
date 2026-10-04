@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "DiagnosticTrace.h"
 #include "repository/ServerInfoRepository.h"
 
 void GameServerInfoManager::Catalogue::swap(Catalogue& other) noexcept {
@@ -29,7 +30,7 @@ void GameServerInfoManager::clear() noexcept {
 
 void GameServerInfoManager::init() {
     load();
-    cout << toString() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << toString(); });
 }
 
 void GameServerInfoManager::load() {
@@ -61,7 +62,7 @@ void GameServerInfoManager::load(ServerInfoRepository& repository) {
         prepared.tables[world].resize(static_cast<std::size_t>(prepared.groupCount));
         prepared.view[world] = prepared.tables[world].data();
     }
-    cout << "MAX SERVER GROUP = " << prepared.groupCount << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "MAX SERVER GROUP = " << prepared.groupCount; });
 
     const auto servers = repository.loadServers();
     prepared.rows.reserve(servers.size());
@@ -97,7 +98,9 @@ void GameServerInfoManager::load(ServerInfoRepository& repository) {
             throw Error("invalid non-PK catalogue ID");
         prepared.lookup(1, static_cast<ServerGroupID_t>(row.serverGroupID), static_cast<WorldID_t>(row.worldID))
             ->setNonPKServer();
-        cout << "WorldID:" << row.worldID << " ServerGroupID:" << row.serverGroupID << " NonPK set" << endl;
+        de::diagnosticTrace([&](std::ostream& output) {
+            output << "WorldID:" << row.worldID << " ServerGroupID:" << row.serverGroupID << " NonPK set";
+        });
     }
 
     for (const auto& row : repository.loadCastleStats()) {
@@ -107,11 +110,14 @@ void GameServerInfoManager::load(ServerInfoRepository& repository) {
             throw Error("invalid castle-following catalogue ID");
         prepared.lookup(1, static_cast<ServerGroupID_t>(row.serverGroupID), static_cast<WorldID_t>(row.worldID))
             ->setCastleFollowingServerID(static_cast<ServerID_t>(row.followServerID));
-        cout << "WorldID:" << row.worldID << " ServerGroupID:" << row.serverGroupID << " follows" << row.followServerID
-             << endl;
+        de::diagnosticTrace([&](std::ostream& output) {
+            output << "WorldID:" << row.worldID << " ServerGroupID:" << row.serverGroupID << " follows"
+                   << row.followServerID;
+        });
     }
 
-    // No row, index, flag, dimension or diagnostic remains to prepare at publication.
+    // All rows, indices, flags and dimensions are ready before publication;
+    // optional diagnostics cannot prevent publication.
     m_Catalogue.swap(prepared);
 }
 

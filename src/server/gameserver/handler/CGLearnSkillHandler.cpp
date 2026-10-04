@@ -5,6 +5,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "CGLearnSkill.h"
+#include "DiagnosticTrace.h"
 #include "GameContext.h"
 
 #ifdef __GAME_SERVER__
@@ -52,7 +53,10 @@ void CGLearnSkillHandler::execute(CGLearnSkill* pPacket, Player* pPlayer)
 
     Assert(pPacket != NULL && pPlayer != NULL);
 
-    cout << pPacket->toString() << endl;
+    de::diagnosticTrace([&](std::ostream& output) {
+        output << "packet direction=in handler=CGLearnSkill id=" << pPacket->getPacketID()
+               << " size=" << pPacket->getPacketSize();
+    });
 
     SkillType_t targetSkillType = pPacket->getSkillType();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);

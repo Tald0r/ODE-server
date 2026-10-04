@@ -8,9 +8,8 @@
 
 #include <list>
 
-#include <source_location>
-
 #include "CreatureUtil.h"
+#include "DiagnosticTrace.h"
 #include "Effect.h"
 #include "EffectCanEnterGDRLair.h"
 #include "EffectManager.h"
@@ -1778,10 +1777,10 @@ void Party::shareExpansion(Creature* pCaster, int Duration, int Percent)
 void Party::dissectCorpse(Creature* pDissecter, MonsterCorpse* pCorpse) {
     __BEGIN_TRY
 
-    cout << std::source_location::current().function_name() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "Party::dissectCorpse"; });
     if (getSize() != 2)
         return;
-    cout << "dissectCorpse!" << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "dissectCorpse!"; });
 
     ZoneCoord_t cx = pDissecter->getX();
     ZoneCoord_t cy = pDissecter->getY();
@@ -1824,7 +1823,7 @@ void Party::dissectCorpse(Creature* pDissecter, MonsterCorpse* pCorpse) {
 void Party::eventPartyCrash() {
     __BEGIN_TRY
 
-    cout << std::source_location::current().function_name() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "Party::eventPartyCrash"; });
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
 

@@ -14,6 +14,7 @@
 
 #include "CastleInfoManager.h"
 #include "CreatureUtil.h"
+#include "DiagnosticTrace.h"
 #include "EffectGhost.h"
 #include "Encrypter.h"
 #include "EventHeadCount.h"
@@ -500,7 +501,7 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
         }
     }
 
-    cout << " reached here2" << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << " reached here2"; });
 
     // Handling when already connected.
     // In order to handle the PCFinder's DuplicatedException unambiguously,
@@ -530,7 +531,7 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
     EventHeadCount* pEventHeadCount = new EventHeadCount(pGamePlayer);
     pEventHeadCount->setDeadline(18000);
     pGamePlayer->addEvent(pEventHeadCount);
-    cout << " reached here3" << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << " reached here3"; });
     if (pCreature->isGOD()) {
         EffectGhost* pEffect = new EffectGhost(pCreature);
         pCreature->getEffectManager()->addEffect(pEffect);
@@ -545,7 +546,7 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
         pCreature->addEffect(pEffect);
         pCreature->setFlag(pEffect->getEffectClass());
     }
-    cout << " reached here4" << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << " reached here4"; });
     // Logging in inside a castle or a castle dungeon is not allowed.
     ZoneID_t castleZoneID;
     ZoneInfo* pZoneInfo = de::gameContext().zoneInfos().getZoneInfo(pCreature->getZoneID());
@@ -572,7 +573,7 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
             }
         }
     }
-    cout << " reached here5" << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << " reached here5"; });
     Zone* pZone = pCreature->getZone();
     Assert(pZone != NULL);
 
@@ -584,7 +585,8 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
 
     // Checked here because of items that apply only in a pay zone
     // 2002.8.26. by sigi
-    cout << " Loading items: if this part fails, the error is here." << endl;
+    de::diagnosticTrace(
+        [&](std::ostream& output) { output << " Loading items: if this part fails, the error is here."; });
     if (pPacket->getPCType() == PC_SLAYER) {
         Assert(pSlayer != NULL);
         pSlayer->loadItem(true);
@@ -662,7 +664,6 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
     // The Zone must already be set by Creature::load().
     pCreature->registerObject();
 
-
 #ifdef __USE_ENCRYPTER__
     // Register the encryption code. It uses the objectID for now.
     pGamePlayer->setEncryptCode();
@@ -674,7 +675,7 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
     // Build the PC info and the SkillInfo for GCUpdateInfo.
     //----------------------------------------------------------------------
 
-    cout << " reached here7" << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << " reached here7"; });
 
     GCUpdateInfo gcUpdateInfo;
 
@@ -698,7 +699,6 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
     __END_DEBUG
     __END_DEBUG_EX __END_CATCH
 }
-
 
 #ifdef __GAME_SERVER__
 
