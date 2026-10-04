@@ -9,9 +9,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <cerrno>
 #include <cstdarg>
+#include <cstring>
+#include <new>
 
 #include "Assert.h"
+#include "BoundedDiagnosticFile.h"
 #include "VSDateTime.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -181,31 +185,51 @@ int getPercentValueEx(int value, int percent) {
 //////////////////////////////////////////////////////////////////////////////
 // Write a log to a file
 //////////////////////////////////////////////////////////////////////////////
-void filelog(const char* szFilename, const char* fmt, ...) {
-    __BEGIN_TRY
-
-    va_list valist;
-
-    va_start(valist, fmt);
-
-    char buffer[30000];
-
-    int nchars = vsnprintf(buffer, 30000, fmt, valist);
-
-    va_end(valist);
-
-    if (nchars == -1 || nchars > 30000) {
-        throw Error("filelog() : more buffer size needed for log");
+namespace {
+void writeFileLog(const char* szFilename, const char* fmt, va_list valist, bool bounded) noexcept {
+    if (!fmt) {
+        de::reportDiagnosticFileFailure("format", EINVAL);
+        return;
     }
-
-    VSDateTime current = VSDateTime::currentDateTime();
-
-    ofstream file(szFilename, ios::out | ios::app);
-    file << current.toString() << " : " << buffer << endl;
-    file.close();
-
-    __END_CATCH
+    char buffer[30000];
+    const int count = vsnprintf(buffer, sizeof(buffer), fmt, valist);
+    if (count < 0) {
+        de::reportDiagnosticFileFailure("format", EINVAL);
+        return;
+    }
+    if (static_cast<std::size_t>(count) >= sizeof(buffer)) {
+        constexpr char marker[] = " [truncated]";
+        std::memcpy(buffer + sizeof(buffer) - sizeof(marker), marker, sizeof(marker));
+    }
+    try {
+        const std::string record = VSDateTime::currentDateTime().toString() + " : " + buffer + "\n";
+        if (bounded)
+            de::appendBoundedDiagnosticFile(szFilename, record);
+        else
+            de::appendUnrotatedLogFile(szFilename, record);
+    } catch (const std::bad_alloc&) {
+        de::reportDiagnosticFileFailure("format allocation", ENOMEM);
+    } catch (...) {
+        de::reportDiagnosticFileFailure("format timestamp", EINVAL);
+    }
 }
+
+} // namespace
+
+void filelog(const char* szFilename, const char* fmt, ...) noexcept {
+    va_list valist;
+    va_start(valist, fmt);
+    writeFileLog(szFilename, fmt, valist, false);
+    va_end(valist);
+}
+
+void diagnosticFilelog(const char* szFilename, const char* fmt, ...) noexcept {
+    va_list valist;
+    va_start(valist, fmt);
+    writeFileLog(szFilename, fmt, valist, true);
+    va_end(valist);
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Turn two WORDs into a DWORD. HIWORD, LOWORD

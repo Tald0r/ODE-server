@@ -225,13 +225,13 @@ Slayer::~Slayer()
         //		SAFE_DELETE( m_pRank );
 
     } catch (Throwable& t) {
-        filelog("slayerDestructor.txt", "%s", t.toString().c_str());
+        diagnosticFilelog("slayerDestructor.txt", "%s", t.toString().c_str());
         throw;
     } catch (exception& e) {
-        filelog("slayerDestructor.txt", "Unknown std::exception");
+        diagnosticFilelog("slayerDestructor.txt", "Unknown std::exception");
         throw;
     } catch (...) {
-        filelog("slayerDestructor.txt", "Unknown ... exception");
+        diagnosticFilelog("slayerDestructor.txt", "Unknown ... exception");
         throw;
     }
 
@@ -1763,8 +1763,8 @@ void Slayer::getOffMotorcycle()
             pMotorcycleBox->setY(pt.y);
         } else {
             // cout << "Slayer::getOffMotorcycle() - pMotorcycleBox is NULL" << endl;
-            filelog("errorLog.txt", "Slayer::getOffMotorcycle() - No MotorcycleBox: %d",
-                    (int)m_pMotorcycle->getItemID());
+            diagnosticFilelog("errorLog.txt", "Slayer::getOffMotorcycle() - No MotorcycleBox: %d",
+                              (int)m_pMotorcycle->getItemID());
             // throw Error("Getting off the motorcycle but ParkingCenter has no MotorcycleBox.");
         }
     } else {

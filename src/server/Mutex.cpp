@@ -15,7 +15,7 @@ namespace {
 [[noreturn]] void reportMutexFailure(const char* operation, const std::string& name, const MutexException& error) {
     const auto message = std::string("Mutex::") + operation + " [" + name + "]: " + error.toString();
     std::cerr << message << std::endl;
-    filelog("MutexError.log", "%s", message.c_str());
+    diagnosticFilelog("MutexError.log", "%s", message.c_str());
     throw Error(message);
 }
 } // namespace

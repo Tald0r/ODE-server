@@ -728,9 +728,15 @@ add_dependencies(wire_tests shutdown_probe)
 add_test(NAME shutdown_supervisor COMMAND bash
     ${CMAKE_CURRENT_SOURCE_DIR}/shutdown_supervisor_test.sh
     $<TARGET_FILE:shutdown_probe> ${CMAKE_SOURCE_DIR}/docker/start.sh)
-# Two scenarios, each paying start.sh's 6s of staged startup, and the second
+# Four scenarios, each paying start.sh's 6s of staged startup, and the second
 # also waiting out the supervisor's 8s bound on a server that ignores SIGTERM.
 set_tests_properties(shutdown_supervisor PROPERTIES TIMEOUT 90)
+
+add_executable(bounded_diagnostic_file_tests EXCLUDE_FROM_ALL bounded_diagnostic_file_test.cpp)
+target_link_libraries(bounded_diagnostic_file_tests PRIVATE de-kernel gtest_main Threads::Threads)
+add_dependencies(wire_tests bounded_diagnostic_file_tests)
+add_test(NAME bounded_diagnostic_file_tests COMMAND bounded_diagnostic_file_tests)
+set_tests_properties(bounded_diagnostic_file_tests PROPERTIES TIMEOUT 30)
 
 # Call-site diagnostics (docs/TOOLCHAIN.md, "Diagnostics without location
 # macros"): Assert/ProtocolAssert and the __END_CATCH stack trace, now carried

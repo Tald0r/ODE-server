@@ -137,7 +137,7 @@ void GameServerManager::run() {
 
                 processOutputs();
             } catch (Throwable& t) {
-                filelog("SSGSManager.txt", "%s", t.toString().c_str());
+                diagnosticFilelog("SSGSManager.txt", "%s", t.toString().c_str());
             }
 
             processCommands();
@@ -155,7 +155,7 @@ void GameServerManager::run() {
             }
         }
     } catch (Throwable& t) {
-        filelog("sharedserverBug.txt", "%s", t.toString().c_str());
+        diagnosticFilelog("sharedserverBug.txt", "%s", t.toString().c_str());
         throw;
     }
 
@@ -178,7 +178,7 @@ void GameServerManager::broadcast(Packet* pPacket) {
                 m_pGameServerPlayers[i]->sendPacket(pPacket);
         }
     } catch (const ProtocolException& e) {
-        filelog("SSException.log", "%s\n%s", e.toString().c_str(), pPacket->toString().c_str());
+        diagnosticFilelog("SSException.log", "%s\n%s", e.toString().c_str(), pPacket->toString().c_str());
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
@@ -513,8 +513,9 @@ void GameServerManager::acceptNewConnection() {
             addGameServerPlayer(player.get());
         } catch (OutOfBoundException&) {
             const auto* socket = player->getSocket();
-            filelog("SSGSManager.txt", "REFUSED %s:%u : socket descriptor %d does not fit the game server table",
-                    socket->getHost().c_str(), socket->getPort(), (int)socket->getSOCKET());
+            diagnosticFilelog("SSGSManager.txt",
+                              "REFUSED %s:%u : socket descriptor %d does not fit the game server table",
+                              socket->getHost().c_str(), socket->getPort(), (int)socket->getSOCKET());
             return;
         }
         player.release(); // The table adopts only after successful publication.

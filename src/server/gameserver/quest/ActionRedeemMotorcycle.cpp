@@ -143,8 +143,8 @@ bool ActionRedeemMotorcycle::load(Item* pItem, Slayer* pSlayer, Zone* pZone, Zon
 
         // Defensive guard.
         if (targetID == 0) {
-            filelog("errorLog.txt", "[ActionRedeemMotorcycle] itemID=%d, motorItemID=%d", (int)pItem->getItemID(),
-                    (int)targetID);
+            diagnosticFilelog("errorLog.txt", "[ActionRedeemMotorcycle] itemID=%d, motorItemID=%d",
+                              (int)pItem->getItemID(), (int)targetID);
             return false;
         }
 

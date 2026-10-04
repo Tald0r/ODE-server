@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <thread>
 
@@ -43,7 +44,9 @@ int main(int argc, char** argv) {
     sigemptyset(&action.sa_mask);
     if (sigaction(SIGTERM, &action, nullptr) != 0)
         return 2;
-    std::ofstream(name + ".ready") << "ready\n";
+    std::cout << "probe startup" << std::endl;
+    std::cerr << "probe stderr" << std::endl;
+    std::ofstream(name + ".ready") << getpid() << "\n";
     if (ignoreTerm)
         for (;;)
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -60,5 +63,6 @@ int main(int argc, char** argv) {
         (std::filesystem::exists("loginserver.stopped") || std::filesystem::exists("sharedserver.stopped")))
         return 3;
     std::ofstream(name + ".stopped") << "joined\n";
+    std::cout << "probe final line" << std::endl;
     return 0;
 }

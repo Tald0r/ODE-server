@@ -359,7 +359,7 @@ void Zone::movePC(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir
                 checkMine(this, pCreature, nx, ny);
                 checkTrap(this, pCreature);
             } catch (Throwable& t) {
-                filelog("CheckMineBug.txt", "%s : %s", "movePC", t.toString().c_str());
+                diagnosticFilelog("CheckMineBug.txt", "%s : %s", "movePC", t.toString().c_str());
             }
 
             // When GCMoveOK is sent to the client, (nx,ny) must be the destination and
@@ -416,7 +416,7 @@ void Zone::moveCreature(Creature* pCreature, ZoneCoord_t nx, ZoneCoord_t ny, Dir
             checkMine(this, pCreature, nx, ny);
             checkTrap(this, pCreature);
         } catch (Throwable& t) {
-            filelog("CheckMineBug.txt", "%s : %s", "moveCreature", t.toString().c_str());
+            diagnosticFilelog("CheckMineBug.txt", "%s : %s", "moveCreature", t.toString().c_str());
         }
 
     } catch (NoSuchElementException& nsee) {
@@ -536,7 +536,7 @@ bool Zone::moveFastPC(Creature* pPC, ZoneCoord_t x1, ZoneCoord_t y1, ZoneCoord_t
         checkMine(this, pPC, x2, y2);
         checkTrap(this, pPC);
     } catch (Throwable& t) {
-        filelog("CheckMineBug.txt", "%s : %s", "moveFastPC", t.toString().c_str());
+        diagnosticFilelog("CheckMineBug.txt", "%s : %s", "moveFastPC", t.toString().c_str());
     }
 
     if (pPC->isFlag(Effect::EFFECT_CLASS_GHOST)) {
@@ -1114,7 +1114,7 @@ bool Zone::moveFastMonster(Monster* pMonster, ZoneCoord_t x1, ZoneCoord_t y1, Zo
         checkMine(this, pMonster, x2, y2);
         checkTrap(this, pMonster);
     } catch (Throwable& t) {
-        filelog("CheckMineBug.txt", "%s : %s", "moveFastMonster", t.toString().c_str());
+        diagnosticFilelog("CheckMineBug.txt", "%s : %s", "moveFastMonster", t.toString().c_str());
     }
 
 

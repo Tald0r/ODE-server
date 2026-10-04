@@ -167,11 +167,11 @@ Vampire::~Vampire()
             SAFE_DELETE(pVampireSkillSlot);
         }
     } catch (Throwable& t) {
-        filelog("vampireDestructor.txt", "%s", t.toString().c_str());
+        diagnosticFilelog("vampireDestructor.txt", "%s", t.toString().c_str());
     } catch (exception& e) {
-        filelog("vampireDestructor.txt", "Unknown std::exception");
+        diagnosticFilelog("vampireDestructor.txt", "Unknown std::exception");
     } catch (...) {
-        filelog("vampireDestructor.txt", "Unknown ... exception");
+        diagnosticFilelog("vampireDestructor.txt", "Unknown ... exception");
     }
 
     m_bDeriveDestructed = true;

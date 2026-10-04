@@ -152,7 +152,7 @@ void LoginServerManager::run() {
                 // Only the former applies for now, so it is treated as an error.
                 // throw Error(pe.toString());
 
-                filelog("LOGINSERVERMANAGER.log", "LoginServerManager::run() 1 : %s", pe.toString().c_str());
+                diagnosticFilelog("LOGINSERVERMANAGER.log", "LoginServerManager::run() 1 : %s", pe.toString().c_str());
             } catch (ConnectException& ce) {
                 cerr << "----------------------------------------------------------------------" << endl;
                 cerr << "GameServerManager::run Exception Check(ConnectException)" << endl;
@@ -165,7 +165,7 @@ void LoginServerManager::run() {
                 // Treated as an error for now.
                 // throw Error(ce.toString());
 
-                filelog("LOGINSERVERMANAGER.log", "LoginServerManager::run() 2 : %s", ce.toString().c_str());
+                diagnosticFilelog("LOGINSERVERMANAGER.log", "LoginServerManager::run() 2 : %s", ce.toString().c_str());
             } catch (Throwable& t) {
                 cerr << "----------------------------------------------------------------------" << endl;
                 cerr << "GameServerManager::run Exception Check(Throwable)" << endl;
@@ -174,7 +174,7 @@ void LoginServerManager::run() {
                 SAFE_DELETE(pDatagramPacket);
                 SAFE_DELETE(pDatagram);
 
-                filelog("LOGINSERVERMANAGER.log", "LoginServerManager::run() 3 : %s", t.toString().c_str());
+                diagnosticFilelog("LOGINSERVERMANAGER.log", "LoginServerManager::run() 3 : %s", t.toString().c_str());
             }
 
             usleep(1000); // Reduce CPU usage.
@@ -194,7 +194,7 @@ void LoginServerManager::run() {
             de::gameContext().timeChecker().heartbeat();
         }
     } catch (Throwable& t) {
-        filelog("LOGINSERVERMANAGER.log", "LoginServerManager::run() 4 : %s", t.toString().c_str());
+        diagnosticFilelog("LOGINSERVERMANAGER.log", "LoginServerManager::run() 4 : %s", t.toString().c_str());
 
         cerr << t.toString() << endl;
     }

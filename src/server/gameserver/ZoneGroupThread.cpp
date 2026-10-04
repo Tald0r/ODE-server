@@ -169,7 +169,7 @@ void ZoneGroupThread::run()
         }
 
     } catch (Throwable& t) {
-        filelog("zoneGroupThreadError.log", "%s", t.toString().c_str());
+        diagnosticFilelog("zoneGroupThreadError.log", "%s", t.toString().c_str());
         throw;
     }
 

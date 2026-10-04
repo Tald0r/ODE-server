@@ -23,6 +23,8 @@ src/Core/Assert.h
 src/Core/Assert.cpp
 src/Core/StringStream.h
 src/Core/StringStream.cpp
+src/Core/BoundedDiagnosticFile.h
+src/Core/BoundedDiagnosticFile.cpp
 src/Core/Utility.h
 src/Core/Utility.cpp
 src/Core/VSDateTime.h

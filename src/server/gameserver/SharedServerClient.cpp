@@ -86,8 +86,8 @@ void SharedServerClient::processCommand() {
 
             // An out-of-range packet id is treated as a protocol error.
             if (packetID >= (int)Packet::PACKET_MAX) {
-                filelog("SharedServerClient.txt", "Packet ID exceed MAX, RECV [%d/%d]", (int)packetID,
-                        (int)Packet::PACKET_MAX);
+                diagnosticFilelog("SharedServerClient.txt", "Packet ID exceed MAX, RECV [%d/%d]", (int)packetID,
+                                  (int)Packet::PACKET_MAX);
 
                 throw InvalidProtocolException("too large packet id");
             }
@@ -95,8 +95,8 @@ void SharedServerClient::processCommand() {
             try {
                 // An oversized packet is treated as a protocol error.
                 if (packetSize > packetFactories.getPacketMaxSize(packetID)) {
-                    filelog("SharedServerClient.txt", "Too Larget Packet Size, RECV [%d],PacketSize[%d]", (int)packetID,
-                            (int)packetSize);
+                    diagnosticFilelog("SharedServerClient.txt", "Too Larget Packet Size, RECV [%d],PacketSize[%d]",
+                                      (int)packetID, (int)packetSize);
 
                     throw InvalidProtocolException("too large packet size");
                 }

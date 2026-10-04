@@ -62,7 +62,11 @@ start_stack ""
 stop_stack
 for name in gameserver loginserver sharedserver; do
     test -f "$scratch/bin/$name.stopped"
+    grep -Fq "[$name] probe startup" "$scratch/bin/supervisor.log"
+    grep -Fq "[$name] probe stderr" "$scratch/bin/supervisor.log"
+    grep -Fq "[$name] probe final line" "$scratch/bin/supervisor.log"
 done
+test -z "$(find "$scratch/bin" -name '*.out' -print -quit)"
 drop_stack
 echo 'SIGTERM drained gameserver before stopping login/shared services'
 
@@ -87,3 +91,52 @@ fi
 grep -q 'loginserver did not drain; forcing termination' "$scratch/bin/supervisor.log"
 drop_stack
 echo "supervisor force-terminated a stuck login service after ${elapsed}s"
+
+# 3. An independently failed child ends the stack; the supervisor still owns
+# the actual server PID and drains the surviving servers' final output.
+start_stack ""
+kill -KILL "$(cat "$scratch/bin/gameserver.ready")"
+if wait "$supervisor_pid"; then
+    echo "supervisor ignored a failed child" >&2
+    exit 1
+fi
+supervisor_pid=
+for name in loginserver sharedserver; do
+    test -f "$scratch/bin/$name.stopped"
+    grep -Fq "[$name] probe final line" "$scratch/bin/supervisor.log"
+done
+# The child's death also closes its pipe. Either exit can be observed first
+# when it occurs between the supervisor's server and forwarder checks.
+grep -Eq 'gameserver (log forwarder )?exited with status' "$scratch/bin/supervisor.log"
+test -z "$(find "$scratch/bin" -name '*.out' -print -quit)"
+kill "$db_pid" 2>/dev/null || true
+db_pid=
+drop_stack
+echo 'A failed child stopped its siblings without creating duplicate log files'
+
+# 4. A failed log reader must also end the stack, even while its server is
+# alive and quiet. The remaining forwarders still drain normal final lines.
+start_stack ""
+forwarder_pid=
+for child in $(cat "/proc/$supervisor_pid/task/$supervisor_pid/children"); do
+    if tr '\0' '\n' < "/proc/$child/cmdline" 2>/dev/null | grep -Fxq 's/^/[loginserver] /'; then
+        forwarder_pid=$child
+        break
+    fi
+done
+test -n "$forwarder_pid"
+kill -KILL "$forwarder_pid"
+if wait "$supervisor_pid"; then
+    echo "supervisor ignored a failed log forwarder" >&2
+    exit 1
+fi
+supervisor_pid=
+for name in gameserver sharedserver; do
+    test -f "$scratch/bin/$name.stopped"
+    grep -Fq "[$name] probe final line" "$scratch/bin/supervisor.log"
+done
+grep -q 'loginserver log forwarder exited with status' "$scratch/bin/supervisor.log"
+kill "$db_pid" 2>/dev/null || true
+db_pid=
+drop_stack
+echo 'A failed log forwarder stopped the stack and drained the remaining output'

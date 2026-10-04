@@ -1107,7 +1107,7 @@ void Zone::movePCBroadcast(Creature* pPC, ZoneCoord_t x1, ZoneCoord_t y1, ZoneCo
         SAFE_DELETE(pGCAddXXX);
 
     } catch (Throwable& t) {
-        filelog("Zone_movePCBroadcast.log", "%s", t.toString().c_str());
+        diagnosticFilelog("Zone_movePCBroadcast.log", "%s", t.toString().c_str());
         throw t;
     }
 
@@ -1268,7 +1268,7 @@ void Zone::moveCreatureBroadcast(Creature* pCreature, ZoneCoord_t x1, ZoneCoord_
 
         // by sigi. 2002.12.15
     } catch (Throwable& t) {
-        filelog("moveCreatureBroadcastError.log", "%s", t.toString().c_str());
+        diagnosticFilelog("moveCreatureBroadcastError.log", "%s", t.toString().c_str());
 
         // Rethrow.
         throw;

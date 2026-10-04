@@ -82,10 +82,11 @@ void ZoneGroup::assertOwned() const {
         return;
     TID holder = m_LockHolder;
     if (!m_LockHolderValid || !pthread_equal(holder, Thread::self())) {
-        filelog("threadOwnership.log",
-                "ZoneGroup %d state touched without holding the group mutex (tid=%lu, holder=%lu, holderValid=%d) - "
-                "aborting",
-                (int)m_ZoneGroupID, (unsigned long)Thread::self(), (unsigned long)holder, (int)m_LockHolderValid);
+        diagnosticFilelog(
+            "threadOwnership.log",
+            "ZoneGroup %d state touched without holding the group mutex (tid=%lu, holder=%lu, holderValid=%d) - "
+            "aborting",
+            (int)m_ZoneGroupID, (unsigned long)Thread::self(), (unsigned long)holder, (int)m_LockHolderValid);
         abort();
     }
 }
@@ -166,7 +167,7 @@ void ZoneGroup::processPlayers()
     } catch (InterruptedException& ie) {
     } catch (IOException& ioe) {
     } catch (Error& er) {
-        filelog("errorLog.txt", "%s", er.toString().c_str());
+        diagnosticFilelog("errorLog.txt", "%s", er.toString().c_str());
     }
 
     try {
@@ -176,7 +177,7 @@ void ZoneGroup::processPlayers()
         endProfileEx("ZPM_COMMAND");
 
     } catch (Error& er) {
-        filelog("errorLog.txt", "%s", er.toString().c_str());
+        diagnosticFilelog("errorLog.txt", "%s", er.toString().c_str());
 
     } catch (Throwable&) {
     }
@@ -186,7 +187,7 @@ void ZoneGroup::processPlayers()
         m_pZonePlayerManager->heartbeat(); // Takes the lock internally.
         endProfileEx("ZPM_HEARTBEAT");
     } catch (Error& er) {
-        filelog("errorLog.txt", "%s", er.toString().c_str());
+        diagnosticFilelog("errorLog.txt", "%s", er.toString().c_str());
 
     } catch (Throwable&) {
     }
@@ -215,18 +216,20 @@ std::size_t ZoneGroup::drainMailbox() {
             try {
                 throw;
             } catch (Throwable& t) {
-                filelog("errorLog.txt", "ZoneGroup %u mailbox command failed: %s", (unsigned)m_ZoneGroupID,
-                        t.toString().c_str());
+                diagnosticFilelog("errorLog.txt", "ZoneGroup %u mailbox command failed: %s", (unsigned)m_ZoneGroupID,
+                                  t.toString().c_str());
             } catch (std::exception& e) {
-                filelog("errorLog.txt", "ZoneGroup %u mailbox command failed: %s", (unsigned)m_ZoneGroupID, e.what());
+                diagnosticFilelog("errorLog.txt", "ZoneGroup %u mailbox command failed: %s", (unsigned)m_ZoneGroupID,
+                                  e.what());
             } catch (...) {
-                filelog("errorLog.txt", "ZoneGroup %u mailbox command failed: unknown exception",
-                        (unsigned)m_ZoneGroupID);
+                diagnosticFilelog("errorLog.txt", "ZoneGroup %u mailbox command failed: unknown exception",
+                                  (unsigned)m_ZoneGroupID);
             }
         });
     if (ran > kMailboxDepthWarning)
-        filelog("errorLog.txt", "ZoneGroup %u mailbox drained %u commands in one tick: a producer outran the tick",
-                (unsigned)m_ZoneGroupID, (unsigned)ran);
+        diagnosticFilelog("errorLog.txt",
+                          "ZoneGroup %u mailbox drained %u commands in one tick: a producer outran the tick",
+                          (unsigned)m_ZoneGroupID, (unsigned)ran);
     return ran;
 }
 

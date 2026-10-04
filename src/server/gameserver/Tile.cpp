@@ -96,7 +96,7 @@ bool Tile::addCreature(Creature* pCreature, bool bCheckEffect, bool bCheckPortal
             msg << "Item(" << pItem->toString().c_str() << ") ";
         }
 
-        filelog("tileError.txt", "%s", msg.toString().c_str());
+        diagnosticFilelog("tileError.txt", "%s", msg.toString().c_str());
 
         Assert(false);
     }
@@ -209,7 +209,7 @@ void Tile::deleteCreature(ObjectID_t creatureID) {
     } catch (Throwable& t) {
         // cerr << "Delete Creature" << endl;
         // cerr << t.toString() << endl;
-        filelog("tileError.txt", "Tile::deleteCreature - %s", t.toString().c_str());
+        diagnosticFilelog("tileError.txt", "Tile::deleteCreature - %s", t.toString().c_str());
     }
 
     __END_DEBUG
@@ -433,7 +433,7 @@ void Tile::deleteEffect(ObjectID_t effectID) {
     __BEGIN_TRY
 
     if (!hasEffect()) {
-        filelog("TileEffectBug.txt", "there is no effect with effect id %d", effectID);
+        diagnosticFilelog("TileEffectBug.txt", "there is no effect with effect id %d", effectID);
         return;
     }
     //	Assert(hasEffect());

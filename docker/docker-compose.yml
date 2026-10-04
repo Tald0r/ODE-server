@@ -5,9 +5,16 @@
 #   cd docker
 #   docker compose up -d --build
 
+x-diagnostic-logging: &diagnostic-logging
+  driver: local
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
 
   odk-mysql:
+    logging: *diagnostic-logging
     image: mysql/mysql-server:5.7
     container_name: odk-mysql
     volumes:
@@ -35,6 +42,7 @@ services:
       - odk-network
 
   odk-server:
+    logging: *diagnostic-logging
     # Built from source via ../Dockerfile (the same toolchain the README
     # describes, run inside docker) instead of pulling a pre-built image.
     build:
@@ -73,6 +81,7 @@ services:
       - odk-network
 
   odk-websocket:
+    logging: *diagnostic-logging
     # The Rust WebSocket gateway for browser and native WebSocket clients. It
     # must run in the game servers' network namespace: it forwards each
     # connection, with the client's address in a PROXY line, to the loopback

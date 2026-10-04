@@ -118,7 +118,7 @@ void ZonePlayerManager::pushBroadcastPacket(Packet* pPacket, BroadcastFilter* pF
 void ZonePlayerManager::flushBroadcastPacket() {
     std::lock_guard queueLock(m_MutexBroadcast);
     de::flushGameBroadcasts(m_BroadcastQueue, m_pPlayers, [](const Throwable& error) {
-        filelog("ZonePlayerManager.log", "broadcastPacket: %s", error.toString().c_str());
+        diagnosticFilelog("ZonePlayerManager.log", "broadcastPacket: %s", error.toString().c_str());
     });
 }
 
@@ -607,8 +607,8 @@ void ZonePlayerManager::deletePlayer_NOBLOCKED(SOCKET fd) {
 
         // When no suitable m_MaxFD was found,
         if (i < walk.first) {
-            filelog("ZonePlayerManagerBug.txt", "%s : %s", "ZonePlayerManager::deletePlayer_NOBLOCKED()",
-                    "MinMaxFD problem");
+            diagnosticFilelog("ZonePlayerManagerBug.txt", "%s : %s", "ZonePlayerManager::deletePlayer_NOBLOCKED()",
+                              "MinMaxFD problem");
             throw UnknownError("m_MinFD & m_MaxFD problem.");
         }
     }
@@ -635,16 +635,16 @@ void ZonePlayerManager::deletePlayer(SOCKET fd) {
         // Remove the player pointer from the player array.
         PlayerManager::deletePlayer(fd);
     } catch (OutOfBoundException& o) {
-        filelog("ZPMError.txt", "OOB: %s, Socket: %d", o.toString().c_str(), fd);
+        diagnosticFilelog("ZPMError.txt", "OOB: %s, Socket: %d", o.toString().c_str(), fd);
         throw;
     } catch (NoSuchElementException& n) {
-        filelog("ZPMError.txt", "NSEE: %s, Socket: %d", n.toString().c_str(), fd);
+        diagnosticFilelog("ZPMError.txt", "NSEE: %s, Socket: %d", n.toString().c_str(), fd);
         throw;
     } catch (Error& e) {
-        filelog("ZPMError.txt", "Error: %s, Socket: %d", e.toString().c_str(), fd);
+        diagnosticFilelog("ZPMError.txt", "Error: %s, Socket: %d", e.toString().c_str(), fd);
         throw;
     } catch (...) {
-        filelog("ZPMError.txt", "Unknown exception. Socket: %d", fd);
+        diagnosticFilelog("ZPMError.txt", "Unknown exception. Socket: %d", fd);
         throw;
     }
 
@@ -683,7 +683,8 @@ void ZonePlayerManager::deletePlayer(SOCKET fd) {
 
         // When no suitable m_MaxFD was found,
         if (i < walk.first) {
-            filelog("ZonePlayerManagerBug.txt", "%s : %s", "ZonePlayerManager::deletePlayer()", "MinMaxFD problem");
+            diagnosticFilelog("ZonePlayerManagerBug.txt", "%s : %s", "ZonePlayerManager::deletePlayer()",
+                              "MinMaxFD problem");
             throw UnknownError("m_MinFD & m_MaxFD problem.");
         }
     }

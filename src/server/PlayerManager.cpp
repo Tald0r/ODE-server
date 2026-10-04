@@ -67,7 +67,7 @@ void PlayerManager::broadcastPacket(Packet* pPacket) {
             try {
                 m_pPlayers[i]->sendPacket(pPacket);
             } catch (Throwable& t) {
-                filelog("playerManager.log", "broadcastPacket: %s", t.toString().c_str());
+                diagnosticFilelog("playerManager.log", "broadcastPacket: %s", t.toString().c_str());
             }
         }
     }
