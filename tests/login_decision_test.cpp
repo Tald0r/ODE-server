@@ -169,6 +169,156 @@ TEST(CheckStoredPassword, AWrongPasswordAgainstAPlaintextRowAsksForNoRewrite) {
     EXPECT_FALSE(check.rehash);
 }
 
+TEST(CheckStoredPassword, RehashDiagnosticFailureCannotReplaceAnAcceptedPassword) {
+    struct DiagnosticFailure {};
+    for (const auto& diagnosticFailure :
+         {std::make_exception_ptr(std::runtime_error("report failed")), std::make_exception_ptr(Error("report failed")),
+          std::make_exception_ptr(std::bad_alloc()), std::make_exception_ptr(DiagnosticFailure{})}) {
+        FakeLoginAccountRepository repository;
+        repository.storedPasswords["rowan"] = "legacy-password";
+        auto actions = defaultStoredPasswordActions();
+        actions.hash = [](std::string_view) -> std::string { throw std::runtime_error("hash failed"); };
+        bool reported = false;
+        actions.rehashFailure = [&](const std::string& account, const char* detail) {
+            reported = true;
+            EXPECT_EQ(account, "rowan");
+            EXPECT_STREQ(detail, "hash failed");
+            std::rethrow_exception(diagnosticFailure);
+        };
+        PasswordCheck check;
+        EXPECT_NO_THROW(check = checkStoredPassword("rowan", "legacy-password", repository, actions));
+        EXPECT_TRUE(reported);
+        EXPECT_TRUE(check.accepted);
+        EXPECT_FALSE(check.rehash);
+        EXPECT_TRUE(check.hash.empty());
+        EXPECT_TRUE(repository.updatedPasswords.empty());
+        EXPECT_EQ(repository.storedPasswords.at("rowan"), "legacy-password");
+    }
+}
+
+TEST(CheckStoredPassword, FailedRehashWithoutADiagnosticKeepsAcceptanceAndAllowsRetry) {
+    FakeLoginAccountRepository repository;
+    repository.storedPasswords["rowan"] = "legacy-password";
+    auto actions = defaultStoredPasswordActions();
+    actions.rehashFailure = {};
+    for (const auto& hashFailure :
+         {std::make_exception_ptr(std::runtime_error("hash failed")), std::make_exception_ptr(Error("hash failed")),
+          std::make_exception_ptr(std::bad_alloc())}) {
+        actions.hash = [&](std::string_view) -> std::string { std::rethrow_exception(hashFailure); };
+        const auto failed = checkStoredPassword("rowan", "legacy-password", repository, actions);
+        EXPECT_TRUE(failed.accepted);
+        EXPECT_FALSE(failed.rehash);
+        EXPECT_TRUE(failed.hash.empty());
+    }
+
+    actions.hash = [](std::string_view credential) {
+        EXPECT_EQ(credential, "legacy-password");
+        return std::string("replacement-hash");
+    };
+    const auto retried = checkStoredPassword("rowan", "legacy-password", repository, actions);
+    EXPECT_TRUE(retried.accepted);
+    EXPECT_TRUE(retried.rehash);
+    EXPECT_EQ(retried.hash, "replacement-hash");
+    EXPECT_TRUE(repository.updatedPasswords.empty());
+}
+
+TEST(CheckStoredPassword, UnknownAccountsVerifyADecoyAndNeverHashOrAccept) {
+    FakeLoginAccountRepository repository;
+    unsigned verified = 0;
+    const StoredPasswordActions actions{
+        [&](std::string_view stored, std::string_view credential) {
+            ++verified;
+            EXPECT_TRUE(de::password::isHashed(stored));
+            EXPECT_EQ(credential, "submitted-password");
+            return de::password::Verify::AcceptedRehash;
+        },
+        [](std::string_view) -> std::string {
+            ADD_FAILURE() << "an unknown account must not rehash";
+            return {};
+        },
+        [](const std::string&, const char*) { ADD_FAILURE() << "no rehash was attempted"; }};
+    const auto check = checkStoredPassword("nobody", "submitted-password", repository, actions);
+    EXPECT_EQ(verified, 1u);
+    EXPECT_EQ(repository.loadPasswordHashCalls, 1);
+    EXPECT_FALSE(check.accepted);
+    EXPECT_FALSE(check.rehash);
+    EXPECT_TRUE(check.hash.empty());
+}
+
+TEST(CheckStoredPassword, RejectedAndCurrentCredentialsDoNotHashOrReport) {
+    for (const auto verdict : {de::password::Verify::Rejected, de::password::Verify::Accepted}) {
+        FakeLoginAccountRepository repository;
+        repository.storedPasswords["rowan"] = "stored-credential";
+        unsigned verified = 0;
+        const StoredPasswordActions actions{
+            [&](std::string_view stored, std::string_view credential) {
+                ++verified;
+                EXPECT_EQ(stored, "stored-credential");
+                EXPECT_EQ(credential, "submitted-password");
+                return verdict;
+            },
+            [](std::string_view) -> std::string {
+                ADD_FAILURE() << "this verdict must not rehash";
+                return {};
+            },
+            [](const std::string&, const char*) { ADD_FAILURE() << "no rehash was attempted"; }};
+        const auto check = checkStoredPassword("rowan", "submitted-password", repository, actions);
+        EXPECT_EQ(verified, 1u);
+        EXPECT_EQ(check.accepted, verdict == de::password::Verify::Accepted);
+        EXPECT_FALSE(check.rehash);
+        EXPECT_TRUE(check.hash.empty());
+    }
+}
+
+TEST(CheckStoredPassword, VerificationFailuresRemainObservableForPresentAndMissingAccounts) {
+    for (bool present : {false, true}) {
+        FakeLoginAccountRepository repository;
+        if (present)
+            repository.storedPasswords["rowan"] = "stored-credential";
+        auto actions = defaultStoredPasswordActions();
+        actions.verify = [](std::string_view, std::string_view) -> de::password::Verify {
+            throw std::runtime_error("verify failed");
+        };
+        actions.rehashFailure = [](const std::string&, const char*) {
+            ADD_FAILURE() << "verification failure must propagate without rehash reporting";
+        };
+        try {
+            (void)checkStoredPassword("rowan", "submitted-password", repository, actions);
+            FAIL() << "verification failure was swallowed";
+        } catch (const std::runtime_error& error) {
+            EXPECT_STREQ(error.what(), "verify failed");
+        }
+        EXPECT_TRUE(repository.updatedPasswords.empty());
+    }
+}
+
+TEST(CheckStoredPassword, RepositoryFailuresPropagateBeforeVerification) {
+    class FailingRepository : public FakeLoginAccountRepository {
+    public:
+        bool loadPasswordHash(const std::string&, std::string&) override {
+            throw DatabaseError("lookup failed");
+        }
+    } repository;
+    auto actions = defaultStoredPasswordActions();
+    actions.verify = [](std::string_view, std::string_view) {
+        ADD_FAILURE() << "lookup must finish before verification";
+        return de::password::Verify::Rejected;
+    };
+    EXPECT_THROW((void)checkStoredPassword("rowan", "submitted-password", repository, actions), DatabaseError);
+}
+
+TEST(CheckStoredPassword, NonStandardHashFailuresKeepTheirOriginalBoundary) {
+    struct HashFailure {};
+    FakeLoginAccountRepository repository;
+    repository.storedPasswords["rowan"] = "legacy-password";
+    auto actions = defaultStoredPasswordActions();
+    actions.hash = [](std::string_view) -> std::string { throw HashFailure{}; };
+    actions.rehashFailure = [](const std::string&, const char*) {
+        ADD_FAILURE() << "nonstandard hash failure must propagate";
+    };
+    EXPECT_THROW((void)checkStoredPassword("rowan", "legacy-password", repository, actions), HashFailure);
+}
+
 // --- isBlockedIP ----------------------------------------------------------
 
 LoginIPBlockRow block(int ipClass, int first, int last) {
