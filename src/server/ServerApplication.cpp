@@ -35,7 +35,7 @@ std::optional<ServerLifecycleResult> ServerApplication::run(ServerKind server, i
         m_Config = std::move(config);
         m_PreviousConfig = m_Context.exchangeConfig(m_Config.get());
         if (server != ServerKind::Game)
-            output << m_Config->toString() << std::endl;
+            output << "Server configuration loaded" << std::endl;
         if (options.loginIDOffset) {
             output << "LoginServerPort : " << m_Config->getProperty("LoginServerPort") << std::endl;
             output << "LoginServerUDPPort : " << m_Config->getProperty("LoginServerUDPPort") << std::endl;

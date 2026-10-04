@@ -110,7 +110,6 @@ const LoginAuthenticationActions& defaultLoginAuthenticationActions() {
         +[](const std::string& account) { std::cout << "NetMarble New Player: " << account << std::endl; },
         {+[](const std::string& account) {
             filelog("keydiff.txt", "Web login key mismatch, Player ID: %s", account.c_str());
-            std::cout << "33333" << std::endl;
         }}};
     return actions;
 }

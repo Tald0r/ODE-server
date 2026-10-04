@@ -141,11 +141,35 @@ TEST_P(ServerApplicationTest, ConfigurationLivesThroughTheLifecycleAndUntilTheAp
         EXPECT_FALSE(ServerShutdown::failed.load());
         const std::string prefix = GetParam().kind == de::ServerKind::Game
                                        ? ">>> COMMAND-LINE PARAMETER READING SUCCESS...\n"
-                                       : context.config().toString() + "\n";
+                                       : "Server configuration loaded\n";
         EXPECT_EQ(prefix + GetParam().stopped + "\n", output.str());
         EXPECT_TRUE(errors.str().empty());
     }
     expectUntouchedConfiguration();
+}
+
+TEST_P(ServerApplicationTest, StartupKeepsSecretConfigurationAvailableWithoutPrintingIt) {
+    const std::string config = std::string(validConfiguration) +
+                               "DB_PASSWORD : private-database-marker\nSessionKey : private-session-marker\n";
+    writeConfig(config.c_str());
+    actions.initialize = [&, original = actions.initialize] {
+        original();
+        EXPECT_EQ("private-database-marker", context.config().getProperty("DB_PASSWORD"));
+        EXPECT_EQ("private-session-marker", context.config().getProperty("SessionKey"));
+    };
+    de::ServerApplication application(context);
+    const auto result = run(application, GetParam().kind);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(EXIT_SUCCESS, result->exitCode);
+    EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
+    EXPECT_EQ("private-database-marker", context.config().getProperty("DB_PASSWORD"));
+    EXPECT_EQ("private-session-marker", context.config().getProperty("SessionKey"));
+    for (const char* marker : {"private-database-marker", "private-session-marker"}) {
+        EXPECT_EQ(std::string::npos, output.str().find(marker));
+        EXPECT_EQ(std::string::npos, errors.str().find(marker));
+    }
+    EXPECT_NE(std::string::npos, output.str().find(GetParam().stopped));
+    EXPECT_TRUE(errors.str().empty());
 }
 
 TEST_P(ServerApplicationTest, InvalidArgumentsNeverPublishOrInvokeTheLifecycle) {
@@ -315,7 +339,7 @@ TEST_P(LoginApplicationOffsetTest, PublishesAndPrintsEffectiveOverridesIncluding
                                     "\nLoginServerUDPPort : " + std::to_string(9800 + GetParam()) +
                                     "\nLoginServerID : " + std::to_string(10 + GetParam()) + "\n";
         EXPECT_NE(std::string::npos, output.str().find(summary));
-        EXPECT_EQ(0U, output.str().find(context.config().toString() + "\n"));
+        EXPECT_EQ(0U, output.str().find("Server configuration loaded\n"));
     };
     de::ServerApplication application(context);
     const auto result = run(application, de::ServerKind::Login, {"-f", filename.c_str(), "-i", offset.c_str()});

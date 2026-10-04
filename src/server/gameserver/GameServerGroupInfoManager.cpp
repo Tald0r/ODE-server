@@ -9,6 +9,7 @@
 // include files
 #include "GameServerGroupInfoManager.h"
 
+#include "DiagnosticTrace.h"
 #include "repository/GameInfoRepository.h"
 
 
@@ -69,8 +70,8 @@ void GameServerGroupInfoManager::init()
     // just load data from GameServerGroupInfo table
     load();
 
-    // just print to cout
-    cout << toString() << endl;
+    // Optional startup catalogue diagnostics.
+    de::diagnosticTrace([&](std::ostream& output) { output << toString(); });
 
     __END_CATCH
 }
@@ -128,8 +129,10 @@ void GameServerGroupInfoManager::addGameServerGroupInfo(GameServerGroupInfo* pGa
     if (itr != m_GameServerGroupInfos[WorldID].end())
         throw DuplicatedException("duplicated game-server nickname");
 
-    cout << "addGameServerGroupInfo: " << (int)WorldID << ", " << GroupID << " : "
-         << pGameServerGroupInfo->getGroupName().c_str() << endl;
+    de::diagnosticTrace([&](std::ostream& output) {
+        output << "addGameServerGroupInfo: " << (int)WorldID << ", " << GroupID << " : "
+               << pGameServerGroupInfo->getGroupName().c_str();
+    });
 
     m_GameServerGroupInfos[WorldID][GroupID] = pGameServerGroupInfo;
 

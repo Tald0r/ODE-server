@@ -2,6 +2,7 @@
 
 #include <cstdio>
 
+#include "DiagnosticTrace.h"
 #include "EffectEventQuestReset.h"
 #include "GCGQuestStatusInfo.h"
 #include "GCGQuestStatusModify.h"
@@ -45,14 +46,16 @@ void GQuestManager::load()
         }
 
         if ((qID == 1001 || qID == 2001 || qID == 3001) && sta == QuestStatusInfo::COMPLETE) {
-            cout << "complete.." << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "complete.."; });
             EffectEventQuestReset* pEffect = new EffectEventQuestReset(m_pOwner, 1);
             int lastSec = rows[r].secondsSinceSave;
             if (lastSec > EVENT_QUEST_TIME_LIMIT)
                 lastSec = EVENT_QUEST_TIME_LIMIT;
-            cout << "Elapsed lastSec : " << lastSec << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "Elapsed lastSec : " << lastSec; });
             pEffect->setDeadline((EVENT_QUEST_TIME_LIMIT - lastSec) * 10);
-            cout << "Deadline : " << (Turn_t)((EVENT_QUEST_TIME_LIMIT - lastSec) * 10) << endl;
+            de::diagnosticTrace([&](std::ostream& output) {
+                output << "Deadline : " << (Turn_t)((EVENT_QUEST_TIME_LIMIT - lastSec) * 10);
+            });
             pEffect->setNextTime(((EVENT_QUEST_TIME_LIMIT - lastSec) % BROADCASTING_DELAY) * 10);
             m_pOwner->addEffect(pEffect);
         }
@@ -374,7 +377,7 @@ void GQuestManager::rideMotorcycle(bool isParty) {
 }
 
 void GQuestManager::touchWayPoint(MonsterCorpse* pWayPoint) {
-    cout << "touchWayPoint : " << m_pOwner->getName() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "touchWayPoint : " << m_pOwner->getName(); });
     list<GQuestMission*>::iterator itr = m_EventMissions[TOUCH_WAY_POINT].begin();
     while (itr != m_EventMissions[TOUCH_WAY_POINT].end()) {
         GQuestTouchWayPointMission* pTouchWayPointMission = dynamic_cast<GQuestTouchWayPointMission*>((*itr));
@@ -445,7 +448,7 @@ void GQuestManager::killedMonster(Monster* pMonster) {
 }
 
 void GQuestManager::partyDissect(MonsterCorpse* pMonsterCorpse) {
-    cout << "partyDissect : " << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "partyDissect : "; });
     list<GQuestMission*>::iterator itr = m_EventMissions[PARTY_DISSECT].begin();
     while (itr != m_EventMissions[PARTY_DISSECT].end()) {
         GQuestPartyDissectMission* pPartyDissectMission = dynamic_cast<GQuestPartyDissectMission*>((*itr));
@@ -453,9 +456,10 @@ void GQuestManager::partyDissect(MonsterCorpse* pMonsterCorpse) {
         if (pPartyDissectMission == NULL)
             continue;
 
-        cout << "Target : " << pPartyDissectMission->m_StrArg << endl;
-        cout << "Number : " << (int)pPartyDissectMission->getTargetList().front() << endl;
-        cout << "Killed : " << pMonsterCorpse->getMonsterType() << endl;
+        de::diagnosticTrace([&](std::ostream& output) { output << "Target : " << pPartyDissectMission->m_StrArg; });
+        de::diagnosticTrace(
+            [&](std::ostream& output) { output << "Target count : " << pPartyDissectMission->getTargetList().size(); });
+        de::diagnosticTrace([&](std::ostream& output) { output << "Killed : " << pMonsterCorpse->getMonsterType(); });
 
         if (pPartyDissectMission->isTarget(
                 de::gameContext().monsterInfos().getMonsterInfo(pMonsterCorpse->getMonsterType())->getSpriteType())) {
@@ -466,7 +470,7 @@ void GQuestManager::partyDissect(MonsterCorpse* pMonsterCorpse) {
                 Assert(false);
             }
             pPartyDissectMission->increase();
-            cout << "partyDissect : +1" << endl;
+            de::diagnosticTrace([&](std::ostream& output) { output << "partyDissect : +1"; });
             if (pPartyDissectElement->getGoal() <= pPartyDissectMission->getCurrent()) {
                 pPartyDissectMission->m_pParent->update();
             } else {
@@ -481,7 +485,7 @@ void GQuestManager::partyDissect(MonsterCorpse* pMonsterCorpse) {
 
 void GQuestManager::eventParty() {
     m_bPartyQuest = true;
-    cout << "Event party formed. : " << m_pOwner->getName() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "Event party formed. : " << m_pOwner->getName(); });
     list<GQuestMission*>::iterator itr = m_EventMissions[EVENT_PARTY].begin();
     while (itr != m_EventMissions[EVENT_PARTY].end()) {
         GQuestEventPartyMission* pEventPartyMission = dynamic_cast<GQuestEventPartyMission*>((*itr));
@@ -505,7 +509,7 @@ void GQuestManager::eventParty() {
 
 void GQuestManager::eventPartyCrash() {
     m_bPartyQuest = false;
-    cout << "Event party broken. : " << m_pOwner->getName() << endl;
+    de::diagnosticTrace([&](std::ostream& output) { output << "Event party broken. : " << m_pOwner->getName(); });
     list<GQuestMission*>::iterator itr = m_EventMissions[EVENT_PARTY_CRASH].begin();
     while (itr != m_EventMissions[EVENT_PARTY_CRASH].end()) {
         GQuestEventPartyCrashMission* pEventPartyCrashMission = dynamic_cast<GQuestEventPartyCrashMission*>((*itr));
@@ -602,7 +606,7 @@ void GQuestManager::illegalWarp(bool isParty) {
 }
 
 void GQuestManager::partyTravel(MonsterCorpse* pCorpse) {
-    cout << "partyTravel : " << m_pOwner->getName();
+    de::diagnosticTrace([&](std::ostream& output) { output << "partyTravel : " << m_pOwner->getName(); });
     DWORD id = GQuestCheckPoint::Instance().getCheckPointID(pCorpse);
     if (id == 0)
         return;

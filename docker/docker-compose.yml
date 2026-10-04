@@ -48,6 +48,8 @@ services:
     # Allow the 30s gameserver shutdown deadline plus supervisor overhead.
     stop_grace_period: 45s
     environment:
+      # Opt in only while diagnosing packet/quest flow; off in production.
+      DARKEDEN_TRACE: ${DARKEDEN_TRACE:-0}
       DARKEDEN_DB_CONNECT_TIMEOUT_SECONDS: ${DARKEDEN_DB_CONNECT_TIMEOUT_SECONDS:-5}
       DARKEDEN_DB_IO_TIMEOUT_SECONDS: ${DARKEDEN_DB_IO_TIMEOUT_SECONDS:-300}
     depends_on:

@@ -6,6 +6,7 @@
 #include <limits>
 #include <memory>
 #include <new>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -495,36 +496,76 @@ private:
 };
 
 int checkReportingFailure(std::string_view text) {
+    ::setenv("DARKEDEN_TRACE", "1", 1);
     CatalogueRepository original;
     auto replacement = replacementRepository();
     GameServerGroupInfoManager groups;
     groups.load(original);
-    const auto* previous = firstRow(groups);
     RefusingBuffer buffer(text);
-    auto* previousBuffer = std::cout.rdbuf(&buffer);
-    const auto previousExceptions = std::cout.exceptions();
-    std::cout.exceptions(std::ios::badbit | std::ios::failbit);
+    auto* previousBuffer = std::cerr.rdbuf(&buffer);
+    const auto previousExceptions = std::cerr.exceptions();
+    std::cerr.exceptions(std::ios::badbit | std::ios::failbit);
     bool failed = false;
     try {
         groups.load(replacement);
-    } catch (const std::ios_base::failure&) {
+    } catch (...) {
         failed = true;
     }
-    std::cout.exceptions(std::ios::goodbit);
-    std::cout.rdbuf(previousBuffer);
-    std::cout.clear();
-    std::cout.exceptions(previousExceptions);
-    if (!failed || !buffer.rejected || !retained(groups, previous))
+    const bool streamHealthy = std::cerr.good();
+    std::cerr.exceptions(std::ios::goodbit);
+    std::cerr.rdbuf(previousBuffer);
+    std::cerr.clear();
+    std::cerr.exceptions(previousExceptions);
+    if (failed || !buffer.rejected || !streamHealthy || groups.getSize(0) != 1 || groups.getSize(255) != 1 ||
+        groups.getSize(1) != 0 || groups.getSize(2) != 0)
         return 1;
-    groups.load(replacement);
-    return groups.getSize(255) == 1 ? 0 : 2;
+    const auto* first = groups.getGameServerGroupInfo(0, 0);
+    const auto* last = groups.getGameServerGroupInfo(255, 255);
+    return first->getGroupName() == replacement.groups[0].groupName && first->getStat() == SERVER_FREE &&
+                   last->getGroupName() == replacement.groups[1].groupName && last->getStat() == SERVER_DOWN
+               ? 0
+               : 2;
 }
 
-TEST(LoginCatalogue, ThrowingGroupDiagnosticsCannotPublishPreparedRowsAndPermitRetry) {
+TEST(LoginCatalogue, FailedOptionalGroupDiagnosticsCannotPreventCompletePublication) {
     for (const auto text : {"addGameServerGroupInfo", "first replacement", "last replacement"}) {
         SCOPED_TRACE(text);
         ASSERT_EXIT(std::_Exit(checkReportingFailure(text)), ::testing::ExitedWithCode(0), "");
     }
+}
+
+int checkCatalogueOutput(bool trace) {
+    if (trace)
+        ::setenv("DARKEDEN_TRACE", "1", 1);
+    else
+        ::unsetenv("DARKEDEN_TRACE");
+    CatalogueRepository repository;
+    GameServerGroupInfoManager groups;
+    std::ostringstream output, error;
+    auto* oldOutput = std::cout.rdbuf(output.rdbuf());
+    auto* oldError = std::cerr.rdbuf(error.rdbuf());
+    bool failed = false;
+    try {
+        groups.load(repository);
+    } catch (...) {
+        failed = true;
+    }
+    std::cout.rdbuf(oldOutput);
+    std::cerr.rdbuf(oldError);
+    if (failed || groups.getSize(1) != 2 || groups.getSize(2) != 1 || !output.str().empty())
+        return 1;
+    if (!trace)
+        return error.str().empty() ? 0 : 2;
+    return error.str().find("[debug] addGameServerGroupInfo") != std::string::npos &&
+                   error.str().find("First group") != std::string::npos &&
+                   error.str().find("Other world") != std::string::npos
+               ? 0
+               : 3;
+}
+
+TEST(LoginCatalogue, LoadingRowsIsQuietByDefaultAndTraceMustBeExplicitlyEnabled) {
+    ASSERT_EXIT(std::_Exit(checkCatalogueOutput(false)), ::testing::ExitedWithCode(0), "");
+    ASSERT_EXIT(std::_Exit(checkCatalogueOutput(true)), ::testing::ExitedWithCode(0), "");
 }
 
 TEST(LoginCatalogue, StoredBoundaryFieldsAndReadOnlyViewsKeepTheirExistingWidths) {

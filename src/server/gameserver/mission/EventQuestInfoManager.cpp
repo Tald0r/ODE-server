@@ -2,6 +2,7 @@
 
 #include "Assert.h"
 #include "DB.h"
+#include "DiagnosticTrace.h"
 #include "GatherItemQuestInfo.h"
 #include "MeetNPCQuestInfo.h"
 #include "MiniGameQuestInfo.h"
@@ -37,7 +38,8 @@ void EventQuestInfoManager::load(const string& name) {
         pMonsterKillQI->setQuestLevel(questLevel);
         addQuestInfo(pMonsterKillQI);
 
-        cout << "Loading Quest Info : " << pMonsterKillQI->toString() << endl;
+        de::diagnosticTrace(
+            [&](std::ostream& output) { output << "Loading Quest Info : " << pMonsterKillQI->toString(); });
     }
 
     vector<EventGatherItemQuestRow> gatherItems = defaultQuestInfoRepository().loadEventGatherItemQuestsOfNPC(name);
@@ -61,7 +63,8 @@ void EventQuestInfoManager::load(const string& name) {
         pGatherItemQI->setQuestLevel(questLevel);
         addQuestInfo(pGatherItemQI);
 
-        cout << "Loading Quest Info : " << pGatherItemQI->toString() << endl;
+        de::diagnosticTrace(
+            [&](std::ostream& output) { output << "Loading Quest Info : " << pGatherItemQI->toString(); });
     }
 
     vector<EventMeetNPCQuestRow> meetNPCs = defaultQuestInfoRepository().loadEventMeetNPCQuestsOfNPC(name);
@@ -84,7 +87,7 @@ void EventQuestInfoManager::load(const string& name) {
         pMeetNPCQI->setQuestLevel(questLevel);
         addQuestInfo(pMeetNPCQI);
 
-        cout << "Loading Quest Info : " << pMeetNPCQI->toString() << endl;
+        de::diagnosticTrace([&](std::ostream& output) { output << "Loading Quest Info : " << pMeetNPCQI->toString(); });
     }
 
     vector<EventMiniGameQuestRow> miniGames = defaultQuestInfoRepository().loadEventMiniGameQuestsOfNPC(name);
@@ -106,7 +109,8 @@ void EventQuestInfoManager::load(const string& name) {
         pMiniGameQI->setQuestLevel(questLevel);
         addQuestInfo(pMiniGameQI);
 
-        cout << "Loading Quest Info : " << pMiniGameQI->toString() << endl;
+        de::diagnosticTrace(
+            [&](std::ostream& output) { output << "Loading Quest Info : " << pMiniGameQI->toString(); });
     }
 
     __END_CATCH

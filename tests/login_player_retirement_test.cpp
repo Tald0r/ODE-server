@@ -423,6 +423,62 @@ TEST(LoginPlayerRetirement, InputFailureRetiresBeforeLaterCommandsOrOutput) {
     EXPECT_EQ(session.visits.outputs, 0u);
 }
 
+TEST(LoginPlayerRetirement, RepeatedUnauthenticatedPeerClosesRetireWithoutErrorOutput) {
+    de::LoginContext context;
+    LoginPlayerManager players(context);
+    LoopbackListener listener;
+    for (unsigned attempt = 0; attempt < 3; ++attempt) {
+        auto socket = std::make_unique<Socket>("127.0.0.1", listener.port());
+        socket->connect();
+        const int peer = listener.accept();
+        auto player = de::makeLoginConnection(std::move(socket));
+        const auto descriptor = player->getSocket()->getSOCKET();
+        players.addPlayer(player.get());
+        player.release();
+        ASSERT_EQ(::close(peer), 0);
+        pollfd ready{descriptor, POLLIN, 0};
+        ASSERT_EQ(::poll(&ready, 1, 2000), 1);
+        players.pollSockets();
+
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        EXPECT_NO_THROW(players.processInputs());
+        const auto output = testing::internal::GetCapturedStdout();
+        const auto errors = testing::internal::GetCapturedStderr();
+        EXPECT_TRUE(output.empty()) << output;
+        EXPECT_TRUE(errors.empty()) << errors;
+        EXPECT_EQ(players.size(), 0u);
+        EXPECT_EQ(players.pendingRetirements(), 0u);
+        EXPECT_EQ(::fcntl(descriptor, F_GETFD), -1);
+    }
+}
+
+TEST(LoginPlayerRetirement, RealInputAndCleanupFailuresRemainVisible) {
+    NetworkSession session;
+    session.visits.inputFailure = std::make_exception_ptr(ConnectException("read failed"));
+    ASSERT_EQ(::send(session.peer, "x", 1, 0), 1);
+    session.waitFor(POLLIN);
+    testing::internal::CaptureStdout();
+    EXPECT_NO_THROW(session.players.processInputs());
+    const auto output = testing::internal::GetCapturedStdout();
+    EXPECT_NE(output.find("read failed"), std::string::npos);
+    EXPECT_NE(output.find("logout failed"), std::string::npos);
+    session.checkRetired(false);
+}
+
+TEST(LoginPlayerRetirement, QuietPeerCloseStillReportsFailedCleanupAndRetainsItsOwner) {
+    NetworkSession session;
+    session.visits.inputFailure = std::make_exception_ptr(PeerClosedException());
+    ASSERT_EQ(::send(session.peer, "x", 1, 0), 1);
+    session.waitFor(POLLIN);
+    testing::internal::CaptureStdout();
+    EXPECT_NO_THROW(session.players.processInputs());
+    const auto output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(output.find("connect closed"), std::string::npos);
+    EXPECT_NE(output.find("logout failed"), std::string::npos);
+    session.checkRetired(false);
+}
+
 TEST(LoginPlayerRetirement, ADescriptorWithASocketErrorRetiresWithoutReadingOrFlushing) {
     NetworkSession session;
     session.player->getSocket()->close();
