@@ -52,7 +52,7 @@ void LGKickCharacter::write(Datagram& oDatagram) const
     //--------------------------------------------------
     // write PC name
     //--------------------------------------------------
-    BYTE szPCName = m_PCName.size();
+    const auto szPCName = m_PCName.size();
 
     if (szPCName == 0)
         throw InvalidProtocolException("szPCName == 0");
@@ -60,7 +60,7 @@ void LGKickCharacter::write(Datagram& oDatagram) const
     if (szPCName > 20)
         throw InvalidProtocolException("too long name length");
 
-    oDatagram.write(szPCName);
+    oDatagram.write(static_cast<BYTE>(szPCName));
 
     oDatagram.write(m_PCName);
 
