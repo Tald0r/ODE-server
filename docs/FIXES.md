@@ -1053,16 +1053,20 @@ check the diagnostic arguments and the actual log text in an isolated directory.
 
 ## A prior free pass survives into another login attempt (2026-10-03)
 
-By inspection, `CLLoginHandler` reads the player's existing free-pass flag after
-the current authentication gate. Neither an ordinary-client gate nor a rejected
-web/NetMarble attempt clears that flag or binds it to an account. If a successfully
-authorized web attempt later returns to the beginning phase, a different account
-on the same connection can reach the free-pass projection without its ordinary
-password check. The extracted adapters preserve existing state; task 2.68 must
-give per-attempt authorization an explicit owner and add an end-to-end regression
-when extracting the main login flow.
+`CLLoginHandler` read a connection's previous free-pass flag after the current
+authentication gate. Three production-flow regressions reproduced a refused
+web/NetMarble account authorizing another account's ordinary login without a
+password check, including stripping an extra character from a test-client ID.
 
-> **Status:** recorded, not fixed (refactor/login-authentication)
+The extracted `LoginFlow` clears the free pass and sets the current web-login
+mode before preparing each attempt. Only authorization actually published by the
+current gate can bypass the password check; account-cleanup ownership remains
+independent. Runtime tests cover same/different-account retries, intervening
+external refusals, fresh successful authentication and input-allocation failure.
+The flow preserves gate ordering, legacy NetMarble exception handling, refusal
+bytes, reply/phase ordering and ownership after partial writes or sends.
+
+> **Status:** fixed (fix/login-attempt-authorization)
 
 ## Kick verification admits completed sessions and mishandles manager locks (2026-10-02)
 

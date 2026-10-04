@@ -1681,16 +1681,20 @@ visibility can't express.
     selection and failure containment.
 
 - [ ] **2.68 Extract the remaining login handler flow and password adapter.**
-  > **Status:** not started — `CLLoginHandler` still coordinates normalization,
-  > authentication gates, ordinary password migration, decision/session
-  > adaptation, kick/success dispatch and reporting through process contexts. Use
-  > the extracted authentication/refusal adapters while supplying the remaining
-  > explicit repository, configuration, time, password and dispatch actions,
-  > retaining gate order and acquired-account cleanup ownership. Address the
-  > recorded free-pass state carried across attempts and ordinary rehash logger.
-  - Owner to add: ordinary/web/test/NetMarble paths, owned inputs, refusal bytes,
-    authentication/write order, kick/success publication, exception/reporting
-    failures, partial effects and allocation cleanup without executable startup.
+  > **Status:** in progress (ordinary-password adapter and rehash reporting remain).
+  > `CLLoginHandler` delegates to `LoginFlow`, which owns packet inputs and uses
+  > explicit repository, configuration, time, password and dispatch actions.
+  > Each attempt clears previous external authorization before preparing inputs;
+  > only the current gate's grant can bypass the ordinary password check.
+  > Gate order, the legacy NetMarble exception boundary and acquired-account
+  > cleanup ownership are preserved. The ordinary-password adapter/reporting fix
+  > is a separate contribution on `fix/password-rehash-diagnostics`.
+  - Owner: `LoginFlow` in `login_server_runtime_tests` covers ordinary/web/test/
+    NetMarble paths, cross-attempt authorization, owned inputs, refusal bytes,
+    write/dispatch/publication order, exception boundaries, partial effects and
+    input-allocation failure with cleanup ownership preserved through retry.
+  - Remaining owner: explicit ordinary-password verification/hashing/reporting
+    actions and a regression for rehash diagnostics replacing acceptance.
 
 **Phase exit criteria:** `de-kernel` builds standalone with no MySQL/Lua/Zone
 includes (include-graph test green); at least GC/CG fully migrated off
