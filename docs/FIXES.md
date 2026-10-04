@@ -1050,12 +1050,17 @@ allocation failures have runtime coverage.
 
 ## Ordinary-password rehash reporting can still replace acceptance (2026-10-03)
 
-By inspection, `checkStoredPassword` catches a hashing failure after accepting
-the stored credential, then calls the file logger without containing diagnostic
-errors. A throwing logger can still replace that accepted result. Task 2.68
-tracks its explicit password/reporting adapter and a regression owner.
+`checkStoredPassword` caught a hashing failure after accepting the stored
+credential, then called the file logger without containing diagnostic errors.
+A regression with explicit password/reporting actions reproduced the accepted
+result being replaced by standard, allocation and nonstandard reporting errors.
+Reporting is now optional and best effort; acceptance survives a failed rehash
+and its diagnostic. Query/verification failures and nonstandard hashing failures
+retain their original exception boundaries, and only the caller writes a new hash.
+The standalone password-check tests cover these boundaries, decoy verification
+for missing accounts and retry after a failed rehash.
 
-> **Status:** recorded, not fixed (refactor/login-authentication)
+> **Status:** fixed (fix/password-rehash-diagnostics)
 
 ## Web-key mismatch diagnostics write both credentials to disk (2026-10-03)
 

@@ -11,8 +11,11 @@
 #include <functional>
 #include <string>
 
+#include <string_view>
+
 #include "LoginAccountOwnership.h"
 #include "Outcome.h"
+#include "PasswordHash.h"
 #include "VSDateTime.h"
 #include "repository/LoginAccountRepository.h"
 
@@ -170,11 +173,28 @@ struct PasswordCheck {
     std::string hash;
 };
 
+struct StoredPasswordActions {
+    // Required synchronous operations. Callbacks must not retain borrowed
+    // arguments or mutate the supplied account/password while checking them.
+    std::function<de::password::Verify(std::string_view, std::string_view)> verify;
+    std::function<std::string(std::string_view)> hash;
+    // Optional best-effort diagnostic; failures cannot replace acceptance.
+    // It runs synchronously and its arguments are borrowed for the call.
+    // Hash implementations must not put credentials in error details; neither
+    // the stored hash nor submitted password is supplied.
+    std::function<void(const std::string&, const char*)> rehashFailure;
+};
+
+const StoredPasswordActions& defaultStoredPasswordActions();
+
 // Check a password against the account's stored value. An unknown account
 // still pays for one verification, so a reply's latency does not tell an
 // unknown account from a wrong password.
 [[nodiscard]] PasswordCheck checkStoredPassword(const std::string& playerID, const std::string& password,
                                                 LoginAccountRepository& repository);
+[[nodiscard]] PasswordCheck checkStoredPassword(const std::string& playerID, const std::string& password,
+                                                LoginAccountRepository& repository,
+                                                const StoredPasswordActions& actions);
 
 // Is the address covered by an IPBlockInfo entry? An entry whose class is
 // none of 0, 1 or 2 blocks outright.
