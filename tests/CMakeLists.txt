@@ -144,6 +144,7 @@ target_sources(login_server_runtime_tests PRIVATE
     login_account_name_query_test.cpp
     login_registration_test.cpp
     login_authentication_test.cpp
+    login_flow_test.cpp
     support/AllocationProbe.cpp)
 add_server_runtime_test(shared_server_runtime_tests shared_server_runtime_test.cpp SharedServerRuntime)
 target_sources(shared_server_runtime_tests PRIVATE
