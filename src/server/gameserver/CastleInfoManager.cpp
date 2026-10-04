@@ -10,6 +10,7 @@
 
 #include <algorithm>
 
+#include "DiagnosticTrace.h"
 #include "Guild.h"
 #include "GuildManager.h"
 #include "ItemUtil.h"
@@ -232,7 +233,7 @@ void CastleInfoManager::load()
 
         addCastleInfo(pCastleInfo);
 
-        cout << pCastleInfo->toString().c_str() << endl;
+        de::diagnosticTrace([&](std::ostream& output) { output << pCastleInfo->toString().c_str(); });
     }
 
     __END_CATCH

@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 
 #include "Socket.h"
+#include "SocketAPI.h"
 #include "SocketImpl.h"
 
 namespace {
@@ -19,6 +20,17 @@ bool isOpen(int fd) {
     return ::getsockopt(fd, SOL_SOCKET, SO_TYPE, &type, &length) == 0;
 }
 } // namespace
+
+TEST(SocketImpl, OrderlyCloseIsDistinctFromOtherConnectionFailures) {
+    int descriptors[2];
+    ASSERT_EQ(::socketpair(AF_UNIX, SOCK_STREAM, 0, descriptors), 0);
+    ASSERT_EQ(::close(descriptors[1]), 0);
+    char byte;
+    EXPECT_THROW(SocketAPI::recv_ex(descriptors[0], &byte, 1, 0), PeerClosedException);
+    // Existing callers that retire all lost connections keep their behavior.
+    EXPECT_THROW(SocketAPI::recv_ex(descriptors[0], &byte, 1, 0), ConnectException);
+    EXPECT_EQ(::close(descriptors[0]), 0);
+}
 
 TEST(SocketImpl, CloseReleasesTheDescriptorOnceAndKeepsItsNumber) {
     SocketImpl socket("127.0.0.1", 9);

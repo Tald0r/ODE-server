@@ -12,6 +12,7 @@
 
 #include "Assert.h"
 #include "DatabaseError.h"
+#include "DiagnosticTrace.h"
 #include "GameServerManager.h"
 #include "KernelContext.h"
 #include "LGKickCharacter.h"
@@ -159,11 +160,10 @@ void LoginPlayer::processCommand(bool Option) {
             memcpy(&packetID, &header[0], szPacketID);
             memcpy(&packetSize, &header[szPacketID], szPacketSize);
 
-            // DEBUG by tiancaiamao
-            StringStream msg;
-            msg << "RECV PACKET from " << m_ID << ", " << packetFactories.getPacketName(packetID) << "(" << packetID
-                << ") " << szPacketHeader + packetSize << "/" << m_pInputStream->length() << eos;
-            cout << msg.toString() << endl;
+            de::diagnosticTrace([&](std::ostream& output) {
+                output << "login frame id=" << packetID << " size=" << packetSize
+                       << " buffered=" << m_pInputStream->length();
+            });
 
             // A strange packet id counts as a protocol error.
             if (packetID >= Packet::PACKET_MAX)
@@ -173,7 +173,6 @@ void LoginPlayer::processCommand(bool Option) {
             try {
                 // Check that the packet order is valid.
                 if (!de::kernelContext().packetValidator().isValidPacketID(getPlayerStatus(), packetID)) {
-                    // DEBUG by tiancaiamao
                     cout << "player status: " << getPlayerStatus() << " receive packet: " << packetID << endl;
                     throw InvalidProtocolException("invalid packet order");
                 }
@@ -372,7 +371,7 @@ void LoginPlayer::sendLGKickCharacter() {
 }
 
 bool LoginPlayer::resendLGKickCharacter() {
-    cout << "send LGKickCharacter" << endl;
+    de::diagnosticTrace([](std::ostream& output) { output << "login kick requested"; });
 
     const auto target = de::prepareLoginKick(*this, defaultLoginAccountRepository(), defaultLoginCharacterRepository());
     if (!target)

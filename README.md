@@ -523,3 +523,6 @@ context) is used instead of `.dockerignore`:
 ```sh
 DOCKER_BUILDKIT=1 docker build . -t darkeden:latest -f Dockerfile.pub
 ```
+
+Production diagnostics and the logging migration policy are documented in
+[docs/logging.md](docs/logging.md).

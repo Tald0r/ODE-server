@@ -18,6 +18,7 @@
 #include "Assert.h"
 #include "DatabaseError.h"
 #include "DescriptorTable.h"
+#include "DiagnosticTrace.h"
 #include "KernelContext.h"
 #include "ListenerStartup.h"
 #include "LoginConnection.h"
@@ -228,6 +229,11 @@ void LoginPlayerManager::processInputs() {
                     } else {
                         m_pPlayers[i]->processInput();
                     }
+                } catch (const PeerClosedException&) {
+                    // An orderly close (including a TCP health probe) needs
+                    // retirement, not an error report. Cleanup failures still
+                    // go through the retirement reporter independently.
+                    retirePlayer_NOLOCKED(i, DISCONNECTED);
                 } catch (const ConnectException&) {
                     retirePlayer_NOLOCKED(i, DISCONNECTED, std::current_exception());
                 }
@@ -344,8 +350,9 @@ void LoginPlayerManager::acceptNewConnection(Socket* forwarded) {
         return;
     }
 
-    cout << "NEW CONNECTION FROM " << client->getHost() << ":" << client->getPort() << endl;
-    cerr << "NEW CONNECTION FROM " << client->getHost() << ":" << client->getPort() << endl;
+    de::diagnosticTrace([&](std::ostream& output) {
+        output << "login connection accepted peer=" << client->getHost() << ':' << client->getPort();
+    });
 
     auto player = de::makeLoginConnection(std::move(client));
     addPlayer_NOLOCKED(player.get());

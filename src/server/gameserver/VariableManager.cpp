@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "DiagnosticTrace.h"
 #include "KernelContext.h"
 #include "Properties.h"
 #include "SystemAvailabilitiesManager.h"
@@ -312,7 +313,8 @@ void VariableManager::load()
 
     for (size_t r = 0; r < rows.size(); r++) {
         if (rows[r].attrID >= 0 && rows[r].attrID < (int)m_Variables.size())
-            cout << toString((VariableType)rows[r].attrID).c_str() << endl;
+            de::diagnosticTrace(
+                [&](std::ostream& output) { output << toString((VariableType)rows[r].attrID).c_str(); });
     }
 
     __END_CATCH
