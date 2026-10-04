@@ -63,17 +63,30 @@ bool decideAdult(const LoginRequest& request, const std::string& ssn, const VSDa
 
 } // namespace
 
+const StoredPasswordActions& defaultStoredPasswordActions() {
+    static const StoredPasswordActions actions{
+        de::password::verify, de::password::hash, +[](const std::string& account, const char* detail) {
+            filelog("loginfail.txt", "Password rehash failed, PlayerID : %s : %s", account.c_str(), detail);
+        }};
+    return actions;
+}
+
 PasswordCheck checkStoredPassword(const std::string& playerID, const std::string& password,
                                   LoginAccountRepository& repository) {
+    return checkStoredPassword(playerID, password, repository, defaultStoredPasswordActions());
+}
+
+PasswordCheck checkStoredPassword(const std::string& playerID, const std::string& password,
+                                  LoginAccountRepository& repository, const StoredPasswordActions& actions) {
     PasswordCheck check;
 
     std::string stored;
     if (!repository.loadPasswordHash(playerID, stored)) {
-        de::password::verify(kDecoyHash, password);
+        actions.verify(kDecoyHash, password);
         return check;
     }
 
-    const de::password::Verify verdict = de::password::verify(stored, password);
+    const de::password::Verify verdict = actions.verify(stored, password);
     if (verdict == de::password::Verify::Rejected)
         return check;
 
@@ -81,12 +94,16 @@ PasswordCheck checkStoredPassword(const std::string& playerID, const std::string
 
     if (verdict == de::password::Verify::AcceptedRehash) {
         try {
-            check.hash = de::password::hash(password);
+            check.hash = actions.hash(password);
             check.rehash = true;
         } catch (const std::exception& e) {
             // The password was already accepted against the stored value,
             // so the login stands and the next one retries the rewrite.
-            filelog("loginfail.txt", "Password rehash failed, PlayerID : %s : %s", playerID.c_str(), e.what());
+            try {
+                if (actions.rehashFailure)
+                    actions.rehashFailure(playerID, e.what());
+            } catch (...) {
+            }
         }
     }
 

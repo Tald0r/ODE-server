@@ -470,6 +470,83 @@ void expectEqual(const LGKickCharacter& a, const LGKickCharacter& b) {
 
 INTERSERVER_DATAGRAM_TESTS(LGKickCharacter)
 
+// Validate the original string size, before the one-byte wire length can
+// wrap. Other fields keep their ordinary fixture values so each refusal is
+// attributable to this field. A writer may already have emitted earlier
+// fields when it refuses; these tests do not require transactional writes.
+template <typename P, typename SetField> void expectDatagramStringBounds(size_t maximum, SetField setField) {
+    for (size_t length : {size_t{1}, maximum}) {
+        SCOPED_TRACE(length);
+        P packet;
+        fill(packet);
+        setField(packet, std::string(length, 'x'));
+        const auto body = datagramBody(packet);
+        EXPECT_EQ(static_cast<size_t>(packet.getPacketSize()), body.size());
+        P decoded;
+        readDatagramImage(decoded, body);
+        expectEqual(packet, decoded);
+    }
+
+    for (size_t length :
+         {size_t{0}, maximum + 1, size_t{255}, size_t{256}, size_t{257}, 256 + maximum, size_t{512}, size_t{513}}) {
+        SCOPED_TRACE(length);
+        P packet;
+        fill(packet);
+        setField(packet, std::string(length, 'x'));
+        Datagram datagram;
+        EXPECT_THROW(datagram.write(&packet), InvalidProtocolException);
+    }
+}
+
+TEST(DatagramStringBounds, KickCharacterName) {
+    expectDatagramStringBounds<LGKickCharacter>(20, [](auto& packet, const auto& value) { packet.setPCName(value); });
+}
+
+TEST(DatagramStringBounds, IncomingConnectionOKPlayerID) {
+    expectDatagramStringBounds<GLIncomingConnectionOK>(
+        20, [](auto& packet, const auto& value) { packet.setPlayerID(value); });
+}
+
+TEST(DatagramStringBounds, IncomingConnectionErrorMessage) {
+    expectDatagramStringBounds<GLIncomingConnectionError>(
+        127, [](auto& packet, const auto& value) { packet.setMessage(value); });
+}
+
+TEST(DatagramStringBounds, IncomingConnectionErrorPlayerID) {
+    expectDatagramStringBounds<GLIncomingConnectionError>(
+        127, [](auto& packet, const auto& value) { packet.setPlayerID(value); });
+}
+
+TEST(DatagramStringBounds, LoginIncomingConnectionOKPlayerID) {
+    expectDatagramStringBounds<LGIncomingConnectionOK>(
+        20, [](auto& packet, const auto& value) { packet.setPlayerID(value); });
+}
+
+TEST(DatagramStringBounds, LoginIncomingConnectionErrorMessage) {
+    expectDatagramStringBounds<LGIncomingConnectionError>(
+        127, [](auto& packet, const auto& value) { packet.setMessage(value); });
+}
+
+TEST(DatagramStringBounds, LoginIncomingConnectionErrorPlayerID) {
+    expectDatagramStringBounds<LGIncomingConnectionError>(
+        127, [](auto& packet, const auto& value) { packet.setPlayerID(value); });
+}
+
+TEST(DatagramStringBounds, IncomingConnectionPlayerID) {
+    expectDatagramStringBounds<LGIncomingConnection>(
+        20, [](auto& packet, const auto& value) { packet.setPlayerID(value); });
+}
+
+TEST(DatagramStringBounds, IncomingConnectionCharacterName) {
+    expectDatagramStringBounds<LGIncomingConnection>(20,
+                                                     [](auto& packet, const auto& value) { packet.setPCName(value); });
+}
+
+TEST(DatagramStringBounds, IncomingConnectionClientIP) {
+    expectDatagramStringBounds<LGIncomingConnection>(
+        15, [](auto& packet, const auto& value) { packet.setClientIP(value); });
+}
+
 //////////////////////////////////////////////////////////////////////
 // The UDP link: GG.
 //////////////////////////////////////////////////////////////////////

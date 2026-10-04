@@ -58,7 +58,7 @@ void LGIncomingConnectionOK::write(Datagram& oDatagram) const
     //--------------------------------------------------
     // write Player ID
     //--------------------------------------------------
-    BYTE szPlayerID = m_PlayerID.size();
+    const auto szPlayerID = m_PlayerID.size();
 
     if (szPlayerID == 0)
         throw InvalidProtocolException("szPlayerID == 0");
@@ -66,7 +66,7 @@ void LGIncomingConnectionOK::write(Datagram& oDatagram) const
     if (szPlayerID > 20)
         throw InvalidProtocolException("too long playerID size");
 
-    oDatagram.write(szPlayerID);
+    oDatagram.write(static_cast<BYTE>(szPlayerID));
 
     oDatagram.write(m_PlayerID);
 

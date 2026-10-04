@@ -78,7 +78,7 @@ void LGIncomingConnection::write(Datagram& oDatagram) const
     //--------------------------------------------------
     // write player id
     //--------------------------------------------------
-    BYTE szPlayerID = m_PlayerID.size();
+    const auto szPlayerID = m_PlayerID.size();
 
     if (szPlayerID == 0)
         throw InvalidProtocolException("szPlayerID == 0");
@@ -86,14 +86,14 @@ void LGIncomingConnection::write(Datagram& oDatagram) const
     if (szPlayerID > 20)
         throw InvalidProtocolException("too long name length");
 
-    oDatagram.write(szPlayerID);
+    oDatagram.write(static_cast<BYTE>(szPlayerID));
 
     oDatagram.write(m_PlayerID);
 
     //--------------------------------------------------
     // write PC name
     //--------------------------------------------------
-    BYTE szPCName = m_PCName.size();
+    const auto szPCName = m_PCName.size();
 
     if (szPCName == 0)
         throw InvalidProtocolException("szPCName == 0");
@@ -101,14 +101,14 @@ void LGIncomingConnection::write(Datagram& oDatagram) const
     if (szPCName > 20)
         throw InvalidProtocolException("too long name length");
 
-    oDatagram.write(szPCName);
+    oDatagram.write(static_cast<BYTE>(szPCName));
 
     oDatagram.write(m_PCName);
 
     //--------------------------------------------------
     // write client IP
     //--------------------------------------------------
-    BYTE szClientIP = m_ClientIP.size();
+    const auto szClientIP = m_ClientIP.size();
 
     if (szClientIP == 0)
         throw InvalidProtocolException("szClientIP == 0");
@@ -116,7 +116,7 @@ void LGIncomingConnection::write(Datagram& oDatagram) const
     if (szClientIP > 15)
         throw InvalidProtocolException("too long IP length");
 
-    oDatagram.write(szClientIP);
+    oDatagram.write(static_cast<BYTE>(szClientIP));
 
     oDatagram.write(m_ClientIP);
 

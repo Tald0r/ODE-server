@@ -63,7 +63,7 @@ void LGIncomingConnectionError::write(Datagram& oDatagram) const
 
     //--------------------------------------------------
     //--------------------------------------------------
-    BYTE szMessage = m_Message.size();
+    const auto szMessage = m_Message.size();
 
     if (szMessage == 0)
         throw InvalidProtocolException("szMessage == 0");
@@ -71,14 +71,14 @@ void LGIncomingConnectionError::write(Datagram& oDatagram) const
     if (szMessage >= 128)
         throw InvalidProtocolException("too large message length");
 
-    oDatagram.write(szMessage);
+    oDatagram.write(static_cast<BYTE>(szMessage));
 
     oDatagram.write(m_Message);
 
 
     //--------------------------------------------------
     //--------------------------------------------------
-    BYTE szPlayerID = m_PlayerID.size();
+    const auto szPlayerID = m_PlayerID.size();
 
     if (szPlayerID == 0)
         throw InvalidProtocolException("szPlayerID == 0");
@@ -86,7 +86,7 @@ void LGIncomingConnectionError::write(Datagram& oDatagram) const
     if (szPlayerID >= 128)
         throw InvalidProtocolException("too large playerID length");
 
-    oDatagram.write(szPlayerID);
+    oDatagram.write(static_cast<BYTE>(szPlayerID));
 
     oDatagram.write(m_PlayerID);
 

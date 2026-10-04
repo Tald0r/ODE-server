@@ -644,14 +644,19 @@ endpoints, packet bytes, incomplete sends, failures, ownership, cleanup and retr
 
 ## Kick datagram writing checks an already narrowed name length (2026-10-02)
 
-By inspection, `LGKickCharacter::write` converts the character name size to
-`BYTE` before checking its 1..20 limit. A 257-byte name therefore passes with a
-length prefix of one while the writer emits all 257 bytes; the resulting frame
-exceeds the receiver's factory budget. Validate the full string size before
-narrowing and add writer-boundary coverage. This is separate from the send
-helper's transport and resource-ownership checks.
+`LGKickCharacter::write` converted the character name size to `BYTE` before
+checking its 1..20 limit. Boundary tests reproduced a 257-byte name passing
+with a length prefix of one while the writer emitted all 257 bytes, exceeding
+the receiver's factory budget. The writer now checks the full string size and
+narrows only the accepted length when writing its prefix. Existing limits,
+exception messages and field order are unchanged.
 
-> **Status:** recorded, not fixed (refactor/login-datagram-send)
+`DatagramStringBounds.KickCharacterName` in `wire_tests` covers empty, minimum,
+maximum, maximum-plus-one, 255/256/257, 256-plus-maximum and 512/513 lengths.
+Valid boundary values round-trip; the existing datagram goldens pin valid bytes.
+This is separate from the send helper's transport and resource-ownership checks.
+
+> **Status:** fixed (fix/datagram-string-lengths)
 
 ## Kick retry can advance an attempt that is no longer pending (2026-10-02)
 
@@ -809,16 +814,27 @@ has no nonce to distinguish identical replies for a later pending account attemp
 
 ## Incoming game-connection datagram writers narrow string lengths before validating them (2026-10-02)
 
-By inspection, `GLIncomingConnectionOK::write` converts account length to BYTE
-before checking its 1–20 limit. The error writer does the same for message/account
-lengths before checking 1–127. A 257-byte string therefore passes as length 1,
-while the writer emits the whole string, breaking framing and factory budgets.
-The same narrowing occurs in `LGIncomingConnection` for account/name/client-IP
-fields. Its extracted login producer now validates full lengths before building
-the request, but the packet writers themselves remain unchanged. They need
-validation before narrowing, with datagram and client-wire coverage.
+`GLIncomingConnectionOK::write` converted account length to `BYTE` before
+checking its 1..20 limit. The error writer did the same for message/account
+lengths before checking 1..127. `LGIncomingConnection` repeated the narrowing
+for account/name/client-IP fields, whose limits are 20/20/15. The response
+counterparts `LGIncomingConnectionOK` and `LGIncomingConnectionError` had the
+same defects and limits as their GL counterparts.
 
-> **Status:** recorded, not fixed (refactor/login-incoming-request)
+Boundary tests reproduced all nine fields accepting oversized strings whose
+lengths wrap to valid prefixes. Each writer now validates the full size before
+narrowing at the prefix write. The extracted login producer's existing checks,
+reader limits, exception messages, field order and valid packet bytes remain.
+Earlier fields may already have been written when a later field is refused;
+this change does not introduce transactional packet writes.
+
+The nine incoming-connection `DatagramStringBounds` cases in `wire_tests` cover
+each field independently at empty, minimum, maximum, maximum-plus-one,
+255/256/257, 256-plus-maximum and 512/513 lengths. Valid boundary values
+round-trip with their other fields intact; existing golden tests pin the valid
+wire representation without re-recording fixtures.
+
+> **Status:** fixed (fix/datagram-string-lengths)
 
 ## Character selection publishes a pending request even when its deployment user sends no datagram (2026-10-02)
 
@@ -1077,12 +1093,17 @@ allocation failures have runtime coverage.
 
 ## Ordinary-password rehash reporting can still replace acceptance (2026-10-03)
 
-By inspection, `checkStoredPassword` catches a hashing failure after accepting
-the stored credential, then calls the file logger without containing diagnostic
-errors. A throwing logger can still replace that accepted result. Task 2.68
-tracks its explicit password/reporting adapter and a regression owner.
+`checkStoredPassword` caught a hashing failure after accepting the stored
+credential, then called the file logger without containing diagnostic errors.
+A regression with explicit password/reporting actions reproduced the accepted
+result being replaced by standard, allocation and nonstandard reporting errors.
+Reporting is now optional and best effort; acceptance survives a failed rehash
+and its diagnostic. Query/verification failures and nonstandard hashing failures
+retain their original exception boundaries, and only the caller writes a new hash.
+The standalone password-check tests cover these boundaries, decoy verification
+for missing accounts and retry after a failed rehash.
 
-> **Status:** recorded, not fixed (refactor/login-authentication)
+> **Status:** fixed (fix/password-rehash-diagnostics)
 
 ## Web-key mismatch diagnostics write both credentials to disk (2026-10-03)
 
