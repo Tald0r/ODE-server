@@ -14,12 +14,13 @@
 mod config;
 mod handshake;
 mod relay;
+mod repeated_error;
 
 use std::future::Future;
 use std::io;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use tokio::io::AsyncWriteExt;
 use tokio::net::{TcpListener, TcpStream};
@@ -35,6 +36,7 @@ pub use config::{
 pub use handshake::parse_query;
 
 use handshake::{Decision, HeadError, Rejection, Upgrade};
+use repeated_error::{BackendReports, RepeatedError};
 
 /// Largest WebSocket message and frame a client may send; larger ones close
 /// the connection with 1009.
@@ -78,6 +80,7 @@ pub struct Gateway {
 struct Shared {
     config: Config,
     timeouts: Timeouts,
+    backend_reports: BackendReports,
 }
 
 impl Gateway {
@@ -98,6 +101,7 @@ impl Gateway {
         Ok(Self {
             listener,
             shared: Shared {
+                backend_reports: BackendReports::new(config.backend_ports()),
                 config,
                 timeouts: Timeouts::default(),
             },
@@ -130,6 +134,7 @@ impl Gateway {
         let (stop_tx, stop_rx) = watch::channel(false);
         let mut connections = JoinSet::new();
         let mut shutdown = std::pin::pin!(shutdown);
+        let mut accept_failures = RepeatedError::default();
 
         loop {
             tokio::select! {
@@ -138,10 +143,17 @@ impl Gateway {
                 Some(finished) = connections.join_next() => report(finished),
                 accepted = listener.accept() => {
                     let (stream, peer) = match accepted {
-                        Ok(accepted) => accepted,
+                        Ok(accepted) => {
+                            if let Some(suppressed_failures) = accept_failures.recovery() {
+                                tracing::info!(suppressed_failures, "accept recovered");
+                            }
+                            accepted
+                        },
                         Err(error) => {
                             // Usually descriptor exhaustion; do not spin on it.
-                            tracing::warn!("accept failed: {error}");
+                            if let Some(suppressed_failures) = accept_failures.failure(Instant::now()) {
+                                tracing::warn!(suppressed_failures, %error, "accept failed");
+                            }
                             tokio::time::sleep(Duration::from_millis(100)).await;
                             continue;
                         }
@@ -174,6 +186,14 @@ impl Gateway {
         .await;
         if drained.is_err() {
             connections.shutdown().await;
+        }
+        shared.backend_reports.finish();
+        let suppressed_failures = accept_failures.take_suppressed();
+        if suppressed_failures != 0 {
+            tracing::warn!(
+                suppressed_failures,
+                "accept failures suppressed before shutdown"
+            );
         }
     }
 }
@@ -305,13 +325,24 @@ async fn negotiate(
         Decision::Upgrade(upgrade) => upgrade,
     };
     let backend = match connect_backend(&upgrade, peer, shared.timeouts.backend_connect).await {
-        Ok(backend) => backend,
+        Ok(backend) => {
+            if let Some(suppressed_failures) = shared.backend_reports.recovery(upgrade.backend_port)
+            {
+                tracing::info!(
+                    backend_port = upgrade.backend_port,
+                    suppressed_failures,
+                    "backend recovered"
+                );
+            }
+            backend
+        }
         Err(error) => {
-            tracing::warn!(
-                %peer,
-                "backend 127.0.0.1:{} unavailable: {error}",
-                upgrade.backend_port
-            );
+            if let Some(suppressed_failures) = shared
+                .backend_reports
+                .failure(upgrade.backend_port, Instant::now())
+            {
+                tracing::warn!(backend_port = upgrade.backend_port, suppressed_failures, %error, "backend unavailable");
+            }
             refuse(stream, peer, Rejection::new(502, "backend unavailable")).await;
             return None;
         }

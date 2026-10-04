@@ -40,6 +40,13 @@ The gateway prints `DarkEden gateway listening on 127.0.0.1:8080` once it is
 bound and runs until ctrl-c or SIGTERM. `gateway` with no argument reads
 `config.json` from the working directory. Diagnostics go to stderr; set
 `RUST_LOG=debug` to log every refused handshake and every connection.
+Backend-unavailable warnings are limited to one per configured local backend
+port every 30 seconds, including the number of failures suppressed since the
+previous report. Listener-accept failures have an independent budget. A
+successful operation after an emitted warning produces one recovery event;
+recovery does not reset the warning budget. Remaining suppressed counts are
+reported when the gateway shuts down. These limits affect diagnostics only:
+unavailable backends still refuse each handshake with HTTP 502.
 
 The configuration keys:
 
