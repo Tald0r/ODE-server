@@ -28,6 +28,20 @@
 
 namespace {
 
+// Driver text can contain SQL literals, including credentials and private rows.
+// Keep the operation and numeric driver code without copying that text.
+std::string queryFailure(MYSQL* connection, const char* operation) {
+    const auto code = mysql_errno(connection);
+    const std::string message =
+        std::string("Statement::executeQuery ") + operation + " failed (mysql_errno=" + std::to_string(code) + ")";
+    try {
+        std::ostream diagnostics(std::cerr.rdbuf());
+        diagnostics << message << std::endl;
+    } catch (...) {
+    }
+    return message;
+}
+
 // Format a printf-style statement into out. Answers false, leaving out
 // untouched, when the formatted text is longer than
 // Statement::kMaxStatementLength characters or the format fails: a statement
@@ -113,11 +127,7 @@ Result* Statement::executeQuery()
     beginProfileEx("ZPM_QUERY");
 
     if (mysql_real_query(m_pConnection->getMYSQL(), m_Statement.c_str(), m_Statement.size()) != 0) {
-        cout << "Stmt::EQ real Query Error" << endl;
-        cout << "Stmt [" << m_Statement << "]" << endl;
-        cout << getError() << endl;
-
-        throw SQLQueryException(getError());
+        throw SQLQueryException(queryFailure(m_pConnection->getMYSQL(), "query"));
     }
 
     MYSQL_RES* pResult = mysql_store_result(m_pConnection->getMYSQL());
@@ -127,9 +137,7 @@ Result* Statement::executeQuery()
         m_pResult = new Result(pResult, m_Statement);
     } else {
         if (mysql_field_count(m_pConnection->getMYSQL()) != 0) {
-            cerr << "Stmt::EQ Unknown Error > " << getError() << endl;
-
-            throw SQLQueryException(getError());
+            throw SQLQueryException(queryFailure(m_pConnection->getMYSQL(), "store result"));
         } else {
             m_nAffectedRows = mysql_affected_rows(m_pConnection->getMYSQL());
         }

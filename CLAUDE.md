@@ -573,7 +573,15 @@ connection: for the Exchange both blocks must name one MySQL server, and
 `DB_USER` must be able to read and write those two tables. The gameserver
 checks that at startup (`ExchangeService::openPointLedger`); when it fails
 it starts anyway with Exchange purchases refused, and says why on stderr and
-in `DBError.log`. Code reads the loaded configuration through
+in `DBError.log`. Query diagnostics retain the operation and numeric MySQL
+error code, never SQL literals or raw driver text; invalid result access reports
+field bounds without the original query. Per-player packet diagnostic files
+contain event, packet ID and body size, never payload descriptions. Login
+character-deletion, SMS, shared broadcast failure, crash fallback and Mofus
+transport diagnostics also omit private payloads. Required character/transaction
+audits remain separate, without phone numbers or national IDs in Mofus records.
+Item and money audit records are independent of these diagnostic restrictions.
+Code reads the loaded configuration through
 `de::kernelContext().config()`, which each `main()` registers right after
 loading it and which asserts on a configuration nobody registered: a read
 before that point is a startup-order bug, not a condition to branch on.

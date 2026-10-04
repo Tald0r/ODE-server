@@ -12,6 +12,7 @@
 #include "Assert1.h"
 #include "GCAddressListVerify.h"
 #include "GamePlayer.h"
+#include "PacketDiagnostics.h"
 #include "PlayerCreature.h"
 #include "SMSServiceThread.h"
 #endif
@@ -34,7 +35,7 @@ void CGSMSSendHandler::execute(CGSMSSend* pPacket, Player* pPlayer)
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pGamePlayer->getCreature());
     Assert(pPC != NULL);
 
-    filelog("SMS.log", "[%s:%s] %s", pGamePlayer->getID().c_str(), pPC->getName().c_str(), pPacket->toString().c_str());
+    de::logPacketMetadata("SMS.log", "SMS requested", *pPacket);
     GCAddressListVerify gcVerify;
 
     if (pPC->getSMSCharge() < pPacket->getNumbersList().size()) {

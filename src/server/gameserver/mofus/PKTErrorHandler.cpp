@@ -8,6 +8,7 @@
 
 #include "Assert.h"
 #include "MJob.h"
+#include "MPacketDiagnostics.h"
 #include "MPlayer.h"
 #include "Mofus.h"
 #include "PKTError.h"
@@ -23,7 +24,7 @@ void PKTErrorHandler::execute(MPlayer* pPlayer, MPacket* pPacket) {
     cout << "--------------------------------------------------" << endl;
 
     filelog(MOFUS_LOG_FILE, "RECV [%s] Error : %d", pPlayer->getJob()->getName().c_str(), pError->nError);
-    filelog(MOFUS_PACKET_FILE, "RECV : [%s] %s", pPlayer->getJob()->getName().c_str(), pPacket->toString().c_str());
+    de::logMofusPacketMetadata(MOFUS_PACKET_FILE, "receive", *pPacket);
 
     // Set the error code
     pPlayer->setErrorCode(pError->getErrorCode());
