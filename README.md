@@ -1,5 +1,7 @@
 # opendarkeden-server
 
+For a concise source map, start with the [OKF knowledge index](docs/knowledge/index.md).
+
 Browser and native WebSocket clients can use the optional
 [WebSocket gateway](docs/websocket.md), which preserves player IPs across
 login and game handoffs while retaining the existing TCP listeners.

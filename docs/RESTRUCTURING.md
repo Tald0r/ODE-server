@@ -1681,13 +1681,20 @@ visibility can't express.
     selection and failure containment.
 
 - [ ] **2.68 Extract the remaining login handler flow and password adapter.**
-  > **Status:** not started — `CLLoginHandler` still coordinates normalization,
+  > **Status:** in progress (main login flow and per-attempt authorization remain).
+  > `checkStoredPassword` now accepts explicit verification, hashing and optional
+  > reporting actions; production defaults preserve the existing password policy.
+  > Rehash diagnostic failures cannot replace an accepted password.
+  > `CLLoginHandler` still coordinates normalization,
   > authentication gates, ordinary password migration, decision/session
   > adaptation, kick/success dispatch and reporting through process contexts. Use
   > the extracted authentication/refusal adapters while supplying the remaining
   > explicit repository, configuration, time, password and dispatch actions,
   > retaining gate order and acquired-account cleanup ownership. Address the
-  > recorded free-pass state carried across attempts and ordinary rehash logger.
+  > recorded free-pass state carried across attempts.
+  - Owner: `CheckStoredPassword` in `login_decision_tests` covers real hashes,
+    reporting failure containment, decoy verification, operation exception
+    boundaries and rehash retry without changing persistence ownership.
   - Owner to add: ordinary/web/test/NetMarble paths, owned inputs, refusal bytes,
     authentication/write order, kick/success publication, exception/reporting
     failures, partial effects and allocation cleanup without executable startup.
