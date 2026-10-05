@@ -22,6 +22,7 @@
 #include "KernelContext.h"
 #include "ListenerStartup.h"
 #include "Packet.h"
+#include "PacketDiagnostics.h"
 #include "Properties.h"
 #include "ServerContext.h"
 #include "ServerPortSettings.h"
@@ -177,8 +178,8 @@ void GameServerManager::broadcast(Packet* pPacket) {
             if (i != m_SocketID && m_pGameServerPlayers[i] != NULL)
                 m_pGameServerPlayers[i]->sendPacket(pPacket);
         }
-    } catch (const ProtocolException& e) {
-        diagnosticFilelog("SSException.log", "%s\n%s", e.toString().c_str(), pPacket->toString().c_str());
+    } catch (const ProtocolException&) {
+        de::logPacketMetadata("SSException.log", "broadcast protocol failure", *pPacket, diagnosticFilelog);
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)

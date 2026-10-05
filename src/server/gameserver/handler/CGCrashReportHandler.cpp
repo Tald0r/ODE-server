@@ -8,6 +8,7 @@
 
 #ifdef __GAME_SERVER__
 #include "GamePlayer.h"
+#include "PacketDiagnostics.h"
 #include "Slayer.h"
 #include "repository/SessionRepository.h"
 #endif
@@ -34,7 +35,7 @@ void CGCrashReportHandler::execute(CGCrashReport* pPacket, Player* pPlayer)
             pPacket->getAddress(), pPacket->getMessage(), pPacket->getOS(), pPacket->getCallStack());
         // Ignore anyone who sends something odd
     } catch (...) {
-        filelog("CrashReport.log", "%s", pPacket->toString().c_str());
+        de::logPacketMetadata("CrashReport.log", "crash report storage failed", *pPacket);
     }
 
 #endif // __GAME_SERVER__

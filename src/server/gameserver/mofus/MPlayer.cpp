@@ -10,6 +10,7 @@
 #include "GameContext.h"
 #include "MJob.h"
 #include "MPacket.h"
+#include "MPacketDiagnostics.h"
 #include "MPacketManager.h"
 #include "Mofus.h"
 #include "OutboundServerConnection.h"
@@ -283,7 +284,7 @@ void MPlayer::sendConnectAsk() {
     cout << "--------------------------------------------------" << endl;
 
     filelog(MOFUS_LOG_FILE, "SEND [%s] ConnectAsk", m_pJob->getName().c_str());
-    filelog(MOFUS_PACKET_FILE, "SEND : [%s] %s", m_pJob->getName().c_str(), pkt.toString().c_str());
+    de::logMofusPacketMetadata(MOFUS_PACKET_FILE, "send", pkt);
 }
 
 void MPlayer::sendLogout() {
@@ -296,7 +297,7 @@ void MPlayer::sendLogout() {
     cout << "--------------------------------------------------" << endl;
 
     filelog(MOFUS_LOG_FILE, "SEND [%s] Logout", m_pJob->getName().c_str());
-    filelog(MOFUS_PACKET_FILE, "SEND : [%s] %s", m_pJob->getName().c_str(), pkt.toString().c_str());
+    de::logMofusPacketMetadata(MOFUS_PACKET_FILE, "send", pkt);
 }
 
 void MPlayer::sendUserInfo() {
@@ -306,14 +307,12 @@ void MPlayer::sendUserInfo() {
 
     sendPacket(&pkt);
 
-    cout << pkt.toString() << endl;
-
     cout << "--------------------------------------------------" << endl;
     cout << "SEND [" << m_pJob->getName() << "] UserInfo" << endl;
     cout << "--------------------------------------------------" << endl;
 
-    filelog(MOFUS_LOG_FILE, "SEND [%s] UserInfo(cellnum:%s)", m_pJob->getName().c_str(), m_pJob->getCellNum().c_str());
-    filelog(MOFUS_PACKET_FILE, "SEND : [%s] %s", m_pJob->getName().c_str(), pkt.toString().c_str());
+    filelog(MOFUS_LOG_FILE, "SEND [%s] UserInfo", m_pJob->getName().c_str());
+    de::logMofusPacketMetadata(MOFUS_PACKET_FILE, "send", pkt);
 }
 
 void MPlayer::sendReceiveOK() {
@@ -326,7 +325,7 @@ void MPlayer::sendReceiveOK() {
     cout << "--------------------------------------------------" << endl;
 
     filelog(MOFUS_LOG_FILE, "SEND [%s] ReceiveOK", m_pJob->getName().c_str());
-    filelog(MOFUS_PACKET_FILE, "SEND : [%s] %s", m_pJob->getName().c_str(), pkt.toString().c_str());
+    de::logMofusPacketMetadata(MOFUS_PACKET_FILE, "send", pkt);
 }
 
 void MPlayer::sendResult() {
@@ -339,7 +338,7 @@ void MPlayer::sendResult() {
     cout << "--------------------------------------------------" << endl;
 
     filelog(MOFUS_LOG_FILE, "SEND [%s] Result", m_pJob->getName().c_str());
-    filelog(MOFUS_PACKET_FILE, "SEND : [%s] %s", m_pJob->getName().c_str(), pkt.toString().c_str());
+    de::logMofusPacketMetadata(MOFUS_PACKET_FILE, "send", pkt);
 }
 
 void MPlayer::sendSError(int errorCode) {
@@ -354,7 +353,7 @@ void MPlayer::sendSError(int errorCode) {
     cout << "--------------------------------------------------" << endl;
 
     filelog(MOFUS_LOG_FILE, "SEND [%s] SError", m_pJob->getName().c_str());
-    filelog(MOFUS_PACKET_FILE, "SEND : [%s] %s", m_pJob->getName().c_str(), pkt.toString().c_str());
+    de::logMofusPacketMetadata(MOFUS_PACKET_FILE, "send", pkt);
 }
 
 void MPlayer::addPowerPoint(int point) {

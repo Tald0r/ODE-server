@@ -179,12 +179,15 @@ int checkBrokenOutput() {
     session.actions.diagnostics = de::defaultLoginCharacterDeletionActions().diagnostics;
     RejectedOutput output;
     ConsoleBuffer console(output, true);
+    const auto state = std::cout.rdstate();
     try {
         if (!session.erase())
             return 1;
     } catch (...) {
         return 2;
     }
+    if (std::cout.rdstate() != state)
+        return 4;
     return session.successes == 1 && session.player.getPlayerStatus() == LPS_WAITING_FOR_CL_GET_PC_LIST ? 0 : 3;
 }
 
@@ -560,7 +563,11 @@ int checkProductionActions(int result) {
     session.player.observe = [&](Packet&) { reported = output.str(); };
     if (session.erase() != (result == 0) || session.player.sent != 1)
         return 1;
-    std::string expected = "CLDeletePC(Name:Rowan,Slot:1,SSN:test-ssn)\n";
+    std::string expected = "character deletion requested packet_id=" + std::to_string(session.packet.getPacketID()) +
+                           " body_size=" + std::to_string(session.packet.getPacketSize()) + "\n";
+    if (reported.find("test-ssn") != std::string::npos || reported.find("Rowan") != std::string::npos ||
+        reported.find("SSN") != std::string::npos)
+        return 8;
     if (result == 1 || result == 3)
         expected += "Fail to deletePC : no such slayer exist.\n";
     if (result == 2)
@@ -591,7 +598,7 @@ int checkProductionActions(int result) {
     return 0;
 }
 
-TEST(LoginCharacterDeletion, ProductionActionsPreserveReplyBytesConsoleTextAndTheWrongOwnerAudit) {
+TEST(LoginCharacterDeletion, ProductionActionsKeepReplyBytesAndAuditWithoutPrivateRequestDiagnostics) {
     for (int result = 0; result < 5; ++result) {
         SCOPED_TRACE(result);
         ASSERT_EXIT(std::_Exit(checkProductionActions(result)), ::testing::ExitedWithCode(0), "");

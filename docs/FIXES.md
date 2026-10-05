@@ -56,6 +56,45 @@ rotation, missing/unwritable/full sinks, retry after partial writes and SIGPIPE
 preservation. `shutdown_supervisor` checks shutdown order, final forwarded lines,
 child failure and absence of duplicate `.out` files.
 
+## Database and packet diagnostics expose private payloads (2026-10-04)
+
+> **Status:** fixed — query failures report the operation and numeric MySQL
+> error code; invalid result access reports field bounds; per-player packet
+> files and handler-failure records contain only event, packet ID and body size.
+
+`Statement::executeQuery` printed the full SQL statement and driver text on
+failure. Both can contain password hashes, session keys or private row values.
+`Result::getField` copied the original SQL into its exception and file log.
+`GamePlayer` likewise wrote full packet descriptions, including private fields,
+to optional packet files and unconditional handler-failure records. Login
+character-deletion request dumps included national ID and character name;
+SMS dumps included phone numbers and message text. Shared broadcast failures,
+crash-report fallback files and Mofus packet files also copied packet payloads.
+Mofus user-info console output and its audit message exposed national IDs or
+phone numbers.
+
+The diagnostics now omit these payloads entirely, including at debug verbosity.
+Numeric database codes and operation/call-site context remain available. Query
+and result exception types, actual SQL execution, result ownership, packet bytes
+and disconnect behavior are unchanged. Packet-reporting failures cannot replace
+a handler failure; failed console output cannot replace the SQL exception or
+poison the shared error stream. Character-deletion request diagnostics now use
+an isolated console stream and packet ID/size; the wrong-owner audit still
+identifies the account and character. Shared broadcast failures retain the
+protocol-failure category with packet metadata. SMS and crash fallback records
+retain their event and packet metadata. Mofus transport files contain only the
+packet ID/declared size; its transaction audits retain character and point fields
+without national IDs or phone numbers. Item and money audit database writes and
+the deliberate crash-report database submission are unchanged.
+
+`database_diagnostics_tests` exercises the production query/result methods with
+an isolated MySQL boundary, including private marker text, query and result
+failures, successful retry, retained bounds and result cleanup.
+`game_packet_diagnostics_tests` exercises the production packet-file reporter
+with throwing payload descriptions, SMS/crash private markers and Mofus metadata
+failures. Existing production character-deletion tests verify redacted output
+alongside all five success/refusal paths, reply bytes and the wrong-owner audit.
+
 ## Routine traffic and configuration values reach production output (2026-10-04)
 
 Packet streams formatted every payload with `toString()`, login admission wrote

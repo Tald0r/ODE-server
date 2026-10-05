@@ -26,6 +26,7 @@
 #include "KernelContext.h"
 #include "Ousters.h"
 #include "PCFinder.h"
+#include "PacketDiagnostics.h"
 #include "PacketDispatcher.h"
 #include "PacketFactoryManager.h"
 #include "PacketValidator.h"
@@ -342,7 +343,7 @@ void GamePlayer::processCommand(bool Option) {
                 if (currentTime >= m_PacketLogEndTime) {
                     m_bPacketLog = false;
                 } else {
-                    diagnosticFilelog(m_PacketLogFileName.c_str(), "%s", pPacket->toString().c_str());
+                    de::logPacketMetadata(m_PacketLogFileName.c_str(), "receive", *pPacket, diagnosticFilelog);
                 }
             }
 
@@ -362,10 +363,7 @@ void GamePlayer::processCommand(bool Option) {
                 PacketDispatcher::dispatch(pPacket, this);
 #endif
             } catch (...) {
-                diagnosticFilelog("GamePlayerError.txt",
-                                  "Player:[%s], IP:[%s],MAC:[%02x%02x%02x%02x%02x%02x],Packet is:%s", m_ID.c_str(),
-                                  getSocket()->getHost().c_str(), m_MacAddress[0], m_MacAddress[1], m_MacAddress[2],
-                                  m_MacAddress[3], m_MacAddress[4], m_MacAddress[5], pPacket->toString().c_str());
+                de::logPacketMetadata("GamePlayerError.txt", "handler failed", *pPacket, diagnosticFilelog);
                 throw DisconnectException("GamePlayer Error 2!");
             }
             // cout << "[" << (int)Thread::self() << "] execute after : " << pPacket->getPacketName().c_str() <<
@@ -498,7 +496,7 @@ void GamePlayer::sendPacket(Packet* pPacket) {
             if (currentTime >= m_PacketLogEndTime) {
                 m_bPacketLog = false;
             } else {
-                diagnosticFilelog(m_PacketLogFileName.c_str(), "%s", pPacket->toString().c_str());
+                de::logPacketMetadata(m_PacketLogFileName.c_str(), "send", *pPacket, diagnosticFilelog);
             }
         }
 
