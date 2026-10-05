@@ -13,6 +13,35 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Repeated transport failures flood production diagnostics (2026-10-04)
+
+Listener startup logged every bind retry, including login's 1 ms loop. Login's
+UDP worker printed full exceptions for every malformed datagram, and the
+WebSocket gateway warned for every connection while a backend was unavailable.
+These persistent conditions could overwhelm the useful operational events.
+
+Each fixed failure category now reports immediately, then at most once every
+30 seconds while failures continue, including the number suppressed since the
+last report. Listener recovery and shutdown flush remaining counts. The login
+UDP worker has separate protocol, connection and other-exception budgets and
+flushes on exit; a valid datagram cannot replenish a category's budget. Gateway
+backend budgets are shared by configured local port, with a separate accept
+budget. Their first successful operation after an emitted warning reports
+recovery once; alternating failures and successes cannot reset the budget.
+Suppressed failures left after unreported short episodes are included in the
+next warning or shutdown summary. No state is allocated by client identity.
+
+Clock-injected listener tests and explicit-time C++/Rust counter tests cover
+window boundaries, exact counts, category isolation and alternating outcomes.
+Existing retry intervals, shutdown flags, packet handling and gateway 502
+responses remain unchanged. Optional listener summaries cannot undo successful
+binding or replace a shutdown exception; the existing failure callback keeps
+its propagation contract. UDP exception formatting/output failures cannot skip
+packet cleanup, and optional summaries use isolated stream state so they cannot
+silence later errors on the shared console stream.
+
+> **Status:** fixed (fix/bounded-error-reporting)
+
 ## Database and packet diagnostics expose private payloads (2026-10-04)
 
 > **Status:** fixed — query failures report the operation and numeric MySQL

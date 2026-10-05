@@ -10,6 +10,7 @@
 
 #include <unistd.h>
 
+#include <array>
 #include <chrono>
 #include <memory>
 
@@ -22,6 +23,7 @@
 #include "LoginDatagramSend.h"
 #include "PacketDispatcher.h"
 #include "Properties.h"
+#include "RepeatedErrorReport.h"
 #include "ServerContext.h"
 #include "ServerPortSettings.h"
 #include "ServerShutdown.h"
@@ -81,6 +83,19 @@ void GameServerManager::stop() {
 //////////////////////////////////////////////////////////////////////
 void GameServerManager::run() {
     Properties& config = de::kernelContext().config();
+    std::array<de::RepeatedErrorReport, 3> failures;
+    constexpr std::array<const char*, 3> categories = {"protocol", "connect", "other"};
+    const auto reportFailure = [&](std::size_t category, const Throwable& error) noexcept {
+        try {
+            if (const auto suppressed = failures[category].failure(de::RepeatedErrorReport::Clock::now())) {
+                std::ostream diagnostics(cout.rdbuf());
+                diagnostics << "GameServerManager UDP " << categories[category]
+                            << " failure: suppressed_failures=" << *suppressed << " " << error.toString() << endl;
+            }
+        } catch (...) {
+            // Packet cleanup must still run when formatting or output fails.
+        }
+    };
 
     try {
         string host = config.getProperty("DB_HOST");
@@ -121,8 +136,7 @@ void GameServerManager::run() {
                     pDatagram = NULL;
                 }
             } catch (ProtocolException& pe) {
-                cout << "GameServerManager::run Exception Check(ProtocolException)" << endl;
-                cout << pe.toString() << endl;
+                reportFailure(0, pe);
 
                 // A protocol error in server-to-server communication means
                 // a programming error or a hacking attempt.
@@ -131,8 +145,7 @@ void GameServerManager::run() {
                 delete pDatagramPacket;
                 delete pDatagram;
             } catch (ConnectException& ce) {
-                cout << "GameServerManager::run Exception Check(ConnectException)" << endl;
-                cout << ce.toString() << endl;
+                reportFailure(1, ce);
 
                 // Hmm, what is this..
                 // Treat it as an error for now.
@@ -140,8 +153,7 @@ void GameServerManager::run() {
                 delete pDatagramPacket;
                 delete pDatagram;
             } catch (Throwable& t) {
-                cout << "GameServerManager::run Exception Check(ConnectException)" << endl;
-                cout << t.toString() << endl;
+                reportFailure(2, t);
                 delete pDatagramPacket;
                 delete pDatagram;
             }
@@ -150,10 +162,27 @@ void GameServerManager::run() {
             pauseFor(std::chrono::milliseconds(1));
         }
 
-        cout << "GameServerManager thread exiting... " << endl;
-        //::exit(1);
+        try {
+            std::ostream diagnostics(cout.rdbuf());
+            diagnostics << "GameServerManager thread exiting... " << endl;
+        } catch (...) {
+        }
     } catch (Throwable& t) {
-        cout << "GameServerManager thread exiting... : " << t.toString() << endl;
+        try {
+            std::ostream diagnostics(cout.rdbuf());
+            diagnostics << "GameServerManager thread exiting... : " << t.toString() << endl;
+        } catch (...) {
+        }
+    }
+    for (std::size_t category = 0; category < failures.size(); ++category) {
+        try {
+            if (const auto suppressed = failures[category].takeSuppressed(); suppressed != 0) {
+                std::ostream diagnostics(cout.rdbuf());
+                diagnostics << "GameServerManager UDP " << categories[category]
+                            << " failures at shutdown: suppressed_failures=" << suppressed << endl;
+            }
+        } catch (...) {
+        }
     }
 }
 

@@ -724,8 +724,11 @@ visibility can't express.
   > `ListenerStartup` provides `retryListenerStartup` for all five TCP/UDP
   > listener paths across the three runtimes, with only kernel and thread
   > dependencies. Callers supply binding and diagnostic actions; only
-  > `BindException` is retried. Existing messages and retry intervals remain
-  > (1 ms for login's player listener, 1 s for the others). A shutdown request
+  > `BindException` is retried. Original exception details remain, with the
+  > first failure immediate and repeated diagnostics limited to once every
+  > 30 seconds with suppressed counts. Recovery and shutdown flush counts;
+  > optional summaries cannot change startup/shutdown outcomes. Retry intervals
+  > remain 1 ms for login's player listener and 1 s for the others. A shutdown request
   > prevents the first or next attempt and interrupts retry waits, checked
   > at most every 10 ms. Other binding/reporting exceptions propagate, and
   > the helper never clears shutdown/failure flags or repeats a successful
