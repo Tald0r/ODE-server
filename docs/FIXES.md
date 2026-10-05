@@ -13,6 +13,49 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Diagnostic files grow without retention and failures escape gameplay (2026-10-04)
+
+> **Status:** fixed for reviewed diagnostic destinations — explicit
+> `diagnosticFilelog` bounds their storage; legacy `filelog` retains append-only
+> history, including audit and mixed destinations. Both contain sink failures.
+
+Every `filelog` call previously appended indefinitely, ignored failed opens and
+writes, and could throw during formatting. Some destinations hold item transfers,
+reward grants, billing, moderation or mixed records, so blanket rotation would
+silently delete audit history. The container supervisor additionally copied all
+process output into timestamped `.out` files without retention.
+
+Reviewed diagnostic-only destinations now use `diagnosticFilelog`: packet-size
+and per-player packet diagnostics, general exception logs, and specific manager,
+thread, movement, tile and destruction error logs. This is an explicit caller
+choice for the entire destination, not a filename heuristic. These files rotate
+at 10 MiB with two backups. Other destinations keep their existing append-only
+retention, including `uniqueItem.txt`, `dropItem.txt`, `PayPlayDateLog.txt`,
+`StoreBought.log`, `change.txt`, security records and mixed logs such as `SMS.log`.
+They need a separately agreed audit retention policy and remain unbounded.
+
+Both APIs use a stable `.lock` sidecar to serialize append/rotation across
+processes; writers reopen the current file after taking that lock. A failed
+rotation never truncates the current file. Already oversized diagnostic files
+are preserved when rotated and age out through normal retention. Formatting,
+allocation and sink failures cannot throw into gameplay; oversized individual
+messages are visibly truncated. The first sink failure and at most one summary
+per minute reach stderr, including suppressed failure counts but never the lost
+record's private contents. The fallback blocks SIGPIPE only in the calling
+thread, consumes only a newly raised signal from a failed pipe write, and
+restores the previous mask and pending state. Neither API acknowledges durable
+transaction persistence; database item/money audit writes are unchanged.
+
+The container now forwards prefixed server output directly through pipes,
+retaining actual server PIDs and bounded forwarder drainage during shutdown.
+Compose bounds each service's local log driver to three 10 MiB files.
+
+`bounded_diagnostic_file_tests` owns the explicit append-only versus rotating API
+contract, file bounds, visible truncation, independent process writers, failed
+rotation, missing/unwritable/full sinks, retry after partial writes and SIGPIPE
+preservation. `shutdown_supervisor` checks shutdown order, final forwarded lines,
+child failure and absence of duplicate `.out` files.
+
 ## Repeated transport failures flood production diagnostics (2026-10-04)
 
 Listener startup logged every bind retry, including login's 1 ms loop. Login's

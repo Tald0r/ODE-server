@@ -628,8 +628,8 @@ public:
         if (bodySize != declaredSize) {
             // The callers size this stream from getPacketSize(), so a
             // body larger than that also forced the buffer to grow.
-            filelog("packetsizeerror.txt", "writeHeaderNBody: PacketID = %u declared = %u written = %u", (uint)packetID,
-                    declaredSize, bodySize);
+            diagnosticFilelog("packetsizeerror.txt", "writeHeaderNBody: PacketID = %u declared = %u written = %u",
+                              (uint)packetID, declaredSize, bodySize);
         }
     }
 

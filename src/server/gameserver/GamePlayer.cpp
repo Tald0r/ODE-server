@@ -343,7 +343,7 @@ void GamePlayer::processCommand(bool Option) {
                 if (currentTime >= m_PacketLogEndTime) {
                     m_bPacketLog = false;
                 } else {
-                    de::logPacketMetadata(m_PacketLogFileName.c_str(), "receive", *pPacket);
+                    de::logPacketMetadata(m_PacketLogFileName.c_str(), "receive", *pPacket, diagnosticFilelog);
                 }
             }
 
@@ -363,7 +363,7 @@ void GamePlayer::processCommand(bool Option) {
                 PacketDispatcher::dispatch(pPacket, this);
 #endif
             } catch (...) {
-                de::logPacketMetadata("GamePlayerError.txt", "handler failed", *pPacket);
+                de::logPacketMetadata("GamePlayerError.txt", "handler failed", *pPacket, diagnosticFilelog);
                 throw DisconnectException("GamePlayer Error 2!");
             }
             // cout << "[" << (int)Thread::self() << "] execute after : " << pPacket->getPacketName().c_str() <<
@@ -496,7 +496,7 @@ void GamePlayer::sendPacket(Packet* pPacket) {
             if (currentTime >= m_PacketLogEndTime) {
                 m_bPacketLog = false;
             } else {
-                de::logPacketMetadata(m_PacketLogFileName.c_str(), "send", *pPacket);
+                de::logPacketMetadata(m_PacketLogFileName.c_str(), "send", *pPacket, diagnosticFilelog);
             }
         }
 

@@ -163,8 +163,8 @@ void SocketOutputStream::writeFrame(const Packet* pPacket) {
         // Reported to the file resize() already uses for the same fault:
         // a server's stdout is normally discarded, and both messages mean
         // "this packet's getPacketSize() disagrees with its write()".
-        filelog("packetsizeerror.txt", "writePacket: PacketID = %u declared = %u written = %u", (uint)packetID,
-                declaredSize, bodySize);
+        diagnosticFilelog("packetsizeerror.txt", "writePacket: PacketID = %u declared = %u written = %u",
+                          (uint)packetID, declaredSize, bodySize);
     }
 
     de::diagnosticTrace([&](std::ostream& output) {
@@ -342,7 +342,7 @@ void SocketOutputStream::resize(int size) {
     if (m_Socket == NULL) {
         // m_Socket being NULL means this stream is a broadcast stream.
         // A resize being called means the packet's getPacketSize() function is wrong.
-        filelog("packetsizeerror.txt", "PacketID = %u", *(PacketID_t*)m_Buffer);
+        diagnosticFilelog("packetsizeerror.txt", "PacketID = %u", *(PacketID_t*)m_Buffer);
     } else {
         ofstream ofile("buffer_resized.log", ios::app);
         ofile << "[" << current.toString().c_str() << "] " << m_Socket->getHost().c_str()

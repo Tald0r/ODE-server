@@ -79,14 +79,14 @@ char* Result::getField(uint index) {
         StringStream msg;
         msg << "Result::getField() : no current row; call Result::next() (field=" << index
             << ", field_count=" << m_FieldCount << ")";
-        filelog("ResultBug.log", "%s", msg.toString().c_str());
+        diagnosticFilelog("ResultBug.log", "%s", msg.toString().c_str());
         throw Error(msg.toString());
     }
 
     if (index == 0 || index > m_FieldCount) {
         StringStream msg;
         msg << "Result::getField() : field out of bounds (field=" << index << ", field_count=" << m_FieldCount << ")";
-        filelog("ResultBug.log", "%s", msg.toString().c_str());
+        diagnosticFilelog("ResultBug.log", "%s", msg.toString().c_str());
         throw OutOfBoundException(msg.toString());
     }
 

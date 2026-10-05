@@ -417,7 +417,7 @@ bool ExchangeService::openPointLedger() {
         "read and write the account schema's AccountPoint and PointLedger. The check failed: " +
         failure;
     cerr << message << endl;
-    filelog("DBError.log", "%s", message.c_str());
+    diagnosticFilelog("DBError.log", "%s", message.c_str());
     return false;
 }
 

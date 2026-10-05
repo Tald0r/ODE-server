@@ -123,7 +123,7 @@ void SharedServerManager::run()
                     try {
                         SAFE_DELETE(m_pSharedServerClient);
                     } catch (Throwable& t) {
-                        filelog("sharedServerClient.txt", "[1]%s", t.toString().c_str());
+                        diagnosticFilelog("sharedServerClient.txt", "[1]%s", t.toString().c_str());
                     }
                     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
@@ -146,7 +146,7 @@ void SharedServerManager::run()
                     try {
                         SAFE_DELETE(m_pSharedServerClient);
                     } catch (Throwable& t) {
-                        filelog("sharedServerClient.txt", "[2]%s", t.toString().c_str());
+                        diagnosticFilelog("sharedServerClient.txt", "[2]%s", t.toString().c_str());
                     }
                 }
             }
@@ -165,7 +165,7 @@ void SharedServerManager::run()
         }
 
     } catch (Throwable& t) {
-        filelog("SHAREDSERVERMANAGER.log", "SharedServerManager::run() 4 : %s", t.toString().c_str());
+        diagnosticFilelog("SHAREDSERVERMANAGER.log", "SharedServerManager::run() 4 : %s", t.toString().c_str());
 
         cerr << t.toString() << endl;
     }

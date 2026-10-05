@@ -586,6 +586,7 @@ public:
     }
     ~CreationLogs() {
         ::unlink("CreatePC.log");
+        ::unlink("CreatePC.log.lock");
         if (::chdir("/") != 0 || ::rmdir(directory) != 0)
             std::_Exit(81);
     }

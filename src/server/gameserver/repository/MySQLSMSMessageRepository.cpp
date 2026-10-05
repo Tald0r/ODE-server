@@ -16,7 +16,7 @@
         msg += string(std::source_location::current().function_name()); \
         msg += " : ";                                                   \
         msg += string(sqe.toString());                                  \
-        filelog("DBError.log", "%s", msg.c_str());                      \
+        diagnosticFilelog("DBError.log", "%s", msg.c_str());            \
         throw;                                                          \
     }                                                                   \
     catch (...) {                                                       \

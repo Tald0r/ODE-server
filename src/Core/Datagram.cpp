@@ -226,8 +226,8 @@ void Datagram::write(const DatagramPacket* pPacket) {
     if (bodySize != declaredSize) {
         // The same report the TCP path makes for the same fault: this
         // packet's getPacketSize() disagrees with its write().
-        filelog("packetsizeerror.txt", "Datagram::write: PacketID = %u declared = %u written = %u", (uint)packetID,
-                declaredSize, bodySize);
+        diagnosticFilelog("packetsizeerror.txt", "Datagram::write: PacketID = %u declared = %u written = %u",
+                          (uint)packetID, declaredSize, bodySize);
     }
 
     __END_CATCH

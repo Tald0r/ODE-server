@@ -40,3 +40,34 @@ the gateway's namespace belongs to the server container:
 ```powershell
 docker compose up -d --no-deps --force-recreate odk-server odk-websocket
 ```
+
+## Diagnostic storage
+
+`docker compose logs` receives prefixed server output directly; `start.sh` no
+longer creates duplicate timestamped `.out` files. The Compose stack uses the
+Docker `local` logging driver with `max-size: 10m` and `max-file: 3` for the game
+server, database and gateway. Change these deployment options deliberately if
+a collector or retention policy requires different bounds. Docker's default
+blocking delivery can stall a producer if its log sink stops accepting data;
+the forwarder drain timeout does not remove that backpressure.
+
+C++ destinations explicitly classified as diagnostic-only use `diagnosticFilelog`
+and rotate at 10 MiB, retaining two backups (`.1` and `.2`). These include packet
+and packet-size diagnostics, general exception logs and selected manager/thread/
+movement errors. Legacy `filelog` remains append-only: item, reward, billing,
+security and mixed destinations retain their existing history and still require
+a separately agreed retention policy. Rotation is selected at the call site,
+never inferred from a filename; all writers to one destination must agree.
+
+Stable `.lock` sidecars coordinate both APIs across processes; do not delete or
+rotate those lock files while servers run. Existing oversized diagnostic logs
+are preserved as they rotate and age out through retention, rather than being
+truncated on upgrade. Bounds apply per diagnostic filename: per-player packet
+files still require lifecycle-based directory cleanup if many distinct players
+are explicitly traced. Database item/money audit records are unchanged.
+
+Both APIs visibly mark oversized individual messages with `[truncated]` and
+contain formatting and sink failures. Failed writes are reported on stderr once
+immediately and at most once per minute thereafter, with suppressed failure
+counts. This is a log-loss signal, not a successful persistence acknowledgement;
+investigate disk capacity or permissions.

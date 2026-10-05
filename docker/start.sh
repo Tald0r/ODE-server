@@ -54,25 +54,29 @@ wait_for_db() {
 
 names=()
 pids=()
+forwarders=()
 
 start_server() {
     local name="$1"
     local conf="$CONF_DIR/$2"
-    local logfile="$BIN_DIR/${name}_$(date '+%y%m%d_%H%M%S').out"
+    local logfd
 
     if [ ! -f "$conf" ]; then
         log "ERROR: missing configuration file $conf"
         return 1
     fi
 
-    log "starting $name (log: $logfile)"
-    # Line-buffer the output, otherwise a crash loses whatever is still buffered.
-    stdbuf -oL -eL ./"$name" -f "$conf" > "$logfile" 2>&1 &
+    log "starting $name"
+    # The pipe carries prefixed output directly to the container log driver.
+    # Keep the server's real PID for shutdown and close the supervisor's writer
+    # immediately, so the forwarder sees EOF when that server exits.
+    exec {logfd}> >(exec sed -u "s/^/[$name] /")
+    forwarders+=($!)
+    stdbuf -oL -eL ./"$name" -f "$conf" >&"$logfd" 2>&1 &
     pids+=($!)
     names+=("$name")
+    exec {logfd}>&-
 
-    # Mirror the log file to the container output so `docker compose logs` works.
-    tail --pid="${pids[-1]}" -F -n +1 "$logfile" 2>/dev/null | sed -u "s/^/[$name] /" &
 }
 
 is_alive() {
@@ -119,6 +123,14 @@ shutdown_all() {
         fi
     done
     wait "${pids[@]}" 2>/dev/null
+    # Bound waiting for forwarders after servers stop. Other writes can still
+    # block on a stalled container sink under Docker's blocking delivery mode.
+    deadline=$((SECONDS + 1))
+    for pid in "${forwarders[@]}"; do
+        while is_alive "$pid" && (( SECONDS < deadline )); do sleep 0.01; done
+        if is_alive "$pid"; then kill -TERM "$pid" 2>/dev/null || true; fi
+        wait "$pid" 2>/dev/null || true
+    done
     return "$result"
 }
 
@@ -142,6 +154,16 @@ while true; do
         if ! is_alive "${pids[$i]}"; then
             wait "${pids[$i]}" 2>/dev/null
             log "${names[$i]} exited with status $? - shutting down"
+            shutdown_all
+            exit 1
+        fi
+    done
+    # Each pipe is now the only copy of that server's console output. Losing
+    # its reader must end the stack even if the server ignores SIGPIPE.
+    for i in "${!forwarders[@]}"; do
+        if ! is_alive "${forwarders[$i]}"; then
+            wait "${forwarders[$i]}" 2>/dev/null
+            log "${names[$i]} log forwarder exited with status $? - shutting down"
             shutdown_all
             exit 1
         fi

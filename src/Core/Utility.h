@@ -210,7 +210,10 @@ int getPercentValueEx(int value, int percent);
 // Write a log to a file
 //////////////////////////////////////////////////////////////////////////////
 
-void filelog(const char* szFilename, const char* fmt, ...);
+// Legacy logs can contain audits or mixed records: retain append-only storage.
+void filelog(const char* szFilename, const char* fmt, ...) noexcept;
+// Use only for diagnostic-only destinations: rotates the entire destination.
+void diagnosticFilelog(const char* szFilename, const char* fmt, ...) noexcept;
 
 //////////////////////////////////////////////////////////////////////////////
 // Masks for movement per direction

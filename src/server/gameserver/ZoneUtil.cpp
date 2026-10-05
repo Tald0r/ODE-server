@@ -536,7 +536,7 @@ Dir_t knockbackCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t originX, Z
                 checkMine(pZone, pCreature, nx, ny);
                 checkTrap(pZone, pCreature);
             } catch (Throwable& t) {
-                filelog("CheckMineBug.txt", "%s : %s", "KnockBackCreature", t.toString().c_str());
+                diagnosticFilelog("CheckMineBug.txt", "%s : %s", "KnockBackCreature", t.toString().c_str());
             }
 
             // Broadcast GCMove/GCAddSlayer/GCAddVampire.

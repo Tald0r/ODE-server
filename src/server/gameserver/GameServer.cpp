@@ -244,7 +244,7 @@ void GameServer::start()
         try {
             m_pClientManager->start();
         } catch (Throwable& t) {
-            filelog("GameServerError.txt", "%s", t.toString().c_str());
+            diagnosticFilelog("GameServerError.txt", "%s", t.toString().c_str());
             throw;
         }
     });

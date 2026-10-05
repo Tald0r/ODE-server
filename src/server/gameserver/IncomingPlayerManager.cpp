@@ -388,7 +388,7 @@ void IncomingPlayerManager::processCommands() {
                     SAFE_DELETE(pTempPlayer);
                 } catch (Throwable& t) {
                     cerr << t.toString() << endl;
-                    filelog("Destructer.log", "IncommingPlayerManager.cpp +509 : %s", t.toString().c_str());
+                    diagnosticFilelog("Destructer.log", "IncommingPlayerManager.cpp +509 : %s", t.toString().c_str());
                 }
             } else {
                 // This manager owns pTempPlayer while it logs in or changes
@@ -432,7 +432,8 @@ void IncomingPlayerManager::processCommands() {
                         SAFE_DELETE(pTempPlayer);
                     } catch (Throwable& t) {
                         cerr << t.toString() << endl;
-                        filelog("Destructer.log", "IncommingPlayerManager.cpp +509 : %s", t.toString().c_str());
+                        diagnosticFilelog("Destructer.log", "IncommingPlayerManager.cpp +509 : %s",
+                                          t.toString().c_str());
                     }
                 }
             }

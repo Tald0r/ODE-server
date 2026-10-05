@@ -63,7 +63,9 @@ TEST(GameConnection, MofusPublishesAllConnectionPartsTogetherAndCanRetryAfterAll
                 const bool intact = complete && connected && probe.outstanding() == 0 &&
                                     nextSocketDescriptor() == available && (failAt != 32 || !probe.rejected());
                 ::unlink("mofus_log.txt");
+                ::unlink("mofus_log.txt.lock");
                 ::unlink("mofus_error.txt");
+                ::unlink("mofus_error.txt.lock");
                 if (::chdir("/") != 0 || ::rmdir(directory) != 0)
                     std::_Exit(81);
                 std::_Exit(intact ? 0 : 6);

@@ -72,19 +72,21 @@ void logFailure(GamePlayer& player, const char* what) {
     try {
         throw;
     } catch (Throwable& t) {
-        filelog("errorLog.txt", "player mailbox %s failed for %s: %s", what, player.getID().c_str(),
-                t.toString().c_str());
+        diagnosticFilelog("errorLog.txt", "player mailbox %s failed for %s: %s", what, player.getID().c_str(),
+                          t.toString().c_str());
     } catch (std::exception& e) {
-        filelog("errorLog.txt", "player mailbox %s failed for %s: %s", what, player.getID().c_str(), e.what());
+        diagnosticFilelog("errorLog.txt", "player mailbox %s failed for %s: %s", what, player.getID().c_str(),
+                          e.what());
     } catch (...) {
-        filelog("errorLog.txt", "player mailbox %s failed for %s: unknown exception", what, player.getID().c_str());
+        diagnosticFilelog("errorLog.txt", "player mailbox %s failed for %s: unknown exception", what,
+                          player.getID().c_str());
     }
 }
 
 std::size_t noteDepth(GamePlayer& player, std::size_t ran) {
     if (ran > kDepthWarning)
-        filelog("errorLog.txt", "player mailbox for %s drained %u commands in one pass", player.getID().c_str(),
-                (unsigned)ran);
+        diagnosticFilelog("errorLog.txt", "player mailbox for %s drained %u commands in one pass",
+                          player.getID().c_str(), (unsigned)ran);
     return ran;
 }
 
@@ -101,8 +103,8 @@ void noteStuck(GamePlayer& player, const char* why) {
     if (waiting < kDepthWarning && now - lastLog.load(std::memory_order_relaxed) < 10)
         return;
     lastLog.store(now, std::memory_order_relaxed);
-    filelog("errorLog.txt", "player mailbox for %s holds %u commands its owner cannot run (%s)", player.getID().c_str(),
-            (unsigned)waiting, why);
+    diagnosticFilelog("errorLog.txt", "player mailbox for %s holds %u commands its owner cannot run (%s)",
+                      player.getID().c_str(), (unsigned)waiting, why);
 }
 
 template <typename Take> std::size_t runPending(GamePlayer& player, PlayerCreature& pc, Take&& take) {

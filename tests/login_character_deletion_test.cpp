@@ -536,6 +536,7 @@ public:
     }
     ~DeletionLogs() {
         ::unlink("DeletePC.log");
+        ::unlink("DeletePC.log.lock");
         if (::chdir("/") != 0 || ::rmdir(directory) != 0)
             std::_Exit(81);
     }

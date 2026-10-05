@@ -83,7 +83,9 @@ public:
     void remove() {
         for (const char* file :
              {"acceptNewConnection.log", "acceptNewConnectionError.log", "ancNoSuch.log", "ancThrowable.log",
-              "ancException.log", "ancEtc.log", "ancDupExcept.log", "Socket_Error.txt"})
+              "ancException.log", "ancEtc.log", "ancDupExcept.log", "Socket_Error.txt", "acceptNewConnection.log.lock",
+              "acceptNewConnectionError.log.lock", "ancNoSuch.log.lock", "ancThrowable.log.lock",
+              "ancException.log.lock", "ancEtc.log.lock", "ancDupExcept.log.lock", "Socket_Error.txt.lock"})
             ::unlink(file);
         if (::chdir("/") != 0 || ::rmdir(directory) != 0)
             std::_Exit(81);

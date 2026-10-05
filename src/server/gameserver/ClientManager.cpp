@@ -154,7 +154,7 @@ void ClientManager::run()
         } catch (Error&) {
             throw;
         } catch (Throwable& t) {
-            filelog("clientManagerBug.txt", "%s", t.toString().c_str());
+            diagnosticFilelog("clientManagerBug.txt", "%s", t.toString().c_str());
         }
 
         // vstime.start();
@@ -209,7 +209,8 @@ void ClientManager::run()
 
                 zoneGroups.unlockZoneGroups();
             } catch (Throwable& t) {
-                filelog("eventManagerBug.txt", "ClientManager::EventManager::heartbeat - %s", t.toString().c_str());
+                diagnosticFilelog("eventManagerBug.txt", "ClientManager::EventManager::heartbeat - %s",
+                                  t.toString().c_str());
                 zoneGroups.unlockZoneGroups();
             }
         }

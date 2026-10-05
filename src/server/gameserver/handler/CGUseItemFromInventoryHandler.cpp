@@ -1082,8 +1082,8 @@ void CGUseItemFromInventoryHandler::executeKeyItem(CGUseItemFromInventory* pPack
 
     // Last-ditch defensive code
     if (targetID == 0) {
-        filelog("errorLog.txt", "[ActionRedeemMotorcycle] itemID=%lu, motorItemID=%lu", (int)pItem->getItemID(),
-                (int)targetID);
+        diagnosticFilelog("errorLog.txt", "[ActionRedeemMotorcycle] itemID=%lu, motorItemID=%lu",
+                          (int)pItem->getItemID(), (int)targetID);
         return;
     }
 
