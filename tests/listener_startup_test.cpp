@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <future>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -49,16 +50,22 @@ TEST_F(ListenerStartupTest, SuccessfulBindingRunsOnceWithoutReportingOrRequestin
     EXPECT_FALSE(ServerShutdown::failed.load());
 }
 
-TEST_F(ListenerStartupTest, EachBindFailureIsReportedBeforeTheNextAttempt) {
+TEST_F(ListenerStartupTest, ImmediateRetryReportsTheFirstFailureAndRecoveryCount) {
     de::retryListenerStartup(
         [&] {
             events.push_back("attempt " + std::to_string(++attempts));
             if (attempts < 3)
                 throw BindException("busy " + std::to_string(attempts));
         },
-        [&](const BindException& error) { events.push_back(error.toString()); }, "UDP", 0us);
-    EXPECT_EQ((std::vector<std::string>{"attempt 1", BindException("busy 1").toString(), "attempt 2",
-                                        BindException("busy 2").toString(), "attempt 3"}),
+        [&](const BindException& error) { events.push_back(error.toString()); }, "UDP", 0us,
+        [] { return de::RepeatedErrorReport::TimePoint{}; },
+        [&](de::ListenerStartupReport event, std::uint64_t suppressed) {
+            EXPECT_EQ(event, de::ListenerStartupReport::Recovered);
+            EXPECT_EQ(suppressed, 1u);
+            events.push_back("recovered");
+        });
+    EXPECT_EQ((std::vector<std::string>{"attempt 1", BindException("busy 1").toString(), "attempt 2", "attempt 3",
+                                        "recovered"}),
               events);
     EXPECT_FALSE(ServerShutdown::failed.load());
 }
@@ -178,6 +185,135 @@ TEST_F(ListenerStartupTest, AWorkerShutdownRequestInterruptsALongRetryDelay) {
     EXPECT_EQ(1, attempts);
 }
 
+TEST_F(ListenerStartupTest, PersistentFailuresReportAtTheBoundaryWithAnExactSuppressedCount) {
+    auto now = de::RepeatedErrorReport::TimePoint{};
+    std::vector<std::pair<de::ListenerStartupReport, std::uint64_t>> summaries;
+    int reports = 0;
+    de::retryListenerStartup(
+        [&] {
+            ++attempts;
+            if (attempts == 5)
+                return;
+            if (attempts == 4)
+                now += 30s;
+            throw BindException("busy");
+        },
+        [&](const BindException&) { ++reports; }, "TCP", 0us, [&] { return now; },
+        [&](de::ListenerStartupReport event, std::uint64_t count) { summaries.emplace_back(event, count); });
+    EXPECT_EQ(attempts, 5);
+    EXPECT_EQ(reports, 2);
+    ASSERT_EQ(summaries.size(), 2u);
+    EXPECT_EQ(summaries[0], std::make_pair(de::ListenerStartupReport::RepeatedFailure, std::uint64_t{2}));
+    EXPECT_EQ(summaries[1], std::make_pair(de::ListenerStartupReport::Recovered, std::uint64_t{0}));
+}
+
+TEST_F(ListenerStartupTest, ShutdownFlushesSuppressedFailuresWithoutAnotherRetry) {
+    std::vector<std::pair<de::ListenerStartupReport, std::uint64_t>> summaries;
+    int reports = 0;
+    EXPECT_THROW(
+        de::retryListenerStartup(
+            [&] {
+                if (++attempts == 3)
+                    ServerShutdown::request();
+                throw BindException("busy");
+            },
+            [&](const BindException&) { ++reports; }, "UDP", 0us, [] { return de::RepeatedErrorReport::TimePoint{}; },
+            [&](de::ListenerStartupReport event, std::uint64_t count) { summaries.emplace_back(event, count); }),
+        Error);
+    EXPECT_EQ(attempts, 3);
+    EXPECT_EQ(reports, 1);
+    ASSERT_EQ(summaries.size(), 1u);
+    EXPECT_EQ(summaries[0], std::make_pair(de::ListenerStartupReport::Stopped, std::uint64_t{2}));
+}
+
+TEST_F(ListenerStartupTest, BrokenRecoverySummaryCannotUndoSuccessfulBinding) {
+    EXPECT_NO_THROW(de::retryListenerStartup(
+        [&] {
+            if (++attempts == 1)
+                throw BindException("busy");
+        },
+        [](const BindException&) {}, "TCP", 0us, [] { return de::RepeatedErrorReport::TimePoint{}; },
+        [](de::ListenerStartupReport, std::uint64_t) { throw std::runtime_error("broken summary"); }));
+    EXPECT_EQ(attempts, 2);
+}
+
+TEST_F(ListenerStartupTest, BrokenShutdownSummaryCannotReplaceTheShutdownException) {
+    try {
+        de::retryListenerStartup(
+            [&] {
+                if (++attempts == 2)
+                    ServerShutdown::request();
+                throw BindException("busy");
+            },
+            [](const BindException&) {}, "TCP", 0us, [] { return de::RepeatedErrorReport::TimePoint{}; },
+            [](de::ListenerStartupReport, std::uint64_t) { throw std::runtime_error("broken summary"); });
+        FAIL() << "shutdown must throw";
+    } catch (const Error& error) {
+        EXPECT_NE(error.toString().find("shutdown requested during TCP listener startup"), std::string::npos);
+    }
+    EXPECT_EQ(attempts, 2);
+}
+
+class BrokenListenerSummaryOutput : public std::streambuf {
+    std::streamsize xsputn(const char*, std::streamsize) override {
+        throw std::runtime_error("output failed");
+    }
+};
+
+TEST_F(ListenerStartupTest, FailedDefaultSummaryDoesNotPoisonTheSharedErrorStream) {
+    BrokenListenerSummaryOutput sink;
+    auto* previous = std::cerr.rdbuf(&sink);
+    const auto state = std::cerr.rdstate();
+    EXPECT_NO_THROW(de::retryListenerStartup(
+        [&] {
+            if (++attempts == 1)
+                throw BindException("busy");
+        },
+        [](const BindException&) {}, "TCP", 0us, [] { return de::RepeatedErrorReport::TimePoint{}; }));
+    EXPECT_EQ(attempts, 2);
+    EXPECT_EQ(std::cerr.rdstate(), state);
+    std::cerr.rdbuf(previous);
+}
+
+TEST(RepeatedErrorReport, FirstFailureAndBoundaryReportWithoutSleeping) {
+    de::RepeatedErrorReport report;
+    const auto now = de::RepeatedErrorReport::TimePoint{};
+    ASSERT_EQ(report.failure(now), 0u);
+    for (int i = 0; i < 10000; ++i)
+        EXPECT_FALSE(report.failure(now + 29999ms));
+    EXPECT_EQ(report.failure(now + 30s), 10000u);
+    EXPECT_FALSE(report.failure(now + 30s));
+    EXPECT_EQ(report.takeSuppressed(), 1u);
+    EXPECT_EQ(report.takeSuppressed(), 0u);
+}
+
+TEST(RepeatedErrorReport, RecoveryDoesNotReplenishTheReportingBudget) {
+    de::RepeatedErrorReport report;
+    const auto now = de::RepeatedErrorReport::TimePoint{};
+    EXPECT_FALSE(report.recovery());
+    EXPECT_EQ(report.failure(now), 0u);
+    EXPECT_FALSE(report.failure(now + 1s));
+    EXPECT_EQ(report.recovery(), 1u);
+    EXPECT_FALSE(report.recovery());
+    for (int i = 0; i < 10000; ++i) {
+        EXPECT_FALSE(report.failure(now + 2s));
+        EXPECT_FALSE(report.recovery());
+    }
+    EXPECT_EQ(report.failure(now + 30s), 10000u);
+    EXPECT_EQ(report.recovery(), 0u);
+}
+
+TEST(RepeatedErrorReport, FixedCategoriesHaveIndependentBudgets) {
+    de::RepeatedErrorReport protocol;
+    de::RepeatedErrorReport connection;
+    const auto now = de::RepeatedErrorReport::TimePoint{};
+    EXPECT_EQ(protocol.failure(now), 0u);
+    EXPECT_FALSE(protocol.failure(now));
+    EXPECT_EQ(connection.failure(now), 0u);
+    EXPECT_EQ(protocol.takeSuppressed(), 1u);
+    EXPECT_EQ(connection.takeSuppressed(), 0u);
+}
+
 int reservePort(int type, unsigned short& port) {
     const int fd = ::socket(AF_INET, type, 0);
     if (fd < 0)
@@ -258,7 +394,7 @@ TEST_P(ListenerSocketTest, RealBindRetriesStopWithoutLeakingWhenShutdownIsReques
                         if (++reports == 3)
                             ServerShutdown::request();
                     },
-                    "test", 0us);
+                    "test", 0us, [&] { return de::RepeatedErrorReport::TimePoint{} + 30s * attempts; });
                 std::_Exit(2);
             } catch (const Error&) {
             }

@@ -196,6 +196,11 @@ impl Config {
         self.max_connections
     }
 
+    /// Backend ports from configuration; no request-supplied keys are retained.
+    pub(crate) fn backend_ports(&self) -> impl Iterator<Item = u16> + '_ {
+        self.routes.values().copied()
+    }
+
     /// The local GatewayProxyPort for an advertised `host:port` route.
     pub fn route(&self, advertised: &str) -> Option<u16> {
         self.routes.get(advertised).copied()
