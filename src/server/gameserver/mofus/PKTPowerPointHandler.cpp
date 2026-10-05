@@ -9,6 +9,7 @@
 #include "Assert.h"
 #include "KernelContext.h"
 #include "MJob.h"
+#include "MPacketDiagnostics.h"
 #include "MPlayer.h"
 #include "Mofus.h"
 #include "PKTError.h"
@@ -28,7 +29,7 @@ void PKTPowerPointHandler::execute(MPlayer* pPlayer, MPacket* pPacket) {
 
     filelog(MOFUS_LOG_FILE, "RECV [%s] PowerPoint (name:%s,point:%d)", pPlayer->getJob()->getName().c_str(),
             pPowerPoint->sCharName, pPowerPoint->nPowerPoint);
-    filelog(MOFUS_PACKET_FILE, "RECV : [%s] %s", pPlayer->getJob()->getName().c_str(), pPacket->toString().c_str());
+    de::logMofusPacketMetadata(MOFUS_PACKET_FILE, "receive", *pPacket);
 
     //////////////////////////////////////////////////////////////////////
     // Check the packet that was received.

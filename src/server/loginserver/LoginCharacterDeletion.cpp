@@ -39,7 +39,11 @@ const LoginCharacterDeletionActions& defaultLoginCharacterDeletionActions() {
     static const LoginCharacterDeletionActions actions{
         +[](LoginPlayer& player, LCDeletePCError& packet) { player.sendPacket(&packet); },
         +[](LoginPlayer& player, LCDeletePCOK& packet) { player.sendPacket(&packet); },
-        {+[](const CLDeletePC& packet) { std::cout << packet.toString() << std::endl; },
+        {+[](const CLDeletePC& packet) {
+             std::ostream diagnostics(std::cout.rdbuf());
+             diagnostics << "character deletion requested packet_id=" << static_cast<unsigned>(packet.getPacketID())
+                         << " body_size=" << static_cast<unsigned>(packet.getPacketSize()) << std::endl;
+         },
          +[](const DeletePCRequest& request) {
              filelog("DeletePC.log", "Illegal PC Delete : [%s:%s]", request.playerID.c_str(), request.name.c_str());
          },

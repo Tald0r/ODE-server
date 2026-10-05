@@ -1263,6 +1263,23 @@ add_dependencies(wire_tests database_error_tests)
 add_test(NAME database_error_tests COMMAND database_error_tests)
 set_tests_properties(database_error_tests PROPERTIES TIMEOUT 30)
 
+# Exercise production database diagnostics with an isolated driver boundary.
+add_executable(database_diagnostics_tests EXCLUDE_FROM_ALL
+    database_diagnostics_test.cpp
+    ${CMAKE_SOURCE_DIR}/src/server/database/Statement.cpp
+    ${CMAKE_SOURCE_DIR}/src/server/database/Result.cpp)
+target_link_libraries(database_diagnostics_tests PRIVATE ServerCore de-kernel gtest_main Threads::Threads)
+add_dependencies(wire_tests database_diagnostics_tests)
+add_test(NAME database_diagnostics_tests COMMAND database_diagnostics_tests)
+set_tests_properties(database_diagnostics_tests PROPERTIES TIMEOUT 30)
+
+add_executable(game_packet_diagnostics_tests EXCLUDE_FROM_ALL game_packet_diagnostics_test.cpp)
+target_include_directories(game_packet_diagnostics_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/server ${CMAKE_SOURCE_DIR}/src/server/gameserver/mofus)
+target_link_libraries(game_packet_diagnostics_tests PRIVATE de-kernel gtest_main Threads::Threads)
+add_dependencies(wire_tests game_packet_diagnostics_tests)
+add_test(NAME game_packet_diagnostics_tests COMMAND game_packet_diagnostics_tests)
+set_tests_properties(game_packet_diagnostics_tests PROPERTIES TIMEOUT 30)
+
 # The GM chat command tables (docs/RESTRUCTURING.md 4.1): CommandRouter plus
 # the production registrations, which are where every command's name, prefix
 # length and permission level are declared - the commands a player may type
