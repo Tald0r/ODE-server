@@ -1,5 +1,5 @@
 # ============================================================================
-# de-core — pure domain logic (docs/RESTRUCTURING.md Phase 3).
+# de-core — pure domain logic (docs/reviews/RESTRUCTURING.md Phase 3).
 #
 # Freestanding by construction: no Core, no server targets, no MySQL/Lua/
 # transport, no server-type macros. Consumers include it as

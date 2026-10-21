@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // Filename    : gm_console_command_test.cpp
 // Description : The *command console's sub-command table
-//               (docs/RESTRUCTURING.md 4.1): every registered sub-command
+//               (docs/reviews/RESTRUCTURING.md 4.1): every registered sub-command
 //               declares a permission level and whether its body runs with no
 //               player behind the line, the names are unique and matched
 //               whole, a caller below the level runs nothing, a row that needs

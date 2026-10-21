@@ -1,13 +1,20 @@
+---
+type: Record
+title: "Fix log"
+description: "Real bugs uncovered by the restructuring work, newest first, each with a Status line updated in the commit that fixes it."
+tags: [process, fixes]
+---
+
 # Fix log
 
 Real bugs uncovered by the restructuring work (task 5.3 in
-`docs/RESTRUCTURING.md`), recorded instead of fixed silently. Sidecar's
+`docs/reviews/RESTRUCTURING.md`), recorded instead of fixed silently. Sidecar's
 convention: every entry has a `> **Status:**` line updated in the same
 commit as the fix.
 
 The Exchange-reconcile defect set (SQL injection, string size/body
 desync, `StringStream` stack overflows, unbounded listing counts, …) was
-found before this file existed; task 1.4 in `docs/RESTRUCTURING.md` keeps
+found before this file existed; task 1.4 in `docs/reviews/RESTRUCTURING.md` keeps
 the rules each one left behind and the items still open, and the fixes
 themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
@@ -3363,7 +3370,7 @@ do.
   earlier forced quit, which nothing ever deleted -- hits the duplicate key:
   `END_DB` throws, and the handler dies with the guild out of the union but
   no penalty written, no notice sent and nobody told. The tier's list of
-  pinned, unfixed bugs in `docs/RESTRUCTURING.md` named it. The penalty now
+  pinned, unfixed bugs in `docs/reviews/RESTRUCTURING.md` named it. The penalty now
   replaces whatever row the guild had (`deleteOffers` before
   `insertEscapeOffer`), and `removeGuild` deletes the leaving guild's QUIT
   row itself.

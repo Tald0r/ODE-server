@@ -1,9 +1,11 @@
 # opendarkeden-server
 
-For a concise source map, start with the [OKF knowledge index](docs/knowledge/index.md).
+The rules below, and the incidents behind them, live in the knowledge bundle under `docs/`
+(Google's Open Knowledge Format): start at [docs/index.md](docs/index.md);
+[docs/knowledge-bundle.md](docs/knowledge-bundle.md) says how it is kept.
 
 Browser and native WebSocket clients can use the optional
-[WebSocket gateway](docs/websocket.md), which preserves player IPs across
+[WebSocket gateway](docs/operations/websocket-gateway.md), which preserves player IPs across
 login and game handoffs while retaining the existing TCP listeners.
 
 ## Install using Docker
@@ -33,7 +35,7 @@ That command:
 5. builds `src/server/websocketproxyserver` and starts the WebSocket gateway
    (`odk-websocket`) in the game servers' network namespace, published on
    `127.0.0.1:8080` for browser and native WebSocket clients
-   (`docker/websocket.json`, see `docs/websocket.md`).
+   (`docker/websocket.json`, see `docs/operations/websocket-gateway.md`).
 
 Follow the logs:
 
@@ -447,7 +449,7 @@ cmake --build build-tests --target wire_tests -j"$(sysctl -n hw.ncpu)"
 ```
 
 The native suite has three known platform-specific failures: `ratchets`,
-`proxy_acceptor_tests` and `shutdown_supervisor`. `docs/FIXES.md` records
+`proxy_acceptor_tests` and `shutdown_supervisor`. `docs/reviews/FIXES.md` records
 each one; the pinned container remains the reference run.
 
 ## Howto
@@ -525,4 +527,4 @@ DOCKER_BUILDKIT=1 docker build . -t darkeden:latest -f Dockerfile.pub
 ```
 
 Production diagnostics and the logging migration policy are documented in
-[docs/logging.md](docs/logging.md).
+[docs/operations/logging.md](docs/operations/logging.md).

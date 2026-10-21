@@ -1,6 +1,8 @@
 bin/*
 lib/*
 build/
+# docs/build/ is the knowledge bundle's build folder (documentation), not a tree.
+!docs/build/
 # Scratch tree for containerized test builds. Only ever build ONE tree at a
 # time: CMAKE_*_OUTPUT_DIRECTORY point at the shared source-tree bin/ and
 # lib/, so two trees overwrite each other's binaries while each still

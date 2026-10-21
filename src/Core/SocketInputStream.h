@@ -218,7 +218,7 @@ public:
 // Defined inline, in the header, ON PURPOSE. read<T>() calls this with
 // dst.size() == sizeof(T); out of line that becomes a call with a runtime
 // length, and the memcpy below stops folding to the single load that
-// docs/TOOLCHAIN.md section 2 relies on. Every scalar field of every
+// docs/build/toolchain.md section 2 relies on. Every scalar field of every
 // packet goes through here, so keep the definition visible.
 //
 // The frame bound readPacket() sets costs nothing here: it is the

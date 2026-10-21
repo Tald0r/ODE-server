@@ -28,7 +28,7 @@
 # 19:00 and at 4:00, dark 15 and light 4 from 20:00 to 3:50 game time):
 # before the broadcast called this, it sent a vampire 13 minus the dark
 # level unclamped, which the packet's byte wrapped to 255 and 254
-# (docs/FIXES.md). The grid-* rows are every race and flag combination at
+# (docs/reviews/FIXES.md). The grid-* rows are every race and flag combination at
 # three zone settings from the seed data (dark 0 and light 13 at noon, 13
 # and 6 at dusk, 15 and 4 at midnight).
 darkLightForViewer	castle-slayer-zone-levels	Slayer	1	0	0	0	15	4	15,4

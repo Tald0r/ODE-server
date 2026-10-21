@@ -375,7 +375,7 @@ void registerGameServerPacketHandlers() {
 
     // SG (shared -> game), received on the SharedServerClient link.
     // SGModifyGuildMemberOK never ran before 2.3: its execute() was
-    // guarded by a misspelled #ifdef __GAME_SERER__ (docs/FIXES.md).
+    // guarded by a misspelled #ifdef __GAME_SERER__ (docs/reviews/FIXES.md).
     DE_REGISTER_PACKET_HANDLER_NOPLAYER(SGAddGuildMemberOK);
     DE_REGISTER_PACKET_HANDLER_NOPLAYER(SGAddGuildOK);
     DE_REGISTER_PACKET_HANDLER_NOPLAYER(SGDeleteGuildOK);

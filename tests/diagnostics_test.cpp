@@ -3,7 +3,7 @@
 //
 // Pins the call-site diagnostics that used to be plumbed with __FILE__,
 // __LINE__ and __PRETTY_FUNCTION__ and now ride a defaulted
-// std::source_location (docs/TOOLCHAIN.md, "Diagnostics without location
+// std::source_location (docs/build/toolchain.md, "Diagnostics without location
 // macros"):
 //
 //   * Assert(expr) / ProtocolAssert(expr) still report the failing

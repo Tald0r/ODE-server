@@ -1,4 +1,4 @@
-# de-kernel membership (docs/RESTRUCTURING.md 2.1) — the wire primitives.
+# de-kernel membership (docs/reviews/RESTRUCTURING.md 2.1) — the wire primitives.
 # Rules K1/K2 in tests/arch/check_includes.pl bind every file here:
 # quoted includes must stay inside this list, and no server-type macros.
 # Extend deliberately; a file that cannot comply belongs in core or app.

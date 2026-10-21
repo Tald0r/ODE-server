@@ -6,7 +6,7 @@
 # Default target
 all: debug
 
-# Wire-contract test suite (docs/RESTRUCTURING.md Phase 1). Run it locally
+# Wire-contract test suite (docs/reviews/RESTRUCTURING.md Phase 1). Run it locally
 # before every push; CI (.github/workflows/cpp20.yml) runs the same suite via
 # tools/devbuild.sh only on master pushes/merges, to conserve Actions minutes.
 test:
@@ -30,7 +30,7 @@ dev-shell:
 dev-clean:
 	bash tools/devbuild.sh clean
 
-# MySQL-backed repository integration tier (docs/RESTRUCTURING.md 3.2):
+# MySQL-backed repository integration tier (docs/reviews/RESTRUCTURING.md 3.2):
 # throwaway MySQL 5.7 + initdb/ schema + the real MySQL*Repository impls,
 # fixture lifecycle handrolled in the script. Needs docker + darkeden-dev.
 integration-test:

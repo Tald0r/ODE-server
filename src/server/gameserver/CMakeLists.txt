@@ -236,7 +236,7 @@ set(GQUEST_SOURCES
 # ============================================================================
 # 主要源文件
 # ============================================================================
-# Gameserver-side halves of wire classes (docs/RESTRUCTURING.md 2.4):
+# Gameserver-side halves of wire classes (docs/reviews/RESTRUCTURING.md 2.4):
 # member functions that convert live game objects (Item, PetItem, ...) into
 # wire fields. Declared in the packet headers, defined here so the wire
 # library never depends on game objects.
@@ -247,7 +247,7 @@ set(PACKETFILL_SOURCES
     packetfill/PetInfoFill.cpp
 )
 
-# Packet handlers, moved out of src/Core (docs/RESTRUCTURING.md 2.4):
+# Packet handlers, moved out of src/Core (docs/reviews/RESTRUCTURING.md 2.4):
 # the app owns which handler runs; the kernel keeps only the wire classes.
 set(HANDLER_SOURCES
     handler/CGAbsorbSoulHandler.cpp

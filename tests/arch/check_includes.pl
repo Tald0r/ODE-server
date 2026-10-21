@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #----------------------------------------------------------------------
 # check_includes.pl — include-graph architecture test
-# (docs/RESTRUCTURING.md task 2.2; sidecar's ArchitectureRules analog).
+# (docs/reviews/RESTRUCTURING.md task 2.2; sidecar's ArchitectureRules analog).
 #
 # Perl, not Python: the dev container ships perl (the repo's generators
 # already use it) and has no python3.

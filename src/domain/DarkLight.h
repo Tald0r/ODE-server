@@ -19,7 +19,7 @@
 // is 13 minus the zone's, at least 0, and its light level 15 minus the
 // zone's, at most 13, so a zone light level above 15 gives it a negative
 // light level, which the wire's 8-bit field wraps. Changing any of this is
-// a balance decision, recorded in docs/FIXES.md.
+// a balance decision, recorded in docs/reviews/FIXES.md.
 //
 // Only the server computes it; the client draws the levels it is sent.
 // This file is not in the vendored subset (DECORE_VENDORED_SOURCES), and

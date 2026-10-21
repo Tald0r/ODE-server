@@ -14,7 +14,7 @@
 
 Backs `src/server/loginserver/PasswordHash.cpp`: argon2id hashing and
 verification of account passwords. It exposes a C API only, so it fits the
-toolchain rule in `docs/TOOLCHAIN.md` (no C++-API dependencies under
+toolchain rule in `docs/build/toolchain.md` (no C++-API dependencies under
 `zig c++`).
 
 ## Conventions

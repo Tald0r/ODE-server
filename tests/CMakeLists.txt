@@ -1,4 +1,4 @@
-# =====================================================================# Wire-contract test suite (docs/RESTRUCTURING.md Phase 1)
+# =====================================================================# Wire-contract test suite (docs/reviews/RESTRUCTURING.md Phase 1)
 #
 # Built only with -DDARKEDEN_BUILD_TESTS=ON (make test does this). Runs
 # locally and in the pinned-Zig C++20 CI job.
@@ -306,7 +306,7 @@ set_tests_properties(proxy_acceptor_tests PROPERTIES TIMEOUT 30)
 # A hang here would otherwise sit for ctest's 1500s default with no output.
 set_tests_properties(wire_tests PROPERTIES TIMEOUT 120)
 
-# Repository/domain unit tests (docs/RESTRUCTURING.md 3.2): pure rules and
+# Repository/domain unit tests (docs/reviews/RESTRUCTURING.md 3.2): pure rules and
 # fake-backed repository contracts. Header-only against the sources — no
 # game or database libraries linked, which is the point of the seam.
 add_executable(repository_tests EXCLUDE_FROM_ALL
@@ -328,7 +328,7 @@ add_dependencies(wire_tests repository_tests)
 add_test(NAME repository_tests COMMAND repository_tests)
 set_tests_properties(repository_tests PROPERTIES TIMEOUT 60)
 
-# MySQL-backed integration tier (docs/RESTRUCTURING.md 3.2): the REAL
+# MySQL-backed integration tier (docs/reviews/RESTRUCTURING.md 3.2): the REAL
 # repository implementations against a throwaway MySQL 5.7 with the
 # initdb/ schema — the authority the fakes above are corrected against.
 # Deliberately NOT registered with ctest: it needs the database that
@@ -407,7 +407,7 @@ target_link_libraries(mysql_repository_tests PRIVATE
     Threads::Threads
 )
 
-# Pure-formula unit tests (docs/RESTRUCTURING.md 3.3). Linking ONLY de-core
+# Pure-formula unit tests (docs/reviews/RESTRUCTURING.md 3.3). Linking ONLY de-core
 # and gtest is deliberate: it proves de-core stays freestanding — pulling
 # Core, transport, or a gameserver header into it breaks this link.
 add_executable(formula_tests EXCLUDE_FROM_ALL
@@ -435,7 +435,7 @@ add_dependencies(wire_tests de-core-strict)
 add_test(NAME formula_tests COMMAND formula_tests)
 set_tests_properties(formula_tests PROPERTIES TIMEOUT 60)
 
-# ConcreteItem's grade and durability wiring (docs/RESTRUCTURING.md 3.6):
+# ConcreteItem's grade and durability wiring (docs/reviews/RESTRUCTURING.md 3.6):
 # every item class built on ConcreteItem, probed through the exact
 # ConcreteItem base its header declares, against de-core's per-class table.
 # This links the adapter (ConcreteItem.cpp), de-core, the game context's
@@ -594,7 +594,7 @@ add_test(NAME game_context_tests COMMAND game_context_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(game_context_tests PROPERTIES TIMEOUT 30)
 
-# The loginserver's own context registry (docs/RESTRUCTURING.md task 3.5),
+# The loginserver's own context registry (docs/reviews/RESTRUCTURING.md task 3.5),
 # built over stand-in pointers: this links the context's translation unit
 # and de-kernel (for Assert) and nothing of the loginserver -- which is the
 # property that makes a subsystem holding a LoginContext& testable. A
@@ -614,7 +614,7 @@ add_test(NAME login_context_tests COMMAND login_context_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(login_context_tests PROPERTIES TIMEOUT 30)
 
-# The sharedserver's own context registry (docs/RESTRUCTURING.md task 3.5),
+# The sharedserver's own context registry (docs/reviews/RESTRUCTURING.md task 3.5),
 # built the same way: the context's translation unit, de-kernel for Assert,
 # and nothing of the sharedserver. A failing Assert appends to
 # assertion_failed.log in the working directory, hence the build-tree
@@ -634,7 +634,7 @@ add_test(NAME shared_context_tests COMMAND shared_context_tests
 set_tests_properties(shared_context_tests PROPERTIES TIMEOUT 30)
 
 # The registry for the managers whose classes live in src/Core
-# (docs/RESTRUCTURING.md task 3.5). Its translation unit is a kernel file,
+# (docs/reviews/RESTRUCTURING.md task 3.5). Its translation unit is a kernel file,
 # so de-kernel already carries it and this names only the test source; the
 # managers themselves stay undefined, which is what lets the registry be
 # kernel while two of the three compile per server. A failing Assert appends
@@ -652,7 +652,7 @@ add_test(NAME kernel_context_tests COMMAND kernel_context_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(kernel_context_tests PROPERTIES TIMEOUT 30)
 
-# The registry for the managers ServerCore defines (docs/RESTRUCTURING.md
+# The registry for the managers ServerCore defines (docs/reviews/RESTRUCTURING.md
 # task 3.5), built over stand-in pointers: this links the context's
 # translation unit and de-kernel (for Assert) and nothing of ServerCore --
 # so the suite needs neither MySQL nor a server. A failing Assert appends to
@@ -740,7 +740,7 @@ add_dependencies(wire_tests bounded_diagnostic_file_tests)
 add_test(NAME bounded_diagnostic_file_tests COMMAND bounded_diagnostic_file_tests)
 set_tests_properties(bounded_diagnostic_file_tests PROPERTIES TIMEOUT 30)
 
-# Call-site diagnostics (docs/TOOLCHAIN.md, "Diagnostics without location
+# Call-site diagnostics (docs/build/toolchain.md, "Diagnostics without location
 # macros"): Assert/ProtocolAssert and the __END_CATCH stack trace, now carried
 # by std::source_location instead of __FILE__/__LINE__/__PRETTY_FUNCTION__.
 # Assert.h and Exception.h are de-kernel sources, so this links nothing else.
@@ -790,7 +790,7 @@ add_test(NAME password_hash_tests COMMAND password_hash_tests)
 # A dozen 64 MiB argon2id computations; generous for a loaded CI runner.
 set_tests_properties(password_hash_tests PROPERTIES TIMEOUT 120)
 
-# The loginserver's character-creation decision (docs/RESTRUCTURING.md 3.1):
+# The loginserver's character-creation decision (docs/reviews/RESTRUCTURING.md 3.1):
 # decideCreatePC() returns Outcome<CreatedCharacter, CreatePCRejection>, so
 # every rejection and the accepted rows are testable against a fake
 # LoginCharacterRepository with no database. Only de-kernel is linked (the
@@ -813,7 +813,7 @@ add_test(NAME character_creation_tests COMMAND character_creation_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(character_creation_tests PROPERTIES TIMEOUT 60)
 
-# The loginserver's character-selection decision (docs/RESTRUCTURING.md 3.1):
+# The loginserver's character-selection decision (docs/reviews/RESTRUCTURING.md 3.1):
 # decideSelectPC() returns Outcome<SelectedCharacter, SelectPCRejection> over a
 # fake LoginCharacterRepository and a fake SelectPCTopology, so every rejection
 # and the routing of an accepted selection are testable with neither a database
@@ -840,7 +840,7 @@ add_test(
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-# Include-graph architecture test (docs/RESTRUCTURING.md 2.2): layering
+# Include-graph architecture test (docs/reviews/RESTRUCTURING.md 2.2): layering
 # rules + shrink-only baseline in tests/arch/. Perl, not Python — the
 # dev image ships perl and the repo's generators already use it.
 add_test(
@@ -865,7 +865,21 @@ add_test(
 )
 set_tests_properties(critical_section_audit PROPERTIES TIMEOUT 60)
 
-# The loginserver's login decision (docs/RESTRUCTURING.md 3.1): decideLogin()
+# Knowledge bundle (docs/). docs/ is an Open Knowledge Format bundle and
+# CLAUDE.md is an index into it: a rule lives in one concept file and the
+# index links it. This fails on a concept without a `type`, a folder whose
+# index.md does not list what it holds, a log heading that is not an ISO
+# day, and a local link in the bundle, CLAUDE.md, README.md or AGENTS.md
+# that points at nothing (docs/knowledge-bundle.md). Perl, like the audit
+# above; it takes the repo root as its argument.
+add_test(
+    NAME knowledge_bundle
+    COMMAND perl ${CMAKE_SOURCE_DIR}/tests/tools/check_knowledge_bundle.pl ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+set_tests_properties(knowledge_bundle PROPERTIES TIMEOUT 60)
+
+# The loginserver's login decision (docs/reviews/RESTRUCTURING.md 3.1): decideLogin()
 # returns Outcome<LoginAccepted, LoginRejection>, so every refusal, the
 # precedence between them and the content of the OK reply are testable
 # against a fake LoginAccountRepository with no database. PasswordHash is
@@ -891,7 +905,7 @@ add_test(NAME login_decision_tests COMMAND login_decision_tests
 # A handful of 64 MiB argon2id computations in the password cases.
 set_tests_properties(login_decision_tests PROPERTIES TIMEOUT 180)
 
-# The Exchange system's decisions (docs/RESTRUCTURING.md 3.1):
+# The Exchange system's decisions (docs/reviews/RESTRUCTURING.md 3.1):
 # decideBuyListing() / decideCancelListing() / decideBuyerClaim() /
 # decideSellerClaim() return Outcome<..., ExchangeRejection>, so every
 # refusal, the precedence between them and the terms an accepted buy is
@@ -921,7 +935,7 @@ add_dependencies(wire_tests exchange_decision_tests)
 add_test(NAME exchange_decision_tests COMMAND exchange_decision_tests)
 set_tests_properties(exchange_decision_tests PROPERTIES TIMEOUT 60)
 
-# The loginserver's character-deletion decision (docs/RESTRUCTURING.md 3.1):
+# The loginserver's character-deletion decision (docs/reviews/RESTRUCTURING.md 3.1):
 # decideDeletePC() returns Outcome<void, DeletePCRejection> over a fake
 # LoginCharacterPurgeRepository, so the ownership check, the compare-and-set
 # retirement and the precedence between the refusals are testable with no
@@ -942,7 +956,7 @@ add_dependencies(wire_tests character_deletion_tests)
 add_test(NAME character_deletion_tests COMMAND character_deletion_tests)
 set_tests_properties(character_deletion_tests PROPERTIES TIMEOUT 60)
 
-# The loginserver's reconnect decision (docs/RESTRUCTURING.md 3.1):
+# The loginserver's reconnect decision (docs/reviews/RESTRUCTURING.md 3.1):
 # decideReconnectLogin() returns Outcome<ReconnectAccepted,
 # ReconnectRejection> over a fake LoginAccountRepository and a fake
 # ReconnectSession, so every refusal, the precedence between them and the
@@ -1007,7 +1021,7 @@ add_test(NAME game_frame_gate_tests COMMAND game_frame_gate_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(game_frame_gate_tests PROPERTIES TIMEOUT 60)
 
-# The loginserver's account-registration decision (docs/RESTRUCTURING.md
+# The loginserver's account-registration decision (docs/reviews/RESTRUCTURING.md
 # 3.1): decideRegisterPlayer() returns Outcome<LoginNewAccount,
 # RegisterPlayerRefusal> over a fake LoginAccountRepository, so every
 # refusal, the precedence between them and the Player row an accepted
@@ -1031,7 +1045,7 @@ add_test(NAME registration_tests COMMAND registration_tests)
 set_tests_properties(registration_tests PROPERTIES TIMEOUT 180)
 
 # The gameserver's guild join and registration decisions
-# (docs/RESTRUCTURING.md 3.1): decideGuildJoinAttempt,
+# (docs/reviews/RESTRUCTURING.md 3.1): decideGuildJoinAttempt,
 # decideGuildRegistration, decideGuildJoinConfirm and decideGuildRequirements
 # return Outcome<..., GuildJoinRejection> over a fake GuildRepository, so
 # every refusal, the precedence between them, the quit-penalty date
@@ -1090,7 +1104,7 @@ add_test(NAME guild_union_join_offer_tests COMMAND guild_union_join_offer_tests)
 set_tests_properties(guild_union_join_offer_tests PROPERTIES TIMEOUT 60)
 
 # Which union a guild resolves to and what a retired union answers
-# (docs/FIXES.md): the union manager is changed and read from several
+# (docs/reviews/FIXES.md): the union manager is changed and read from several
 # threads, so the unions it takes away are retired rather than freed and the
 # lookup tables are read and written under one mutex. GuildUnionRegistry.cpp
 # is the only source linked; ServerCore carries Mutex. A failing Assert
@@ -1111,7 +1125,7 @@ add_test(NAME guild_union_registry_tests COMMAND guild_union_registry_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(guild_union_registry_tests PROPERTIES TIMEOUT 60)
 
-# What a retired guild and a retired guild member answer (docs/FIXES.md):
+# What a retired guild and a retired guild member answer (docs/reviews/FIXES.md):
 # both are taken out of their map and parked rather than freed, because a
 # zone thread may already hold the pointer, so the object stays readable and
 # must say it has gone. Guild.cpp is the only source linked - the retirement
@@ -1136,7 +1150,7 @@ add_test(NAME guild_retirement_tests COMMAND guild_retirement_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(guild_retirement_tests PROPERTIES TIMEOUT 60)
 
-# The gameserver's party invite protocol (docs/RESTRUCTURING.md 3.1):
+# The gameserver's party invite protocol (docs/reviews/RESTRUCTURING.md 3.1):
 # decidePartyInvite returns Outcome<PartyInviteEvents, PartyInviteRejection>
 # over a recording fake topology, so every branch of every CGPartyInvite code,
 # the precedence between the refusals, the packet and recipient each answer
@@ -1159,7 +1173,7 @@ add_test(NAME party_invite_decision_tests COMMAND party_invite_decision_tests)
 set_tests_properties(party_invite_decision_tests PROPERTIES TIMEOUT 60)
 
 # The loginserver's world and server-group decisions
-# (docs/RESTRUCTURING.md 3.1): decideSelectWorld returns Outcome<void,
+# (docs/reviews/RESTRUCTURING.md 3.1): decideSelectWorld returns Outcome<void,
 # SelectWorldRejection> and decideSelectServer returns
 # Outcome<SelectedServer, SelectServerRejection> over a recording fake
 # topology, so world/group membership, missing-ID normalization, empty-table
@@ -1183,7 +1197,7 @@ add_dependencies(wire_tests world_selection_tests)
 add_test(NAME world_selection_tests COMMAND world_selection_tests)
 set_tests_properties(world_selection_tests PROPERTIES TIMEOUT 60)
 
-# The gameserver's trade prepare protocol (docs/RESTRUCTURING.md 3.1):
+# The gameserver's trade prepare protocol (docs/reviews/RESTRUCTURING.md 3.1):
 # decideTradePrepare returns Outcome<TradePrepareEvents,
 # TradePrepareRejection> over a recording fake topology, so every branch of
 # every CGTradePrepare code, the precedence between the refusals, the packet,
@@ -1206,7 +1220,7 @@ add_dependencies(wire_tests trade_prepare_decision_tests)
 add_test(NAME trade_prepare_decision_tests COMMAND trade_prepare_decision_tests)
 set_tests_properties(trade_prepare_decision_tests PROPERTIES TIMEOUT 60)
 
-# The gameserver's three trade table requests (docs/RESTRUCTURING.md 3.1):
+# The gameserver's three trade table requests (docs/reviews/RESTRUCTURING.md 3.1):
 # decideTradeTableGate, decideTradeAddItem, decideTradeRemoveItem and
 # decideTradeMoney answer Outcome<TradeTableEvents, TradeTableRejection> over a
 # recording fake topology, so the gate the three share and its precedence,
@@ -1230,7 +1244,7 @@ add_dependencies(wire_tests trade_table_decision_tests)
 add_test(NAME trade_table_decision_tests COMMAND trade_table_decision_tests)
 set_tests_properties(trade_table_decision_tests PROPERTIES TIMEOUT 60)
 
-# The sharedserver's guild mutations (docs/RESTRUCTURING.md 3.1):
+# The sharedserver's guild mutations (docs/reviews/RESTRUCTURING.md 3.1):
 # decideAddGuild, decideGuildActivation, decideExpelGuildMember,
 # decideQuitGuild, decideGuildBreakup and decideModifyGuildMember answer
 # Outcome<..., SharedGuildRejection>, so every branch of founding a guild,
@@ -1286,7 +1300,7 @@ add_dependencies(wire_tests game_packet_diagnostics_tests)
 add_test(NAME game_packet_diagnostics_tests COMMAND game_packet_diagnostics_tests)
 set_tests_properties(game_packet_diagnostics_tests PROPERTIES TIMEOUT 30)
 
-# The GM chat command tables (docs/RESTRUCTURING.md 4.1): CommandRouter plus
+# The GM chat command tables (docs/reviews/RESTRUCTURING.md 4.1): CommandRouter plus
 # the production registrations, which are where every command's name, prefix
 # length and permission level are declared - the commands a player may type
 # and the ones another game server may relay. The command bodies are stubbed by
@@ -1308,7 +1322,7 @@ add_dependencies(wire_tests gm_command_router_tests)
 add_test(NAME gm_command_router_tests COMMAND gm_command_router_tests)
 set_tests_properties(gm_command_router_tests PROPERTIES TIMEOUT 60)
 
-# The *command console sub-command table (docs/RESTRUCTURING.md 4.1): the
+# The *command console sub-command table (docs/reviews/RESTRUCTURING.md 4.1): the
 # production registration, which is where every sub-command name, permission
 # level and null-player admission is declared, over the exact-match
 # SubcommandTable. The
@@ -1330,7 +1344,7 @@ add_test(NAME gm_console_command_tests COMMAND gm_console_command_tests)
 set_tests_properties(gm_console_command_tests PROPERTIES TIMEOUT 60)
 
 # The race table a player creature's rows are addressed to
-# (docs/RESTRUCTURING.md 4.3): characterRaceOf() is the one place that decides
+# (docs/reviews/RESTRUCTURING.md 4.3): characterRaceOf() is the one place that decides
 # it now that the three race classes share their persistence bodies, so the
 # mapping is pinned here. Beside it, the weapon bits a slayer's
 # character-list outlook carries (SlayerListWeapon.h), which

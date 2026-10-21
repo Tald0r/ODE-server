@@ -4,13 +4,15 @@ Guidance for Claude Code (claude.ai/code) working in this repository: the
 **DarkEden** game server, an MMORPG server written in C++20 and split into
 three cooperating processes.
 
-For a concise source map, start with the [OKF knowledge index](docs/knowledge/index.md).
+The rules below, and the incidents behind them, live in the knowledge bundle under `docs/`
+(Google's Open Knowledge Format): start at [docs/index.md](docs/index.md);
+[docs/knowledge-bundle.md](docs/knowledge-bundle.md) says how it is kept.
 
 ## Rules and the tests that own them
 
 Every architectural rule below is owned by something that fails, never by a
 memory. The full ratchet table (R1–R18), with the command that measures each
-number and the reason it exists, is in `docs/RESTRUCTURING.md`;
+number and the reason it exists, is in `docs/reviews/RESTRUCTURING.md`;
 `tests/ratchet/ratchets.sh` is the enforcing copy, run by ctest as `ratchets`.
 
 | Rule | Owner | What fails when it is broken |
@@ -110,9 +112,9 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
 - **Ratchet numbers only go down.** `ratchets.sh` fails in both directions:
   above the baseline is new debt, below it is progress nobody wrote down.
   When a number drops, tighten it in `tests/ratchet/ratchets.sh` **and** in
-  `docs/RESTRUCTURING.md` in the same commit. Every baseline comes from
+  `docs/reviews/RESTRUCTURING.md` in the same commit. Every baseline comes from
   running its command, never from an estimate.
-- **Task status lines.** `docs/RESTRUCTURING.md` is the living restructuring
+- **Task status lines.** `docs/reviews/RESTRUCTURING.md` is the living restructuring
   plan. Each task has a checkbox and a `> **Status:**` line — `not started` |
   `in progress (<what remains>)` | `done (<commit>)` | `dropped (<why>)` |
   `blocked (<on what>)` —
@@ -121,14 +123,14 @@ number and the reason it exists, is in `docs/RESTRUCTURING.md`;
   remains); the narrative of a change belongs in its PR description and
   commit message. A task is `done` only once its **Owner** exists — the test
   or mechanism that keeps the rule true from then on.
-- **Bugs found while restructuring** are recorded in `docs/FIXES.md` with the
+- **Bugs found while restructuring** are recorded in `docs/reviews/FIXES.md` with the
   status convention `fixed (<branch>)` | `recorded, not fixed (<branch>)` |
   `open` | `not a defect` rather than fixed silently.
 - **A change to `src/domain` is done only when
   `bash tests/tools/decore_client_diff.sh <client-root>` is clean** against a
   client checkout resynced from this one (its `tools/decore/sync.pl`): the
   client builds a byte-identical copy of the vendored subset, so the two
-  land together, the server first (`docs/RESTRUCTURING.md` task 3.6). A
+  land together, the server first (`docs/reviews/RESTRUCTURING.md` task 3.6). A
   changed vector row is a balance change: review the `.tsv` diff as one.
 - **A failing golden or inventory diff is a protocol change**, not a test to
   silence. The client repo keeps hand-maintained copies of every packet
@@ -273,7 +275,7 @@ ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 /out/bin/fuzz_game_stream \
 `DE_FUZZ_ANY_ID=1` in the environment the run fuzzes every read in the
 gameserver's table. Leak detection is off because six GC reads,
 `GCUpdateInfo`'s among them, leak the records they allocate (recorded in
-`docs/FIXES.md`). The client link refuses all six, so only an all-ids
+`docs/reviews/FIXES.md`). The client link refuses all six, so only an all-ids
 run reaches them, but the documented runs keep it off either way.
 Replay a crash file with `fuzz_replay_game <file>` in either build; in
 the fuzz build it comes with the sanitizer's report and needs the same
@@ -545,7 +547,7 @@ the GC-named packets the live client sends, listed in
 there, or its handler registration does not compile.
 `tests/packet_meta_test.cpp` compiles the whole kernel into one list. A new
 packet needs the three constants in its factory or it will not satisfy the
-concept. See `docs/TOOLCHAIN.md` §3 and `.claude/skills/add-packet`.
+concept. See `docs/build/toolchain.md` §3 and `.claude/skills/add-packet`.
 
 ### Preprocessor Macros
 
@@ -659,7 +661,7 @@ mysql -h 127.0.0.1 -u elcastle -D 'USERINFO' -p < initdb/USERINFO.sql
 
 ## Dependencies
 
-Required libraries (all expose a C API — see `docs/TOOLCHAIN.md` for why
+Required libraries (all expose a C API — see `docs/build/toolchain.md` for why
 re-introducing a C++-API dependency is a problem under the Zig toolchain):
 - **libmysqlclient-dev** - MySQL client library (Ubuntu 20.04 ships 8.0 /
   `libmysqlclient21`; the server talks to MySQL 5.7 or 8)
@@ -667,7 +669,7 @@ re-introducing a C++-API dependency is a problem under the Zig toolchain):
 - **zlib**
 
 XML parsing uses the vendored **tinyxml2** (10.0.0) in `third_party/tinyxml2`,
-wrapped by `SXml` in Core; xerces-c is no longer needed (`docs/TOOLCHAIN.md` §1).
+wrapped by `SXml` in Core; xerces-c is no longer needed (`docs/build/toolchain.md` §1).
 Password hashing uses the vendored **argon2** reference implementation
 (20190702, C API) in `third_party/argon2`; nothing to install for it.
 
@@ -748,7 +750,7 @@ requests every worker to stop, and joins them while dependencies remain alive.
 The process then uses `_Exit` to reclaim the legacy singleton graph without
 running its unaudited destructors. This does not add a world-save operation.
 A 30-second watchdog (`ServerShutdown::Deadline`) forces a nonzero exit if
-startup, I/O or a heartbeat prevents shutdown. See `docs/TOOLCHAIN.md` for
+startup, I/O or a heartbeat prevents shutdown. See `docs/build/toolchain.md` for
 the full contract.
 
 ### The mutation rule

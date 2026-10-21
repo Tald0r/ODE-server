@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // Filename    : gm_command_router_test.cpp
-// Description : The GM chat command tables (docs/RESTRUCTURING.md 4.1): every
+// Description : The GM chat command tables (docs/reviews/RESTRUCTURING.md 4.1): every
 //               registered command declares a permission level, the names are
 //               unique, a name matches as a prefix of the message, a caller
 //               below the level runs nothing, and an unknown name runs nothing

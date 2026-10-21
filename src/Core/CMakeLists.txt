@@ -1,5 +1,5 @@
 # ============================================================================
-# de-kernel (docs/RESTRUCTURING.md 2.1) — the wire primitives, built as a
+# de-kernel (docs/reviews/RESTRUCTURING.md 2.1) — the wire primitives, built as a
 # standalone target whose only include dir is src/Core. Membership is the
 # single source of truth in tests/arch/kernel_files.txt (the include-graph
 # test binds the same list); a kernel source that reaches for a gameserver

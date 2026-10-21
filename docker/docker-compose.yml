@@ -70,7 +70,7 @@ services:
       - "9997:9997/udp"
       # The WebSocket gateway below shares this container's network namespace,
       # so its port is published here. Loopback only: browsers reach it through
-      # a TLS-terminating reverse proxy in production (docs/websocket.md).
+      # a TLS-terminating reverse proxy in production (docs/operations/websocket-gateway.md).
       - "127.0.0.1:8080:8080"
     # Start loginserver, sharedserver and gameserver in order. Override with
     # `command: ["sleep","infinity"]` to start them by hand inside the container.

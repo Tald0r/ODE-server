@@ -1,4 +1,5 @@
 # Repository guidance
 
 Read [CLAUDE.md](CLAUDE.md) for the repository instructions.
-Use the [OKF knowledge index](docs/knowledge/index.md) to find relevant sources.
+The rules and the incidents behind them live in the knowledge bundle under `docs/`:
+start at [docs/index.md](docs/index.md).

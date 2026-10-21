@@ -1,3 +1,10 @@
+---
+type: Runbook
+title: "Production logging"
+description: "DARKEDEN_TRACE is off by default and turns on the migrated diagnostics; the severity policy for new events and how a deployment migrates its logging."
+tags: [operations, logging]
+---
+
 # Production logging
 
 Production diagnostics should explain service health and failed operations. A
@@ -69,7 +76,7 @@ The source audit also identified raw SQL/driver diagnostics, per-player packet
 files, client launch/key output, unbounded local diagnostic files, and repeated
 listener/gateway/UDP reports. Those paths require their own reviewed changes;
 this document describes the production policy, not a claim that every legacy
-site has already migrated. Track actual fixes in `docs/FIXES.md` and their PRs.
+site has already migrated. Track actual fixes in `docs/reviews/FIXES.md` and their PRs.
 
 Deploy and check the changed application images before removing collector
 workarounds. The DarkEden-specific Alloy keyword allowlist guesses severity

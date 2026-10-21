@@ -61,7 +61,7 @@ file(MAKE_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
 # The replay tests' environment. In a DARKEDEN_BUILD_FUZZERS tree every
 # target carries ASan, whose leak check would fail the all-ids game replay
 # on the reads that leak (GCUpdateInfo::read and five more, recorded in
-# docs/FIXES.md; the client link refuses all six); the libFuzzer runs turn
+# docs/reviews/FIXES.md; the client link refuses all six); the libFuzzer runs turn
 # it off the same way.
 set(DARKEDEN_FUZZ_REPLAY_ENV "")
 if(DARKEDEN_BUILD_FUZZERS)
