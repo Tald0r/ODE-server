@@ -495,9 +495,9 @@ tests/
 ├── fuzz/                      # packet-read fuzz targets, replay driver, regressions/
 └── golden/, generated/, support/, integration/  # fixtures, generated lists, fakes, MySQL tier
 docs/
-├── RESTRUCTURING.md           # the living plan: tasks, statuses, the R1-R18 table
-├── FIXES.md                   # the fix log
-└── TOOLCHAIN.md               # Zig/Clang, C++20 adoption, wire and diagnostics contracts
+├── index.md                   # the knowledge bundle (OKF): one concept per rule, in folders by area
+├── reviews/                   # RESTRUCTURING.md (the living plan, the R1-R18 table) and FIXES.md (the fix log)
+└── build/toolchain.md         # Zig/Clang, C++20 adoption, wire and diagnostics contracts
 third_party/
 ├── tinyxml2/                  # Vendored XML parser (10.0.0), replaces xerces-c
 └── argon2/                    # Vendored argon2 reference implementation (C API)
