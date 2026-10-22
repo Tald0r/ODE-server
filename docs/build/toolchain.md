@@ -1,3 +1,10 @@
+---
+type: Guide
+title: "Toolchain notes"
+description: "Why xerces-c became vendored tinyxml2, how the project builds with zig cc, and where C++20 pays off: thread lifetime, typed packet buffers, compile-time packet metadata and location-free diagnostics."
+tags: [build, toolchain]
+---
+
 # Toolchain notes
 
 Replacing the XML dependency made a reproducible Zig/Clang compiler toolchain

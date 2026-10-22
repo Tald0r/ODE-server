@@ -1,3 +1,10 @@
+---
+type: Guide
+title: "WebSocket gateway"
+description: "The Rust gateway that carries the binary TCP stream in WebSocket messages for browser and native clients: setup, the handshake, TLS, Docker, limits and verification."
+tags: [operations, websocket, protocol]
+---
+
 # Browser and native WebSocket connections
 
 The gateway carries the existing binary TCP byte stream in binary WebSocket

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Shrink-only ratchets for docs/RESTRUCTURING.md, plus generated-file pins.
+# Shrink-only ratchets for docs/reviews/RESTRUCTURING.md, plus generated-file pins.
 #
 # Each ratchet compares a measured count against the baseline recorded here.
 #   measured > baseline  -> FAIL: new debt of a kind being paid down.
 #   measured < baseline  -> FAIL: progress! tighten the baseline below (and
-#                           the table in docs/RESTRUCTURING.md) in the same
+#                           the table in docs/reviews/RESTRUCTURING.md) in the same
 #                           commit, so the number stays honest.
 # Never raise a baseline.
 #
@@ -25,7 +25,7 @@ check_ratchet() {
         echo "[FAIL] $id $desc: measured $measured > baseline $baseline (new debt — remove it instead)"
         fail=1
     elif [ "$measured" -lt "$baseline" ]; then
-        echo "[FAIL] $id $desc: measured $measured < baseline $baseline (progress — tighten the baseline in tests/ratchet/ratchets.sh and docs/RESTRUCTURING.md in this commit)"
+        echo "[FAIL] $id $desc: measured $measured < baseline $baseline (progress — tighten the baseline in tests/ratchet/ratchets.sh and docs/reviews/RESTRUCTURING.md in this commit)"
         fail=1
     else
         echo "[OK]   $id $desc: $measured"

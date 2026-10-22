@@ -37,7 +37,7 @@ COPY cmake ./cmake
 COPY third_party ./third_party
 COPY src ./src
 # src/Core/CMakeLists.txt reads the de-kernel membership list at configure
-# time (docs/RESTRUCTURING.md 2.1), so this one file from tests/ must be in
+# time (docs/reviews/RESTRUCTURING.md 2.1), so this one file from tests/ must be in
 # the build context even though the test suite itself is not built here.
 COPY tests/arch/kernel_files.txt ./tests/arch/kernel_files.txt
 

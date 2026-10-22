@@ -1,3 +1,10 @@
+---
+type: Record
+title: "Server restructuring plan"
+description: "The living restructuring plan: every task with its checkbox and Status line, the shrink-only ratchet table R1-R18, and what each phase settled."
+tags: [process, restructuring]
+---
+
 # Server Restructuring Plan
 
 Living, trackable plan for restructuring the DarkEden server toward the
@@ -6,7 +13,7 @@ architectural rule owned by a test that fails — never by a memory — and
 shrink-only ratchets for legacy debt. No language port; no behavior changes on
 the wire or in game rules unless a task says so explicitly.
 
-Modeled on sidecar's `docs/RESTRUCTURING.md` + `CODE_REVIEW` fix-log
+Modeled on sidecar's `docs/reviews/RESTRUCTURING.md` + `CODE_REVIEW` fix-log
 conventions.
 
 ## How to use this document
@@ -69,10 +76,10 @@ that changes has to change in both places in the same commit.
 | R5 | `__BEGIN_TRY` control-flow macro sites in de-core candidates | 5,114 | `grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' \| grep -vE 'gameserver/(gm\|handler\|packetfill)/' \| wc -l` (handler/ and packetfill/ hold 2.4-moved sources from `src/Core`, never counted while they lived there; `gm/` joined them with task 4.1, holding the GM command bodies that moved out of `handler/CGSayHandler.cpp` — the 33 macro pairs in them are the same handler bodies at a new address, so the number did not move. Fold them in with a re-baseline when they become 3.x extraction targets. 5,984→5,980 on 2026-09-02: the four macros inside the guild trio's deleted dead __SHARED_SERVER__ blocks. 5,980→5,899 on 2026-09-02, textual: ItemIDRegistry.cpp's 81 hand-expanded initItemIDRegistry bodies collapsed onto one macro, so the grep sees one #define line instead of 82 matched lines — 81 expansions plus the old macro's own; each method still has its try block. 5,897→5,790 on 2026-09-05: the never-built `gameserver/test/`, `testAlone/`, `mofus/testserver/` and `quest/Squest/` trees were deleted. 5,790→5,788 on 2026-09-08: the never-built `skill/Restore2.cpp`, a stale duplicate of `skill/Restore.cpp`, was deleted. 5,788→5,755 on 2026-09-08: the never-built `Vampire_backup.cpp`, a stale copy of `Vampire.cpp`, was deleted. 5,755→5,737 on 2026-09-10: the never-built `EventMonsterNameManager.cpp` (4), `GameServerInfoManager.cpp` (7) and `GameWorldInfoManager.cpp` (7) were deleted. 5,737→5,719 on 2026-09-10: the never-built `EventBall.cpp` (10) and `EventQuestRewardManager.cpp` (1) were deleted, and seven more sat in commented-out or empty bodies deleted from `mission/`, `skill/` and `war/`. 5,719→5,701 on 2026-09-13: the never-built `item/SubInventory.cpp` (10) and `war/SubInventoryItemPosition.cpp` (8) were deleted. 5,701→5,685 with the 4.3 hoist: 24 sites left `Slayer.cpp`/`Vampire.cpp`/`Ousters.cpp` with the bodies that moved to `PlayerCreature.cpp`, which carries 8 of them now that the three copies are one. 5,685→5,677 with the second 4.3 hoist: 12 sites left the three race files with `setGoldEx`, `getExtraInfo`, `getInventoryInfo`, `canPlayFree` and `isPayPlayAvaiable`, and `PlayerCreature.cpp` gained 4 of them — its own `isPayPlayAvaiable` already had one. 5,677→5,673 with the never-defined region macros: the two in EventShutdown.cpp's deleted branch. 5,673→5,483 on 2026-09-17: the thirty-nine sources no target compiled were deleted, and 190 of the sites sat in them. 5,482 → 5,474 with the never-defined feature macros: eight sat in the commented-out `NPC.cpp` SimpleQuest and `PlayerCreature.cpp` quest bodies that went with them. 5,473→5,437 with the dead billing module (32 sites) and the bodies that fed it: `GamePlayer::sendBillingLogin` (1), `PlayerCreature::isBillingPlayAvaiable` and `canPlayFree` (2), and `SkillUtil.cpp`'s empty `checkFreeLevelLimit` (1). 5,437→5,434 on 2026-09-17 with the deleted `LuckInfo.cpp`, whose three sites sat in its commented-out body, which this textual measure counts. 5,434→5,211 on 2026-09-17: 223 sites sat inside the commented-out bodies the R18 pass removed. 5,211→5,204 on 2026-09-18: seven more sat in the commented-out bodies deleted from `couple/`, `gm/`, `mission/` and `war/`. 5,204→5,201 on 2026-09-22: the vampire and ousters slot constructors, destructor and run-time bodies are three on their shared `skill/RaceSkillSlot.cpp` where they were six across the two race slot files. 5,201→5,193 on 2026-09-22 with the slot-table hoist: 12 sites left the three race files with the bodies that moved to `PlayerCreature.cpp`, which carries 4 of them now that the three copies are one; 5,193→5,170 on 2026-09-22: twenty-three more sat in the commented-out bodies deleted from the gameserver's top-level files; 5,170→5,169 on 2026-09-23 with the dead `__SHARED_SERVER__` blocks the gameserver's `GuildManager.cpp` carried, which no build of that file defines; 5,169→5,168 on 2026-09-23: the deleted WarSystem::isEndCondition, which had no caller; 5,168→5,167 on 2026-09-23 with the exps hoist, which leaves one body on `PlayerCreature.cpp` where the vampire and ousters files each had one; 5,167→5,166 on 2026-09-23: the deleted `CastleShrineInfoManager::isDefenderOfGuardShrine`, which had no caller; 5,166→5,165 on 2026-09-23 with the silver-damage hoist, one body on `PlayerCreature.cpp` where the vampire and ousters files each had one; 5,165→5,163 on 2026-09-23 with the item-load hoist: the three `loadItem(bool)` bodies are one on `PlayerCreature.cpp`, and the per-race hooks it leaves behind carry no try block; 5,163→5,161 on 2026-09-24: the gameserver `StringPool`'s `clear()` and `addString()` went with the piecewise filling they were for, the pool now building a whole table and publishing it in one swap; 5,161→5,160 on 2026-09-24: the deleted `WarSystem::getActiveRaceWar`, whose one caller now asks the race war its question under the war system's own lock rather than carrying the pointer past it; 5,160→5,158 on 2026-09-24: `GuildUnion::create()` and `destroy()` went, the union manager writing the union rows itself now that a `GuildUnion` is an in-memory object only; 5,158→5,155 on 2026-09-24: `IncomingPlayerManager::getPlayer`, `getPlayer_NOBLOCKED` and `getReadyPlayer` went, their only callers, the login link's two incoming-connection handlers, now reaching the player through its mailbox rather than a pointer handed out past the manager's lock; 5,155→5,152 on 2026-09-24: `WarSystem::getActiveWar` and `getActiveWarSchedule`, which handed a running war out past the lock that frees it, went, and `isModifyCastleOwner` asks the war under that lock without a try block; 5,152→5,147 on 2026-09-24: a castle's tax balance is changed and saved in one place, `CastleInfoManager::increaseTaxBalance`/`decreaseTaxBalance`, without a try block, and `CastleInfo`'s two `Ex` forms and the unused whole-row `CastleInfoManager::save` went; 5,147→5,146 on 2026-09-24: `CastleShrineInfoManager::addShrineShield_LOCKED` folded into `addShrineShield`, which a castle war's end now posts to the guard zone's group rather than calling under the zone's mutex; 5,146→5,134 on 2026-09-24: the twelve loops the race war's start and end ran over other threads' zones -- the holy land's four, the castles' three, the shrine shields' two, the regen towers' two and `ZoneGroupManager::removeFlag` -- became posts to the owning groups (`war/WarZoneWork.h`) without a try block; 5,134→5,131 on 2026-09-25: the holy land's, a castle's and a level war's bonus-zone broadcasts became posts of a captured packet (`de::war::postBroadcast`) without a try block; 5,131→5,130 on 2026-10-02: game process setup moved from `GameServer::sysinit` to the testable `ServerProcessEnvironment` library without a control-flow macro; 5,130→5,127 on 2026-10-02: incoming-game manager construction, destruction and clear now use scoped owners without control-flow macros; 5,127→5,125 on 2026-10-02: zone-player manager destruction and clear use shared owned cleanup without control-flow macros; 5,125→5,123 on 2026-10-02: queued broadcast preparation and flush use owned messages without control-flow macros; 5,123→5,114 on 2026-10-02: the seven game worker-pool sites are gone with its replacement in `ServerWorkers`, and thread-manager construction/destruction default to a value-owned pool) |
 | R6 | Line count of god files (each tracked separately) | see table below | `wc -l <file>` |
 | R7 | Files using parenthesized `throw(...)` syntax — dynamic specifications plus expressions, see 5.4 | 0 | `grep -rlE 'throw[[:space:]]*\(' src --include='*.h' --include='*.cpp' \| wc -l` (real throw expressions were normalized to `throw expr`, making every future match unambiguously forbidden legacy syntax) |
-| R8 | Non-comment lines using `__PRETTY_FUNCTION__` | 0 | `grep -rh '__PRETTY_FUNCTION__' src --include='*.h' --include='*.cpp' \| grep -vcE '^[[:space:]]*//'` (call-site diagnostics take the enclosing function from a defaulted `std::source_location` — see docs/TOOLCHAIN.md, "Diagnostics without location macros". Line-based: a line whose first non-blank text is `//` is a comment, so the comments that explain the equivalence may still name the macro) |
+| R8 | Non-comment lines using `__PRETTY_FUNCTION__` | 0 | `grep -rh '__PRETTY_FUNCTION__' src --include='*.h' --include='*.cpp' \| grep -vcE '^[[:space:]]*//'` (call-site diagnostics take the enclosing function from a defaulted `std::source_location` — see docs/build/toolchain.md, "Diagnostics without location macros". Line-based: a line whose first non-blank text is `//` is a comment, so the comments that explain the equivalence may still name the macro) |
 | R9 | Hand-written length-prefixed string reads left in `src/Core` | 0 | `grep -rhE 'iStream\.read\([A-Za-z_][A-Za-z0-9_]*, sz[A-Za-z0-9_]*\);' src/Core --include='*.h' --include='*.cpp' \| grep -vcE '^[[:space:]]*//'` (a string field is a BYTE length then that many bytes; `de::wire::readString`/`writeString` in `src/Core/WireString.h` carry it with the bounds stated once. The read may land in a member or in a local, so any identifier counts. Line-based with R8's comment rule, so `WireString.h`'s own example of the shape it replaces does not count itself) |
 | R10 | Throws of a pointer into a local string, and the handlers that caught one | 0 (R10a), 0 (R10b) | R10a: `grep -rnE 'throw [A-Za-z_]+\.c_str\(\)' src \| wc -l` — a `throw x.c_str()` hands the handler storage that dies with the clause it came from; `END_DB`/`END_DB_EX` answer a failed statement with a `DatabaseError` (`src/server/database/DatabaseError.h`) that owns its message, so nothing in the tree has that shape. R10b: `grep -rn 'catch (const char\*' src \| wc -l` — the receiving end. All 34 handlers name `DatabaseError`, so the count is 0 and one left behind would either be dead or be reaching for one of the ~160 bare `throw "literal"` sites, which are a separate defect and are not answered this way. Textual, so a commented-out clause counts (the one inside `CGPortCheckHandler.cpp`'s commented-out retry moved with the live code) |
-| R11 | Bare string-literal throws left in `src` | 0 | `grep -rh 'throw "' src --include='*.h' --include='*.cpp' \| grep -vcE '^[[:space:]]*//'` — a `throw "text"` puts a `const char*` on the stack, a type nothing catches (R10b) and neither `__END_CATCH` nor the swallowing `__END_CATCH_NO_RETHROW` matches, so it walks past every handler the surrounding code wrote and lands in a `catch (...)` backstop — or, thrown out of a destructor, in `std::terminate`. `throw Error("text")` reaches the handler written for it. 149→0 over two rounds (see `docs/FIXES.md`): the 62 sites outside `src/server/gameserver/item`, then the 87 item constructors that answered a failed `isPossibleItem` check with the identical `Invalid item type or optionType` literal, one per item class. Line-based with R8's comment rule, so a commented-out throw does not count |
+| R11 | Bare string-literal throws left in `src` | 0 | `grep -rh 'throw "' src --include='*.h' --include='*.cpp' \| grep -vcE '^[[:space:]]*//'` — a `throw "text"` puts a `const char*` on the stack, a type nothing catches (R10b) and neither `__END_CATCH` nor the swallowing `__END_CATCH_NO_RETHROW` matches, so it walks past every handler the surrounding code wrote and lands in a `catch (...)` backstop — or, thrown out of a destructor, in `std::terminate`. `throw Error("text")` reaches the handler written for it. 149→0 over two rounds (see `docs/reviews/FIXES.md`): the 62 sites outside `src/server/gameserver/item`, then the 87 item constructors that answered a failed `isPossibleItem` check with the identical `Invalid item type or optionType` literal, one per item class. Line-based with R8's comment rule, so a commented-out throw does not count |
 | R12 | Throw messages carrying non-ASCII text | 0 | ``LC_ALL=C grep -rhE $'throw[[:space:]]*[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\\([[:space:]]*"[^"]*[^\x01-\x7f]' src --include='*.h' --include='*.cpp' | grep -vcE '^[[:space:]]*//'`` — a throw's message is a diagnostic read in a log or on a console, and the tree's code language is English; the legacy messages were code-page bytes that survived the migration as Korean, mojibake or U+FFFD runs. The class is spelled as the bytes it excludes so that the CR of a CRLF working tree is not counted, the way `[^[:print:]]` would; line-based with R11's comment rule, so a literal that starts on a continuation line is not counted |
 | R13 | Duplicated include guard names across `src/**/*.h` | 0 | Each header's **first** `#ifndef` is its guard; the ratchet takes that name from every header (`find -exec awk`, stripping the CR of the CRLF tree) and counts `sort \| uniq -d`. Two headers sharing a guard means whichever one a translation unit reaches first silently swallows the other: the second `#include` expands to nothing and its declarations surface as an unrelated "undeclared identifier" far from the cause, which is how `EffectCallMotorcycle.h` reusing `EffectDecayItem.h`'s guard bit the `Zone` split. 16→0: eighteen headers took a name derived from their path, per-server twins (`sharedserver/SharedGameServerInfo.h` → `__SHARED_SERVER_GAME_SERVER_INFO_H__`) included, because which headers share a binary changes. Not measured on every `^#ifndef` line — ordinary macros are tested that way too (`Core/Types.h` tests `__XMAS_EVENT_CODE__` before defining it), so that count could never reach zero |
 | R14 | Mentions of macros nothing defines | 0 | `LC_ALL=C grep -rhE '__((THAILAND\|THIALAND\|CHINA\|CHAINA\|INTERNATIONAL\|NETMARBLE\|TEST)_SERVER\|OLD_GUILD_WAR\|CONNECT_BILLING_SYSTEM\|COUT_BILLING_SYSTEM\|PAY_SYSTEM_(ZONE\|LOGIN\|FREE_LIMIT)\|UNDERWORLD\|ACTIVE_QUEST\|ACTIVE_SERVICE_DEADLINE\|WINDOWS)__' src --include='*.h' --include='*.cpp' \| wc -l` — a macro no build defines makes the block behind it dead text: it never reached the compiler, so the `#else`/`#ifndef` branch beside it was the only code the servers ran, while the block kept reading as live code. A translation-unit-local `#define` arms one again, and one did, giving that TU a `SystemAvailabilitiesManager` with a layout no other TU shared. The region builds went first (`__THAILAND_SERVER__`, `__CHINA_SERVER__`, the misspellings `__CHAINA_SERVER__`/`__THIALAND_SERVER__`, `__INTERNATIONAL_SERVER__`, `__NETMARBLE_SERVER__`, `__TEST_SERVER__`); the feature macros followed — `__OLD_GUILD_WAR__` (guild union/tax handlers that only answered "not supported yet", a one-attacker war schedule where the live read takes five), `__CONNECT_BILLING_SYSTEM__`/`__COUT_BILLING_SYSTEM__` (the external billing link and its console trace), `__PAY_SYSTEM_ZONE__`/`__PAY_SYSTEM_LOGIN__`/`__PAY_SYSTEM_FREE_LIMIT__` (with none defined `GamePlayer::isPayPlaying()` answers true for every player and each gate passes), `__UNDERWORLD__`, `__ACTIVE_QUEST__`, `__ACTIVE_SERVICE_DEADLINE__` and `__WINDOWS__`, whose arm of the platform switch was the only dead one (`__LINUX__` comes from the top-level `CMakeLists.txt`, `__APPLE__` from the compiler). The instrumentation toggles a developer switches on by hand (`__PROFILE_*`, `__FULL_PROFILE__`, `__DEBUG_OUTPUT__`, `__OUTPUT_INIT__`) are deliberately not counted. Comments count too, so a comment about one of these branches states the behaviour instead |
@@ -175,10 +182,10 @@ before anything else moves. Everything later shelters under this pin.
   > `tests/packet_roundtrip_test.cpp`.
   >
   > Every family turned up write/read disagreements (all recorded in
-  > `docs/FIXES.md`). They are fixed and pinned as the behaviour the
+  > `docs/reviews/FIXES.md`). They are fixed and pinned as the behaviour the
   > packets now produce; the one that cannot be fixed — `CGPortCheck`'s
   > registration, which the game server's UDP path needs — is recorded in
-  > its file's header and in `docs/FIXES.md`.
+  > its file's header and in `docs/reviews/FIXES.md`.
   - Owner: the golden files — any layout change is a byte-diff in the commit.
   - Note: packets whose `read`/`write` depend on game-state globals need those
     globals stubbed; list any such packet here as found (they are also the
@@ -262,7 +269,7 @@ before anything else moves. Everything later shelters under this pin.
   > (the seller filter, the buy idempotency key, the 2048-character
   > statement bound, the claim-list and packet-reader leaks, the success
   > message, the list maximum against the client's ring) are closed or
-  > recorded in `docs/FIXES.md`, 2026-09-24. Still open, each deliberately
+  > recorded in `docs/reviews/FIXES.md`, 2026-09-24. Still open, each deliberately
   > out of scope for a layout change:
   > - Neither repo clamps the listing count in `write()`:
   >   `(uint16_t)m_Listings.size()` narrows silently while the body loop
@@ -550,7 +557,7 @@ visibility can't express.
   > `applyLoginServerOffset` validates the three decimal bases and checks all
   > sums before writing the port, UDP port and ID. Signed offsets, including
   > zero, retain their meaning; malformed numbers, overflow and trailing
-  > command-line arguments are rejected (`docs/FIXES.md`). The underlying
+  > command-line arguments are rejected (`docs/reviews/FIXES.md`). The underlying
   > `Properties` file grammar was preserved; parser extraction and validation
   > fixes are recorded in 2.12 below.
   - Owner: `server_startup_tests`, linked without any runtime, MySQL or Lua;
@@ -620,7 +627,7 @@ visibility can't express.
   > message lines without timestamps. Login/shared allocation failures report
   > to stderr and `_Exit(EXIT_FAILURE)`, fixing their former successful exit
   > while avoiding unaudited process teardown. Their terminate handler is
-  > preserved. These behavior corrections are recorded in `docs/FIXES.md`.
+  > preserved. These behavior corrections are recorded in `docs/reviews/FIXES.md`.
   - Owner: `server_fatal_handler_tests`, with deterministic C++ allocation
     faults only inside subprocesses, covering main/worker failures, failure
     status, diagnostics, append logging, unavailable output, absence of exit
@@ -688,7 +695,7 @@ visibility can't express.
   > retains file opening and rejects directory paths. The existing colon
   > separator, column-zero comments, space/tab trimming, duplicate-key and
   > merge rules remain. A final line needs no newline, and missing keys and
-  > failed reads are rejected; the defects are recorded in `docs/FIXES.md`.
+  > failed reads are rejected; the defects are recorded in `docs/reviews/FIXES.md`.
   > Normal EOF is handled even with stream exceptions enabled, without
   > changing the caller's exception mask. Earlier valid entries remain in the
   > supplied destination after an error. `ServerStartup` still uses a fresh,
@@ -705,7 +712,7 @@ visibility can't express.
   > Each main calls `raiseCoreDumpLimit` before constructing its server; the
   > helper raises the soft value to the inherited hard value and returns any
   > syscall error, which remains nonfatal. It no longer attempts to raise a
-  > finite hard limit (`docs/FIXES.md`).
+  > finite hard limit (`docs/reviews/FIXES.md`).
   > Game startup retains both seeding points: before dispatch registration in
   > main and at the start of `GameServer::init`. The latter now calls
   > `initializeGameProcess` instead of its private `sysinit`, also retaining
@@ -738,7 +745,7 @@ visibility can't express.
   > managers retain temporary ownership through nonblocking setup before
   > publishing the listener. Repeated failed binds no longer leak descriptors.
   > Both defects and the remaining outbound-socket ownership issue are
-  > recorded in `docs/FIXES.md`.
+  > recorded in `docs/reviews/FIXES.md`.
   - Owner: `listener_startup_tests`, covering retry/report order, propagated
     exceptions, intervals, shutdown during waits and retained failure state;
     subprocess regressions over occupied TCP/UDP ports and descriptor reuse;
@@ -749,7 +756,7 @@ visibility can't express.
   > `ServerPortSettings` reads complete decimal ports in 1..65535 with only a
   > kernel dependency. The five listener paths use it before retrying binds,
   > replacing `getPropertyInt`/`atoi` values that could accept junk, become
-  > ephemeral port zero or wrap during network conversion (`docs/FIXES.md`).
+  > ephemeral port zero or wrap during network conversion (`docs/reviews/FIXES.md`).
   > Leading plus/zeroes, surrounding spaces/tabs and trailing CR from CRLF
   > configuration remain accepted; malformed input names its property.
   > `ServerApplication` checks the current server's required ports after all
@@ -781,7 +788,7 @@ visibility can't express.
   > Mofus retains temporary socket/stream ownership until setup and diagnostics
   > succeed, so failures leave a retryable empty connection.
   > The constructor/adoption defects and remaining accept/reconnect work are
-  > recorded in `docs/FIXES.md`.
+  > recorded in `docs/reviews/FIXES.md`.
   - Owner: `outbound_server_connection_tests` for real loopback connections,
     refused attempts, socket options, byte exchange and ownership transfer;
     `socket_construction_tests` for descriptor exhaustion and allocation faults;
@@ -1207,7 +1214,7 @@ visibility can't express.
   > existing views see the next completed load. The population ladder and the
   > server decision's group-down-only policy stay intact. As before, the handler
   > does not write a normalized world to the session; that separate flow issue
-  > is recorded in `docs/FIXES.md`.
+  > is recorded in `docs/reviews/FIXES.md`.
   - Owner: 20 production-topology cases in `login_server_runtime_tests` and
     30 `world_selection_tests` cases. Eleven runtime regressions failed before
     the fix. Coverage includes sparse IDs, absent count-derived IDs, empty
@@ -1913,7 +1920,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   >   table lacks.
   > - GuildUnionOffer's PK is OwnerGuildID alone, so an ESCAPE insert
   >   over a standing JOIN/QUIT row throws out of CGQuitUnionHandler.
-  >   Fixed since: the penalty replaces the guild's row (`docs/FIXES.md`,
+  >   Fixed since: the penalty replaces the guild's row (`docs/reviews/FIXES.md`,
   >   "A forced union quit fails on the guild's own offer row").
   > - ActionShowGuildDialog gates guild creation on a hardcoded seven
   >   days ahead of the handler's QUIT_GUILD_PENALTY_TERM.
@@ -2056,7 +2063,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > functions the client calls (the three races' to-hit, defense,
   > protection and min/max damage, `vampireSkillConsumeMP`,
   > `vampireDexHPRegenBonus`) and the three steal ratios, whose cast to a
-  > byte goes through `int` (`docs/FIXES.md`). None of these indexes a
+  > byte goes through `int` (`docs/reviews/FIXES.md`). None of these indexes a
   > table; the party tables in `SkillOutputFormulas.cpp` are read
   > through a clamp since slice 6a.
   > Slice 4's server half: `EquipRequirement` (`requiredStats`,
@@ -2078,7 +2085,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > tax on a shop purchase, which `CGShopRequestBuyHandler` applies to the
   > price times the count, or the mysterious rack's price; the handler keeps
   > the tax it credits to the castle. A taxed total past the int range is
-  > defined as x86-64's 2147483648 (`docs/FIXES.md`). Its rows are the
+  > defined as x86-64's 2147483648 (`docs/reviews/FIXES.md`). Its rows are the
   > `applyCastleTax` rows of `src/domain/vectors/price.tsv`, so the
   > client's `decore_tests` must learn that function (total, ratio,
   > expected).
@@ -2090,7 +2097,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > converted implicitly. The party tables are read through
   > `partyEffectBoost` and `partyDurationBoost`, which clamp the size to
   > 0..6; the server passes only 0 or 1, so no party bonus is granted
-  > (`docs/FIXES.md`), and a client caller must pass the same.
+  > (`docs/reviews/FIXES.md`), and a client caller must pass the same.
   > `src/domain/vectors/skill_output.tsv` pins `WillOfLife`, the two
   > lookups at and past both ends, and `Bless` read through them. The
   > client's `decore_tests` must learn its row kinds (a skill row: the ten
@@ -2103,7 +2110,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > (`skill/SkillUtil.cpp`) reads the skill table and slot for; its three
   > inputs and its result wrap at 256 as the server's 8-bit types did, and
   > it no longer depends on the build machine's fused multiply-add
-  > (`docs/FIXES.md`). `src/domain/vectors/skill_range.tsv` pins it; the
+  > (`docs/reviews/FIXES.md`). `src/domain/vectors/skill_range.tsv` pins it; the
   > client's `decore_tests` must learn the row (minRange, maxRange,
   > expLevel, expected), and its `third_party/decore/CMakeLists.txt` must
   > list `domain/SkillRange.cpp`. `partyExpPool` (`PartyExp`, server
@@ -2111,7 +2118,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > experience it shares (150 to 270 for 2 to 6 members), which the five
   > sharing functions of `Party.cpp` each carried as a switch; they keep
   > their own splits of the pool, three in float and two in int
-  > (`docs/FIXES.md`). The skill experience and fame party bonuses
+  > (`docs/reviews/FIXES.md`). The skill experience and fame party bonuses
   > (`skill/SkillExperience.cpp`) are other tables and stay there.
   > `src/domain/vectors/server/party_exp.tsv` pins it; the client does not
   > compute it. `darkLightForViewer` (`DarkLight`, server only) is the
@@ -2120,7 +2127,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > `makeGCUpdateInfo` (`PacketUtil.cpp`), `EffectFlare::unaffect` and
   > the weather broadcast (`WeatherManager.cpp`, whose vampire levels were
   > unclamped until then) call it. The other `GCChangeDarkLight` senders
-  > decide less and are recorded in `docs/FIXES.md`. `src/domain/vectors/server/dark_light.tsv` pins
+  > decide less and are recorded in `docs/reviews/FIXES.md`. `src/domain/vectors/server/dark_light.tsv` pins
   > it; the client draws the levels it is sent and computes none.
   > The vendored subset is `DECORE_VENDORED_SOURCES`
   > (`src/domain/CMakeLists.txt`), the domain headers those include, and
@@ -2152,7 +2159,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > `SkillInput::TargetType` and `SkillInput::TargetRace`, which mirror the
   > game's integer values; and `SkillOutput`, whose constructor zeroes it
   > as the gameserver's does, so it is not POD. Moves are verbatim,
-  > oddities included (the kept ones are in `docs/FIXES.md`); changing
+  > oddities included (the kept ones are in `docs/reviews/FIXES.md`); changing
   > one is a balance decision. A change
   > to a shared rule: edit `src/domain`, re-record with
   > `bash tools/devbuild.sh test --record` and review the `.tsv` diff as a
@@ -2368,7 +2375,7 @@ shrink-only work.
   > ratchet and the message it prints) and a "Working in this repository"
   > section carrying the `make dev-test` / `make test` loop, the ratchet
   > discipline, this document's `> **Status:**` conventions and
-  > `docs/FIXES.md`. The build, container, database and run-the-servers
+  > `docs/reviews/FIXES.md`. The build, container, database and run-the-servers
   > manuals stay; task and phase numbers are out of that file, because it is
   > read by sessions that never open this one. The standing rule the task
   > leaves behind: **a sentence in CLAUDE.md that no file or command backs is
@@ -2401,13 +2408,13 @@ shrink-only work.
   > in, like the scripts under `tests/`.
 
 - [x] **5.3 Fix log.** When restructuring uncovers real bugs (1.4 layout
-  diffs, races, double-frees), record them in `docs/FIXES.md` with sidecar's
+  diffs, races, double-frees), record them in `docs/reviews/FIXES.md` with sidecar's
   `> **Status:**` convention rather than fixing silently.
-  > **Status:** done — `docs/FIXES.md`, oldest entry the 1.4 max-size
+  > **Status:** done — `docs/reviews/FIXES.md`, oldest entry the 1.4 max-size
   > reconcile (2026-08-31). The Exchange defect set predates the file; the
   > rules it left behind and the items still open are in 1.4's status.
   > Ongoing discipline, not a one-shot: new finds keep landing in
-  > `docs/FIXES.md`, and an entry is flipped to `fixed` in the same commit
+  > `docs/reviews/FIXES.md`, and an entry is flipped to `fixed` in the same commit
   > as the fix, never later.
 
 - [x] **5.4 Language standard: C++11 → C++20 required.**
@@ -2443,7 +2450,7 @@ shrink-only work.
   Not required for the mechanical migration: modules and coroutines still need
   architecture/build evidence before adoption; concepts become useful only at
   focused boundaries such as the packet stream and factory contracts described
-  in `docs/TOOLCHAIN.md`.
+  in `docs/build/toolchain.md`.
   > **Status:** done (2026-09-04) — C++20 is the required project standard
   > (`CMAKE_CXX_EXTENSIONS=OFF`), and CMake probes `jthread`, `stop_token`
   > and stop-aware condition-variable waits at configuration time, so an
@@ -2457,7 +2464,7 @@ shrink-only work.
   > specifications are gone (R7); legacy destructors that were declared as
   > potentially throwing keep that behaviour with `noexcept(false)`.
   > `Outcome` uses `std::variant`/`[[nodiscard]]`, and GoogleTest is v1.18.0.
-  > The adoption priorities and guardrails live in `docs/TOOLCHAIN.md` §3,
+  > The adoption priorities and guardrails live in `docs/build/toolchain.md` §3,
   > "Where C++20 pays off in DarkEden"; that is the file to extend, not this
   > one.
   >
@@ -2483,10 +2490,10 @@ shrink-only work.
   (run by `GamePlayer::processCommand`) and
   `LoginPlayer::processCommand`, into the packets' `read()` and the
   `toString()` every read packet is printed with. Every crash the fuzzers
-  find is fixed test-first or recorded in `docs/FIXES.md`, and its input
+  find is fixed test-first or recorded in `docs/reviews/FIXES.md`, and its input
   is replayed by ctest from then on.
   > **Status:** in progress (the CI fuzz job; the findings recorded, not
-  > fixed, in `docs/FIXES.md` under "Packet-read fuzzing": enumerators
+  > fixed, in `docs/reviews/FIXES.md` under "Packet-read fuzzing": enumerators
   > cast from wire bytes, non-protocol exceptions escaping the receive
   > loops, and the records six GC reads leak, `GCUpdateInfo`'s among
   > them, which is why the fuzz runs have leak detection off). The

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Handrolled container fixture for the MySQL integration tier
-# (docs/RESTRUCTURING.md 3.2) — what testcontainers does for languages
+# (docs/reviews/RESTRUCTURING.md 3.2) — what testcontainers does for languages
 # that have it: an ephemeral MySQL per run, hermetic, torn down on exit.
 #
 #   1. build mysql_repository_tests via tools/devbuild.sh (artifacts live

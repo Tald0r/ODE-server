@@ -206,7 +206,7 @@
 //
 //               What the two halves agree on, each pinned by a test of
 //               its own beside the three above. No valid packet's bytes
-//               moved for any of them, and docs/FIXES.md carries the
+//               moved for any of them, and docs/reviews/FIXES.md carries the
 //               wire consequence of each:
 //
 //               - GCMorph1::getPacketSize() counts the pc-type byte

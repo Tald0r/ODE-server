@@ -226,7 +226,7 @@ public:
 // Defined inline, in the header, ON PURPOSE. write<T>() calls this with
 // src.size() == sizeof(T); out of line that becomes a call with a runtime
 // length, and the memcpy below stops folding to the single store that
-// docs/TOOLCHAIN.md section 2 relies on. Every scalar field of every
+// docs/build/toolchain.md section 2 relies on. Every scalar field of every
 // packet goes through here, so keep the definition visible.
 //
 // *Notes*

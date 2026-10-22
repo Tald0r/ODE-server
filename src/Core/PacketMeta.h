@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // Filename    : PacketMeta.h
-// Description : Compile-time packet factory metadata (docs/TOOLCHAIN.md section 3,
+// Description : Compile-time packet factory metadata (docs/build/toolchain.md section 3,
 //               "Compile-time packet metadata"). Every packet factory states
 //               its packet id, name and maximum body size as static
 //               constexpr members; PacketFactoryType names that contract,

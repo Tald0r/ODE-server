@@ -6,7 +6,7 @@
 # Mirrors the runtime stage of ./Dockerfile: only the shared libraries the
 # servers link against. libmysqlclient, lua 5.1 and zlib all expose C APIs;
 # XML parsing is the vendored tinyxml2, so xerces-c is not needed
-# (docs/TOOLCHAIN.md §1).
+# (docs/build/toolchain.md §1).
 FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive

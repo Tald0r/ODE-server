@@ -51,7 +51,7 @@ add_compile_options(${WARNING_FLAGS})
 # fold expression at 256 operands, and PacketFactoryManager folds over
 # the gameserver's whole factory list (PacketMeta.h, FactoryList::forEach).
 # The enum check is off: packets cast wire bytes to their enum types
-# throughout (docs/FIXES.md), so it would stop every run at the first such
+# throughout (docs/reviews/FIXES.md), so it would stop every run at the first such
 # load and hide the memory errors the targets exist to find.
 option(DARKEDEN_BUILD_FUZZERS "Build the libFuzzer packet-read targets (tests/fuzz/); Clang only" OFF)
 if(DARKEDEN_BUILD_FUZZERS)

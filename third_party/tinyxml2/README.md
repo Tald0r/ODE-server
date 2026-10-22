@@ -7,7 +7,7 @@
 - **License:** zlib (see `LICENSE.txt`)
 
 Replaces xerces-c as the backend for `src/Core/SXml.cpp`. See
-`docs/TOOLCHAIN.md` for why, and for what changed in the parsed output.
+`docs/build/toolchain.md` for why, and for what changed in the parsed output.
 
 ## Conventions
 
