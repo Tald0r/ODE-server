@@ -15,11 +15,13 @@ the SQL mode:
 set @@global.sql_mode = 'ONLY_FULL_GROUP_BY,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 ```
 
-Two consequences the code relies on: the mode has no `NO_BACKSLASH_ESCAPES`, so the Exchange's
-manual escaping fallback in `MySQLExchangeRepository.cpp` is unreachable in a correct
-deployment; and it keeps `ONLY_FULL_GROUP_BY`, under which the flag war's `FlagWarStat` roll-up
-fails with error 1055 (`FlagWarRepository.h` says why that statement is reached only with
-`ActiveFlagWar` switched on).
+Two consequences the code relies on: the mode has no `NO_BACKSLASH_ESCAPES`, so in
+`MySQLExchangeRepository.cpp` `mysql_real_escape_string` never returns `(unsigned long)-1` and
+the fall-through from that return to the manual escaping pass is unreachable in a correct
+deployment (the manual pass itself still runs whenever the thread has no live game connection);
+and it keeps `ONLY_FULL_GROUP_BY`, under which the flag war's `FlagWarStat` roll-up fails with
+error 1055 (`FlagWarRepository.h` says why that statement is reached only with `ActiveFlagWar`
+switched on).
 
 # Text is UTF-8 end to end
 

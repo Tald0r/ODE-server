@@ -19,7 +19,8 @@ login and game handoffs while retaining the existing TCP listeners.
 
 ## Prerequisites
 
-- **To run the stack:** Docker with Compose. On macOS, OrbStack (verified) or Docker Desktop.
+- **To run the stack:** Docker with Compose. On macOS, OrbStack (verified); Docker Desktop should
+  work too.
 - **To build locally:** CMake and a C++20 compiler *and* standard library. The pinned Zig 0.16.0
   (Clang 21.1.0) container is the reference; Ubuntu 20.04's GCC 9 is too old, and CMake checks
   for `jthread`, `stop_token` and stop-aware condition-variable waits at configure time
@@ -200,7 +201,9 @@ checks them at startup. Text is utf8mb4 end to end, and each server pins its ses
 - `UI_DB_HOST` (and the `UI_DB_*` block) - the account database, which the gameserver reads too;
 - `LoginServerIP` - where the game servers find the loginserver.
 
-The `WorldDBInfo` and `GameServerInfo` database tables must agree with these files. For Exchange
+The `WorldDBInfo` table (the database the servers reach) and the `GameServerInfo` table (the
+address and ports the client is told) must agree with these files: `docker/initdb-docker.sql`
+sets both for the container, so copy its two `UPDATE`s with your values. For Exchange
 purchases both connection blocks must name one MySQL server, and `DB_USER` must be able to read
 and write the `AccountPoint` and `PointLedger` tables. Every key that matters, and what
 diagnostics may contain, is in [configuration](docs/database/configuration.md).

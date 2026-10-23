@@ -3,6 +3,7 @@ type: Design
 title: "Server architecture"
 description: "Three cooperating processes, each an executable of one main.cpp over a runtime object library, built on a macro-free kernel, pure domain formulas and a shared ServerCore."
 tags: [architecture]
+enforced_by: [game_server_runtime_tests, login_server_runtime_tests, shared_server_runtime_tests]
 generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 ---
 
@@ -40,6 +41,12 @@ Start them in that order ([running the servers](../operations/running-the-server
 - **Build.** CMake is the build system and the `Makefile` wraps it; the `Makefile`s under
   `src/` are legacy. No target globs its sources: every `.cpp` is named, which is what lets a
   ratchet call a source no target compiles dead ([dead sources](dead-sources-and-encoding.md)).
+
+# Rules
+
+| Rule | Owner | What fails when it is broken |
+|------|-------|------------------------------|
+| Server implementations link without `main.cpp`, with the same definitions as production | `game_server_runtime_tests`, `login_server_runtime_tests`, `shared_server_runtime_tests` | duplicate `main` at link time, a mismatched server definition, or a production dispatch/handler test failure |
 
 # Key directories
 

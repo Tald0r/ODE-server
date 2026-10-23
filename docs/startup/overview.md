@@ -20,7 +20,7 @@ is tested without a server runtime or a database. The rules those tests own are 
 
 - **`ServerStartup`** depends only on `de-kernel`. It parses arguments and loads an owned
   configuration, including the loginserver's optional ID offset, without publishing it.
-  `server_startup_tests` exercises this without linking a server runtime.
+  `server_startup_tests` owns it.
 - **`ServerPortSettings`** reads required TCP/UDP listener ports without sockets or runtime
   dependencies. Values must be complete decimal integers in 1..65535; leading plus or zeroes,
   spaces, tabs and a trailing CR from a CRLF file remain valid. `ServerApplication` validates the
@@ -36,14 +36,12 @@ is tested without a server runtime or a database. The rules those tests own are 
   destination `Properties`, so grammar and read failures are tested in memory. It processes the
   last line without requiring a newline and rejects empty keys and failed reads; the file adapter
   explicitly rejects directories. Earlier entries remain in the destination after a parse error,
-  so startup still loads an unpublished object. `properties_parser_tests` owns this contract,
-  including EOF under stream exception masks and the existing whitespace and comment rules.
+  so startup still loads an unpublished object. `properties_parser_tests` owns this contract.
 - **`ServerLifecycle`** also depends only on `de-kernel`. `runServerLifecycle` takes
   construction/initialization, start and stop actions, handles exceptions, requests shutdown
   before cleanup and returns the drain result and exit status. It uses the workers'
   `ServerShutdown` flags and never resets them. The caller keeps the configuration and server
-  graph alive. `server_lifecycle_tests` runs the shared control flow with controlled actions and
-  isolated diagnostics, without starting a server or a deadline thread.
+  graph alive. `server_lifecycle_tests` owns it.
 - **`ServerApplication`.** The entry points link it; it composes startup loading, listener-port
   validation and lifecycle control. It owns the completed configuration, publishes it to an
   explicit `KernelContext`, runs the supplied lifecycle actions, reports the drain result and
@@ -51,15 +49,12 @@ is tested without a server runtime or a database. The rules those tests own are 
   object permits one run and retains its configuration after the result, including a failed
   drain; destruction restores the previous context binding before freeing it. Each `main()` keeps
   it alive through `_Exit` once lifecycle execution has begun, preserving the legacy server
-  graph's configuration even if workers could not stop. Tests use a local context and controlled
-  actions; `server_application_tests` covers publication, lifetime, failure paths, effective login
-  overrides and final reporting without linking a runtime or database.
+  graph's configuration even if workers could not stop. `server_application_tests` owns it.
 - **`ServerProcessShutdown`** owns the SIGTERM/SIGINT handlers and the deadline. Each `main()`
   constructs it before initialization and checks `ready()` before proceeding. The default
   deadline is 30 seconds after a shutdown request. On scope exit it cancels and joins the watcher,
   then restores the previous signal handlers; it never clears shutdown state. The library depends
-  only on `Threads::Threads`. `server_process_shutdown_tests` delivers real signals to main and
-  worker threads and checks blocked lifecycle paths in subprocesses.
+  only on `Threads::Threads`. `server_process_shutdown_tests` owns it.
 - **`ServerFatalHandlers`** installs the allocation handler for each server and the gameserver's
   terminate handler, restoring previous handlers on scope exit. It has no runtime or kernel
   dependency; the common `ServerKind` enum lives in its own header. Fatal diagnostics use fixed
@@ -67,8 +62,7 @@ is tested without a server runtime or a database. The rules those tests own are 
   allocation. The gameserver still appends `CriticalError.log` and aborts; its emergency records
   are plain message lines without timestamp formatting. Login and shared report allocation failure
   to stderr and `_Exit(EXIT_FAILURE)`, preserving their existing terminate handlers.
-  `server_fatal_handler_tests` injects allocation failure on main and worker threads in child
-  processes with core dumps disabled.
+  `server_fatal_handler_tests` owns it.
 - **`ServerProcessEnvironment`** holds the other process setup without a runtime or kernel
   dependency. All three entry points call `raiseCoreDumpLimit` before server construction, raising
   the soft limit to the inherited hard limit; the returned syscall error remains nonfatal for
@@ -76,25 +70,21 @@ is tested without a server runtime or a database. The rules those tests own are 
   at the same points as before. `initializeGameProcess` also ignores SIGPIPE, SIGALRM and SIGCHLD
   for the rest of the process, leaving the shutdown handlers and thread masks alone. Explicit seeds
   make this setup deterministic in tests. Unlike the scoped shutdown and fatal guards, these
-  process settings are not restored; `server_process_environment_tests` changes them only in
-  subprocesses.
+  process settings are not restored. `server_process_environment_tests` owns it.
 - **`ListenerStartup`** supplies `retryListenerStartup` for the five TCP/UDP listener paths in the
   three runtimes. It accepts binding and reporting actions and links only `de-kernel` and threads.
   Only `BindException` is retried, using each caller's existing diagnostic and delay (1 ms for
   login's player listener, 1 s elsewhere). Shutdown prevents the first or next attempt and
   interrupts the wait, checked at most every 10 ms; other exceptions propagate. Socket
   constructors release their resources if setup throws, and managers keep temporary ownership
-  through socket configuration. `listener_startup_tests` checks the retry policy and real occupied
-  ports, including descriptor reuse after failed TCP and UDP construction.
+  through socket configuration. `listener_startup_tests` owns it.
 - **`OutboundServerConnection`** owns the shared-server and Mofus clients' common socket setup.
   `connectOutboundServer` takes an explicit numeric IPv4 endpoint, makes one blocking connection
   attempt, configures nonblocking I/O and disables linger, then returns `unique_ptr<Socket>`.
   Retry delays, shutdown policy and protocol work stay with each caller. Socket constructors
   retain temporary implementation ownership through creation. `Player(Socket*)` adopts even on
   failed stream construction, and Mofus publishes socket, input and output together after complete
-  setup. The focused connection tests (`outbound_server_connection_tests`) use real loopback peers;
-  isolated allocation probes verify resource cleanup in the kernel and the production game runtime
-  without starting a server or database.
+  setup. `outbound_server_connection_tests` owns it.
 - **Socket construction.** `SocketImpl::accept` closes an accepted descriptor if implementation
   allocation fails and retains ownership through peer metadata setup; `ServerSocket::accept`
   retains that implementation until its `Socket` wrapper can adopt it. Empty nonblocking accepts
@@ -102,7 +92,7 @@ is tested without a server runtime or a database. The rules those tests own are 
   locally through creation and connection. On failure the old, closed implementation remains
   available for inspection, safe repeated close, destruction or retry; a successful replacement
   then takes its place. Its retained descriptor number is not closed again if another socket has
-  reused it. `socket_construction_tests` covers these handoffs and failures.
+  reused it. `socket_construction_tests` owns these handoffs.
 - **`ServerWorkerShutdown`** provides `stopServerWorkers` for all three servers' auxiliary
   workers. After stopping the foreground loop, each server supplies borrowed workers and its error
   stream. The helper requests every stop, runs an optional action (the gameserver drains its zone
@@ -110,15 +100,15 @@ is tested without a server runtime or a database. The rules those tests own are 
   preserves the login/shared `GameServerManager` label. Stop, extra-drain and join exceptions still
   propagate to the lifecycle's failed-drain handling; worker run failures are reported while
   remaining joins continue. Ownership, the server's stop idempotence and the process deadline stay
-  with their existing callers. `server_worker_shutdown_tests` uses real cooperative workers,
-  including partial startup and injected failures, without linking a runtime or database.
+  with their existing callers. `server_worker_shutdown_tests` owns it.
 - **`ServerStartSequence`** runs the background startup steps before the main loop and stops
   advancing once shutdown is observed; failures still reach lifecycle cleanup
   (`server_start_sequence_tests`).
 - **`ServerWorkers`** holds `ManagedThread`, the `std::jthread` worker every process uses, and
   the thread pool ([workers and synchronization](workers-and-synchronization.md)).
 
-What each of these tests covers in detail is in [test coverage](../testing/test-coverage.md).
+What each of these tests covers, the inputs it supplies and the failures it injects, is in
+[test coverage](../testing/test-coverage.md).
 
 The order inside a process, and what each thread then owns, is in
 [threading](../threading/overview.md). `docs/build/toolchain.md` has the full C++20 contract

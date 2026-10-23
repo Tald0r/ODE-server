@@ -2384,9 +2384,9 @@ shrink-only work.
   > path, a target or a count something measures, and is re-checked against
   > the tree when it is touched. Since 2026-10-23 CLAUDE.md is an index in
   > sidecar's current shape, one line per rule linking its concept in the
-  > knowledge bundle: the rules table is
-  > [rules and owners](../testing/rules-and-owners.md), and the build,
-  > container, database and run-the-servers manuals are concepts too.
+  > knowledge bundle: each row of the rules table lives in its area's
+  > concept, and the build, container, database and run-the-servers manuals
+  > are concepts too.
 
 - [x] **5.2 `.claude/skills/add-packet` skill.** Modeled on sidecar's
   `add-sidecar-domain`: the checklist for adding/changing a packet — layout

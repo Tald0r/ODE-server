@@ -9,6 +9,10 @@ generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 
 # Dead sources and source encoding
 
+| Rule | Owner | What fails when it is broken |
+|------|-------|------------------------------|
+| Every `src/**/*.cpp` is compiled by some target, every header is included | ratchets R15/R16 | the dead file, listed |
+
 **Every `src/**/*.cpp` is compiled by some target and every header is included.** No target globs
 its sources, so ratchet R15 can list a source nothing compiles and R16 a header nothing includes;
 both are at zero. A file that is not built is dead text that drifts from the code around it, which

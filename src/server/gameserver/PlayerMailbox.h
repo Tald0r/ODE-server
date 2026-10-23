@@ -9,8 +9,9 @@
 //               mutated gold, guild id and kick flags holding only the
 //               PCFinder lock, which serialises lookup and removal but not
 //               the zone tick -- the "SG/LG/GG handlers" entry in
-//               docs/threading/closed-violations.md. Sending a packet to the player's socket is
-//               still fine from any thread and does not need this.
+//               docs/threading/closed-violations.md. Sending a packet to
+//               the player's socket is still fine from any thread and does
+//               not need this.
 //
 //               The box belongs to the GamePlayer, not to a zone group, and
 //               that is the point: a player's owner changes over its life --

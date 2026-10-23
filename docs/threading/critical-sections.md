@@ -9,6 +9,10 @@ generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 
 # Critical sections
 
+| Rule | Owner | What fails when it is broken |
+|------|-------|------------------------------|
+| A critical section is never unlocked by hand | `tests/tools/critical_section_audit.pl`, ctest `critical_section_audit` | the file and line of the hand-written `unlock()` |
+
 `__ENTER_CRITICAL_SECTION` / `__LEAVE_CRITICAL_SECTION` delimit a **block** owned by a scoped
 `CriticalSection` guard (`src/Core/Exception.h`), so the lock is released on every exit: end of
 block, `return`, `goto` or `continue` out of it, and any thrown type. Consequently a

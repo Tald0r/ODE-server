@@ -34,9 +34,9 @@ struct FlagPoleRow {
 // WARNING: the statement behind this cannot run under the sql_mode
 // this project requires. It groups by (Name, ServerID) while selecting
 // PlayerID and Race bare; FlagWarStat has no unique key, so no
-// functional dependency saves it, and the sql_mode docs/database/overview.md requires keeps
-// ONLY_FULL_GROUP_BY. MySQL refuses it with error 1055 and
-// loadFlagWarStatTotals throws on every call it receives.
+// functional dependency saves it, and the required sql_mode keeps
+// ONLY_FULL_GROUP_BY (docs/database/overview.md). MySQL refuses it with
+// error 1055 and loadFlagWarStatTotals throws on every call it receives.
 //
 // It receives none on a default deployment: ActiveFlagWar is 0 in both
 // shipped gameserver.conf files, and ClientManager only ticks

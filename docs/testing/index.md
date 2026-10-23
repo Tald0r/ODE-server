@@ -4,7 +4,6 @@
 
 # Reference
 
-* [Rules and the tests that own them](rules-and-owners.md) - Every architectural rule in one table: the rule, the test, ratchet or gate that owns it, what fails when it is broken, and the concept that explains it.
 * [What the runtime and library tests cover](test-coverage.md) - Per process and per library, what the runtime tests and the isolated startup, socket and worker tests exercise beyond the rule each owns: the inputs they supply, the failures they inject and the policies they pin.
 
 # Rules

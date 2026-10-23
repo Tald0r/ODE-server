@@ -29,32 +29,32 @@ perl tests/tools/check_knowledge_bundle.pl .   # the bundle check alone, before 
 
 ## Working rules
 
-- Every rule is owned by a test, ratchet or gate that fails, never by a memory; the whole rule/owner/failure table is [rules and owners](docs/testing/rules-and-owners.md).
-- Ratchet numbers only go down: tighten a drop in `tests/ratchet/ratchets.sh` **and** the plan's table in the same commit; every baseline comes from running its command - [ratchets](docs/testing/ratchets.md).
+- Every rule is owned by a test, ratchet or gate that fails, never by a memory; each area's concept holds the table of its rules: the rule, its owner and what fails when it is broken - [testing overview](docs/testing/overview.md).
+- Ratchet numbers only go down: tighten a drop in `tests/ratchet/ratchets.sh` **and** the ratchet table in [docs/reviews/RESTRUCTURING.md](docs/reviews/RESTRUCTURING.md) in the same commit; every baseline comes from running its command - [ratchets](docs/testing/ratchets.md).
 - Each task in `docs/reviews/RESTRUCTURING.md` has a `> **Status:**` line updated in the same commit as the work; a task is `done` only once its owner exists - [fix log and task status](docs/testing/fix-log-and-status.md).
 - A bug found while restructuring goes in `docs/reviews/FIXES.md` with a Status line, never fixed silently - [fix log and task status](docs/testing/fix-log-and-status.md).
 - A change to `src/domain` is done only when `bash tests/tools/decore_client_diff.sh <client-root>` is clean against a resynced client; a changed vector row is a balance change - [de-core parity](docs/protocol/decore-parity.md).
-- A failing golden or inventory diff is a protocol change, not a test to silence: ship the identical change in the client repo, link the commits, re-record with `UPDATE_GOLDENS=1 ./bin/wire_tests` - [wire contract](docs/protocol/wire-contract.md).
+- A failing golden or inventory diff is a protocol change, not a test to silence: ship the identical change in the client repo, link the commits, re-record with `bash tools/devbuild.sh test --record` in the container loop (goldens and de-core vectors) or `UPDATE_GOLDENS=1 ./bin/wire_tests` after `make test` - [wire contract](docs/protocol/wire-contract.md).
 - Comments under `src/` and `tests/` are English and describe behaviour: no task numbers, dates, review history or migration narrative; translate legacy Korean or mojibake comments you meet - [dead sources and source encoding](docs/architecture/dead-sources-and-encoding.md).
-- A change to a rule or a design updates its concept in the same commit; a moved document gets every reference repointed and a `docs/log.md` entry - [the knowledge bundle](docs/knowledge-bundle.md).
+- A change to a rule, its owner or its failure updates that concept's row in the same commit, and a change to a design its concept; a moved document gets every reference repointed and a `docs/log.md` entry - [the knowledge bundle](docs/knowledge-bundle.md).
 - A sentence here or in a concept that no file, command or count backs is the failure mode to fix; re-check a claim against the tree when you touch it, and the code wins a disagreement - [the knowledge bundle](docs/knowledge-bundle.md).
 
 ## Architecture
 
 - Three processes, each one `main.cpp` over a runtime OBJECT library the runtime tests link too; link a runtime with `target_link_libraries`, one per executable - [server architecture](docs/architecture/overview.md).
-- `de-kernel` includes only kernel files and no server macro (K1-K3), ServerCore no MySQL, Lua or socket header (C1), `src/domain` only itself (D1) - [module layering](docs/architecture/module-layering.md).
+- `de-kernel` includes only kernel files and no server macro (K1-K3), the gameserver's domain module directories (`skill/`, `item/`, `quest/`, `war/`, `mission/`, `couple/`, `ctf/`, `mofus/`, `exchange/`) no MySQL, Lua or socket header (C1), `src/domain` only itself (D1) - [module layering](docs/architecture/module-layering.md).
 - No `g_p*` extern: take a manager from its layer's context (`de::kernelContext()` ... `de::sharedContext()`) - [contexts, not globals](docs/architecture/contexts-not-globals.md).
 - Every `.cpp` is named by a target and every header included; sources are UTF-8, and a line with a non-ASCII byte fails R17 - [dead sources and source encoding](docs/architecture/dead-sources-and-encoding.md).
 - `throw Error("text")`, never `throw "text"`; gameplay results are `Outcome<Events, Rejection>` - [exceptions and outcomes](docs/architecture/exceptions-and-outcomes.md).
 - Server-type macros and `__COMBAT__` are set per target; never reintroduce a macro nothing defines; `__MOFUS__`/`__METRO_SERVER__` are not switches - [preprocessor macros](docs/architecture/preprocessor-macros.md).
-- Each `main()` is composed from the startup, port, application, lifecycle, shutdown and worker libraries - [startup composition](docs/startup/overview.md), [lifecycle rules](docs/startup/lifecycle-rules.md), [sockets and connections](docs/startup/sockets-and-connections.md), [workers and synchronization](docs/startup/workers-and-synchronization.md).
+- Each `main()` is composed from the shared startup, port, application, lifecycle, shutdown and worker libraries: configuration is published only once it loads and its ports validate, shutdown is requested before stopping, and a worker failure reaches the exit status - [startup composition](docs/startup/overview.md), [lifecycle rules](docs/startup/lifecycle-rules.md), [sockets and connections](docs/startup/sockets-and-connections.md), [workers and synchronization](docs/startup/workers-and-synchronization.md).
 
 ## Threading
 
 - Zone-group state is touched only while that group's mutex is held; `Zone::m_Mutex` does not satisfy this, and the Debug check aborts, never throws - [the mutation rule](docs/threading/mutation-rule.md).
 - Never hand-write `x.unlock()` inside `__ENTER_CRITICAL_SECTION`; release early with `__CRITICAL_SECTION_LOCK.unlock()` - [critical sections](docs/threading/critical-sections.md).
 - From another thread, only send to a player's socket; everything else goes through `de::postToPlayer` (commands capture by value), `ZoneGroup::post()` or a `de::Snapshot` (a change is pure work on the copy) - [cross-thread communication](docs/threading/cross-thread-communication.md).
-- Which thread owns what, and the thread-local DB connection each worker registers - [threads and what they own](docs/threading/overview.md).
+- Zone-group state belongs to that group's `ZoneGroupThread`, which holds the group's mutex for its whole tick; another thread takes that mutex or posts through the player's mailbox or `ZoneGroup::post()`, and each worker registers its own thread-local DB `Connection`, never shared - [threads and what they own](docs/threading/overview.md).
 - No creature is written to a `Tile` outside `ZoneSpawn.cpp`/`ZoneMove.cpp`; war work is posted to the owning group; guilds are retired, never freed - [closed violations](docs/threading/closed-violations.md).
 
 ## Packets
@@ -70,11 +70,11 @@ perl tests/tools/check_knowledge_bundle.pl .   # the bundle check alone, before 
 
 - All SQL lives behind a `*Repository.h` seam with a `MySQL*Repository.cpp` impl; read the header's `Not enclosed` list first, move statements byte-for-byte, and use the parameterized `executeQuery` (`%u`, `%d`, `%ld`) - [repository seams](docs/architecture/repository-seams.md).
 - MySQL 5.7 or 8 with the relaxed `sql_mode` (no `NO_ZERO_DATE`, `STRICT_TRANS_TABLES` or `NO_BACKSLASH_ESCAPES`; `ONLY_FULL_GROUP_BY` stays), utf8mb4 end to end with a session pin; migrations are one-time and nothing checks them - [database setup](docs/database/overview.md).
-- Every `initdb/` table is InnoDB utf8mb4, every seed `Player` row an argon2id hash, the seed unions consistent - [seed-data rules](docs/database/seed-data-rules.md).
+- Every `initdb/` table is InnoDB utf8mb4, every seed `Player` row an argon2id hash; every seed union has a member or a pending join offer, every join offer names a union, and no guild leads or joins two unions - [seed-data rules](docs/database/seed-data-rules.md).
 
 ## Configuration and operations
 
-- `conf/` keys, the two connection blocks and the Exchange's one-server rule; diagnostics carry no SQL or private payloads - [configuration](docs/database/configuration.md).
+- For Exchange purchases the `DB_*` and `UI_DB_*` blocks name one MySQL server and `DB_USER` must be able to read and write `AccountPoint` and `PointLedger`; diagnostics carry no SQL or private payloads - [configuration](docs/database/configuration.md).
 - Read configuration through `de::kernelContext().config()`; a read before `main()` registers it is a startup-order bug - [contexts, not globals](docs/architecture/contexts-not-globals.md).
 - Start login, shared, then game; `docker compose down` drains the gameserver first - [running the servers](docs/operations/running-the-servers.md).
 - Diagnostics are off unless `DARKEDEN_TRACE=1` - [production logging](docs/operations/logging.md); browser clients go through the [WebSocket gateway](docs/operations/websocket-gateway.md).

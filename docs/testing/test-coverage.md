@@ -8,9 +8,9 @@ generated: { by: claude-code/claude-opus-5-5, at: 2026-10-23T12:00:00Z }
 
 # What the runtime and library tests cover
 
-The rule each test owns is in [rules and owners](rules-and-owners.md) and in its area's concept;
-this is the coverage behind those rules, as the README described it until it became a getting-started
-guide. [The testing overview](overview.md) says how the suite runs.
+The rule each test owns is in its area's concept; this is the coverage behind those rules, as
+the README described it until it became a getting-started guide.
+[The testing overview](overview.md) says how the suite runs.
 
 # The runtime tests
 
@@ -240,21 +240,25 @@ Rules: [lifecycle rules](../startup/lifecycle-rules.md).
 `server_startup_tests` covers argument parsing, configuration loading and the
 login-server port/ID overrides without linking a server runtime.
 `properties_parser_tests` checks configuration grammar, final lines without a
-newline and read failures using in-memory streams.
+newline and read failures using in-memory streams, including EOF under stream
+exception masks and the existing whitespace and comment rules.
 `server_lifecycle_tests` exercises the shared initialization, start and stop
 sequence, including partial startup, shutdown requests, exception reporting
-and worker failure status. It also links without a server runtime or database.
+and worker failure status, with controlled actions and isolated diagnostics. It
+links without a server runtime or database and starts no deadline thread.
 Throwing formatters and rejected output cannot skip cleanup or hide its result;
 process failure is marked before reporting, and startup log/console diagnostics
 are attempted independently.
 `server_process_shutdown_tests` checks the shared signal handlers and deadline,
 including signals on worker threads and blocked startup/cleanup in subprocesses.
-`server_fatal_handler_tests` injects allocation failures in subprocesses to
-check fatal diagnostics, failure status and handler restoration without a server.
+`server_fatal_handler_tests` injects allocation failures on main and worker
+threads in subprocesses with core dumps disabled, to check fatal diagnostics,
+failure status and handler restoration without a server.
 `server_process_environment_tests` checks core-dump limits, random seeds and
 game signal policy in subprocesses that cannot alter the runner's environment.
 `listener_startup_tests` exercises bind retries, diagnostics and shutdown during
-retry waits, including real TCP/UDP bind failures without leaked descriptors.
+retry waits, including real TCP/UDP bind failures on occupied ports without
+leaked descriptors and descriptor reuse after a failed construction.
 `server_port_settings_tests` covers required listener ports without opening
 sockets. Startup validates complete decimal ports in 1..65535 before publishing
 configuration: `TCPPort`/`GameServerUDPPort` for game, `LoginServerPort`/
@@ -264,8 +268,9 @@ construction; leading plus/zeroes, surrounding spaces/tabs and trailing CR remai
 accepted. The application and executable CLI tests also cover this boundary.
 `server_application_tests` runs configuration loading through lifecycle cleanup
 and final reporting using an explicit context and controlled actions. It checks
-configuration lifetime and restoration, rejected input and failure status without
-starting a server or connecting to a database.
+configuration publication, lifetime and restoration, effective login overrides,
+rejected input and failure status without starting a server or connecting to a
+database.
 Final reporting preserves the completed drain result, attempts both flushes
 independently and returns failed exit status for exceptions or stream error flags.
 `server_worker_shutdown_tests` exercises the three servers' shared auxiliary

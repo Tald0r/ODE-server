@@ -2,15 +2,29 @@
 
 ## 2026-10-23
 
-* **Creation**: [rules and owners](testing/rules-and-owners.md), the whole "Rules and the tests
-  that own them" table `CLAUDE.md` carried, row for row, with a column naming the concept that
-  explains each rule.
+* **Update**: `CLAUDE.md`'s "Rules and the tests that own them" table has one home, the area
+  concepts, each holding its own rows. A first cut moved it whole into
+  `testing/rules-and-owners.md`, a second copy of 83 rows nothing kept in step with the area
+  tables; that file is gone. Where an area row had dropped detail (the runtime test binary a
+  fixture runs in, the frame gate's caveats) it has the fuller wording back, and the ten rules
+  only prose stated have a row: [module layering](architecture/module-layering.md),
+  [packet system](protocol/overview.md), [server architecture](architecture/overview.md),
+  [repository seams](architecture/repository-seams.md) (two),
+  [critical sections](threading/critical-sections.md), [the mutation rule](threading/mutation-rule.md),
+  [dead sources and source encoding](architecture/dead-sources-and-encoding.md),
+  [assertions and NDEBUG](architecture/assertions-never-ndebug.md) and
+  [client link](protocol/client-link.md). Module layering states C1's real scope, the gameserver's
+  domain module directories, and [database setup](database/overview.md) no longer calls the
+  Exchange's manual escaping pass unreachable: only its fall-through on a refused
+  `mysql_real_escape_string` is.
 * **Creation**: [test coverage](testing/test-coverage.md), the README's account of what the
-  runtime, startup, socket and worker tests exercise, grouped by process and library.
+  runtime, startup, socket and worker tests exercise, grouped by process and library; it is the
+  one place that coverage is described, and [startup composition](startup/overview.md) names
+  each library's owning test and links here.
 * **Creation**: [native macOS builds](build/native-macos.md), the README's native macOS build,
   its test-suite workaround and the three macOS-only failures.
 * **Update**: the facts `CLAUDE.md` and `README.md` held that no concept stated yet moved into
-  their concepts: the startup libraries' dependencies and test scope
+  their concepts: the startup libraries' dependencies
   ([startup composition](startup/overview.md)); the directory tree's de-core file list, `docs/`
   entry and repository directories and the game-concept glosses
   ([server architecture](architecture/overview.md)); the fuzz switches' gate detail
@@ -20,7 +34,7 @@
   ([running the servers](operations/running-the-servers.md)).
 * **Update**: `CLAUDE.md` is an index in the sidecar repository's shape: a short intro, the
   build and test commands, and one line per rule linking its concept. Its sections moved as
-  follows: the rules table -> [rules and owners](testing/rules-and-owners.md); working in this
+  follows: the rules table -> each row to its area's concept; working in this
   repository -> [ratchets](testing/ratchets.md), [fix log and task status](testing/fix-log-and-status.md),
   [de-core parity](protocol/decore-parity.md), [wire contract](protocol/wire-contract.md), [CI](build/ci.md);
   build, formatting, tests and the container -> [build commands](build/build-commands.md),

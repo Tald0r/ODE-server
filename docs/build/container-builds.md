@@ -1,7 +1,7 @@
 ---
 type: Guide
 title: "Container builds"
-description: "Never compile off the bind mount; tools/devbuild.sh syncs the inputs into a volume and builds there with Ninja and ccache, forty times faster."
+description: "Never compile off the bind mount; tools/devbuild.sh syncs the inputs into a volume and builds there with Ninja and ccache: a full build takes ~3.5 minutes instead of ~20."
 tags: [build]
 generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 ---

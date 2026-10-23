@@ -3,11 +3,16 @@ type: Rule
 title: "Repository seams"
 description: "Every SQL statement lives behind a *Repository interface with a MySQL implementation under a repository/ directory, reached through a default accessor, and the header is the authority on its tables."
 tags: [architecture, database]
-enforced_by: [ratchets]
+enforced_by: [ratchets, "make integration-test"]
 generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 ---
 
 # Repository seams
+
+| Rule | Owner | What fails when it is broken |
+|------|-------|------------------------------|
+| No `executeQuery` outside `src/server/database/` and the `repository/` directories | ratchets R2/R3 | R2/R3 above 0 |
+| Repository SQL behaves against a real MySQL | `make integration-test` (`tests/integration/`, needs docker) | the failing statement |
 
 **All SQL lives behind repository seams.** A seam is an interface `*Repository.h` with a
 `MySQL*Repository.cpp` implementation under a `repository/` directory, reached through a

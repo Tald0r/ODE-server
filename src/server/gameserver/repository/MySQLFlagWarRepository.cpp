@@ -7,18 +7,18 @@ namespace {
 // MySQL implementation of the capture-the-flag repository.
 //  - The flag-pole SELECT projects "Race-1": FlagPolePosition.Race is an
 //    ENUM, so the arithmetic yields its 1-based index less one.
-//  - The FlagWarStat roll-up GROUPs BY "Name, ServerID" while PlayerID
-//    and Race are selected bare. THAT IS BROKEN under the sql_mode this
-//    project requires (docs/database/overview.md), which keeps ONLY_FULL_GROUP_BY, and
-//    PlayerID is not functionally dependent on (Name, ServerID) --
-//    FlagWarStat has no unique key at all -- so MySQL raises error 1055
-//    every time the statement is called. It is called only when the flag
-//    war is switched on, which ActiveFlagWar : 0 in both shipped configs
-//    prevents; and when it is called, the DatabaseError END_DB throws
-//    escapes every Throwable-only catch up to main.cpp's catch (...), so
-//    the process exits. The integration tier pins the throw. Fixing it
-//    means adding PlayerID and Race to the GROUP BY, or wrapping them in
-//    ANY_VALUE.
+//  - The FlagWarStat roll-up GROUPs BY "Name, ServerID" while PlayerID and
+//    Race are selected bare. THAT IS BROKEN under the sql_mode this
+//    project requires (docs/database/overview.md), which keeps
+//    ONLY_FULL_GROUP_BY, and PlayerID is not functionally dependent on
+//    (Name, ServerID) -- FlagWarStat has no unique key at all -- so MySQL
+//    raises error 1055 every time the statement is called. It is called
+//    only when the flag war is switched on, which ActiveFlagWar : 0 in
+//    both shipped configs prevents; and when it is called, the
+//    DatabaseError END_DB throws escapes every Throwable-only catch up to
+//    main.cpp's catch (...), so the process exits. The integration tier
+//    pins the throw. Fixing it means adding PlayerID and Race to the GROUP
+//    BY, or wrapping them in ANY_VALUE.
 //  - ItemID reaches its two statements through "%d" although the column
 //    is bigint(20) unsigned and ItemID_t is a DWORD. An id above INT_MAX
 //    formats negative: the SELECT then matches nothing, and the INSERT
