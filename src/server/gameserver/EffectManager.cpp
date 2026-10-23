@@ -404,9 +404,6 @@ void EffectManager::addEffect(Effect* pEffect)
 int EffectManager::heartbeat(const Timeval& currentTime)
 
 {
-    __BEGIN_TRY
-    __END_DEBUG
-
     int rvalue = 0;
 
     __BEGIN_PROFILE_EM("EM_HEARTBEAT");
@@ -454,9 +451,6 @@ int EffectManager::heartbeat(const Timeval& currentTime)
     __END_PROFILE_EM("EM_HEARTBEAT");
 
     return rvalue;
-
-    __BEGIN_DEBUG
-    __END_CATCH
 }
 
 void EffectManager::setTimeOutAllEffect()
