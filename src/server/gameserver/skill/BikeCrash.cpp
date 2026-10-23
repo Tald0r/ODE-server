@@ -13,8 +13,6 @@
 #include "SimpleTileMissileSkill.h"
 
 void BikeCrash::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -63,8 +61,6 @@ void BikeCrash::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot* p
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleTileMissileSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-    __END_CATCH
 }
 
 BikeCrash g_BikeCrash;

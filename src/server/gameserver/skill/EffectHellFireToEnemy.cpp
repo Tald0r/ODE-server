@@ -17,35 +17,25 @@
 EffectHellFireToEnemy::EffectHellFireToEnemy(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectHellFireToEnemy::affect()
 
 {
-    __BEGIN_TRY
-
     if (m_pTarget == NULL || m_pTarget->getObjectClass() != OBJECT_CLASS_CREATURE) {
         setDeadline(0);
         return;
     }
 
     affect(dynamic_cast<Creature*>(m_pTarget));
-
-    __END_CATCH
 }
 
 void EffectHellFireToEnemy::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     if (pCreature->isDead()) {
@@ -77,8 +67,6 @@ void EffectHellFireToEnemy::affect(Creature* pCreature)
     }
 
     setNextTime(10);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -86,9 +74,6 @@ void EffectHellFireToEnemy::affect(Creature* pCreature)
 void EffectHellFireToEnemy::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     // Turns off the flag.
@@ -103,9 +88,6 @@ void EffectHellFireToEnemy::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_HELLFIRE_TO_ENEMY);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -113,22 +95,14 @@ void EffectHellFireToEnemy::unaffect(Creature* pCreature)
 void EffectHellFireToEnemy::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHellFireToEnemy::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectHellFireToEnemy(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

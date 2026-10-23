@@ -16,11 +16,7 @@
 EffectProtectionFromAcid::EffectProtectionFromAcid(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -28,39 +24,28 @@ EffectProtectionFromAcid::EffectProtectionFromAcid(Creature* pCreature)
 void EffectProtectionFromAcid::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Resist_t resist = pCreature->getResist(MAGIC_DOMAIN_ACID);
     resist = min(MAX_RESIST, (int)(resist + m_Resist));
     pCreature->setResist(MAGIC_DOMAIN_ACID, resist);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromAcid::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromAcid::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromAcid::unaffect()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
@@ -80,33 +65,26 @@ void EffectProtectionFromAcid::unaffect()
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromAcid::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectProtectionFromAcid::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectProtectionFromAcid(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromAcidLoader::load(Creature* pCreature)
 
-{
-    __BEGIN_TRY __END_CATCH
-}
+{}

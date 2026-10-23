@@ -27,11 +27,7 @@
 EffectBrambleHalo::EffectBrambleHalo(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,15 +35,11 @@ EffectBrambleHalo::EffectBrambleHalo(Creature* pCreature)
 void EffectBrambleHalo::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget); // by Sequoia
 
     if (pCreature != NULL) {
         affect(pCreature);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -55,8 +47,6 @@ void EffectBrambleHalo::affect()
 void EffectBrambleHalo::affect(Creature* pCastCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCastCreature != NULL);
 
     if (!pCastCreature->isSlayer())
@@ -164,8 +154,6 @@ void EffectBrambleHalo::affect(Creature* pCastCreature)
     }
 
     setNextTime(m_Delay);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -173,8 +161,6 @@ void EffectBrambleHalo::affect(Creature* pCastCreature)
 void EffectBrambleHalo::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     if (!pCreature->isSlayer())
@@ -195,8 +181,6 @@ void EffectBrambleHalo::unaffect(Creature* pCreature)
 
     pPlayer->sendPacket(&gcRemoveEffect);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect, pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -204,15 +188,11 @@ void EffectBrambleHalo::unaffect(Creature* pCreature)
 void EffectBrambleHalo::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget); // by Sequoia
 
     if (pCreature != NULL) {
         unaffect(pCreature);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -231,11 +211,7 @@ void EffectBrambleHalo::setLevel(SkillLevel_t Level) {
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBrambleHalo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectBrambleHalo(" << "Damage:" << (int)m_Damage << ", EffectClass:" << (int)m_EffectClass << ")";
     return msg.toString();
-
-    __END_CATCH
 }

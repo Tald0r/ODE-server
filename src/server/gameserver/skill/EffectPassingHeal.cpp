@@ -40,33 +40,23 @@ TPOINT PassingHealSearchTiles[] = {{0, -1},  {1, -1},  {1, 0},   {1, 1},    {0, 
 EffectPassingHeal::EffectPassingHeal(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
     m_PassingCount = 0;
     m_CureCount = 0;
     m_HealPoint = 0;
-
-    __END_CATCH
 }
 
 void EffectPassingHeal::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pTargetCreature = dynamic_cast<Creature*>(m_pTarget);
     if (pTargetCreature != NULL)
         affect(pTargetCreature);
-
-    __END_CATCH
 }
 
 void EffectPassingHeal::affect(Creature* pTargetCreature)
 
 {
-    __BEGIN_TRY
-
     setDeadline(0);
     if (pTargetCreature == NULL)
         return;
@@ -334,25 +324,19 @@ void EffectPassingHeal::affect(Creature* pTargetCreature)
         }
 
     cout << "affected passing heal : " << pTargetCreature->getName() << endl;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectPassingHeal::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectPassingHeal::unaffect()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
@@ -370,19 +354,14 @@ void EffectPassingHeal::unaffect()
     pCreature->getPlayer(); // Asserts that the creature has a player.
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectPassingHeal::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectPassingHeal(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -16,9 +16,6 @@
 void CutStorm::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -36,9 +33,6 @@ void CutStorm::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pS
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -47,8 +41,6 @@ void CutStorm::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pS
 void CutStorm::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     cout << "TID[" << Thread::self() << "]" << getSkillHandlerName() << " Begin" << endl;
 
     SkillInput input(pSlayer, pSkillSlot);
@@ -72,8 +64,6 @@ void CutStorm::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot*
     g_SimpleLinearMeleeSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
 
     cout << "TID[" << Thread::self() << "]" << getSkillHandlerName() << " End" << endl;
-
-    __END_CATCH
 }
 
 CutStorm g_CutStorm;

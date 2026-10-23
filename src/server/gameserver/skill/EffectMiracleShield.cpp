@@ -20,36 +20,22 @@
 EffectMiracleShield::EffectMiracleShield(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMiracleShield::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMiracleShield::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,7 +43,6 @@ void EffectMiracleShield::unaffect()
 void EffectMiracleShield::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -85,19 +70,14 @@ void EffectMiracleShield::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectMiracleShield::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectMiracleShield(" << "Defense:" << m_DefenseBonus << ",Protection:" << m_ProtectionBonus << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

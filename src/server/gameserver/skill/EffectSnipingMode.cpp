@@ -15,41 +15,28 @@
 EffectSnipingMode::EffectSnipingMode(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
 
     m_RevealRatio = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSnipingMode::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSnipingMode::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSnipingMode::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer()); // Only a Slayer can be affected.
 
@@ -66,9 +53,6 @@ void EffectSnipingMode::unaffect(Creature* pCreature)
     pSlayer->initAllStat();
     pSlayer->sendRealWearingInfo();
     pSlayer->sendModifyInfo(prev);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -76,28 +60,20 @@ void EffectSnipingMode::unaffect(Creature* pCreature)
 void EffectSnipingMode::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSnipingMode::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSnipingMode::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectSnipingMode(" << "ObjectID:" << getObjectID() << "RevealRatio:" << m_RevealRatio << ")";
     return msg.toString();
-
-    __END_CATCH
 }

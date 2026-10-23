@@ -37,8 +37,6 @@ const uint CureAllBloodDrainLevel = 75;
 void CureAll::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -370,8 +368,6 @@ void CureAll::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSk
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -380,8 +376,6 @@ void CureAll::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSk
 void CureAll::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -667,8 +661,6 @@ void CureAll::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffec
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 CureAll g_CureAll;

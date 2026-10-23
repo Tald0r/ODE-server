@@ -10,29 +10,19 @@
 #include "Zone.h"
 
 EffectDestructionSpear::EffectDestructionSpear(Creature* pCreature) {
-    __BEGIN_TRY
-
     m_pTarget = pCreature;
     m_CanSteal = false;
-
-    __END_CATCH
 }
 
 void EffectDestructionSpear::affect() {
-    __BEGIN_TRY
-
     if (m_pTarget != NULL && m_pTarget->getObjectClass() == Object::OBJECT_CLASS_CREATURE) {
         affect(dynamic_cast<Creature*>(m_pTarget));
     }
 
     setNextTime(10);
-
-    __END_CATCH
 }
 
 void EffectDestructionSpear::affect(Creature* pCreature) {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return;
 
@@ -72,23 +62,15 @@ void EffectDestructionSpear::affect(Creature* pCreature) {
     }
 
     setNextTime(20);
-
-    __END_CATCH
 }
 
 void EffectDestructionSpear::unaffect() {
-    __BEGIN_TRY
-
     if (m_pTarget != NULL && m_pTarget->getObjectClass() == Object::OBJECT_CLASS_CREATURE) {
         unaffect(dynamic_cast<Creature*>(m_pTarget));
     }
-
-    __END_CATCH
 }
 
 void EffectDestructionSpear::unaffect(Creature* pCreature) {
-    __BEGIN_TRY
-
     pCreature->removeFlag(getEffectClass());
 
     Zone* pZone = pCreature->getZone();
@@ -99,14 +81,8 @@ void EffectDestructionSpear::unaffect(Creature* pCreature) {
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(getSendEffectClass());
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-    __END_CATCH
 }
 
 string EffectDestructionSpear::toString() const {
-    __BEGIN_TRY
-
     return "EffectDestructionSpear";
-
-    __END_CATCH
 }

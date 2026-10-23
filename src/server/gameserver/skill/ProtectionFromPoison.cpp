@@ -22,9 +22,6 @@ void ProtectionFromPoison::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, S
                                    CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -139,9 +136,6 @@ void ProtectionFromPoison::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, S
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -150,9 +144,6 @@ void ProtectionFromPoison::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, S
 void ProtectionFromPoison::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pSlayer->getPlayer();
         Zone* pZone = pSlayer->getZone();
@@ -232,9 +223,6 @@ void ProtectionFromPoison::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffe
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ProtectionFromPoison g_ProtectionFromPoison;

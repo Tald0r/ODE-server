@@ -37,9 +37,6 @@
 void Restore::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -333,9 +330,6 @@ void Restore::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSk
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -344,9 +338,6 @@ void Restore::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSk
 void Restore::execute(NPC* pNPC, Creature* pFromCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pNPC != NULL);
     Assert(pFromCreature != NULL);
 
@@ -606,9 +597,6 @@ void Restore::execute(NPC* pNPC, Creature* pFromCreature)
     } catch (Throwable& t) {
         executeSkillFailException(pNPC, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Restore g_Restore;

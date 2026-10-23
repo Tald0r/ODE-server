@@ -26,21 +26,15 @@
 EffectRingOfFlare::EffectRingOfFlare(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectRingOfFlare::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCastCreature = dynamic_cast<Creature*>(m_pTarget);
 
     if (pCastCreature == NULL || !pCastCreature->isOusters())
@@ -143,8 +137,6 @@ void EffectRingOfFlare::affect()
     }
 
     setNextTime(10);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -152,9 +144,6 @@ void EffectRingOfFlare::affect()
 void EffectRingOfFlare::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
@@ -172,9 +161,6 @@ void EffectRingOfFlare::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(getSendEffectClass());
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -182,22 +168,14 @@ void EffectRingOfFlare::unaffect(Creature* pCreature)
 void EffectRingOfFlare::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectRingOfFlare::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectRingOfFlare(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

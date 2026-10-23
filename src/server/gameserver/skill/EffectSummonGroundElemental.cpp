@@ -17,13 +17,9 @@
 EffectSummonGroundElemental::EffectSummonGroundElemental(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = X;
     m_Y = Y;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -31,11 +27,7 @@ EffectSummonGroundElemental::EffectSummonGroundElemental(Zone* pZone, ZoneCoord_
 void EffectSummonGroundElemental::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -43,11 +35,7 @@ void EffectSummonGroundElemental::affect()
 void EffectSummonGroundElemental::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -55,8 +43,6 @@ void EffectSummonGroundElemental::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_
 void EffectSummonGroundElemental::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
 
@@ -66,18 +52,12 @@ void EffectSummonGroundElemental::unaffect()
     gcDeleteEffect.setEffectID(getSendEffectClass());
 
     m_pZone->broadcastPacket(m_X, m_Y, &gcDeleteEffect);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSummonGroundElemental::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectSummonGroundElemental(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

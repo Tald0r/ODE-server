@@ -15,9 +15,6 @@
 void CauseLightWounds::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -46,9 +43,6 @@ void CauseLightWounds::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Skill
 
 
     g_SimpleMissileSkill.execute(pSlayer, TargetObjectID, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 CauseLightWounds g_CauseLightWounds;

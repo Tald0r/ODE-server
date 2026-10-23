@@ -22,9 +22,6 @@
 void GrenadeAttack::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Zone* pZone = pMonster->getZone();
         Assert(pZone != NULL);
@@ -110,9 +107,6 @@ void GrenadeAttack::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 GrenadeAttack g_GrenadeAttack;

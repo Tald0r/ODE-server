@@ -28,30 +28,20 @@ const uint CriticalBloodDrainLevel = 74;
 EffectCureCriticalWounds::EffectCureCriticalWounds(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
     m_Range = 0;
-
-    __END_CATCH
 }
 
 void EffectCureCriticalWounds::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectCureCriticalWounds::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pCreature->getZone();
     Assert(pZone != NULL);
 
@@ -177,22 +167,15 @@ void EffectCureCriticalWounds::affect(Creature* pCreature)
     }
 
     setNextTime(m_Delay);
-
-    __END_CATCH
 }
 
 void EffectCureCriticalWounds::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectCureCriticalWounds::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     pCreature->removeFlag(Effect::EFFECT_CLASS_CURE_CRITICAL_WOUNDS);
     Zone* pZone = pCreature->getZone();
@@ -202,32 +185,21 @@ void EffectCureCriticalWounds::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_CURE_CRITICAL_WOUNDS);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 void EffectCureCriticalWounds::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectCureCriticalWounds::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 string EffectCureCriticalWounds::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectCureCriticalWounds(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

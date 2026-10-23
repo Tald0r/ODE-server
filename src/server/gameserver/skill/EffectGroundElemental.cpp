@@ -19,11 +19,7 @@
 EffectGroundElemental::EffectGroundElemental(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -31,7 +27,6 @@ EffectGroundElemental::EffectGroundElemental(Creature* pCreature)
 void EffectGroundElemental::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -53,7 +48,6 @@ void EffectGroundElemental::unaffect(Creature* pCreature)
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -61,22 +55,14 @@ void EffectGroundElemental::unaffect(Creature* pCreature)
 void EffectGroundElemental::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectGroundElemental::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectGroundElemental(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

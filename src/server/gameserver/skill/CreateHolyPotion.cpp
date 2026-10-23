@@ -20,9 +20,6 @@ void CreateHolyPotion::execute(Slayer* pSlayer, ObjectID_t InvenObjectID, CoordI
                                CoordInven_t TargetX, CoordInven_t TargetY, SkillSlot* pSkillSlot)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -164,14 +161,9 @@ void CreateHolyPotion::execute(Slayer* pSlayer, ObjectID_t InvenObjectID, CoordI
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 bool CreateHolyPotion::canMake(ItemType_t PotionType, int DomainLevel, int SkillLevel) {
-    __BEGIN_TRY
-
     bool rvalue = false;
     int ratio = 60 + SkillLevel;
 
@@ -196,8 +188,6 @@ bool CreateHolyPotion::canMake(ItemType_t PotionType, int DomainLevel, int Skill
     }
 
     return false;
-
-    __END_CATCH
 }
 
 CreateHolyPotion g_CreateHolyPotion;

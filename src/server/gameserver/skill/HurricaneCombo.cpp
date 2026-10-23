@@ -14,9 +14,6 @@
 void HurricaneCombo::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -36,9 +33,6 @@ void HurricaneCombo::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSl
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleMeleeSkill.execute(pSlayer, TargetObjectID, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 HurricaneCombo g_HurricaneCombo;

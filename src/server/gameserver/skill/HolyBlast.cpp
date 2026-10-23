@@ -28,9 +28,6 @@
 void HolyBlast::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_OTHER;
@@ -48,9 +45,6 @@ void HolyBlast::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* p
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleTileCureSkill.execute(pSlayer, TargetObjectID, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -59,9 +53,6 @@ void HolyBlast::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* p
 void HolyBlast::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_SELF;
@@ -79,16 +70,11 @@ void HolyBlast::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEff
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleTileCureSkill.execute(pSlayer, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 void HolyBlast::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_SELF;
@@ -107,8 +93,6 @@ void HolyBlast::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot
 
     cout << "Tile X :" << (int)X << "Tile Y : " << (int)Y << endl;
     g_SimpleTileCureSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-    __END_CATCH
 }
 
 
@@ -118,8 +102,6 @@ void HolyBlast::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot
 
 void HolyBlast::execute(Slayer* pSlayer, int X, int Y, SkillSlot* pSkillSlot, const SIMPLE_SKILL_INPUT& param,
                         SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
     try {
         Player* pPlayer = pSlayer->getPlayer();
         Zone* pZone = pSlayer->getZone();
@@ -425,8 +407,6 @@ void HolyBlast::execute(Slayer* pSlayer, int X, int Y, SkillSlot* pSkillSlot, co
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 

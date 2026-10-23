@@ -15,39 +15,25 @@
 EffectRediance::EffectRediance(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
     // The accessor flips this on every call, so the value has no meaning.
     m_GiveExp = true;
-
-    __END_CATCH
 }
 
 void EffectRediance::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectRediance::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 void EffectRediance::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -75,15 +61,10 @@ void EffectRediance::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EffectRediance::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectRediance(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

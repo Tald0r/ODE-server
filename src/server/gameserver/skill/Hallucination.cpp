@@ -26,9 +26,6 @@ void Hallucination::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampir
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -169,9 +166,6 @@ void Hallucination::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampir
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 
@@ -181,9 +175,6 @@ void Hallucination::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampir
 void Hallucination::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -219,17 +210,12 @@ void Hallucination::execute(Monster* pMonster, Creature* pEnemy)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 
 void Hallucination::executeMonster(Zone* pZone, Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     if (!pMonster->isEnemyToAttack(pEnemy)) {
         return;
     }
@@ -326,8 +312,6 @@ void Hallucination::executeMonster(Zone* pZone, Monster* pMonster, Creature* pEn
     } else {
         executeSkillFailNormal(pMonster, getSkillType(), pEnemy);
     }
-
-    __END_CATCH
 }
 
 Hallucination g_Hallucination;

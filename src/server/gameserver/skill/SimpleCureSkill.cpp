@@ -29,8 +29,6 @@ void SimpleCureSkill::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, const SIMP
                               SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -152,16 +150,12 @@ void SimpleCureSkill::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, const SIMP
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 void SimpleCureSkill::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot,
                               const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -326,6 +320,4 @@ void SimpleCureSkill::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillS
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }

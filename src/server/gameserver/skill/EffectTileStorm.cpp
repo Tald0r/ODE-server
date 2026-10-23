@@ -25,8 +25,6 @@ int StormDamageModify[5][5] = {
 EffectTileStorm::EffectTileStorm(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
@@ -36,8 +34,6 @@ EffectTileStorm::EffectTileStorm(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zon
     m_Tick = 0;
     m_SkillType = SKILL_MAX;
     m_bLarge = true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -45,8 +41,6 @@ EffectTileStorm::EffectTileStorm(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zon
 void EffectTileStorm::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     // Get the skill user.
@@ -180,46 +174,32 @@ void EffectTileStorm::affect()
         setDeadline(0);
     else
         setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectTileStorm::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectTileStorm::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectTileStorm::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& EffectedTile = m_pZone->getTile(m_X, m_Y);
     EffectedTile.deleteEffect(m_ObjectID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectTileStorm::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectTileStorm(" << "ObjectID:" << (int)getObjectID() << ",Zone:" << (long)m_pZone << ",X:" << (int)m_X
@@ -227,6 +207,4 @@ string EffectTileStorm::toString() const {
         << ",StormTime:" << (int)m_StormTime << ",Tick:" << (int)m_Tick << ",SkillType:" << (int)m_SkillType << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

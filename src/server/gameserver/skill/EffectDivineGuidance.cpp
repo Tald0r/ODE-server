@@ -22,12 +22,8 @@
 EffectDivineGuidance::EffectDivineGuidance(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_UserObjectID = 0;
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,14 +31,8 @@ EffectDivineGuidance::EffectDivineGuidance(Creature* pCreature)
 void EffectDivineGuidance::affect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,8 +40,6 @@ void EffectDivineGuidance::affect()
 void EffectDivineGuidance::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     Zone* pZone = pCreature->getZone();
@@ -87,8 +75,6 @@ void EffectDivineGuidance::affect(Creature* pCreature)
     }
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 
@@ -97,7 +83,6 @@ void EffectDivineGuidance::affect(Creature* pCreature)
 void EffectDivineGuidance::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -113,7 +98,6 @@ void EffectDivineGuidance::unaffect(Creature* pCreature)
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -121,22 +105,14 @@ void EffectDivineGuidance::unaffect(Creature* pCreature)
 void EffectDivineGuidance::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDivineGuidance::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectDivineGuidance(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

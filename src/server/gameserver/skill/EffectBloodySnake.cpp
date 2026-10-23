@@ -32,8 +32,6 @@ POINT EffectBloodySnake::getNextPosition() {
 EffectBloodySnake::EffectBloodySnake(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
@@ -43,8 +41,6 @@ EffectBloodySnake::EffectBloodySnake(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t
 
     m_CreatureClass = Creature::CREATURE_CLASS_VAMPIRE;
     m_ClanID = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -52,9 +48,6 @@ EffectBloodySnake::EffectBloodySnake(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t
 void EffectBloodySnake::affect()
 
 {
-    __BEGIN_TRY
-
-
     Assert(m_pZone != NULL);
 
     // Get the skill user.
@@ -228,69 +221,47 @@ void EffectBloodySnake::affect()
     } else {
         setDeadline(0);
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodySnake::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodySnake::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodySnake::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodySnake::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodySnake::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBloodySnake::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectBloodySnake(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

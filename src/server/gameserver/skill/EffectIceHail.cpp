@@ -22,16 +22,12 @@
 EffectIceHail::EffectIceHail(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_CasterID = 0;
 
     setBroadcastingEffect(false);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,9 +35,6 @@ EffectIceHail::EffectIceHail(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 void EffectIceHail::affect()
 
 {
-    __BEGIN_TRY
-
-
     Assert(m_pZone != NULL);
 
     // Gets the caster.
@@ -115,54 +108,35 @@ void EffectIceHail::affect()
     }
 
     setNextTime(m_Tick);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIceHail::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIceHail::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIceHail::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectIceHail::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectIceHail(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

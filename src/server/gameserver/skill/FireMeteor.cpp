@@ -16,38 +16,32 @@
 //////////////////////////////////////////////////////////////////////////////
 void FireMeteor::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkillSlot* pOustersSkillSlot,
                          CEffectID_t CEffectID) {
-    __BEGIN_TRY
+    {
+        Assert(pOusters != NULL);
+        Assert(pOustersSkillSlot != NULL);
 
+        try {
+            Zone* pZone = pOusters->getZone();
+            Assert(pZone != NULL);
 
-    Assert(pOusters != NULL);
-    Assert(pOustersSkillSlot != NULL);
+            Creature* pTargetCreature = pZone->getCreature(TargetObjectID);
 
-    try {
-        Zone* pZone = pOusters->getZone();
-        Assert(pZone != NULL);
+            // A missing, unattackable or NPC target fails the skill.
+            if (pTargetCreature == NULL || !canAttack(pOusters, pTargetCreature)) {
+                executeSkillFailException(pOusters, getSkillType());
+                return;
+            }
 
-        Creature* pTargetCreature = pZone->getCreature(TargetObjectID);
-
-        // A missing, unattackable or NPC target fails the skill.
-        if (pTargetCreature == NULL || !canAttack(pOusters, pTargetCreature)) {
+            execute(pOusters, pTargetCreature->getX(), pTargetCreature->getY(), pOustersSkillSlot, CEffectID);
+        } catch (Throwable& t) {
             executeSkillFailException(pOusters, getSkillType());
-            return;
         }
-
-        execute(pOusters, pTargetCreature->getX(), pTargetCreature->getY(), pOustersSkillSlot, CEffectID);
-    } catch (Throwable& t) {
-        executeSkillFailException(pOusters, getSkillType());
     }
-
-    __END_CATCH
     return;
 }
 
 void FireMeteor::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersSkillSlot* pOustersSkillSlot,
                          CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -81,8 +75,6 @@ void FireMeteor::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ouster
             param.addMask(i, j, 100);
 
     return g_SimpleTileMissileSkill.execute(pOusters, X, Y, pOustersSkillSlot, param, result, CEffectID);
-
-    __END_CATCH
 }
 
 FireMeteor g_FireMeteor;

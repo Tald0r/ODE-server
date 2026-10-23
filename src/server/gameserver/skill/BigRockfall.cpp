@@ -16,9 +16,6 @@ void BigRockfall::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersS
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -38,16 +35,10 @@ void BigRockfall::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersS
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void BigRockfall::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersSkillSlot* pOustersSkillSlot,
                           CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -78,8 +69,6 @@ void BigRockfall::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ouste
     param.addMask(1, -1, 100);
 
     g_SimpleTileMissileSkill.execute(pOusters, X, Y, pOustersSkillSlot, param, result, CEffectID);
-
-    __END_CATCH
 }
 
 BigRockfall g_BigRockfall;

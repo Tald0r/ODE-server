@@ -23,8 +23,6 @@ void HydroConvergence::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ous
                                CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
     int Grade = 0;
@@ -184,8 +182,6 @@ void HydroConvergence::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ous
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), Grade);
     }
-
-    __END_CATCH
 }
 
 HydroConvergence g_HydroConvergence;

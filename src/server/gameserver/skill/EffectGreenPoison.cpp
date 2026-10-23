@@ -19,15 +19,11 @@
 EffectGreenPoison::EffectGreenPoison(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_UserObjectID = 0;
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_bVampire = false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,9 +31,6 @@ EffectGreenPoison::EffectGreenPoison(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t
 bool EffectGreenPoison::affectCreature(Creature* pTargetCreature, bool bAffectByMove)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pTargetCreature != NULL);
 
     // Not applied if the target already has the acid storm effect.
@@ -79,67 +72,46 @@ bool EffectGreenPoison::affectCreature(Creature* pTargetCreature, bool bAffectBy
 
 
     return true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectGreenPoison::affect(Creature* pTargetCreature)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectGreenPoison::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectGreenPoison::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectGreenPoison::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectGreenPoison::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectGreenPoison(" << "DayTime:" << m_Deadline.tv_sec << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 void EffectGreenPoisonLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     vector<ZoneEffectRow> rows =
         defaultZoneInfoRepository().loadZoneEffectRects(pZone->getZoneID(), (int)Effect::EFFECT_CLASS_GREEN_POISON);
 
@@ -171,6 +143,4 @@ void EffectGreenPoisonLoader::load(Zone* pZone)
                 }
             }
     }
-
-    __END_CATCH
 }

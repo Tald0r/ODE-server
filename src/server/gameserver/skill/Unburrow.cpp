@@ -14,9 +14,6 @@
 void Unburrow::execute(Vampire* pVampire)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
 
     try {
@@ -42,9 +39,6 @@ void Unburrow::execute(Vampire* pVampire)
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -52,9 +46,6 @@ void Unburrow::execute(Vampire* pVampire)
 void Unburrow::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -73,9 +64,6 @@ void Unburrow::execute(Monster* pMonster)
         }
     } catch (Throwable& t) {
     }
-
-
-    __END_CATCH
 }
 
 Unburrow g_Unburrow;

@@ -23,9 +23,6 @@
 void Peace::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_OTHER;
@@ -42,9 +39,6 @@ void Peace::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkil
     SIMPLE_SKILL_OUTPUT result;
 
     execute(pSlayer, pSlayer->getX(), pSlayer->getY(), pSkillSlot, param, result, CEffectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -53,9 +47,6 @@ void Peace::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkil
 void Peace::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_SELF;
@@ -72,16 +63,11 @@ void Peace::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectI
     SIMPLE_SKILL_OUTPUT result;
 
     execute(pSlayer, pSlayer->getX(), pSlayer->getY(), pSkillSlot, param, result, CEffectID);
-
-
-    __END_CATCH
 }
 
 void Peace::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_SELF;
@@ -98,8 +84,6 @@ void Peace::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pS
     SIMPLE_SKILL_OUTPUT result;
 
     execute(pSlayer, X, Y, pSkillSlot, param, result, CEffectID);
-
-    __END_CATCH
 }
 
 
@@ -107,8 +91,6 @@ void Peace::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pS
                     const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -252,8 +234,6 @@ void Peace::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pS
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 Peace g_Peace;

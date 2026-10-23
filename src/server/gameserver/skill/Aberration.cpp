@@ -26,9 +26,6 @@ void Aberration::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -169,9 +166,6 @@ void Aberration::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Aberration g_Aberration;

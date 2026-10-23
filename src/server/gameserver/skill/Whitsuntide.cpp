@@ -25,9 +25,6 @@
 void Whitsuntide::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     // Slayer Object Assertion
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
@@ -49,9 +46,6 @@ void Whitsuntide::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot*
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -61,9 +55,6 @@ void Whitsuntide::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot*
 void Whitsuntide::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pSlayer->getPlayer();
         Zone* pZone = pSlayer->getZone();
@@ -264,9 +255,6 @@ void Whitsuntide::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSl
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Whitsuntide g_Whitsuntide;

@@ -21,9 +21,6 @@
 void Flare::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -150,9 +147,6 @@ void Flare::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkil
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Flare g_Flare;

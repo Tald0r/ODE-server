@@ -16,29 +16,19 @@
 EffectHeartCatalyst::EffectHeartCatalyst(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
     // The accessor flips this on every call, so the value has no meaning.
     m_GiveExp = true;
-
-    __END_CATCH
 }
 
 void EffectHeartCatalyst::affect() {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectHeartCatalyst::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     if (!pCreature->isSlayer()) {
@@ -71,27 +61,18 @@ void EffectHeartCatalyst::affect(Creature* pCreature)
     pSlayer->getZone()->broadcastPacket(pSlayer->getX(), pSlayer->getY(), &gcHP);
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 void EffectHeartCatalyst::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 void EffectHeartCatalyst::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -119,15 +100,10 @@ void EffectHeartCatalyst::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EffectHeartCatalyst::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectHeartCatalyst(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

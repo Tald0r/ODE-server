@@ -337,14 +337,10 @@ void SkillHandler::execute(Monster* pMonster)
 void SkillHandler::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     if (pEnemy == NULL)
         return;
 
     execute(pMonster, pEnemy->getX(), pEnemy->getY());
-
-    __END_CATCH
 }
 
 void SkillHandler::execute(Monster* pMonster, ZoneCoord_t x, ZoneCoord_t y) {}

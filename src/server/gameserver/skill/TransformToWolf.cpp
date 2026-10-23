@@ -27,9 +27,6 @@ void TransformToWolf::execute(Vampire* pVampire, ObjectID_t InvenObjectID, Coord
                               CoordInven_t TargetX, CoordInven_t TargetY, VampireSkillSlot* pSkillSlot)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -135,9 +132,6 @@ void TransformToWolf::execute(Vampire* pVampire, ObjectID_t InvenObjectID, Coord
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -146,9 +140,6 @@ void TransformToWolf::execute(Vampire* pVampire, ObjectID_t InvenObjectID, Coord
 void TransformToWolf::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -196,9 +187,6 @@ void TransformToWolf::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 TransformToWolf g_TransformToWolf;

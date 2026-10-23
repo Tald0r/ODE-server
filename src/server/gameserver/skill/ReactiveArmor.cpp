@@ -24,9 +24,6 @@
 void ReactiveArmor::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -112,16 +109,10 @@ void ReactiveArmor::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSl
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void ReactiveArmor::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkillSlot* pSkillSlot,
                             CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -258,9 +249,6 @@ void ReactiveArmor::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouster
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ReactiveArmor g_ReactiveArmor;

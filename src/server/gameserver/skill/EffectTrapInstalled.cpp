@@ -22,13 +22,9 @@
 EffectTrapInstalled::EffectTrapInstalled(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = X;
     m_Y = Y;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -36,11 +32,7 @@ EffectTrapInstalled::EffectTrapInstalled(Zone* pZone, ZoneCoord_t X, ZoneCoord_t
 void EffectTrapInstalled::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -48,11 +40,7 @@ void EffectTrapInstalled::affect()
 void EffectTrapInstalled::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,8 +48,6 @@ void EffectTrapInstalled::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
 void EffectTrapInstalled::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return;
     if (m_pZone == NULL)
@@ -111,8 +97,6 @@ void EffectTrapInstalled::affect(Creature* pCreature)
 
     m_pZone->broadcastPacket(m_X, m_Y, &gcAddEffect);
     setDeadline(0);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -120,8 +104,6 @@ void EffectTrapInstalled::affect(Creature* pCreature)
 void EffectTrapInstalled::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     if (!tile.hasEffect())
         return;
@@ -134,18 +116,12 @@ void EffectTrapInstalled::unaffect()
     gcDeleteEffect.setEffectID(getSendEffectClass());
 
     m_pZone->broadcastPacket(m_X, m_Y, &gcDeleteEffect);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectTrapInstalled::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectTrapInstalled(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -15,9 +15,6 @@
 void ARAttack::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -37,9 +34,6 @@ void ARAttack::execute(Monster* pMonster, Creature* pEnemy)
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleMissileSkill.execute(pMonster, pEnemy, param, result);
-
-
-    __END_CATCH
 }
 
 ARAttack g_ARAttack;

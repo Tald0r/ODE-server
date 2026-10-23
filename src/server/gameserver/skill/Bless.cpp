@@ -25,9 +25,6 @@
 void Bless::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -165,9 +162,6 @@ void Bless::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkil
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -176,9 +170,6 @@ void Bless::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkil
 void Bless::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -264,9 +255,6 @@ void Bless::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectI
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Bless g_Bless;

@@ -23,13 +23,9 @@
 EffectSatelliteBombPoint::EffectSatelliteBombPoint(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = x;
     m_Y = y;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -37,22 +33,14 @@ EffectSatelliteBombPoint::EffectSatelliteBombPoint(Zone* pZone, ZoneCoord_t x, Z
 void EffectSatelliteBombPoint::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSatelliteBombPoint::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectSatelliteBombPoint(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

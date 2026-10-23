@@ -23,8 +23,6 @@ void ExplosionWater::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouste
                              CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
     int Grade = 0;
@@ -193,8 +191,6 @@ void ExplosionWater::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouste
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), Grade);
     }
-
-    __END_CATCH
 }
 
 ExplosionWater g_ExplosionWater;

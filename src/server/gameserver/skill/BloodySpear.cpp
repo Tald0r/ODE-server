@@ -16,9 +16,6 @@ void BloodySpear::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireS
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pVampire);
     SkillOutput output;
     computeOutput(input, output);
@@ -47,9 +44,6 @@ void BloodySpear::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireS
     }
 
     g_SimpleMissileSkill.execute(pVampire, TargetObjectID, pVampireSkillSlot, param, result, CEffectID, HitBonus);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -58,9 +52,6 @@ void BloodySpear::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireS
 void BloodySpear::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -118,9 +109,6 @@ void BloodySpear::execute(Monster* pMonster, Creature* pEnemy)
     } else {
         g_SimpleMissileSkill.execute(pMonster, pEnemy, param, result);
     }
-
-
-    __END_CATCH
 }
 
 BloodySpear g_BloodySpear;

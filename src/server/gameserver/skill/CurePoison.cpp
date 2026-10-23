@@ -26,9 +26,6 @@
 void CurePoison::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -203,9 +200,6 @@ void CurePoison::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -214,9 +208,6 @@ void CurePoison::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
 void CurePoison::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -352,9 +343,6 @@ void CurePoison::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEf
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 CurePoison g_CurePoison;

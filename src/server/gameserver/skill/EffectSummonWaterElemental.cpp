@@ -30,21 +30,15 @@
 EffectSummonWaterElemental::EffectSummonWaterElemental(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectSummonWaterElemental::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCastCreature = dynamic_cast<Creature*>(m_pTarget);
 
     if (pCastCreature == NULL || !pCastCreature->isOusters() || pCastCreature->isDead())
@@ -125,8 +119,6 @@ void EffectSummonWaterElemental::affect()
     }
 
     setNextTime(20);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -134,9 +126,6 @@ void EffectSummonWaterElemental::affect()
 void EffectSummonWaterElemental::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
@@ -154,9 +143,6 @@ void EffectSummonWaterElemental::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_WATER_ELEMENTAL);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -164,22 +150,14 @@ void EffectSummonWaterElemental::unaffect(Creature* pCreature)
 void EffectSummonWaterElemental::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSummonWaterElemental::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectSummonWaterElemental(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

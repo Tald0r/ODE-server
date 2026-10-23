@@ -29,9 +29,6 @@ void EatCorpse::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampire
                         CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
 
     try {
@@ -171,9 +168,6 @@ void EatCorpse::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampire
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 EatCorpse g_EatCorpse;

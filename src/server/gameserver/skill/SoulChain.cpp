@@ -23,9 +23,6 @@
 void SoulChain::execute(Slayer* pSlayer, const string& targetName, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -178,9 +175,6 @@ void SoulChain::execute(Slayer* pSlayer, const string& targetName, SkillSlot* pS
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 
@@ -191,9 +185,6 @@ void SoulChain::execute(Vampire* pVampire, const string& targetName, VampireSkil
                         CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -309,9 +300,6 @@ void SoulChain::execute(Vampire* pVampire, const string& targetName, VampireSkil
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -321,9 +309,6 @@ void SoulChain::execute(Ousters* pOusters, const string& targetName, OustersSkil
                         CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -439,9 +424,6 @@ void SoulChain::execute(Ousters* pOusters, const string& targetName, OustersSkil
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 SoulChain g_SoulChain;

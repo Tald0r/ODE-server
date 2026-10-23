@@ -14,9 +14,6 @@ void BurningSolLaunch::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, Sk
                                CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     if (!pSlayer->isFlag(Effect::EFFECT_CLASS_BURNING_SOL_CHARGE_1)) {
         executeSkillFailException(pSlayer, getSkillType());
         return;
@@ -67,9 +64,6 @@ void BurningSolLaunch::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, Sk
 
 
     g_SimpleTileMissileSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -78,8 +72,6 @@ void BurningSolLaunch::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, Sk
 void BurningSolLaunch::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -90,9 +82,6 @@ void BurningSolLaunch::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Skill
     } else {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 BurningSolLaunch g_BurningSolLaunch;

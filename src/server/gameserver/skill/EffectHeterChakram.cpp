@@ -21,14 +21,10 @@
 EffectHeterChakram::EffectHeterChakram(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_pTarget = pCreature;
     m_UserOID = 0;
     m_Damage = 0;
     m_Duration = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -36,8 +32,6 @@ EffectHeterChakram::EffectHeterChakram(Creature* pCreature)
 void EffectHeterChakram::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     setNextTime(10);
     // 			// Increases the number of other attacks
@@ -46,9 +40,6 @@ void EffectHeterChakram::affect()
     affect(pCreature);
 
     //	}
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -56,8 +47,6 @@ void EffectHeterChakram::affect()
 void EffectHeterChakram::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return;
 
@@ -91,8 +80,6 @@ void EffectHeterChakram::affect(Creature* pCreature)
             pOusters->getPlayer()->sendPacket(&gcAttackerMI);
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -100,8 +87,6 @@ void EffectHeterChakram::affect(Creature* pCreature)
 void EffectHeterChakram::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     pCreature->removeFlag(Effect::EFFECT_CLASS_HETER_CHAKRAM);
 
@@ -112,8 +97,6 @@ void EffectHeterChakram::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_HETER_CHAKRAM);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -121,8 +104,6 @@ void EffectHeterChakram::unaffect(Creature* pCreature)
 void EffectHeterChakram::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     // Damage the target.
@@ -161,20 +142,14 @@ void EffectHeterChakram::unaffect()
         }
 
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHeterChakram::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectHeterChakram(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

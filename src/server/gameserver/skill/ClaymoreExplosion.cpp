@@ -15,8 +15,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 ClaymoreExplosion::ClaymoreExplosion() {
-    __BEGIN_TRY
-
     int index = 0;
 
     for (int i = 0; i < 5; ++i)
@@ -25,8 +23,6 @@ ClaymoreExplosion::ClaymoreExplosion() {
         }
 
     // The surrounding 8 tiles
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,9 +31,6 @@ ClaymoreExplosion::ClaymoreExplosion() {
 void ClaymoreExplosion::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -90,9 +83,6 @@ void ClaymoreExplosion::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ClaymoreExplosion g_ClaymoreExplosion;

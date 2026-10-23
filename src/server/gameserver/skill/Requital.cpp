@@ -21,9 +21,6 @@
 void Requital::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pSlayer->getPlayer();
         Zone* pZone = pSlayer->getZone();
@@ -103,9 +100,6 @@ void Requital::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffe
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Requital g_Requital;

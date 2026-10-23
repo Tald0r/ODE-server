@@ -23,15 +23,11 @@
 EffectSharpHail::EffectSharpHail(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_UserObjectID = 0;
     m_bForce = false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,9 +35,6 @@ EffectSharpHail::EffectSharpHail(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zon
 void EffectSharpHail::affect()
 
 {
-    __BEGIN_TRY
-
-
     Assert(m_pZone != NULL);
 
     // Get the creature that cast this effect.
@@ -141,9 +134,6 @@ void EffectSharpHail::affect()
     }
 
     setNextTime(m_Tick);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -151,25 +141,15 @@ void EffectSharpHail::affect()
 void EffectSharpHail::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSharpHail::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectSharpHail(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

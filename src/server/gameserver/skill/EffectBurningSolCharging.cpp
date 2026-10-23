@@ -17,14 +17,10 @@
 EffectBurningSolCharging::EffectBurningSolCharging(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer());
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -32,12 +28,8 @@ EffectBurningSolCharging::EffectBurningSolCharging(Creature* pCreature)
 void EffectBurningSolCharging::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -45,8 +37,6 @@ void EffectBurningSolCharging::affect()
 void EffectBurningSolCharging::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     static Turn_t delay[] = {10, 10, 300};
     if (m_Level >= 3)
         return;
@@ -67,8 +57,6 @@ void EffectBurningSolCharging::affect(Creature* pCreature)
     gcAddEffect.setEffectID(getSendEffectClass());
     gcAddEffect.setDuration(getRemainDuration());
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -76,12 +64,8 @@ void EffectBurningSolCharging::affect(Creature* pCreature)
 void EffectBurningSolCharging::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -89,9 +73,6 @@ void EffectBurningSolCharging::unaffect()
 void EffectBurningSolCharging::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     // Turns off the flag.
@@ -105,19 +86,12 @@ void EffectBurningSolCharging::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(getSendEffectClass());
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBurningSolCharging::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectBurningSolCharging(" << "ObjectID:" << getObjectID() << ",Level:" << m_Level << ")";
     return msg.toString();
-
-    __END_CATCH
 }

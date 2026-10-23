@@ -18,9 +18,6 @@
 void SummonWaterElemental::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -97,9 +94,6 @@ void SummonWaterElemental::execute(Ousters* pOusters, OustersSkillSlot* pOusters
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), 0);
     }
-
-
-    __END_CATCH
 }
 
 SummonWaterElemental g_SummonWaterElemental;

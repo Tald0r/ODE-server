@@ -21,13 +21,9 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 DuplicateSelf::DuplicateSelf() {
-    __BEGIN_TRY
-
     // Hard-coded pairs; move them into a table if that becomes awkward.
     m_DuplicateMonsterTypes[432] = 435; // Bathory clone
     m_DuplicateMonsterTypes[434] = 436; // Tepes clone
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,9 +36,6 @@ DuplicateSelf::DuplicateSelf() {
 void DuplicateSelf::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     MonsterType_t MType = pMonster->getMonsterType();
 
     unordered_map<MonsterType_t, MonsterType_t>::const_iterator itr = m_DuplicateMonsterTypes.find(MType);
@@ -141,9 +134,6 @@ void DuplicateSelf::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 DuplicateSelf g_DuplicateSelf;

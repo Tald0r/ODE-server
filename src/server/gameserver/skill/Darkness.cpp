@@ -31,9 +31,6 @@ void Darkness::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -53,9 +50,6 @@ void Darkness::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -65,9 +59,6 @@ void Darkness::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, VampireS
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -321,9 +312,6 @@ void Darkness::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, VampireS
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -331,13 +319,9 @@ void Darkness::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, VampireS
 void Darkness::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     Assert(pMonster != NULL);
     Assert(pEnemy != NULL);
     execute(pMonster, pEnemy->getX(), pEnemy->getY());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -346,9 +330,6 @@ void Darkness::execute(Monster* pMonster, Creature* pEnemy)
 void Darkness::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -527,9 +508,6 @@ void Darkness::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Darkness g_Darkness;

@@ -23,9 +23,6 @@
 void Glacier1::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Zone* pZone = pMonster->getZone();
         Assert(pZone != NULL);
@@ -111,9 +108,6 @@ void Glacier1::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Glacier1 g_Glacier1;

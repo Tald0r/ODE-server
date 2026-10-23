@@ -14,8 +14,6 @@
 // Slayer object handler
 //////////////////////////////////////////////////////////////////////////////
 void BombingStar::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -27,15 +25,11 @@ void BombingStar::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot*
     }
 
     execute(pSlayer, pTargetCreature->getX(), pTargetCreature->getY(), pSkillSlot, CEffectID);
-
-    __END_CATCH
 }
 
 void BombingStar::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     try {
         SkillInput input(pSlayer, pSkillSlot);
         SkillOutput output;
@@ -74,8 +68,6 @@ void BombingStar::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSl
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-    __END_CATCH
 }
 
 BombingStar g_BombingStar;

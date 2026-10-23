@@ -22,8 +22,6 @@ void SimpleMeleeSkill::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Skill
                                const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -223,8 +221,6 @@ void SimpleMeleeSkill::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Skill
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 void SimpleMeleeSkill::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSlot* pVampireSkillSlot,
@@ -232,8 +228,6 @@ void SimpleMeleeSkill::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vam
                                int HitBonus)
 
 {
-    __BEGIN_TRY
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -358,8 +352,6 @@ void SimpleMeleeSkill::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vam
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 
@@ -368,8 +360,6 @@ void SimpleMeleeSkill::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ous
                                int HitBonus)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -519,16 +509,12 @@ void SimpleMeleeSkill::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ous
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, param.SkillType, param.Grade);
     }
-
-    __END_CATCH
 }
 
 void SimpleMeleeSkill::execute(Monster* pMonster, Creature* pEnemy, const SIMPLE_SKILL_INPUT& param,
                                SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pMonster != NULL);
     Assert(pEnemy != NULL);
 
@@ -622,6 +608,4 @@ void SimpleMeleeSkill::execute(Monster* pMonster, Creature* pEnemy, const SIMPLE
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, param.SkillType);
     }
-
-    __END_CATCH
 }

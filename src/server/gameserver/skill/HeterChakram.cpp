@@ -23,8 +23,6 @@ void HeterChakram::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ousters
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
     int Grade = 0;
@@ -194,8 +192,6 @@ void HeterChakram::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ousters
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), Grade);
     }
-
-    __END_CATCH
 }
 
 HeterChakram g_HeterChakram;

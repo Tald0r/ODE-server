@@ -36,8 +36,6 @@ void AbsorbSoul::execute(Ousters* pOusters, ObjectID_t TargetObjectID, ZoneCoord
                          CoordInven_t TargetInvenY)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     // When the client is locked, the verification packet has to be sent twice.
     bool bClientLocked = InvenX != 255;
@@ -280,15 +278,10 @@ void AbsorbSoul::execute(Ousters* pOusters, ObjectID_t TargetObjectID, ZoneCoord
     } catch (Throwable& t) {
         executeAbsorbSoulSkillFail(pOusters, getSkillType(), TargetObjectID, false, bClientLocked);
     }
-
-
-    __END_CATCH
 }
 
 void AbsorbSoul::makeLarvaToPupa(Ousters* pOusters, int TargetLevel, ObjectID_t ItemObjectID, CoordInven_t InvenX,
                                  CoordInven_t InvenY, CoordInven_t TargetInvenX, CoordInven_t TargetInvenY) {
-    __BEGIN_TRY
-
     Inventory* pInventory = pOusters->getInventory();
     Assert(pInventory != NULL);
     Zone* pZone = pOusters->getZone();
@@ -370,8 +363,6 @@ void AbsorbSoul::makeLarvaToPupa(Ousters* pOusters, int TargetLevel, ObjectID_t 
     gcSkillToInventoryOK1.setY(TargetInvenY);
 
     pOusters->getPlayer()->sendPacket(&gcSkillToInventoryOK1);
-
-    __END_CATCH
 }
 
 AbsorbSoul g_AbsorbSoul;

@@ -13,8 +13,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 TornadoSever::TornadoSever() {
-    __BEGIN_TRY
-
     m_pTornadoSeverMask[0].set(0, 0);
     m_pTornadoSeverMask[1].set(-1, -1);
     m_pTornadoSeverMask[2].set(0, -1);
@@ -24,8 +22,6 @@ TornadoSever::TornadoSever() {
     m_pTornadoSeverMask[6].set(-1, 1);
     m_pTornadoSeverMask[7].set(0, 1);
     m_pTornadoSeverMask[8].set(1, 1);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -34,9 +30,6 @@ TornadoSever::TornadoSever() {
 void TornadoSever::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -56,9 +49,6 @@ void TornadoSever::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -69,9 +59,6 @@ void TornadoSever::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot
 void TornadoSever::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -95,9 +82,6 @@ void TornadoSever::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillS
     }
 
     g_SimpleTileMeleeSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 TornadoSever g_TornadoSever;

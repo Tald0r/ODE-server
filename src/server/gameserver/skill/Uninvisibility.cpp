@@ -13,9 +13,6 @@
 void Uninvisibility::execute(Vampire* pVampire)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
 
     try {
@@ -36,9 +33,6 @@ void Uninvisibility::execute(Vampire* pVampire)
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -46,9 +40,6 @@ void Uninvisibility::execute(Vampire* pVampire)
 void Uninvisibility::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -64,9 +55,6 @@ void Uninvisibility::execute(Monster* pMonster)
         }
     } catch (Throwable& t) {
     }
-
-
-    __END_CATCH
 }
 
 Uninvisibility g_Uninvisibility;

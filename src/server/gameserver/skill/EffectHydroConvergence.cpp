@@ -21,8 +21,6 @@
 EffectHydroConvergence::EffectHydroConvergence(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_pTarget = pCreature;
     m_UserOID = 0;
     m_Damage = 0;
@@ -43,8 +41,6 @@ EffectHydroConvergence::EffectHydroConvergence(Creature* pCreature)
             m_TrageSaveHP = pMonsterAttacker->getHP();
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -52,8 +48,6 @@ EffectHydroConvergence::EffectHydroConvergence(Creature* pCreature)
 void EffectHydroConvergence::affect()
 
 {
-    __BEGIN_TRY
-
     setNextTime(10);
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     HP_t CurrentHP = 0;
@@ -92,9 +86,6 @@ void EffectHydroConvergence::affect()
             setDeadline(0);
         }
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -102,8 +93,6 @@ void EffectHydroConvergence::affect()
 void EffectHydroConvergence::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return;
 
@@ -137,8 +126,6 @@ void EffectHydroConvergence::affect(Creature* pCreature)
             pOusters->getPlayer()->sendPacket(&gcAttackerMI);
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -146,8 +133,6 @@ void EffectHydroConvergence::affect(Creature* pCreature)
 void EffectHydroConvergence::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     pCreature->removeFlag(Effect::EFFECT_CLASS_HYDRO_CONVERGENCE);
 
@@ -158,8 +143,6 @@ void EffectHydroConvergence::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_HYDRO_CONVERGENCE);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -167,9 +150,6 @@ void EffectHydroConvergence::unaffect(Creature* pCreature)
 void EffectHydroConvergence::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     // Take the objects within a 5*5 range and damage them.
     // Damage the target.
@@ -206,21 +186,14 @@ void EffectHydroConvergence::unaffect()
             }
         }
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHydroConvergence::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectHydroConvergence(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

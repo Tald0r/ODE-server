@@ -19,9 +19,6 @@
 void Rediance::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -114,9 +111,6 @@ void Rediance::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffe
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Rediance g_Rediance;

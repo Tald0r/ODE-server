@@ -27,39 +27,27 @@
 EffectBloodDrain::EffectBloodDrain(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodDrain::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodDrain::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodDrain::unaffect(Creature* pFromCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pFromCreature != NULL);
 
     if (pFromCreature->isSlayer()) {
@@ -113,9 +101,6 @@ void EffectBloodDrain::unaffect(Creature* pFromCreature)
         // Deletes it from the database.
         destroy(pFromCreature->getName());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -123,14 +108,8 @@ void EffectBloodDrain::unaffect(Creature* pFromCreature)
 void EffectBloodDrain::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 
@@ -138,26 +117,19 @@ void EffectBloodDrain::unaffect()
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodDrain::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodDrain::create(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().insertCreatureEffect(CREATURE_EFFECT_BLOOD_DRAIN, ownerID, currentYearTime,
                                                        m_Deadline.tv_sec, (int)m_Level, 0);
-
-    __END_CATCH
 }
 
 
@@ -166,11 +138,7 @@ void EffectBloodDrain::create(const string& ownerID)
 void EffectBloodDrain::destroy(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     defaultEffectSaveRepository().deleteCreatureEffect(CREATURE_EFFECT_BLOOD_DRAIN, ownerID);
-
-    __END_CATCH
 }
 
 
@@ -179,31 +147,23 @@ void EffectBloodDrain::destroy(const string& ownerID)
 void EffectBloodDrain::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().updateCreatureEffect(CREATURE_EFFECT_BLOOD_DRAIN, ownerID, currentYearTime,
                                                        m_Deadline.tv_sec, m_Level, 0);
-
-    __END_CATCH
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBloodDrain::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectBloodDrain(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -211,8 +171,6 @@ string EffectBloodDrain::toString() const {
 void EffectBloodDrainLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     if (!pCreature->isSlayer() && !pCreature->isOusters())
         return;
@@ -242,6 +200,4 @@ void EffectBloodDrainLoader::load(Creature* pCreature)
             pCreature->setFlag(Effect::EFFECT_CLASS_BLOOD_DRAIN);
         }
     }
-
-    __END_CATCH
 }

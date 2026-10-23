@@ -23,8 +23,6 @@ SimpleLinearMeleeSkill g_SimpleLinearMeleeSkill;
 void SimpleLinearMeleeSkill::execute(Slayer* pSlayer, int X, int Y, SkillSlot* pSkillSlot,
                                      const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result,
                                      CEffectID_t CEffectID /* =0 */) {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -302,6 +300,4 @@ void SimpleLinearMeleeSkill::execute(Slayer* pSlayer, int X, int Y, SkillSlot* p
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }

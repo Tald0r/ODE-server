@@ -24,9 +24,6 @@
 void Extreme::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -109,18 +106,12 @@ void Extreme::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkillSlot, CE
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void Extreme::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSlot* pVampireSkillSlot,
                       CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -228,17 +219,11 @@ void Extreme::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkill
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void Extreme::execute(Vampire* pVampire)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
 
     if (!pVampire->hasSkill(SKILL_EXTREME))
@@ -313,9 +298,6 @@ void Extreme::execute(Vampire* pVampire)
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 

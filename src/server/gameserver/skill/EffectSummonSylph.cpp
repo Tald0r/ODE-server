@@ -14,14 +14,10 @@
 EffectSummonSylph::EffectSummonSylph(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -29,9 +25,6 @@ EffectSummonSylph::EffectSummonSylph(Creature* pCreature)
 void EffectSummonSylph::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
@@ -56,9 +49,6 @@ void EffectSummonSylph::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(getSendEffectClass());
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -66,22 +56,14 @@ void EffectSummonSylph::unaffect(Creature* pCreature)
 void EffectSummonSylph::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSummonSylph::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectSummonSylph(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

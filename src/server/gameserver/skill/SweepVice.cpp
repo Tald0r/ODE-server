@@ -14,8 +14,6 @@
 void SweepVice::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -36,15 +34,11 @@ void SweepVice::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* p
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-    __END_CATCH
 }
 
 void SweepVice::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     cout << pSlayer->getName() << " use sweep vice level " << m_Level << endl;
 
     SkillInput input(pSlayer, pSkillSlot);
@@ -75,8 +69,6 @@ void SweepVice::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot
     param.Grade = m_Level;
 
     g_SimpleTileMissileSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-    __END_CATCH
 }
 
 SweepVice g_SweepVice1(0);

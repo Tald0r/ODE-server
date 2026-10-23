@@ -20,10 +20,10 @@
 void UltimateBlow::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG
+    __BEGIN_DEBUG
 
 
-        Assert(pSlayer != NULL);
+    Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
     try {
@@ -180,7 +180,7 @@ void UltimateBlow::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot
     }
 
 
-    __END_DEBUG __END_CATCH
+    __END_DEBUG
 }
 
 UltimateBlow g_UltimateBlow;

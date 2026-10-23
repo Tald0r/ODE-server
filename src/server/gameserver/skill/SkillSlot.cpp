@@ -9,8 +9,6 @@
 #include "repository/SkillSaveRepository.h"
 
 SkillSlot::SkillSlot() {
-    __BEGIN_TRY
-
     // The Vampire/Ousters slot classes zero these in their default
     // constructors; this one historically left them uninitialized, which
     // makes setRunTime(0)'s m_Interval comparison read garbage on a
@@ -21,37 +19,25 @@ SkillSlot::SkillSlot() {
     m_Interval = 0;
     m_CastingTime = 0;
     m_Enable = true;
-
-    __END_CATCH
 }
 
 SkillSlot::SkillSlot(SkillType_t SkillType, DWORD Exp, ulong Interval) {
-    __BEGIN_TRY
-
     m_SkillType = SkillType;
     m_Exp = Exp;
     m_ExpLevel = 0;
     m_Interval = Interval;
-
-    __END_CATCH
 }
 
 SkillSlot::~SkillSlot() {
-    __BEGIN_TRY
-
     m_SkillType = 0;
     m_Exp = 0;
     m_ExpLevel = 0;
     m_Interval = 0;
-
-    __END_CATCH
 }
 
 void SkillSlot::create(const string& OwnerID)
 
 {
-    __BEGIN_TRY
-
     SlayerSkillRecord record;
     record.skillType = m_SkillType;
     record.skillLevel = m_ExpLevel;
@@ -60,28 +46,18 @@ void SkillSlot::create(const string& OwnerID)
     record.castingTime = m_CastingTime;
     record.nextTime = m_runTime.tv_sec;
     defaultSkillSaveRepository().insertSlayerSkill(OwnerID, record);
-
-    __END_CATCH
 }
 
 void SkillSlot::save(const string& OwnerID)
 
 {
-    __BEGIN_TRY
-
     defaultSkillSaveRepository().updateSlayerSkill(OwnerID, m_SkillType, m_ExpLevel, m_Exp, m_Interval);
-
-    __END_CATCH
 }
 
 void SkillSlot::save()
 
 {
-    __BEGIN_TRY
-
     defaultSkillSaveRepository().updateSlayerSkill(m_Name, m_SkillType, m_ExpLevel, m_Exp, m_Interval);
-
-    __END_CATCH
 }
 
 Turn_t SkillSlot::getRemainTurn(Timeval currentTime) const {

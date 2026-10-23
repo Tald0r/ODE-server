@@ -21,9 +21,6 @@
 void TurnUndead::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     // Slayer Object Assertion
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
@@ -175,9 +172,6 @@ void TurnUndead::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEf
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 TurnUndead g_TurnUndead;

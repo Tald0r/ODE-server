@@ -16,11 +16,7 @@
 EffectProtectionFromCurse::EffectProtectionFromCurse(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -28,39 +24,28 @@ EffectProtectionFromCurse::EffectProtectionFromCurse(Creature* pCreature)
 void EffectProtectionFromCurse::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Resist_t resist = pCreature->getResist(MAGIC_DOMAIN_CURSE);
     resist = min(MAX_RESIST, (int)(resist + m_Resist));
     pCreature->setResist(MAGIC_DOMAIN_CURSE, resist);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromCurse::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromCurse::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromCurse::unaffect()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
@@ -80,33 +65,26 @@ void EffectProtectionFromCurse::unaffect()
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromCurse::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectProtectionFromCurse::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectProtectionFromCurse(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectProtectionFromCurseLoader::load(Creature* pCreature)
 
-{
-    __BEGIN_TRY __END_CATCH
-}
+{}

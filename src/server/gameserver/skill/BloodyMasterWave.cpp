@@ -13,8 +13,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 BloodyMasterWave::BloodyMasterWave() {
-    __BEGIN_TRY
-
     m_pBloodyMasterWaveMask[0].set(0, -3);
     m_pBloodyMasterWaveMask[1].set(-3, 0);
     m_pBloodyMasterWaveMask[2].set(3, 0);
@@ -43,8 +41,6 @@ BloodyMasterWave::BloodyMasterWave() {
     m_pBloodyMasterWaveMask[21].set(-1, 1);
     m_pBloodyMasterWaveMask[22].set(0, 1);
     m_pBloodyMasterWaveMask[23].set(1, 1);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -53,9 +49,6 @@ BloodyMasterWave::BloodyMasterWave() {
 void BloodyMasterWave::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -65,9 +58,6 @@ void BloodyMasterWave::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkil
         executeSkillFailException(pVampire, getSkillType());
         ////cout << t.toString() << endl;
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -77,9 +67,6 @@ void BloodyMasterWave::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vam
                                CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -90,9 +77,6 @@ void BloodyMasterWave::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vam
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -102,9 +86,6 @@ void BloodyMasterWave::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, 
                                CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pVampire);
     SkillOutput output;
     computeOutput(input, output);
@@ -132,9 +113,6 @@ void BloodyMasterWave::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, 
 
     g_SimpleTileMissileSkill.execute(pVampire, pVampire->getX(), pVampire->getY(), pVampireSkillSlot, param, result, 0,
                                      bForceKnockback);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -143,9 +121,6 @@ void BloodyMasterWave::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, 
 void BloodyMasterWave::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -176,9 +151,6 @@ void BloodyMasterWave::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     }
 
     g_SimpleTileMissileSkill.execute(pMonster, pMonster->getX(), pMonster->getY(), param, result, 0, bForceKnockback);
-
-
-    __END_CATCH
 }
 
 BloodyMasterWave g_BloodyMasterWave;

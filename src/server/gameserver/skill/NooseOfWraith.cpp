@@ -13,11 +13,7 @@
 // Constructor
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
-NooseOfWraith::NooseOfWraith() {
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+NooseOfWraith::NooseOfWraith() {}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -27,9 +23,6 @@ void NooseOfWraith::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampir
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -50,9 +43,6 @@ void NooseOfWraith::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampir
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -62,9 +52,6 @@ void NooseOfWraith::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vam
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pVampire);
     SkillOutput output;
     computeOutput(input, output);
@@ -89,9 +76,6 @@ void NooseOfWraith::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vam
         }
 
     g_SimpleTileMissileSkill.execute(pVampire, X, Y, pVampireSkillSlot, param, result, CEffectID, false);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -100,9 +84,6 @@ void NooseOfWraith::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vam
 void NooseOfWraith::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -128,9 +109,6 @@ void NooseOfWraith::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 
     g_SimpleTileMissileSkill.execute(pMonster, X, Y, param, result);
-
-
-    __END_CATCH
 }
 
 NooseOfWraith g_NooseOfWraith;

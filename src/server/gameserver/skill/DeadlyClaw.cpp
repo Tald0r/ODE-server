@@ -14,8 +14,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 DeadlyClaw::DeadlyClaw() {
-    __BEGIN_TRY
-
     m_pDeadlyClawMask[0].set(0, 0);
     m_pDeadlyClawMask[1].set(-1, -1);
     m_pDeadlyClawMask[2].set(0, -1);
@@ -25,8 +23,6 @@ DeadlyClaw::DeadlyClaw() {
     m_pDeadlyClawMask[6].set(-1, 1);
     m_pDeadlyClawMask[7].set(0, 1);
     m_pDeadlyClawMask[8].set(1, 1);
-
-    __END_CATCH
 }
 
 
@@ -37,9 +33,6 @@ void DeadlyClaw::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -60,9 +53,6 @@ void DeadlyClaw::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,9 +62,6 @@ void DeadlyClaw::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampir
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pVampire);
     SkillOutput output;
     computeOutput(input, output);
@@ -98,9 +85,6 @@ void DeadlyClaw::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampir
     }
 
     g_SimpleTileMeleeSkill.execute(pVampire, X, Y, pVampireSkillSlot, param, result, CEffectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -109,9 +93,6 @@ void DeadlyClaw::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampir
 void DeadlyClaw::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -135,9 +116,6 @@ void DeadlyClaw::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     }
 
     g_SimpleTileMeleeSkill.execute(pMonster, X, Y, param, result);
-
-
-    __END_CATCH
 }
 
 DeadlyClaw g_DeadlyClaw;

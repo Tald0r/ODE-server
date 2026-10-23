@@ -26,9 +26,6 @@ void ThrowHolyWater::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, ObjectI
                              CoordInven_t InvenY)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
 
     try {
@@ -178,9 +175,6 @@ void ThrowHolyWater::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, ObjectI
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ThrowHolyWater g_ThrowHolyWater;

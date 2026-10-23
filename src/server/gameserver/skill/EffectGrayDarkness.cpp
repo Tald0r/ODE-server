@@ -16,13 +16,9 @@
 EffectGrayDarkness::EffectGrayDarkness(Zone* pZone, ZoneCoord_t ZoneX, ZoneCoord_t ZoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = ZoneX;
     m_Y = ZoneY;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -38,26 +34,16 @@ EffectGrayDarkness::EffectGrayDarkness(Zone* pZone, ZoneCoord_t ZoneX, ZoneCoord
 void EffectGrayDarkness::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
 
     // unaffect creatures on tile
 
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 
 string EffectGrayDarkness::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectGrayDarkness(" << "DayTime:" << m_Deadline.tv_sec << ")";
     return msg.toString();
-
-    __END_CATCH
 }

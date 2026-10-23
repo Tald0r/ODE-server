@@ -20,15 +20,11 @@
 EffectDestinies::EffectDestinies(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_pTarget = pCreature;
     m_UserOID = 0;
     m_Damage = 0;
     m_TargetClass = Creature::CREATURE_CLASS_MAX;
     m_TargetSpriteType = 0;
-
-    __END_CATCH
 }
 
 void EffectDestinies::setTargetType(Creature* pCreature) {
@@ -47,8 +43,6 @@ void EffectDestinies::setTargetType(Creature* pCreature) {
 void EffectDestinies::affect()
 
 {
-    __BEGIN_TRY
-
     setDeadline(0);
 
     Creature* pCaster = dynamic_cast<Creature*>(m_pTarget);
@@ -91,9 +85,6 @@ void EffectDestinies::affect()
                     affect(pCreature);
             }
         }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -101,8 +92,6 @@ void EffectDestinies::affect()
 void EffectDestinies::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return;
 
@@ -151,38 +140,26 @@ void EffectDestinies::affect(Creature* pCreature)
             pCreature->getPlayer()->sendPacket(&gcOK6);
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDestinies::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDestinies::unaffect()
 
-    {__BEGIN_TRY
-
-
-         __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDestinies::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectDestinies(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

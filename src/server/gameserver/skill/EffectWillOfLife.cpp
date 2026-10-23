@@ -17,30 +17,20 @@
 EffectWillOfLife::EffectWillOfLife(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectWillOfLife::affect()
 
 {
-    __BEGIN_TRY
-
     if (m_pTarget != NULL && m_pTarget->getObjectClass() == Object::OBJECT_CLASS_CREATURE) {
         affect(dynamic_cast<Creature*>(m_pTarget));
     }
-
-    __END_CATCH
 }
 
 void EffectWillOfLife::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return;
 
@@ -61,27 +51,18 @@ void EffectWillOfLife::affect(Creature* pCreature)
     pVampire->setHP(nextHP);
 
     setNextTime(10);
-
-    __END_CATCH
 }
 
 void EffectWillOfLife::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 void EffectWillOfLife::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -105,15 +86,10 @@ void EffectWillOfLife::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EffectWillOfLife::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectWillOfLife(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

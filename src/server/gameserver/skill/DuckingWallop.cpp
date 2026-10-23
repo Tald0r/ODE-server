@@ -24,8 +24,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 DuckingWallop::DuckingWallop() {
-    __BEGIN_TRY
-
     const int width[7] = {0, 1, 1, 1, 1, 1, 1};
 
     TPOINT mask[8];
@@ -77,8 +75,6 @@ DuckingWallop::DuckingWallop() {
             }
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -88,9 +84,6 @@ void DuckingWallop::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouster
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -111,9 +104,6 @@ void DuckingWallop::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouster
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -123,8 +113,6 @@ void DuckingWallop::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ous
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     SkillType_t SkillType = getSkillType();
 
     // Knowledge of Blood gives a hit bonus of 10.
@@ -321,9 +309,6 @@ void DuckingWallop::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ous
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, SkillType);
     }
-
-
-    __END_CATCH
 }
 
 DuckingWallop g_DuckingWallop;

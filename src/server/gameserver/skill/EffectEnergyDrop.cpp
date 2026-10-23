@@ -28,23 +28,16 @@
 EffectEnergyDrop::EffectEnergyDrop(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_UserObjectID = 0;
-
-    __END_CATCH
 }
 
 
 bool EffectEnergyDrop::affectCreature(Creature* pTargetCreature, bool bAffectByMove)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pTargetCreature != NULL);
 
     // Not applied if the target already has the acid storm effect.
@@ -102,63 +95,40 @@ bool EffectEnergyDrop::affectCreature(Creature* pTargetCreature, bool bAffectByM
 
 
     return true;
-
-    __END_CATCH
 }
 
 
 void EffectEnergyDrop::affect()
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 void EffectEnergyDrop::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectEnergyDrop::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectEnergyDrop::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectEnergyDrop::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-    __END_CATCH
 }
 
 void EffectEnergyDrop::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObjbect)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 string EffectEnergyDrop::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectEnergyDrop(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

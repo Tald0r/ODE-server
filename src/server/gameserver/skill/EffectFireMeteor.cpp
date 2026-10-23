@@ -16,30 +16,20 @@
 EffectFireMeteor::EffectFireMeteor(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectFireMeteor::affect() {
-    __BEGIN_TRY
-
     if (m_pTarget == NULL || m_pTarget->getObjectClass() != OBJECT_CLASS_CREATURE) {
         setDeadline(0);
         return;
     }
     affect(dynamic_cast<Creature*>(m_pTarget));
-
-    __END_CATCH
 }
 
 void EffectFireMeteor::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     if (pCreature->isDead()) {
         setDeadline(0);
@@ -77,27 +67,18 @@ void EffectFireMeteor::affect(Creature* pCreature)
         setDeadline(0);
     else
         setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 void EffectFireMeteor::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 void EffectFireMeteor::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -116,15 +97,10 @@ void EffectFireMeteor::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EffectFireMeteor::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectFireMeteor(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

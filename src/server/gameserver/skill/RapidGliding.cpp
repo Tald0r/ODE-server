@@ -19,8 +19,6 @@ void RapidGliding::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vamp
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -96,9 +94,6 @@ void RapidGliding::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vamp
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 // Vampire object handler
@@ -107,9 +102,6 @@ void RapidGliding::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -133,9 +125,6 @@ void RapidGliding::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 RapidGliding g_RapidGliding;

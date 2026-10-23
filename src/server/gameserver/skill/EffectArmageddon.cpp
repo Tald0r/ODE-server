@@ -19,13 +19,9 @@
 EffectArmageddon::EffectArmageddon(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -33,15 +29,11 @@ EffectArmageddon::EffectArmageddon(Creature* pCreature)
 void EffectArmageddon::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     Assert(pCreature != NULL);
 
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -49,8 +41,6 @@ void EffectArmageddon::affect()
 void EffectArmageddon::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     Zone* pZone = pCreature->getZone();
@@ -58,8 +48,6 @@ void EffectArmageddon::affect(Creature* pCreature)
 
     // The tick only rearms the effect; it deals no damage of its own.
     setNextTime(m_Delay);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -67,8 +55,6 @@ void EffectArmageddon::affect(Creature* pCreature)
 void EffectArmageddon::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
 
@@ -83,8 +69,6 @@ void EffectArmageddon::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_ARMAGEDDON);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -92,24 +76,16 @@ void EffectArmageddon::unaffect(Creature* pCreature)
 void EffectArmageddon::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectArmageddon::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectArmageddon(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 

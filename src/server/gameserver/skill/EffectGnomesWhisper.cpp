@@ -14,13 +14,9 @@
 EffectGnomesWhisper::EffectGnomesWhisper(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -28,9 +24,6 @@ EffectGnomesWhisper::EffectGnomesWhisper(Creature* pCreature)
 void EffectGnomesWhisper::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     // Turns off the flag.
@@ -47,9 +40,6 @@ void EffectGnomesWhisper::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_GNOMES_WHISPER);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,22 +47,14 @@ void EffectGnomesWhisper::unaffect(Creature* pCreature)
 void EffectGnomesWhisper::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectGnomesWhisper::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectGnomesWhisper(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

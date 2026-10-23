@@ -22,9 +22,6 @@ void ProtectionFromBlood::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Sk
                                   CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -138,9 +135,6 @@ void ProtectionFromBlood::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Sk
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -149,9 +143,6 @@ void ProtectionFromBlood::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Sk
 void ProtectionFromBlood::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pSlayer->getPlayer();
         Zone* pZone = pSlayer->getZone();
@@ -231,9 +222,6 @@ void ProtectionFromBlood::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffec
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ProtectionFromBlood g_ProtectionFromBlood;

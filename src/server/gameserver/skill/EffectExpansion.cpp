@@ -20,11 +20,7 @@
 EffectExpansion::EffectExpansion(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -32,8 +28,6 @@ EffectExpansion::EffectExpansion(Creature* pCreature)
 void EffectExpansion::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer());
 
@@ -43,8 +37,6 @@ void EffectExpansion::affect(Creature* pCreature)
     pSlayer->initAllStat();
     pSlayer->sendRealWearingInfo();
     pSlayer->sendModifyInfo(prev);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -52,14 +44,8 @@ void EffectExpansion::affect(Creature* pCreature)
 void EffectExpansion::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -67,7 +53,6 @@ void EffectExpansion::unaffect()
 void EffectExpansion::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -104,17 +89,13 @@ void EffectExpansion::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectExpansion::toString() const {
-    __BEGIN_TRY
     StringStream msg;
 
     msg << "EffectExpansion(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

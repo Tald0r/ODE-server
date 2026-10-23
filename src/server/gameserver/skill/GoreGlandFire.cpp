@@ -14,8 +14,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 GoreGlandFire::GoreGlandFire() {
-    __BEGIN_TRY
-
     m_pGoreGlandFireMask[0].set(0, 0);
     m_pGoreGlandFireMask[1].set(-1, -1);
     m_pGoreGlandFireMask[2].set(0, -1);
@@ -25,8 +23,6 @@ GoreGlandFire::GoreGlandFire() {
     m_pGoreGlandFireMask[6].set(-1, 1);
     m_pGoreGlandFireMask[7].set(0, 1);
     m_pGoreGlandFireMask[8].set(1, 1);
-
-    __END_CATCH
 }
 
 
@@ -36,9 +32,6 @@ GoreGlandFire::GoreGlandFire() {
 void GoreGlandFire::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -62,9 +55,6 @@ void GoreGlandFire::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     }
 
     g_SimpleTileMissileSkill.execute(pMonster, X, Y, param, result);
-
-
-    __END_CATCH
 }
 
 GoreGlandFire g_GoreGlandFire;

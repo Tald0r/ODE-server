@@ -22,20 +22,14 @@
 EffectShadowOfStorm::EffectShadowOfStorm(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_UserObjectID = 0;
     m_Damage = 0;
-
-    __END_CATCH
 }
 
 void EffectShadowOfStorm::checkPosition() {
-    __BEGIN_TRY
-
     for (int i = -2; i <= 2; ++i)
         for (int j = -2; j <= 2; ++j) {
             int tx = m_X + i;
@@ -62,9 +56,6 @@ void EffectShadowOfStorm::checkPosition() {
                 }
             }
         }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,9 +63,6 @@ void EffectShadowOfStorm::checkPosition() {
 void EffectShadowOfStorm::affect()
 
 {
-    __BEGIN_TRY
-
-
     Assert(m_pZone != NULL);
 
     // Get the creature that cast this effect.
@@ -185,9 +173,6 @@ void EffectShadowOfStorm::affect()
         }
 
     setNextTime(10);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -195,25 +180,15 @@ void EffectShadowOfStorm::affect()
 void EffectShadowOfStorm::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectShadowOfStorm::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectShadowOfStorm(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

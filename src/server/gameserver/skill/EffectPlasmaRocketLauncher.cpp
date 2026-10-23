@@ -21,12 +21,8 @@
 EffectPlasmaRocketLauncher::EffectPlasmaRocketLauncher(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_UserObjectID = 0;
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -34,13 +30,8 @@ EffectPlasmaRocketLauncher::EffectPlasmaRocketLauncher(Creature* pCreature)
 void EffectPlasmaRocketLauncher::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -48,7 +39,6 @@ void EffectPlasmaRocketLauncher::affect()
 void EffectPlasmaRocketLauncher::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -120,7 +110,6 @@ void EffectPlasmaRocketLauncher::affect(Creature* pCreature)
     setDeadline(0);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -128,8 +117,6 @@ void EffectPlasmaRocketLauncher::affect(Creature* pCreature)
 void EffectPlasmaRocketLauncher::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     if (pCreature == NULL)
@@ -144,18 +131,12 @@ void EffectPlasmaRocketLauncher::unaffect()
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_PLASMA_ROCKET_LAUNCHER);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectPlasmaRocketLauncher::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectPlasmaRocketLauncher(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

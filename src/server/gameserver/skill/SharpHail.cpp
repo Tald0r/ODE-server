@@ -24,9 +24,6 @@ void SharpHail::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSki
                         CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -48,9 +45,6 @@ void SharpHail::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSki
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), 0);
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,9 +54,6 @@ void SharpHail::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ousters
                         CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -197,9 +188,6 @@ void SharpHail::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ousters
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), 0);
     }
-
-
-    __END_CATCH
 }
 
 SharpHail g_SharpHail;

@@ -16,30 +16,20 @@
 EffectMagnumSpear::EffectMagnumSpear(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectMagnumSpear::affect() {
-    __BEGIN_TRY
-
     if (m_pTarget == NULL || m_pTarget->getObjectClass() != OBJECT_CLASS_CREATURE) {
         setDeadline(0);
         return;
     }
     affect(dynamic_cast<Creature*>(m_pTarget));
-
-    __END_CATCH
 }
 
 void EffectMagnumSpear::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     if (pCreature->isDead()) {
         setDeadline(0);
@@ -77,27 +67,18 @@ void EffectMagnumSpear::affect(Creature* pCreature)
         setDeadline(0);
     else
         setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 void EffectMagnumSpear::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 void EffectMagnumSpear::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -116,15 +97,10 @@ void EffectMagnumSpear::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EffectMagnumSpear::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectMagnumSpear(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

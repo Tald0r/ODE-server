@@ -21,43 +21,30 @@
 EffectVampirePortal::EffectVampirePortal(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = x;
     m_Y = y;
     m_Duration = 0;
     m_Count = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectVampirePortal::affect(Creature* pTargetCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectVampirePortal::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectVampirePortal::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     // Delete the effect from the tile.
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
@@ -68,25 +55,18 @@ void EffectVampirePortal::unaffect()
     gcDeleteEffectFromTile.setObjectID(m_ObjectID);
     gcDeleteEffectFromTile.setXY(m_X, m_Y);
     m_pZone->broadcastPacket(m_X, m_Y, &gcDeleteEffectFromTile);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectVampirePortal::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectVampirePortal::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectVampirePortal(" << "DayTime:" << m_Deadline.tv_sec << ")";
     return msg.toString();
-
-    __END_CATCH
 }

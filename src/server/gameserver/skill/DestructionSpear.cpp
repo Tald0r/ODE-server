@@ -20,8 +20,6 @@ void DestructionSpear::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ous
                                CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -42,16 +40,12 @@ void DestructionSpear::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ous
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-    __END_CATCH
 }
 
 void DestructionSpear::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersSkillSlot* pOustersSkillSlot,
                                CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pOusters->getZone();
     Assert(pZone != NULL);
 
@@ -154,8 +148,6 @@ void DestructionSpear::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, 
             }
         }
     }
-
-    __END_CATCH
 }
 
 DestructionSpear g_DestructionSpear;

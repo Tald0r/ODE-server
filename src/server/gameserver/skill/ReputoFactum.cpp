@@ -27,9 +27,6 @@ void ReputoFactum::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ousters
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -163,9 +160,6 @@ void ReputoFactum::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ousters
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ReputoFactum g_ReputoFactum;

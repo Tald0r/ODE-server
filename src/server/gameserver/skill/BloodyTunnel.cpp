@@ -22,9 +22,6 @@ void BloodyTunnel::execute(Vampire* pVampire, ObjectID_t InvenObjectID, CoordInv
                            CoordInven_t TargetX, CoordInven_t TargetY, VampireSkillSlot* pSkillSlot)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -146,9 +143,6 @@ void BloodyTunnel::execute(Vampire* pVampire, ObjectID_t InvenObjectID, CoordInv
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 BloodyTunnel g_BloodyTunnel;

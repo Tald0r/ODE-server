@@ -24,9 +24,6 @@ void ShadowOfStorm::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouster
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -48,9 +45,6 @@ void ShadowOfStorm::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouster
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), 0);
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,9 +54,6 @@ void ShadowOfStorm::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ous
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -195,9 +186,6 @@ void ShadowOfStorm::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ous
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), 0);
     }
-
-
-    __END_CATCH
 }
 
 ShadowOfStorm g_ShadowOfStorm;

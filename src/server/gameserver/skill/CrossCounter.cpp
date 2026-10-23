@@ -23,9 +23,6 @@
 void CrossCounter::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -109,9 +106,6 @@ void CrossCounter::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t C
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -119,9 +113,6 @@ void CrossCounter::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t C
 // Returns true when the cross counter triggers.
 //////////////////////////////////////////////////////////////////////////////
 bool CheckCrossCounter(Creature* pAttacker, Creature* pTargetCreature, Damage_t damage, Range_t range) {
-    __BEGIN_TRY
-
-
     Assert(pAttacker != NULL);
     Assert(pTargetCreature != NULL);
 
@@ -264,8 +255,6 @@ bool CheckCrossCounter(Creature* pAttacker, Creature* pTargetCreature, Damage_t 
 
 
     return bSuccess;
-
-    __END_CATCH
 }
 
 CrossCounter g_CrossCounter;

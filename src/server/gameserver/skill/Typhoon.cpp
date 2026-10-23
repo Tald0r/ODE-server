@@ -15,9 +15,6 @@
 void Typhoon::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -63,9 +60,6 @@ void Typhoon::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSk
     }
 
     // Deals damage to the target, then attaches the effect.
-
-
-    __END_CATCH
 }
 
 Typhoon g_Typhoon;

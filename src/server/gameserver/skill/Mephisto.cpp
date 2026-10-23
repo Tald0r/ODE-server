@@ -24,9 +24,6 @@
 void Mephisto::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -111,18 +108,12 @@ void Mephisto::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkillSlot, C
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void Mephisto::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSlot* pVampireSkillSlot,
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -233,17 +224,11 @@ void Mephisto::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void Mephisto::execute(Vampire* pVampire)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
 
     if (!pVampire->hasSkill(SKILL_MEPHISTO))
@@ -329,9 +314,6 @@ void Mephisto::execute(Vampire* pVampire)
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 

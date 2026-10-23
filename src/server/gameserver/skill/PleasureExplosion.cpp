@@ -20,11 +20,7 @@
 // Constructor
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
-PleasureExplosion::PleasureExplosion() {
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+PleasureExplosion::PleasureExplosion() {}
 
 //////////////////////////////////////////////////////////////////////////////
 // Monster self handler
@@ -32,9 +28,6 @@ PleasureExplosion::PleasureExplosion() {
 void PleasureExplosion::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -98,9 +91,6 @@ void PleasureExplosion::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 PleasureExplosion g_PleasureExplosion;

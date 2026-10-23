@@ -16,9 +16,6 @@ void StoneAuger::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSk
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -38,16 +35,10 @@ void StoneAuger::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSk
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void StoneAuger::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersSkillSlot* pOustersSkillSlot,
                          CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -80,8 +71,6 @@ void StoneAuger::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ouster
     param.addMask(0, -1, 100);
 
     g_SimpleTileMissileSkill.execute(pOusters, X, Y, pOustersSkillSlot, param, result, CEffectID);
-
-    __END_CATCH
 }
 
 StoneAuger g_StoneAuger;

@@ -14,9 +14,6 @@
 void SingleBlow::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -36,9 +33,6 @@ void SingleBlow::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleMeleeSkill.execute(pSlayer, TargetObjectID, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -47,9 +41,6 @@ void SingleBlow::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
 void SingleBlow::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     SIMPLE_SKILL_INPUT param;
     param.SkillType = getSkillType();
     param.SkillDamage = 5;
@@ -65,9 +56,6 @@ void SingleBlow::execute(Monster* pMonster, Creature* pEnemy)
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleMeleeSkill.execute(pMonster, pEnemy, param, result);
-
-
-    __END_CATCH
 }
 
 SingleBlow g_SingleBlow;

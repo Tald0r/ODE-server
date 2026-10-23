@@ -23,8 +23,6 @@ void AcidEruption::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -148,8 +146,6 @@ void AcidEruption::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -158,8 +154,6 @@ void AcidEruption::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
 void AcidEruption::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     Assert(pMonster != NULL);
     Assert(pEnemy != NULL);
 
@@ -258,8 +252,6 @@ void AcidEruption::execute(Monster* pMonster, Creature* pEnemy)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-    __END_CATCH
 }
 
 AcidEruption g_AcidEruption;

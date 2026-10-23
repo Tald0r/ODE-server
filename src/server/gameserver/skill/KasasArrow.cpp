@@ -16,9 +16,6 @@ void KasasArrow::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSk
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -45,9 +42,6 @@ void KasasArrow::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSk
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleMissileSkill.execute(pOusters, TargetObjectID, pOustersSkillSlot, param, result, CEffectID);
-
-
-    __END_CATCH
 }
 
 KasasArrow g_KasasArrow;

@@ -16,9 +16,6 @@ void PoisonousHands::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampi
                              CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pVampire);
     SkillOutput output;
     computeOutput(input, output);
@@ -55,9 +52,6 @@ void PoisonousHands::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampi
     }
 
     g_SimpleMeleeSkill.execute(pVampire, TargetObjectID, pVampireSkillSlot, param, result, HitBonus);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -66,9 +60,6 @@ void PoisonousHands::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampi
 void PoisonousHands::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -88,9 +79,6 @@ void PoisonousHands::execute(Monster* pMonster, Creature* pEnemy)
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleMeleeSkill.execute(pMonster, pEnemy, param, result);
-
-
-    __END_CATCH
 }
 
 PoisonousHands g_PoisonousHands;

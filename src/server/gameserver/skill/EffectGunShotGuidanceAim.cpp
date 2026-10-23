@@ -31,32 +31,23 @@ int GSGDamageModify[5][5] = {
 EffectGunShotGuidanceAim::EffectGunShotGuidanceAim(Creature* pCreature, Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
     m_pZone = pZone;
     m_X = x;
     m_Y = y;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectGunShotGuidanceAim::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectGunShotGuidanceAim::unaffect(Creature* pCastCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCastCreature != NULL);
 
     // A missing effect flag means the caster died and will not be transported.
@@ -209,8 +200,6 @@ void EffectGunShotGuidanceAim::unaffect(Creature* pCastCreature)
     gcAddEffectToTile.setDuration(10); // Arbitrary, just one second
 
     m_pZone->broadcastPacket(m_X, m_Y, &gcAddEffectToTile);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -218,8 +207,6 @@ void EffectGunShotGuidanceAim::unaffect(Creature* pCastCreature)
 void EffectGunShotGuidanceAim::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget); // by Sequoia
 
     Assert(pCreature != NULL);
@@ -240,20 +227,14 @@ void EffectGunShotGuidanceAim::unaffect()
 
         pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectGunShotGuidanceAim::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectGunShotGuidanceAim("
         << "Zone:" << de::gameContext().zoneInfos().getZoneInfo(m_pZone->getZoneID())->getFullName()
         << ",X:" << (int)m_X << ",Y:" << (int)m_Y << ",Damage:" << (int)m_Damage << ")";
     return msg.toString();
-
-    __END_CATCH
 }

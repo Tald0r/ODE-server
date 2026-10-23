@@ -23,16 +23,12 @@
 EffectProminence::EffectProminence(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_UserObjectID = 0;
     m_SendEffectClass = getEffectClass();
     m_bForce = false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,9 +36,6 @@ EffectProminence::EffectProminence(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t z
 void EffectProminence::affect()
 
 {
-    __BEGIN_TRY
-
-
     Assert(m_pZone != NULL);
 
     // Get the creature that cast this effect.
@@ -142,9 +135,6 @@ void EffectProminence::affect()
     }
 
     setNextTime(m_Tick);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -152,34 +142,22 @@ void EffectProminence::affect()
 void EffectProminence::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectProminence::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectProminence(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 void EffectProminenceLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     vector<ZoneEffectRow> rows =
         defaultZoneInfoRepository().loadZoneEffectRects(pZone->getZoneID(), (int)Effect::EFFECT_CLASS_PROMINENCE_3);
 
@@ -212,6 +190,4 @@ void EffectProminenceLoader::load(Zone* pZone)
                 }
             }
     }
-
-    __END_CATCH
 }

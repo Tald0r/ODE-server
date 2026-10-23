@@ -26,9 +26,6 @@
 void Tendril::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -180,9 +177,6 @@ void Tendril::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkill
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Tendril g_Tendril;

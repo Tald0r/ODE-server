@@ -32,9 +32,6 @@ void CreateMine::execute(Slayer* pSlayer, ObjectID_t InvenObjectID, CoordInven_t
                          CoordInven_t TargetX, CoordInven_t TargetY, SkillSlot* pSkillSlot)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -180,20 +177,13 @@ void CreateMine::execute(Slayer* pSlayer, ObjectID_t InvenObjectID, CoordInven_t
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 bool CreateMine::canMake(ItemType_t BombType, int DomainLevel, int SkillLevel) {
-    __BEGIN_TRY
-
     int ratio = 10 * ((SkillLevel / 10) - BombType) + 40;
     if ((rand() % 100) < ratio)
         return true;
     return false;
-
-    __END_CATCH
 }
 
 CreateMine g_CreateMine;

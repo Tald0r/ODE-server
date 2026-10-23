@@ -18,9 +18,6 @@
 void GnomesWhisper::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -99,9 +96,6 @@ void GnomesWhisper::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSl
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 GnomesWhisper g_GnomesWhisper;

@@ -21,9 +21,6 @@
 void OpenCasket::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
 
     try {
@@ -72,9 +69,6 @@ void OpenCasket::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkillSlot,
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 OpenCasket g_OpenCasket;

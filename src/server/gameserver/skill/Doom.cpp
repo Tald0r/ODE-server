@@ -26,9 +26,6 @@
 void Doom::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -224,9 +221,6 @@ void Doom::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSlo
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 
@@ -236,9 +230,6 @@ void Doom::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSlo
 void Doom::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -275,16 +266,11 @@ void Doom::execute(Monster* pMonster, Creature* pEnemy)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void Doom::executeMonster(Zone* pZone, Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     if (!pMonster->isEnemyToAttack(pEnemy)) {
         return;
     }
@@ -425,8 +411,6 @@ void Doom::executeMonster(Zone* pZone, Monster* pMonster, Creature* pEnemy)
     } else {
         executeSkillFailNormal(pMonster, getSkillType(), pEnemy);
     }
-
-    __END_CATCH
 }
 
 Doom g_Doom;

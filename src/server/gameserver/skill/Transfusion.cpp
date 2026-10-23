@@ -29,9 +29,6 @@ void Transfusion::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireS
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -227,9 +224,6 @@ void Transfusion::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireS
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -239,8 +233,6 @@ void Transfusion::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampi
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     try {
         Zone* pZone = pVampire->getZone();
         Assert(pZone != NULL);
@@ -263,8 +255,6 @@ void Transfusion::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampi
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-    __END_CATCH
 }
 
 

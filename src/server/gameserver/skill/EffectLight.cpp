@@ -21,33 +21,20 @@
 EffectLight::EffectLight(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectLight::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectLight::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectLight::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer());
 
@@ -84,34 +71,22 @@ void EffectLight::unaffect(Creature* pCreature)
 
         destroy(pSlayer->getName());
     }
-
-
-    __END_CATCH
 }
 
 void EffectLight::unaffect()
 
 {
-    __BEGIN_TRY
-
     Slayer* pSlayer = dynamic_cast<Slayer*>(m_pTarget);
     unaffect(pSlayer);
-
-    __END_CATCH
 }
 
 void EffectLight::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectLight::create(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Timeval currentTime;
     getCurrentTime(currentTime);
 
@@ -120,49 +95,33 @@ void EffectLight::create(const string& ownerID)
 
     defaultEffectSaveRepository().insertCreatureEffect(CREATURE_EFFECT_LIGHT, ownerID, currentYearTime,
                                                        m_Deadline.tv_sec, 0, (int)m_OldSight);
-
-    __END_CATCH
 }
 
 void EffectLight::destroy(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     defaultEffectSaveRepository().deleteCreatureEffect(CREATURE_EFFECT_LIGHT, ownerID);
-
-    __END_CATCH
 }
 
 void EffectLight::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().updateCreatureEffect(CREATURE_EFFECT_LIGHT, ownerID, currentYearTime,
                                                        m_Deadline.tv_sec, 0, (int)m_OldSight);
-
-    __END_CATCH
 }
 
 string EffectLight::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectLight(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 void EffectLightLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL) {
         return;
     }
@@ -195,6 +154,4 @@ void EffectLightLoader::load(Creature* pCreature)
             }
         }
     }
-
-    __END_CATCH
 }

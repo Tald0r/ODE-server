@@ -15,8 +15,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 CriticalGround::CriticalGround() {
-    __BEGIN_TRY
-
     // The surrounding 8 tiles
     m_pCriticalGroundMask[0].set(1, 1);
     m_pCriticalGroundMask[1].set(-1, -1);
@@ -26,8 +24,6 @@ CriticalGround::CriticalGround() {
     m_pCriticalGroundMask[5].set(1, 0);
     m_pCriticalGroundMask[6].set(-1, 1);
     m_pCriticalGroundMask[7].set(0, 1);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,9 +36,6 @@ CriticalGround::CriticalGround() {
 void CriticalGround::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -98,9 +91,6 @@ void CriticalGround::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 CriticalGround g_CriticalGround;

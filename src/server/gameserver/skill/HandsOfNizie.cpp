@@ -16,8 +16,6 @@ void HandsOfNizie::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ousters
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -44,8 +42,6 @@ void HandsOfNizie::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ousters
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleMissileSkill.execute(pOusters, TargetObjectID, pOustersSkillSlot, param, result, CEffectID);
-
-    __END_CATCH
 }
 
 

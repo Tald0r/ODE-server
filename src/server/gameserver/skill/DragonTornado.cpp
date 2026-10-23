@@ -16,9 +16,6 @@
 void DragonTornado::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -83,8 +80,6 @@ void DragonTornado::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlo
             }
         }
     }
-
-    __END_CATCH
 }
 
 DragonTornado g_DragonTornado;

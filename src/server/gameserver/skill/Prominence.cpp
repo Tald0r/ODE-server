@@ -24,9 +24,6 @@ void Prominence::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSk
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -56,9 +53,6 @@ void Prominence::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSk
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), Grade);
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -68,9 +62,6 @@ void Prominence::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ouster
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -240,9 +231,6 @@ void Prominence::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ouster
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), Grade);
     }
-
-
-    __END_CATCH
 }
 
 Prominence g_Prominence;

@@ -21,9 +21,6 @@
 void PassingHeal::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -125,9 +122,6 @@ void PassingHeal::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot*
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -136,9 +130,6 @@ void PassingHeal::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot*
 void PassingHeal::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pSlayer->getPlayer();
         Zone* pZone = pSlayer->getZone();
@@ -214,9 +205,6 @@ void PassingHeal::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CE
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 PassingHeal g_PassingHeal;
