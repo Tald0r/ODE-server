@@ -662,6 +662,15 @@ sub selfTest {
         }
     }
 
+    # The non-ASCII path is read and checked, not skipped or misread: its own
+    # content is what fails it.
+    my $said = '';
+    runCheck('A..F', \%none, $fakeGit, $worktree, sub { $said .= join '', @_ });
+    unless ($said =~ /^FAIL \Q$accented\E: differs/m) {
+        print "--check 'A..F' did not fail $accented on its content:\n$said";
+        $failed++;
+    }
+
     # A --brace that names no pair writes nothing, and the brace-macro table
     # is not read outside the repository root.
     my $dir = tempdir(CLEANUP => 1);

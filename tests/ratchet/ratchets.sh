@@ -6,9 +6,10 @@
 #   measured < baseline  -> FAIL: progress! tighten the baseline below (and
 #                           the table in docs/reviews/RESTRUCTURING.md) in the same
 #                           commit, so the number stays honest.
-# Never raise a baseline for new debt. A measure widened to see what it
-# missed is re-baselined once, with the numbers, the date and the reason
-# beside its command here and in the plan's table (R5 on 2026-10-23).
+# Never raise a baseline for new debt. The only rise is a widening: a
+# measure widened to count what it missed rises in the commit that widens
+# it, by exactly what the new scope adds (the old scope's count unchanged),
+# with the numbers, the date and the reason here and in the plan's table.
 #
 # Run from the repository root (ctest does this via WORKING_DIRECTORY).
 set -uo pipefail

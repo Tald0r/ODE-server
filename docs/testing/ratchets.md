@@ -10,7 +10,10 @@ generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 # Ratchets
 
 **Ratchet numbers only go down.** `tests/ratchet/ratchets.sh` (ctest `ratchets`) fails in both
-directions: above the baseline is new debt, below it is progress nobody wrote down. When a number
+directions: above the baseline is new debt, below it is progress nobody wrote down. The only rise
+is a widening: a measure widened to count what it missed rises in the commit that widens it, by
+exactly what the new scope adds (the old scope's count unchanged), with the numbers, date and
+reason beside its command and in the plan's row. When a number
 drops, tighten it in `tests/ratchet/ratchets.sh` **and** in the table in
 [the restructuring plan](../reviews/RESTRUCTURING.md) in the same commit. Every baseline comes from
 running its command, never from an estimate. The script also carries the generated-file pins:
