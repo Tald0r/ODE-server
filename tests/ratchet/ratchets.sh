@@ -129,9 +129,11 @@ check_ratchet R6g "Zone.cpp lines" 1265 "$R6g"
 # bodies are still identical in Vampire and Ousters, but only after
 # substituting the class-scoped WearPart enum, whose values are the slot ids
 # the client sends, so reconciling them is a protocol change rather than a
-# refactor.
+# refactor. Slayer's wear bodies live in SlayerWear.cpp and its outfit-shape
+# bodies in SlayerShape.cpp, which puts Slayer.cpp under the 2,000-line phase
+# exit criterion with the other two.
 R6h=$(wc -l < src/server/gameserver/Slayer.cpp 2>/dev/null || echo missing)
-check_ratchet R6h "Slayer.cpp lines" 2953 "$R6h"
+check_ratchet R6h "Slayer.cpp lines" 1835 "$R6h"
 R6i=$(wc -l < src/server/gameserver/Vampire.cpp 2>/dev/null || echo missing)
 check_ratchet R6i "Vampire.cpp lines" 1919 "$R6i"
 R6j=$(wc -l < src/server/gameserver/Ousters.cpp 2>/dev/null || echo missing)

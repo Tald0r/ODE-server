@@ -26,7 +26,7 @@
 //               EventMorph.cpp, EffectMute.cpp, EffectComa.cpp,
 //               EffectRideMotorcycle.cpp, WeatherManager.cpp,
 //               GQuestExecuteElement.cpp, Pet.cpp, PCManager.cpp,
-//               ZoneUtil.cpp, InitAllStat.cpp, Slayer.cpp,
+//               ZoneUtil.cpp, InitAllStat.cpp, SlayerWear.cpp,
 //               Vampire.cpp, Ousters.cpp and
 //               quest/ActionSearchMotorcycle.cpp. Forty-two packets,
 //               each with the reason it is here:

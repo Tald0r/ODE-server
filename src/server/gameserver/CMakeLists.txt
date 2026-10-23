@@ -426,6 +426,8 @@ set(GAMESERVER_RUNTIME_SOURCES
     ZoneScan.cpp
     ZoneSpawn.cpp
     Slayer.cpp
+    SlayerShape.cpp
+    SlayerWear.cpp
     Vampire.cpp
     Ousters.cpp
     OustersEXPInfo.cpp
