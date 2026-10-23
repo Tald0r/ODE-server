@@ -2229,12 +2229,12 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > thirteen `MySQLExchangeRepository` bodies, and a hand edit rephrased
   > `repository/ExchangeRepository.h`'s comment that named the macros;
   > `quest/` keeps its 13 swallowing pairs for slice 5; slice 4, the
-  > root, began with hand edits that dropped the four crossed macros of
-  > `EffectManager::heartbeat(const Timeval&)`, two empty try blocks with
-  > the body between them, and the `__BEGIN_TRY` and `__END_CATCH` lines
-  > of `UniqueItemManager.cpp`'s four functions, whose pairs crossed
-  > their `__BEGIN_DEBUG` ones, so the tool now reads both files; a
-  > third deleted the commented-out pair in
+  > root, began with hand edits that dropped the four macros of
+  > `EffectManager::heartbeat(const Timeval&)`, whose names crossed into
+  > two empty try blocks with the body between them, and the `__BEGIN_TRY`
+  > and `__END_CATCH` lines of `UniqueItemManager.cpp`'s four functions,
+  > whose names crossed their `__BEGIN_DEBUG` ones (the expansion nests),
+  > so the tool now reads both files; a third deleted the commented-out pair in
   > `PlayerCreature::learnRankBonus` and rephrased `ZoneGroupThread.cpp`'s
   > comment on `run()`, the two comments R5's textual grep counted,
   > without the macro names; then the tool removed 1,806 of the root's

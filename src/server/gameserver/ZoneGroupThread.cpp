@@ -47,8 +47,9 @@ ZoneGroupThread::~ZoneGroupThread() noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// run() is the thread's outermost frame, so every exception is caught and
-// logged here before it ends the thread.
+// run() logs a Throwable to zoneGroupThreadError.log and a std::exception to
+// the console, then rethrows; ManagedThread catches what escapes and fails
+// the server.
 //////////////////////////////////////////////////////////////////////////////
 void ZoneGroupThread::run()
 
