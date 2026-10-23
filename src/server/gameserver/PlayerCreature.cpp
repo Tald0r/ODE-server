@@ -841,7 +841,6 @@ void PlayerCreature::clearRankBonus(Rank_t rank)
 bool PlayerCreature::learnRankBonus(DWORD type)
 
 {
-    //__BEGIN_TRY
     try {
         HashMapRankBonusConstItor itr = m_RankBonuses.begin();
 
@@ -883,8 +882,6 @@ bool PlayerCreature::learnRankBonus(DWORD type)
         filelog("PlayerCreature.txt", "PlayerCreature.cpp INSERT INTO RankBonusData error!");
         return false;
     }
-
-    //__END_CATCH
 }
 
 void PlayerCreature::sendRankBonusInfo()

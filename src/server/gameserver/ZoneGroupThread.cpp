@@ -47,8 +47,8 @@ ZoneGroupThread::ZoneGroupThread(ZoneGroup* pZoneGroup)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// Thread methods are the outermost frame, so they need no __BEGIN_TRY and
-// __END_CATCH: every exception has to be caught and handled here.
+// run() is the thread's outermost frame, so every exception is caught and
+// logged here before it ends the thread.
 //////////////////////////////////////////////////////////////////////////////
 void ZoneGroupThread::run()
 

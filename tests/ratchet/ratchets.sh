@@ -77,7 +77,7 @@ check_ratchet R4 "packet headers with execute()" 0 "$R4"
 # (5,114 -> 5,119 on 2026-10-23, the widening: four live header sites and one
 # comment line).
 R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' --include='*.h' | grep -vE 'gameserver/(gm|handler|packetfill)/' | wc -l)
-check_ratchet R5 "__BEGIN_TRY sites in gameserver" 1974 "$R5"
+check_ratchet R5 "__BEGIN_TRY sites in gameserver" 1972 "$R5"
 
 # --- R6: god-file line counts (task 3.3 files only, so far) -----------------
 # Formula extraction to de-core (src/domain) shrinks these; each delegation
