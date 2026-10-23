@@ -12,8 +12,9 @@ generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 Windows mount costs ~160x on `stat` and ~145x on reads versus the container's own filesystem, and
 since every translation unit opens dozens of headers the build becomes I/O bound: a full build
 took ~20 minutes at ~20% CPU on 8 cores. `tools/devbuild.sh` syncs the build *inputs* (`cmake/`,
-`src/`, `tests/`, `third_party/`, `data/`, `initdb/`, `tools/`, `docker/start.sh` and the
-top-level CMakeLists/Makefile) into a container volume, builds there with Ninja and ccache, and
+`src/`, `tests/`, `third_party/`, `data/`, `initdb/`, `tools/`, `docs/`, `docker/start.sh`, the
+top-level CMakeLists/Makefile and the `CLAUDE.md`/`README.md`/`AGENTS.md` the knowledge-bundle
+check reads) into a container volume, builds there with Ninja and ccache, and
 copies only generated test data back (`tests/golden/`, `tests/generated/`,
 `tests/wire-layout.txt`, and, after `--record` only, de-core's parity vectors in
 `src/domain/vectors/`). Same build: **~3.5 minutes at ~95% CPU**, and a no-op rebuild in seconds.
