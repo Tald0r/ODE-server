@@ -18,6 +18,31 @@
   and R10b ([exceptions and outcomes](architecture/exceptions-and-outcomes.md)); migration 004
   ([database setup](database/overview.md)); the server arguments and the compose shutdown order
   ([running the servers](operations/running-the-servers.md)).
+* **Update**: `CLAUDE.md` is an index in the sidecar repository's shape: a short intro, the
+  build and test commands, and one line per rule linking its concept. Its sections moved as
+  follows: the rules table -> [rules and owners](testing/rules-and-owners.md); working in this
+  repository -> [ratchets](testing/ratchets.md), [fix log and task status](testing/fix-log-and-status.md),
+  [de-core parity](protocol/decore-parity.md), [wire contract](protocol/wire-contract.md), [CI](build/ci.md);
+  build, formatting, tests and the container -> [build commands](build/build-commands.md),
+  [formatting](build/formatting.md), [testing overview](testing/overview.md),
+  [container builds](build/container-builds.md); packet-read fuzzing -> [fuzzing](protocol/fuzzing.md);
+  project architecture and its directory tree -> [server architecture](architecture/overview.md) and
+  [startup composition](startup/overview.md); the packet system -> [packet system](protocol/overview.md);
+  preprocessor macros -> [preprocessor macros](architecture/preprocessor-macros.md);
+  configuration -> [configuration](database/configuration.md); database setup ->
+  [database setup](database/overview.md) and [repository seams](architecture/repository-seams.md);
+  dependencies -> [dependencies](build/dependencies.md); game concepts -> [server architecture](architecture/overview.md);
+  thread ownership -> the [threading](threading/index.md) folder; running the servers ->
+  [running the servers](operations/running-the-servers.md); development notes ->
+  [dead sources and source encoding](architecture/dead-sources-and-encoding.md) and
+  [exceptions and outcomes](architecture/exceptions-and-outcomes.md).
+* **Update**: the comments under `src/` that cited `CLAUDE.md`'s "Thread ownership" section or
+  its `sql_mode` now name the threading and database concepts (except
+  `MySQLExchangeRepository.cpp`, a CRLF file, whose "see CLAUDE.md" the index's database line
+  still answers), and the mentions in
+  [toolchain notes](build/toolchain.md), [the fix log](reviews/FIXES.md) and
+  [the plan](reviews/RESTRUCTURING.md) (tasks 3.4 and 5.1) point at the concepts that hold what
+  they cited.
 
 ## 2026-10-21
 

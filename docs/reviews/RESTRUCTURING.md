@@ -1969,11 +1969,12 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   debug-build `assertOwnedByZoneThread()` checks on Zone/Creature mutation
   entry points (sidecar analog: "never block the registry mailbox" — the
   invariant is written down *and* asserted).
-  > **Status:** done (2026-09-23) — the contract is CLAUDE.md's "Thread
-  > ownership" section, which is where it is maintained: ownership is
+  > **Status:** done (2026-09-23) — the contract is the knowledge bundle's
+  > [threading](../threading/index.md) folder (until 2026-10-23, CLAUDE.md's
+  > "Thread ownership" section), which is where it is maintained: ownership is
   > mutex-guarded rather than thread-affine (a `ZoneGroupThread` holds its
   > group mutex for the whole tick; any other thread takes it explicitly),
-  > and the section lists the threads, the mailbox and snapshot seams that
+  > and the folder lists the threads, the mailbox and snapshot seams that
   > carry cross-thread work, and what the asserts do not cover.
   > `ZoneGroup::assertOwned()` guards the eight `Zone` mutation gateways
   > under `DE_OWNERSHIP_CHECKS` (Debug only — this repo never defines
@@ -2381,7 +2382,11 @@ shrink-only work.
   > leaves behind: **a sentence in CLAUDE.md that no file or command backs is
   > the failure mode this task exists to fix** — every claim there names a
   > path, a target or a count something measures, and is re-checked against
-  > the tree when it is touched.
+  > the tree when it is touched. Since 2026-10-23 CLAUDE.md is an index in
+  > sidecar's current shape, one line per rule linking its concept in the
+  > knowledge bundle: the rules table is
+  > [rules and owners](../testing/rules-and-owners.md), and the build,
+  > container, database and run-the-servers manuals are concepts too.
 
 - [x] **5.2 `.claude/skills/add-packet` skill.** Modeled on sidecar's
   `add-sidecar-domain`: the checklist for adding/changing a packet — layout

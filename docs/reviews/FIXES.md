@@ -1959,7 +1959,7 @@ first recorded.
   `DE_FUZZ_ANY_ID=1` opens it again for `fuzz_replay_game_any_id`, so
   every recorded input still reaches its read. A five-minute libFuzzer
   run of the game target from the seed corpus (`-seed=1`, the command in
-  `CLAUDE.md`) shows what a client can still reach: before the change
+  [packet-read fuzzing](../protocol/fuzzing.md)) shows what a client can still reach: before the change
   it started at 16,213 covered edges from 1,169 useful seeds and ended at
   17,554 (26,715 features) after 3.6 million inputs; after it, 4,546
   edges from 443 seeds and 5,121 at the end (6,694 features) after 8.6
@@ -1996,8 +1996,8 @@ first recorded.
 
 The fuzz targets in `tests/fuzz/` feed a client's bytes through the
 gates of `GameFrameGate::next` (run by `GamePlayer::processCommand`) and
-`LoginPlayer::processCommand` into the packets' `read()`; `CLAUDE.md`
-says how to build and run them.
+`LoginPlayer::processCommand` into the packets' `read()`;
+[packet-read fuzzing](../protocol/fuzzing.md) says how to build and run them.
 Where a fuzz run found a defect below, its input is replayed by ctest from
 `tests/fuzz/regressions/`, and every fix but the validator's has a gtest
 in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
@@ -2224,7 +2224,7 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   unless `readPacket` moved the stream exactly one frame on. Two
   libFuzzer runs of 661 seconds each on the bounded read, from the
   committed seed corpus with strict exceptions (the command in
-  `CLAUDE.md`), found nothing: the game target ran 21,072,354 inputs
+  [packet-read fuzzing](../protocol/fuzzing.md)), found nothing: the game target ran 21,072,354 inputs
   from 1,454 seeds, from 4,561 covered edges to 5,146 (7,009 features,
   1,175 corpus units); the login target 7,294,596 inputs from 253 seeds,
   from 856 edges to 985 (3,967 features, 435 units). The replay ctests

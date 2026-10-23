@@ -8,8 +8,8 @@
 //               a PlayerCreature without racing its owner. Before, they
 //               mutated gold, guild id and kick flags holding only the
 //               PCFinder lock, which serialises lookup and removal but not
-//               the zone tick -- the "SG/LG/GG handlers" entry in CLAUDE.md's
-//               known violations. Sending a packet to the player's socket is
+//               the zone tick -- the "SG/LG/GG handlers" entry in
+//               docs/threading/closed-violations.md. Sending a packet to the player's socket is
 //               still fine from any thread and does not need this.
 //
 //               The box belongs to the GamePlayer, not to a zone group, and

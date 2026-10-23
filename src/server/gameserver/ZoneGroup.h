@@ -61,7 +61,7 @@ public:
     void processPlayers();
     void heartbeat();
 
-    // Cross-thread mailbox (CLAUDE.md, "Thread ownership"). Work that must
+    // Cross-thread mailbox (docs/threading/cross-thread-communication.md). Work that must
     // touch this group's state but originates on another thread is posted
     // here and run by this group's ZoneGroupThread at the top of its next
     // tick, under the group mutex. One producer is dynamic-zone recycling:
@@ -146,7 +146,7 @@ public:
     string toString() const;
 
 public:
-    // Thread-ownership contract (see "Thread ownership" in CLAUDE.md):
+    // Thread-ownership contract (see docs/threading/mutation-rule.md):
     // zone-group state may only be touched while this group's mutex is
     // held -- the group's ZoneGroupThread holds it for its whole tick, and
     // any other thread (e.g. GDRLairManager) must take it explicitly.
@@ -210,7 +210,7 @@ private:
     // Pre-snapshot, a dynamic zone created on one zone thread was inserted
     // straight into the template zone's group -- generally another group --
     // while that group's thread iterated the same unordered_map in its
-    // heartbeat (the "cross-group addZone() race" CLAUDE.md listed).
+    // heartbeat (the cross-group addZone() race in docs/threading/closed-violations.md).
     de::Snapshot<ZoneMap> m_Zones;
 
     // zone player manager

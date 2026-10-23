@@ -9,7 +9,7 @@ namespace {
 //    ENUM, so the arithmetic yields its 1-based index less one.
 //  - The FlagWarStat roll-up GROUPs BY "Name, ServerID" while PlayerID
 //    and Race are selected bare. THAT IS BROKEN under the sql_mode this
-//    project requires: CLAUDE.md's setting keeps ONLY_FULL_GROUP_BY, and
+//    project requires (docs/database/overview.md), which keeps ONLY_FULL_GROUP_BY, and
 //    PlayerID is not functionally dependent on (Name, ServerID) --
 //    FlagWarStat has no unique key at all -- so MySQL raises error 1055
 //    every time the statement is called. It is called only when the flag

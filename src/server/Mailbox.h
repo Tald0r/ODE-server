@@ -3,7 +3,7 @@
 // Description : A queue of items posted from any thread and consumed by one
 //               owning thread at a point of its choosing. This is the
 //               "cross-group communication via queues only" primitive of
-//               the thread-ownership contract (CLAUDE.md): a thread that
+//               the thread-ownership contract (docs/threading/): a thread that
 //               must touch state it
 //               does not own posts to the owner's box; the owner drains the
 //               box while holding its own lock, so the work runs where the
