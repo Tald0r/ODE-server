@@ -80,7 +80,7 @@
 // fails with ER_DUP_ENTRY (thrown as a DatabaseError). ExchangeOrder's
 // UNIQUE ListingID does the same to a second order on one listing.
 //
-// The methods keep the __BEGIN_TRY / __END_CATCH frames and the bool
+// The methods let a SQL failure leave as an exception and keep the bool
 // results the Exchange service was written against: a false from the
 // other listing and order writes and from the transaction pair is
 // unreachable (the SQL failure throws first); only markListingSold and
