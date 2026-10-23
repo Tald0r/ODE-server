@@ -865,6 +865,15 @@ add_test(
 )
 set_tests_properties(critical_section_audit PROPERTIES TIMEOUT 60)
 
+# The try-rethrow macro retirement tool (tools/r5_retire_try.pl): its rewrite
+# of each site shape and its checker's refusal of anything but a retired pair.
+add_test(
+    NAME r5_retire_try_selftest
+    COMMAND perl ${CMAKE_SOURCE_DIR}/tools/r5_retire_try.pl --self-test
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+set_tests_properties(r5_retire_try_selftest PROPERTIES TIMEOUT 60)
+
 # Knowledge bundle (docs/). docs/ is an Open Knowledge Format bundle and
 # CLAUDE.md is an index into it: a rule lives in one concept file and the
 # index links it. This fails on a concept without a `type`, a folder whose
