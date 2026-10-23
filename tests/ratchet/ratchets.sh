@@ -6,7 +6,9 @@
 #   measured < baseline  -> FAIL: progress! tighten the baseline below (and
 #                           the table in docs/reviews/RESTRUCTURING.md) in the same
 #                           commit, so the number stays honest.
-# Never raise a baseline.
+# Never raise a baseline for new debt. A measure widened to see what it
+# missed is re-baselined once, with the numbers, the date and the reason
+# beside its command here and in the plan's table (R5 on 2026-10-23).
 #
 # Run from the repository root (ctest does this via WORKING_DIRECTORY).
 set -uo pipefail
@@ -70,7 +72,9 @@ check_ratchet R4 "packet headers with execute()" 0 "$R4"
 # those same handler bodies at a new address, not new debt. Including either
 # set would jump the baseline without anything having been written. Fold them
 # in (with a re-baseline note) when they become de-core extraction targets in
-# 3.x. Headers count too: a template's body holds pairs as live as a .cpp's.
+# 3.x. Headers count too: a template's body holds pairs as live as a .cpp's
+# (5,114 -> 5,119 on 2026-10-23, the widening: four live header sites and one
+# comment line).
 R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' --include='*.h' | grep -vE 'gameserver/(gm|handler|packetfill)/' | wc -l)
 check_ratchet R5 "__BEGIN_TRY sites in gameserver" 5119 "$R5"
 

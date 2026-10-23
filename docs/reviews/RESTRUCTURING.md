@@ -31,7 +31,9 @@ conventions.
   `in progress (owner missing)`.
 - Ratchet numbers (below) may only go **down**. Re-measure with the given
   command before and after a change that claims progress; commit the updated
-  number with the change.
+  number with the change. The one exception is a measure widened to see what
+  it missed: it is re-baselined once, with the numbers, date and reason in
+  its row, in the commit that widens it (R5, 2026-10-23).
 - Run the suite locally before every push (`make dev-test` with the pinned
   toolchain). The C++20 workflow also runs the suite and production builds on
   master pushes/merges only; PRs are verified locally to conserve minutes.

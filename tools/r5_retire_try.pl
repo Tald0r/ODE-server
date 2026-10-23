@@ -145,7 +145,10 @@ sub tokenize {
 sub norm {
     my ($t) = @_;
     if ($t->[0] eq 'p') {
-        return join "\0", '#', map { norm($_) } @{ tokenize(substr($t->[1], 1), 1) };
+        # The one blank that matters in a directive: `#define M(a)` is
+        # function-like, `#define M (a)` is not.
+        my $function = $t->[1] =~ /^#\s*define\s+\w+\(/ ? "\0(function-like)" : '';
+        return join("\0", '#', map { norm($_) } @{ tokenize(substr($t->[1], 1), 1) }) . $function;
     }
     return $t->[1] unless $t->[0] eq 'c';
     (my $s = $t->[1]) =~ s/\s+/ /g;
@@ -454,11 +457,13 @@ sub runCheck {
         if ($status) { $say->("check: git merge-base $from $to failed\n"); return 1; }
         chomp($from = $base);
     }
-    my ($list, $status) = $git->('diff', '--name-status', '--no-renames', $from, defined $to ? $to : ());
+    # -z: git quotes a path with a non-ASCII byte, a quote or a tab otherwise,
+    # and the quoted name would fail the extension test below.
+    my ($list, $status) = $git->('diff', '-z', '--name-status', '--no-renames', $from, defined $to ? $to : ());
     if ($status) { $say->("check: git diff $range failed\n"); return 1; }
     my ($files, $bad, $skipped) = (0, 0, 0);
-    for my $row (split /\n/, $list) {
-        my ($change, $path) = split /\t/, $row;
+    my @rows = split /\0/, $list;
+    while (my ($change, $path) = splice @rows, 0, 2) {
         if ($path !~ /\.(?:cpp|h|hpp)$/) {
             $say->("SKIP $path: not a C++ source\n");
             $skipped++;
@@ -618,23 +623,35 @@ sub selfTest {
         $failed++;
     }
 
+    # A function-like macro made object-like differs only by a blank.
+    unless (check("#define M(a) a\n", "#define M (a) a\n", \%none)) {
+        print "define: the checker accepted a function-like macro made object-like\n";
+        $failed++;
+    }
+
     # --check over a fake git: revisions A, B (A with a retired pair and a
     # changed document), C (a changed statement), D (a document only), E
     # (an added source), and the working tree.
     my $before = "void f() {\n    __BEGIN_TRY\n    g();\n    __END_CATCH\n}\n";
-    my %blob = ('A:x.cpp' => $before, 'B:x.cpp' => "void f() {\n    g();\n}\n", 'C:x.cpp' => "void f() {\n    h();\n}\n");
-    my %diff = ('A B' => "M\tx.cpp\nM\tdocs/plan.md\n", 'A C' => "M\tx.cpp\n", 'A A' => '',
-                'A D' => "M\tdocs/plan.md\n", 'A E' => "A\ty.cpp\n", 'A' => "M\tx.cpp\n");
+    # F: x.cpp retired and a changed statement in a source with a non-ASCII
+    # name, which git would quote without -z.
+    my $accented = "\xc3\xa9.cpp";
+    my %blob = ('A:x.cpp' => $before, 'B:x.cpp' => "void f() {\n    g();\n}\n", 'C:x.cpp' => "void f() {\n    h();\n}\n",
+                'F:x.cpp' => "void f() {\n    g();\n}\n", "A:$accented" => "void k() {}\n", "F:$accented" => "void k() { h(); }\n");
+    my %diff = ('A B' => "M\0x.cpp\0M\0docs/plan.md\0", 'A C' => "M\0x.cpp\0", 'A A' => '',
+                'A D' => "M\0docs/plan.md\0", 'A E' => "A\0y.cpp\0", 'A' => "M\0x.cpp\0",
+                'A F' => "M\0x.cpp\0M\0$accented\0");
     my $fakeGit = sub {
         my ($cmd, @args) = @_;
         return ("A\n", 0) if $cmd eq 'merge-base' && $args[0] eq 'Z';
         return ($blob{ $args[0] }, 0) if $cmd eq 'show' && exists $blob{ $args[0] };
-        my $key = join ' ', @args[ 2 .. $#args ];
+        return ('', 128 << 8) if $cmd eq 'diff' && $args[0] ne '-z';
+        my $key = join ' ', @args[ 3 .. $#args ];
         return ($diff{$key}, 0) if $cmd eq 'diff' && exists $diff{$key};
         return ('', 128 << 8);    # fatal: unknown revision
     };
     my $worktree = sub { "void f() {\n    {\n    g();\n    }\n}\n" };
-    my %ranges = ('A..B' => 0, 'Z...B' => 0, 'A' => 0, 'A..C' => 1, 'A..A' => 1, 'A..D' => 1, 'A..E' => 1,
+    my %ranges = ('A..B' => 0, 'Z...B' => 0, 'A' => 0, 'A..C' => 1, 'A..A' => 1, 'A..D' => 1, 'A..E' => 1, 'A..F' => 1,
                   'A..Q' => 1, 'Q..B' => 1, 'Q...B' => 1, 'A....B' => 1, 'A..' => 1, '..B' => 1, '' => 1);
     for my $range (sort keys %ranges) {
         my $said = '';
