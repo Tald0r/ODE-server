@@ -63,7 +63,7 @@ ZoneGroup::~ZoneGroup()
 //////////////////////////////////////////////////////////////////////////////
 // Debug-build (DE_OWNERSHIP_CHECKS) check of the thread-ownership contract:
 // zone-group state may only be touched with this group's mutex held (see
-// CLAUDE.md, "Thread ownership"). Armed by ZoneGroupThread::run() once the
+// docs/threading/mutation-rule.md). Armed by ZoneGroupThread::run() once the
 // thread exists, so single-threaded startup/loading is exempt. The holder
 // fields are written only under the mutex, so a false FIRE cannot occur for
 // the actual holder; a reader that does not hold the mutex may read them

@@ -6,7 +6,7 @@
 //               -- the main thread's war heartbeat, a castle zone's own
 //               scheduler, or a zone thread whose GM starts the race war --
 //               and the zones it changes belong to their zone groups'
-//               threads (CLAUDE.md, "Thread ownership"). Each change is
+//               threads (docs/threading/mutation-rule.md). Each change is
 //               therefore posted to the owning group (ZoneGroup::post) or,
 //               for an item a player carries, to the player
 //               (de::postToPlayer), capturing only values: zone ids, item

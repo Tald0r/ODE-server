@@ -24,10 +24,12 @@ handler, and prints the packet with `toString()` as the loop does. An input is
   `DE_FUZZ_ALLOW_EXCEPTIONS=1`; and always a `readPacket` that returns or refuses without moving
   the stream exactly the frame its header declared ([frame gate](frame-gate.md)).
 - **Switches.** The game target's validator is the gameserver's, so in `GPS_NORMAL` it reads only
-  what a client sends ([client link](client-link.md)); `DE_FUZZ_ANY_ID=1` admits every registered
-  id there instead, so the GC, GS and SG reads behind that gate are fuzzed too, and
-  `DE_FUZZ_NO_STORE_SKIP=1` reads the two store-info packets the gameserver refuses unread. The
-  gate check is off under both.
+  what a client sends and refuses the rest of the factory table before the read
+  ([client link](client-link.md)); `DE_FUZZ_ANY_ID=1` admits every registered id there instead,
+  so the GC, GS and SG reads behind that gate are fuzzed too, and `DE_FUZZ_NO_STORE_SKIP=1` reads
+  the two store-info packets the gameserver refuses unread (with the gate open, since the
+  validator refuses them first). The gate check is off under both, since the gate has no hook for
+  them, so a gate that drifts from its mirror is caught only without them.
 
 # In the suite
 

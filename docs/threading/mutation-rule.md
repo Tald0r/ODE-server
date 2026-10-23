@@ -9,6 +9,10 @@ generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 
 # The mutation rule
 
+| Rule | Owner | What fails when it is broken |
+|------|-------|------------------------------|
+| Zone-group state is touched only under that group's mutex | `ZoneGroup::assertOwned()` under `DE_OWNERSHIP_CHECKS` (Debug builds only) | `abort()` at the gateway |
+
 **Zone-group state (Zones, the Creatures in them, the group's `ZonePlayerManager`) may only be
 touched while that group's mutex is held.** The group's own `ZoneGroupThread` holds it for its
 entire tick ([threads](overview.md)); any other thread must take it explicitly, e.g.

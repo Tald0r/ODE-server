@@ -9,6 +9,10 @@ generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 
 # Assertions and NDEBUG
 
+| Rule | Owner | What fails when it is broken |
+|------|-------|------------------------------|
+| `NDEBUG` is never defined, so `Assert` and `__BEGIN_TRY`/`__END_CATCH` keep one meaning | an `#error` in `src/Core/Assert.h` and `src/Core/Exception.h` | the compile of every project file, in any configuration that defines it |
+
 **`NDEBUG` is never defined.** `Assert` and `__BEGIN_TRY` / `__END_CATCH` keep one meaning in
 every configuration, so an optimized build refuses the same input a debug build refuses. The
 optimized configurations pass `-UNDEBUG` because `zig c++` defines it from `-O1` up, and an

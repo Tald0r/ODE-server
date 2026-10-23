@@ -58,7 +58,7 @@ void ZoneGroupThread::run()
     Properties& config = de::kernelContext().config();
 
     // From here on, this thread owns the zone group's state: arm the
-    // debug ownership check (see CLAUDE.md, "Thread ownership").
+    // debug ownership check (see docs/threading/mutation-rule.md).
     m_pZoneGroup->armOwnershipAssert();
 
     DatabaseManager& database = de::serverContext().database();

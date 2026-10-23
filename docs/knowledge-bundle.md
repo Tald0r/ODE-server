@@ -23,8 +23,8 @@ each, and the brief links in. The sidecar repository's bundle is the model this 
 | `protocol/` | packets, the wire contract, registrations, the client link, the frame gate, fuzzing, de-core parity |
 | `login/`, `shared/`, `game/` | one folder per server process: an overview and its rule tables |
 | `database/` | MySQL setup, configuration, seed-data rules |
-| `build/` | make targets, the container build, formatting, CI, dependencies, toolchain notes |
-| `testing/` | the suite, the ratchets, the fix log and task status conventions |
+| `build/` | make targets, the container build, the native macOS build, formatting, CI, dependencies, toolchain notes |
+| `testing/` | the suite, what the tests cover, the ratchets, the fix log and task status conventions |
 | `operations/` | running the servers, logging, the WebSocket gateway |
 | `reviews/` | the restructuring plan and the fix log, the two living records the scripts name |
 

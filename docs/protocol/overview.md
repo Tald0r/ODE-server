@@ -3,6 +3,7 @@ type: Design
 title: "Packet system"
 description: "Packets are named for the link they ride, live in two layers (the wire class in Core, the handler body in the server), and are bound to their id at each server's composition root from constexpr factory lists."
 tags: [protocol]
+enforced_by: [ratchets]
 generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 ---
 
@@ -47,6 +48,12 @@ validator and registers them on `de::kernelContext()`; readers call
 `de::kernelContext().packetFactories()` and `.packetValidator()`. `tests/packet_meta_test.cpp`
 compiles the whole kernel into one list, and a new packet without the three constants does not
 satisfy the concept. [Toolchain notes](../build/toolchain.md) section 3 has the reasoning.
+
+# Rules
+
+| Rule | Owner | What fails when it is broken |
+|------|-------|------------------------------|
+| Packets carry no `execute()`: handlers register at the composition root | ratchet R4 | R4 above 0 |
 
 # What a read may do
 

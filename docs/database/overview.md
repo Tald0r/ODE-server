@@ -15,6 +15,14 @@ the SQL mode:
 set @@global.sql_mode = 'ONLY_FULL_GROUP_BY,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 ```
 
+Two consequences the code relies on: the mode has no `NO_BACKSLASH_ESCAPES`, so in
+`MySQLExchangeRepository.cpp` `mysql_real_escape_string` never returns `(unsigned long)-1` and
+the fall-through from that return to the manual escaping pass is unreachable in a correct
+deployment (the manual pass itself still runs whenever the thread has no live game connection);
+and it keeps `ONLY_FULL_GROUP_BY`, under which the flag war's `FlagWarStat` roll-up fails with
+error 1055 (`FlagWarRepository.h` says why that statement is reached only with `ActiveFlagWar`
+switched on).
+
 # Text is UTF-8 end to end
 
 Both databases and every table are InnoDB in `utf8mb4` / `utf8mb4_unicode_ci`
@@ -45,8 +53,10 @@ change needs `initdb/migrations/001-argon2-password-column.sql` run once; its pl
 rehashed by the loginserver on each account's next login. `bin/hashpw` hashes a password for a
 manual `UPDATE`. The later migrations are one-time too: `002-war-schedule-castle-war-kind.sql`
 (the `CastleWarKind` column) and `003-castle-tax-balance-signed.sql` (the castle tax balance saved
-as a signed relative change; on the old unsigned column an owner change can fail whole). Nothing
-checks them at startup; run each once on a database created before it.
+as a signed relative change; on the old unsigned column an owner change can fail whole), and
+`004-english-content.sql` (the English content text of the seed tables, written by the scripts in
+`tools/i18n/`, which leaves accounts, characters and items alone). Nothing checks them at startup;
+run each once on a database created before it.
 
 All SQL is reached through repository seams ([repository seams](../architecture/repository-seams.md)),
 and `make integration-test` runs those implementations against a throwaway MySQL 5.7 with this

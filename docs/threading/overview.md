@@ -37,7 +37,8 @@ mutex. Everything below says which thread that is for each kind of state.
   `GDRLairManager` is still a singleton (`GDRLairManager::Instance()`). The mofus module is always
   built ([preprocessor macros](../architecture/preprocessor-macros.md)). `SMSServiceThread` is a
   `ManagedThread` too, but `GameServer::start()` never starts it; its queue is only filled by
-  `CGSMSSendHandler`. Neither billing integration is in the tree.
+  `CGSMSSendHandler`. Neither billing integration is in the tree: the external billing link had a
+  thread of its own, and the China one its own tree.
 
 # The login and shared servers
 

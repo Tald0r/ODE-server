@@ -3,6 +3,7 @@ type: Design
 title: "Server architecture"
 description: "Three cooperating processes, each an executable of one main.cpp over a runtime object library, built on a macro-free kernel, pure domain formulas and a shared ServerCore."
 tags: [architecture]
+enforced_by: [game_server_runtime_tests, login_server_runtime_tests, shared_server_runtime_tests]
 generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 ---
 
@@ -41,6 +42,12 @@ Start them in that order ([running the servers](../operations/running-the-server
   `src/` are legacy. No target globs its sources: every `.cpp` is named, which is what lets a
   ratchet call a source no target compiles dead ([dead sources](dead-sources-and-encoding.md)).
 
+# Rules
+
+| Rule | Owner | What fails when it is broken |
+|------|-------|------------------------------|
+| Server implementations link without `main.cpp`, with the same definitions as production | `game_server_runtime_tests`, `login_server_runtime_tests`, `shared_server_runtime_tests` | duplicate `main` at link time, a mismatched server definition, or a production dispatch/handler test failure |
+
 # Key directories
 
 ```
@@ -49,31 +56,38 @@ src/
 │   ├── [GC|CG|CL|LC|GL|LG|GS|SG|GG]*.{h,cpp}   # Protocol packet classes, directly in Core/
 │   ├── [core utilities]       # Socket, datagram, player info, items, skills, etc.
 │   └── CMakeLists.txt         # de-kernel, Core, and the per-server packet libraries
-├── domain/                    # de-core: pure formula functions; vectors/ holds the parity rows
+├── domain/                    # de-core: pure formula functions (Formulas, SkillOutputFormulas, SkillRange,
+│                              #   ItemPrice, ItemDurability, ItemGrade, ItemClass, EquipRequirement, and the
+│                              #   server-only PartyExp and DarkLight), freestanding; vectors/ holds the parity
+│                              #   rows the client asserts too, vectors/server/ the rows of the server-only ones
 ├── server/
-│   ├── Thread.h, ManagedThread.h  # the worker-thread base
+│   ├── Thread.h, ManagedThread.h  # the worker-thread base (CooperativeThread.h is reached only through ManagedThread)
 │   ├── Mailbox.h, Snapshot.h  # cross-thread command queue, copy-on-write tables
-│   ├── ServerContext.h        # registry for the managers ServerCore defines
+│   ├── ServerContext.h        # registry for the managers ServerCore defines (database, server and world tables)
 │   ├── database/              # Database abstraction layer and connection management
 │   ├── repository/            # ServerCore persistence seams, linked into all three binaries
 │   ├── gameserver/            # Main game server executable
 │   │   ├── GamePacketDispatch.cpp   # composition root: packet id -> handler
 │   │   ├── handler/           # CG/GC/LG/GG/SG packet handler bodies
 │   │   ├── packetfill/        # Server-side packet fill helpers moved out of Core
-│   │   ├── repository/        # *Repository.h interfaces + MySQL*Repository.cpp impls
+│   │   ├── repository/        # Persistence seams: *Repository.h interfaces + MySQL*Repository.cpp impls
 │   │   ├── gm/                # GM and console command bodies behind a router
 │   │   ├── skill/, item/, war/, quest/   # Skill, item, war and (Lua-scripted) quest modules
 │   │   ├── guild/, party/, trade/, couple/, exchange/   # Social and trading decisions
 │   │   ├── ctf/, mission/, mofus/        # Capture the flag, missions, game events
-│   ├── loginserver/           # Login server executable (CL/GL/GM handlers and one CG)
-│   ├── sharedserver/          # Shared server executable (GS handlers)
+│   ├── loginserver/           # Login server executable (CL/GL/GM handlers and one CG, its own repository/)
+│   ├── sharedserver/          # Shared server executable (GS handlers, its own repository/)
 │   └── websocketproxyserver/  # the Rust WebSocket gateway
 tests/
-├── arch/                      # kernel_files.txt, check_includes.pl, baseline.txt
+├── arch/                      # kernel_files.txt (de-kernel's source list), check_includes.pl, baseline.txt
 ├── ratchet/                   # ratchets.sh and the files it pins
 ├── tools/                     # generators and audits ctest runs
 ├── fuzz/                      # packet-read fuzz targets, replay driver, regressions/
 └── golden/, generated/, support/, integration/  # fixtures, generated lists, fakes, MySQL tier
+docs/
+├── index.md                   # the knowledge bundle (OKF): one concept per rule, in folders by area
+├── reviews/                   # RESTRUCTURING.md (the living plan, the R1-R18 table) and FIXES.md (the fix log)
+└── build/toolchain.md         # Zig/Clang, C++20 adoption, wire and diagnostics contracts
 third_party/
 ├── tinyxml2/                  # Vendored XML parser (10.0.0), replaces xerces-c
 └── argon2/                    # Vendored argon2 reference implementation (C API)
@@ -82,9 +96,11 @@ third_party/
 
 # Game concepts
 
-**Races** are Slayer, Vampire and Ousters, one `PlayerCreature` subclass each; a **Zone** belongs
-to a **ZoneGroup** and a **DynamicZone** is instanced content; **Creature** is the base of
-players, monsters and NPCs; **Effects** are timed state on a creature; **Skills** are the
-abilities; **Guild** and **Party** are the social groupings. Deep inheritance is the house style
+**Races** are Slayer (human vampire hunters), Vampire and Ousters, one `PlayerCreature` subclass
+each; a **Zone** is a geographic area where players exist, it belongs to a **ZoneGroup**, and a
+**DynamicZone** is instanced content (dungeons, for example); **Creature** is the base class of
+every entity, players, monsters and NPCs alike; **Effects** are time-based state applied to a
+creature; **Skills** are the combat and utility abilities; **Guild** and **Party** are the social
+groupings. Deep inheritance is the house style
 (Creature -> PlayerCreature -> Slayer/Vampire/Ousters), and Lua drives the quest system
 (`quest/luaScript/`).

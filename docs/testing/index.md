@@ -2,6 +2,10 @@
 
 * [Testing overview](overview.md) - make test or make dev-test before every push: the wire tests over the goldens, one runtime test binary per server over the production objects, the isolated decision tests, the script audits and the MySQL tier.
 
+# Reference
+
+* [What the runtime and library tests cover](test-coverage.md) - Per process and per library, what the runtime tests and the isolated startup, socket and worker tests exercise beyond the rule each owns: the inputs they supply, the failures they inject and the policies they pin.
+
 # Rules
 
 * [Fix log and task status](fix-log-and-status.md) - A bug found while restructuring is recorded in the fix log with its status, and a restructuring task is done only once its owner exists, both updated in the same commit as the work.

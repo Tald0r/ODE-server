@@ -145,11 +145,13 @@ for arg in "$@"; do
     fi
 done
 
-# Only the build inputs are synced. Everything else in the checkout (the
-# 2.7 GB of build trees, lib/, bin/, .git) never crosses the mount.
+# Only the build and test inputs are synced. Everything else in the checkout
+# (the 2.7 GB of build trees, lib/, bin/, .git) never crosses the mount. The
+# knowledge_bundle test reads docs/ and the three top-level markdown files.
 sync_in='rsync -a --delete --exclude=.git --exclude=/src/server/websocketproxyserver/target \
     /repo/cmake /repo/src /repo/tests /repo/third_party /repo/data /repo/initdb /repo/tools \
-    /repo/CMakeLists.txt /repo/Makefile /work/ &&
+    /repo/docs /repo/CMakeLists.txt /repo/Makefile \
+    /repo/CLAUDE.md /repo/README.md /repo/AGENTS.md /work/ &&
     mkdir -p /work/docker && rsync -a --checksum /repo/docker/start.sh /work/docker/'
 
 # Copy generated test data back so a re-record shows up as a normal diff:

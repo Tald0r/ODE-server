@@ -657,8 +657,8 @@ when nothing is queued. `GamePlayer` carries a box of player commands, and
 `de::postToPlayer` (`PlayerMailbox.h`) is what the six guild SG handlers and
 `LGKickCharacter` now call instead of mutating gold, guild id and kick flags
 on the `SharedServerManager` / `LoginServerManager` threads under only the
-PCFinder lock — the data race CLAUDE.md listed first among the known
-violations. The box is on the player, not the zone group, because the owner of
+PCFinder lock — the data race [closed violations](../threading/closed-violations.md)
+lists first. The box is on the player, not the zone group, because the owner of
 a player changes (main thread during login and zone transfer, a zone thread in
 between) and the creature's zone pointer does not track that. Each owner
 drains from the one place it processes its players: `ZonePlayerManager` runs
@@ -674,7 +674,7 @@ unbounded: the producers are the inter-server links, and blocking one of them
 on a busy zone group's back-pressure would stall guild and login traffic for
 every group; the drains log a pass deeper than their depth warning instead.
 
-The other cross-thread race CLAUDE.md listed, the dynamic-zone `addZone()`,
+The other cross-thread race listed there, the dynamic-zone `addZone()`,
 turned out to be a read-mostly-table problem rather than a queue problem:
 the requesting player's zone thread inserts into the template group's zone
 map and the `ZoneInfoManager` tables while that group's heartbeat and every
@@ -709,9 +709,9 @@ is now a double unlock and is forbidden; release early through
 build on a hand-written unlock or a
 `__LEAVE_CRITICAL_SECTION` whose argument does not match its `__ENTER`'s. This
 removes a lock-leak class; it does not change which thread owns which state, so
-the ownership violations CLAUDE.md listed have since been closed one by one;
-its "Known violations" list keeps every entry struck through with the fix
-beside it.
+the ownership violations then listed have since been closed one by one;
+[closed violations](../threading/closed-violations.md) keeps each entry with the
+rule it left behind.
 
 ### Safer collection traversal
 
