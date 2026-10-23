@@ -236,6 +236,7 @@ sub analyse {
     my (@stack, @pairs, @skipped, @groups);
     my $swallow = 0;
     my @code;    # indices of code tokens (w, o, s)
+    my $directives = 0;    # preprocessor lines seen so far
     my $prevCode = -1;
     for my $i (0 .. $#$toks) {
         my ($type, $text_) = @{ $toks->[$i] };
@@ -251,6 +252,7 @@ sub analyse {
             for (1 .. scalar(() = $text_ =~ /\b__BEGIN_TRY\b/g)) {
                 push @skipped, [$toks->[$i][4], 'inside a preprocessor directive'];
             }
+            $directives++;
             next;
         }
         next if $type eq 'c';
@@ -266,7 +268,7 @@ sub analyse {
         return { tokens => $toks, refused => "macro $text_ at line $line opens or closes braces in a way this tool does not know" }
             if $kind eq '?';
         if ($kind !~ m{^/}) {
-            push @stack, [$kind, $i, scalar @code - 1];
+            push @stack, [$kind, $i, scalar @code - 1, $directives];
             next;
         }
         return { tokens => $toks, refused => "$text_ at line $line closes nothing" } unless @stack;
@@ -277,8 +279,10 @@ sub analyse {
             if '/' . $open->[0] ne $kind;
         next unless $open->[0] eq 'TRY' && $toks->[ $open->[1] ][1] eq '__BEGIN_TRY';
         if ($text_ eq '__END_CATCH_NO_RETHROW') {
-            # empty: no code token between the two macros.
-            push @pairs, { begin => $open->[1], end => $i, swallow => 1, empty => $open->[2] == @code - 2,
+            # empty: no code token and no preprocessor line (an #include
+            # can bring code) between the two macros.
+            push @pairs, { begin => $open->[1], end => $i, swallow => 1,
+                           empty => $open->[2] == @code - 2 && $open->[3] == $directives,
                            wrapper => 0, endCode => scalar @code - 1 };
             $swallow++;
             next;
@@ -662,6 +666,9 @@ sub selfTest {
          "void f() {\n    try {\n    if (x) {\n        __BEGIN_TRY\n        y();\n        __END_CATCH\n    }\n    } catch (Throwable&) {\n        $C\n    }\n}\n"],
         ["void f() {\r\n\t__BEGIN_TRY g(); __END_CATCH_NO_RETHROW\r\n}\r\n",
          "void f() {\r\n\ttry { g(); } catch (Throwable&) {\r\n\t    $C\r\n\t}\r\n}\r\n"],
+        # A body that is only a preprocessor line is not empty.
+        ["void f() {\n    __BEGIN_TRY\n#include \"x.inc\"\n    __END_CATCH_NO_RETHROW\n}\n",
+         "void f() {\n    try {\n#include \"x.inc\"\n    } catch (Throwable&) {\n        $C\n    }\n}\n"],
     );
     for my $n (0 .. $#swallowCases) {
         my ($in, $want) = @{ $swallowCases[$n] };
@@ -677,6 +684,7 @@ sub selfTest {
     # explicit catch another comment, a named exception, a statement in it,
     # another type, one made from a rethrowing pair, one that moved.
     my @rejects = (
+        ["void f() {\n    __BEGIN_TRY\n#include \"x.inc\"\n    __END_CATCH_NO_RETHROW\n}\n", "void f() {\n#include \"x.inc\"\n}\n"],
         [$swallowed, "void f() {\n    try {\n    b();\n    } catch (Throwable&) {\n        // ignore\n    }\n}\n"],
         [$swallowed, "void f() {\n    try {\n    b();\n    } catch (Throwable& t) {\n        $C\n    }\n}\n"],
         [$swallowed, "void f() {\n    try {\n    b();\n    } catch (Throwable&) {\n        $C\n        c();\n    }\n}\n"],

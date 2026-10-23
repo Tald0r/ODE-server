@@ -554,8 +554,9 @@ fi
 # R5's scope: the gameserver's .cpp and .h files outside gm/, handler/ and
 # packetfill/. A perl match over each file's text: `Throwable&`,
 # `Throwable &`, `const Throwable&` and a named variable all count, and the
-# body may hold only blanks and comments. Textual, so a commented-out clause
-# counts too. It cannot see a swallow spelled another way: a body that only
+# body may hold only blanks, comments and empty statements (`;`). Textual,
+# so a commented-out clause or one in a string literal counts too. It cannot
+# see a swallow spelled another way: a body that only
 # logs or calls addStack(), a `catch (...)`, a catch of a Throwable subclass,
 # or the __END_CATCH_NO_RETHROW macro, which R5 keeps out of this scope.
 r19_raw=$(find src/server/gameserver \( -name '*.cpp' -o -name '*.h' \) -print0 | perl -0 -ne '
@@ -563,7 +564,7 @@ r19_raw=$(find src/server/gameserver \( -name '*.cpp' -o -name '*.h' \) -print0 
     chomp; next if m{gameserver/(?:gm|handler|packetfill)/};
     open(my $fh, "<", $_) or next; $files++;
     my $src = do { local $/; <$fh> }; close $fh;
-    $count++ while $src =~ m{\bcatch\s*\(\s*(?:const\s+)?Throwable\s*&\s*\w*\s*\)\s*\{(?:\s|//[^\n]*+|/\*(?:[^*]|\*(?!/))*+\*/)*+\}}g;
+    $count++ while $src =~ m{\bcatch\s*\(\s*(?:const\s+)?Throwable\s*&\s*\w*\s*\)\s*\{(?:\s|;|//[^\n]*+|/\*(?:[^*]|\*(?!/))*+\*/)*+\}}g;
     END { print "$files $count\n" }
 ')
 # R13's rule: a scan that found almost nothing must fail loudly. The scope

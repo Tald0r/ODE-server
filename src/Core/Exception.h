@@ -136,8 +136,8 @@ private:
 
 // No build defines NDEBUG (see the top-level CMakeLists.txt): these macros
 // have one meaning, and every call site that closes with
-// __END_CATCH_NO_RETHROW relies on it to swallow exceptions that would
-// otherwise escape. A translation unit compiled with NDEBUG is refused
+// __END_CATCH_NO_RETHROW relies on that macro to swallow exceptions that
+// would otherwise escape. A translation unit compiled with NDEBUG is refused
 // rather than given a second set.
 #if defined(NDEBUG)
 #error "NDEBUG must not be defined for DarkEden sources (see the top-level CMakeLists.txt)"
