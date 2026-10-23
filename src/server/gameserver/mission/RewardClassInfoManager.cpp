@@ -23,27 +23,19 @@ RewardClassInfoManager::~RewardClassInfoManager() {
 }
 
 QuestMessage RewardClassInfoManager::canGiveReward(RewardClass_t rClass, PlayerCreature* pPC) const {
-    __BEGIN_TRY
-
     RewardClass* pRewardClass = getRewardClass(rClass);
 
     if (pRewardClass == NULL)
         return COMPLETE_FAIL_INVALID_NPC;
 
     return pRewardClass->canGiveReward(pPC);
-
-    __END_CATCH
 }
 
 RewardClass* RewardClassInfoManager::getRewardClass(RewardClass_t rClass) const {
-    __BEGIN_TRY
-
     RewardClassHashMap::const_iterator itr = m_RewardClasses.find(rClass);
 
     if (itr == m_RewardClasses.end())
         return NULL;
 
     return itr->second;
-
-    __END_CATCH
 }

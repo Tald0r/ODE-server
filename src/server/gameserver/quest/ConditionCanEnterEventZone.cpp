@@ -42,11 +42,7 @@ void ConditionCanEnterEventZone::read(PropertyBuffer& propertyBuffer)
 string ConditionCanEnterEventZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionCanEnterEventZone(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

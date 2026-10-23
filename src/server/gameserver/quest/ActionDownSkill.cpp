@@ -17,11 +17,7 @@
 void ActionDownSkill::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     // Opening the skill-lowering window takes no arguments, so nothing is read here.
-
-    __END_CATCH
 }
 
 
@@ -31,8 +27,6 @@ void ActionDownSkill::read(PropertyBuffer& propertyBuffer)
 void ActionDownSkill::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -44,8 +38,6 @@ void ActionDownSkill::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse okpkt;
     okpkt.setCode(NPC_RESPONSE_DOWN_SKILL);
     pPlayer->sendPacket(&okpkt);
-
-    __END_CATCH
 }
 
 
@@ -55,11 +47,7 @@ void ActionDownSkill::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionDownSkill::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionDownSkill(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

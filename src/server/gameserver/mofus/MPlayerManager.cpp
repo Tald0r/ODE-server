@@ -26,12 +26,8 @@
 MPlayerManager::MPlayerManager()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("MPlayerManager");
     m_pCurrentJob = NULL;
-
-    __END_CATCH
 }
 
 // destructor
@@ -46,17 +42,11 @@ MPlayerManager::~MPlayerManager() noexcept
 void MPlayerManager::stop()
 
 {
-    __BEGIN_TRY
-
     ManagedThread::stop();
-
-    __END_CATCH
 }
 
 // main method
 void MPlayerManager::run() {
-    __BEGIN_TRY
-
     Properties& config = de::kernelContext().config();
 
     string host = config.getProperty("DB_HOST");
@@ -109,8 +99,6 @@ void MPlayerManager::run() {
             dummyQueryTime = de::nextKeepAliveDeadline(dummyQueryTime, rand());
         }
     }
-
-    __END_CATCH
 }
 
 void MPlayerManager::addJob(const string& userID, const string& name, const string& cellnum) {

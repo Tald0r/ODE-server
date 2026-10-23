@@ -55,14 +55,10 @@ ActionGiveEventItem::~ActionGiveEventItem() {
 void ActionGiveEventItem::load()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pLuaState != NULL);
 
     int result = m_pLuaState->dofile(m_CommonFilename);
     LuaState::logError(result);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,8 +67,6 @@ void ActionGiveEventItem::load()
 void ActionGiveEventItem::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_FlagSetType = (FlagSetType)propertyBuffer.getPropertyInt("FlagSetType");
@@ -84,8 +78,6 @@ void ActionGiveEventItem::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,8 +86,6 @@ void ActionGiveEventItem::read(PropertyBuffer& propertyBuffer)
 void ActionGiveEventItem::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -275,8 +265,6 @@ void ActionGiveEventItem::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse quit;
     quit.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
     pPlayer->sendPacket(&quit);
-
-    __END_CATCH
 }
 
 
@@ -286,11 +274,7 @@ void ActionGiveEventItem::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionGiveEventItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionGiveEventItem(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

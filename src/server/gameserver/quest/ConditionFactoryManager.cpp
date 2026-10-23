@@ -46,8 +46,6 @@
 ConditionFactoryManager::ConditionFactoryManager()
 
     : m_Factories(NULL), m_Size(Condition::CONDITION_MAX) {
-    __BEGIN_TRY
-
     Assert(m_Size > 0);
 
     // Create the condition factory array.
@@ -56,8 +54,6 @@ ConditionFactoryManager::ConditionFactoryManager()
     // Initialize the factory pointers to NULL.
     for (int i = 0; i < m_Size; i++)
         m_Factories[i] = NULL;
-
-    __END_CATCH
 }
 
 
@@ -93,8 +89,6 @@ ConditionFactoryManager::~ConditionFactoryManager()
 void ConditionFactoryManager::init()
 
 {
-    __BEGIN_TRY
-
     addFactory(new ConditionAtFirstFactory());
     addFactory(new ConditionTalkedByFactory());
     addFactory(new ConditionIdleFactory());
@@ -126,8 +120,6 @@ void ConditionFactoryManager::init()
     addFactory(new ConditionNotGuildMemberFactory());
     addFactory(new ConditionIsGuildMemberFactory());
     addFactory(new ConditionCanEnterQuestZoneFactory());
-
-    __END_CATCH
 }
 
 
@@ -137,8 +129,6 @@ void ConditionFactoryManager::init()
 void ConditionFactoryManager::addFactory(ConditionFactory* pFactory)
 
 {
-    __BEGIN_TRY
-
     Assert(pFactory != NULL);
 
     if (m_Factories[pFactory->getConditionType()] != NULL) {
@@ -150,8 +140,6 @@ void ConditionFactoryManager::addFactory(ConditionFactory* pFactory)
 
     // Register the condition factory.
     m_Factories[pFactory->getConditionType()] = pFactory;
-
-    __END_CATCH
 }
 
 
@@ -161,8 +149,6 @@ void ConditionFactoryManager::addFactory(ConditionFactory* pFactory)
 Condition* ConditionFactoryManager::createCondition(ConditionType_t conditionType) const
 
 {
-    __BEGIN_TRY
-
     if (conditionType >= m_Size || m_Factories[conditionType] == NULL) {
         StringStream msg;
         msg << "condition factory [" << conditionType << "] not exist.";
@@ -171,8 +157,6 @@ Condition* ConditionFactoryManager::createCondition(ConditionType_t conditionTyp
     }
 
     return m_Factories[conditionType]->createCondition();
-
-    __END_CATCH
 }
 
 
@@ -182,8 +166,6 @@ Condition* ConditionFactoryManager::createCondition(ConditionType_t conditionTyp
 string ConditionFactoryManager::getConditionName(ConditionType_t conditionType) const
 
 {
-    __BEGIN_TRY
-
     // Guard against a segfault from a condition type that is out of range.
     // An unknown type is logged and throws an Error.
     if (conditionType >= m_Size || m_Factories[conditionType] == NULL) {
@@ -194,8 +176,6 @@ string ConditionFactoryManager::getConditionName(ConditionType_t conditionType) 
     }
 
     return m_Factories[conditionType]->getConditionName();
-
-    __END_CATCH
 }
 
 
@@ -205,8 +185,6 @@ string ConditionFactoryManager::getConditionName(ConditionType_t conditionType) 
 ConditionType_t ConditionFactoryManager::getConditionType(const string& conditionname) const
 
 {
-    __BEGIN_TRY
-
 #ifdef __OUTPUT_INIT__
     cout << "Condition[" << conditionname << "]...";
 #endif
@@ -222,8 +200,6 @@ ConditionType_t ConditionFactoryManager::getConditionType(const string& conditio
     string msg = "no such condition type : " + conditionname;
     cout << msg << endl;
     throw Error(msg);
-
-    __END_CATCH
 }
 
 
@@ -233,8 +209,6 @@ ConditionType_t ConditionFactoryManager::getConditionType(const string& conditio
 string ConditionFactoryManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ConditionFactoryManager(\n";
@@ -248,6 +222,4 @@ string ConditionFactoryManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

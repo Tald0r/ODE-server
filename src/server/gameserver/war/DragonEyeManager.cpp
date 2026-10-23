@@ -21,14 +21,10 @@ const int nDragonEyes = 9;
 // class DragonEyeManager
 ///////////////////////////////////////////////////////////////////////////
 DragonEyeManager::DragonEyeManager() {
-    __BEGIN_TRY
-
     m_DragonEyes.resize(nDragonEyes, NULL);
     m_DefaultPositions.resize(nDragonEyes);
 
     initDefaultPositions();
-
-    __END_CATCH
 }
 
 DragonEyeManager::~DragonEyeManager() {}
@@ -36,18 +32,12 @@ DragonEyeManager::~DragonEyeManager() {}
 void DragonEyeManager::init()
 
 {
-    __BEGIN_TRY
-
     createAllDragonEyes();
-
-    __END_CATCH
 }
 
 void DragonEyeManager::initDefaultPositions()
 
 {
-    __BEGIN_TRY
-
     // Set the DragonEye starting positions when the war begins.
     m_DefaultPositions[0].set(73, 24, 121);  // Slayer / Adam West / 24 / 121
     m_DefaultPositions[1].set(1201, 62, 68); // Slayer / Octavus / 62 / 68
@@ -58,15 +48,11 @@ void DragonEyeManager::initDefaultPositions()
     m_DefaultPositions[6].set(72, 66, 168);  // Ousters / Adam / 66 / 168
     m_DefaultPositions[7].set(1205, 62, 69); // Ousters / Pentanus / 62 / 69
     m_DefaultPositions[8].set(1206, 82, 52); // Ousters / Hexirius / 82 / 52
-
-    __END_CATCH
 }
 
 void DragonEyeManager::createAllDragonEyes()
 
 {
-    __BEGIN_TRY
-
     // First create the dragon eye items.
     for (int i = 0; i < nDragonEyes; ++i) {
         list<OptionType_t> optionNull;
@@ -89,15 +75,11 @@ void DragonEyeManager::createAllDragonEyes()
 
         m_DragonEyes[i] = pWarItem;
     }
-
-    __END_CATCH
 }
 
 void DragonEyeManager::addAllDragonEyesToZone()
 
 {
-    __BEGIN_TRY
-
     // Put each item at its initial position.
     for (int i = 0; i < nDragonEyes; ++i) {
         Zone* pZone = getZoneByZoneID(m_DefaultPositions[i].id);
@@ -109,30 +91,22 @@ void DragonEyeManager::addAllDragonEyesToZone()
         // Add the item to the zone
         pZone->addItemDelayed(pItem, m_DefaultPositions[i].x, m_DefaultPositions[i].y);
     }
-
-    __END_CATCH
 }
 
 void DragonEyeManager::removeAllDragonEyes()
 
 {
-    __BEGIN_TRY
-
     // Take every dragon eye out of the world so that it cannot be seen. Each
     // is taken by whoever holds it, on that holder's thread; the item itself
     // stays here, in m_DragonEyes, for the next race war to put back.
     for (int i = 0; i < nDragonEyes; ++i) {
         de::war::postItemReturn(Item::ITEM_CLASS_WAR_ITEM, m_DragonEyes[i]->getItemID(), [](Zone&, Item*) {});
     }
-
-    __END_CATCH
 }
 
 void DragonEyeManager::warpToDefaultPosition(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // pCreature is the creature that holds the dragon eye.
     // Called when the user that held the dragon eye dies or leaves.
     // This is the code that moves the dragon eye back to its original position.
@@ -182,6 +156,4 @@ void DragonEyeManager::warpToDefaultPosition(Creature* pCreature)
             pTargetZone->addItemDelayed(pItem, m_DefaultPositions[index].x, m_DefaultPositions[index].y);
         }
     }
-
-    __END_CATCH
 }

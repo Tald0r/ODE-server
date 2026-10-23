@@ -38,11 +38,7 @@ void ConditionCanEnterPayZone::read(PropertyBuffer& propertyBuffer)
 string ConditionCanEnterPayZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionCanEnterPayZone(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

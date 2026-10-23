@@ -7,10 +7,6 @@ LuaTradeEventVampireItem::LuaTradeEventVampireItem(LuaState* pState) : LuaSelect
 void LuaTradeEventVampireItem::prepare()
 
 {
-    __BEGIN_TRY
-
     lua_pushnumber(m_pState->getState(), m_Level);
     lua_setglobal(m_pState->getState(), "Level");
-
-    __END_CATCH
 }

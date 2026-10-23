@@ -35,8 +35,6 @@
 void ActionActivateMazeExit::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_GoodZoneID = pb.getPropertyInt("GoodZoneID");
         m_GoodX = pb.getPropertyInt("GoodX");
@@ -49,8 +47,6 @@ void ActionActivateMazeExit::read(PropertyBuffer& pb)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +55,6 @@ void ActionActivateMazeExit::read(PropertyBuffer& pb)
 void ActionActivateMazeExit::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -96,7 +91,6 @@ void ActionActivateMazeExit::execute(Creature* pNPC, Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -106,13 +100,9 @@ void ActionActivateMazeExit::execute(Creature* pNPC, Creature* pCreature)
 string ActionActivateMazeExit::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionActivateMazeExit(" << "GoodZoneID:" << (int)m_GoodZoneID << ",GoodX:" << (int)m_GoodX
         << ",GoodY:" << (int)m_GoodY << ",BadZoneID:" << (int)m_BadZoneID << ",BadX:" << (int)m_BadX
         << ",BadY:" << (int)m_BadY << ",ExitID:" << (int)m_ExitID << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -40,8 +40,6 @@
 void ActionEnterCastleWithFee::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ZoneID = pb.getPropertyInt("ZoneID");
         m_X = pb.getPropertyInt("X");
@@ -49,8 +47,6 @@ void ActionEnterCastleWithFee::read(PropertyBuffer& pb)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +55,6 @@ void ActionEnterCastleWithFee::read(PropertyBuffer& pb)
 void ActionEnterCastleWithFee::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -119,7 +114,6 @@ void ActionEnterCastleWithFee::execute(Creature* pNPC, Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -129,11 +123,7 @@ void ActionEnterCastleWithFee::execute(Creature* pNPC, Creature* pCreature)
 string ActionEnterCastleWithFee::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionEnterCastleWithFee(" << "ZoneID:" << (int)m_ZoneID << ",X:" << (int)m_X << ",Y:" << (int)m_Y << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -56,14 +56,10 @@ ActionGiveTestServerReward::~ActionGiveTestServerReward() {
 void ActionGiveTestServerReward::load()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pLuaState != NULL);
 
     int result = m_pLuaState->dofile(m_CommonFilename);
     LuaState::logError(result);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,8 +68,6 @@ void ActionGiveTestServerReward::load()
 void ActionGiveTestServerReward::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_CommonFilename = propertyBuffer.getProperty("CommonFilename");
@@ -84,8 +78,6 @@ void ActionGiveTestServerReward::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,8 +86,6 @@ void ActionGiveTestServerReward::read(PropertyBuffer& propertyBuffer)
 void ActionGiveTestServerReward::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -249,8 +239,6 @@ void ActionGiveTestServerReward::execute(Creature* pCreature1, Creature* pCreatu
     GCNPCResponse quit;
     quit.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
     pPlayer->sendPacket(&quit);
-
-    __END_CATCH
 }
 
 
@@ -260,11 +248,7 @@ void ActionGiveTestServerReward::execute(Creature* pCreature1, Creature* pCreatu
 string ActionGiveTestServerReward::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionGiveTestServerReward(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

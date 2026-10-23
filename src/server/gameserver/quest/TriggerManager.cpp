@@ -32,7 +32,7 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 TriggerManager::TriggerManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,9 +52,6 @@ TriggerManager::~TriggerManager()
 void TriggerManager::load(const string& name)
 
 {
-    __BEGIN_TRY
-
-
     vector<NPCTriggerRow> rows = defaultContentInfoRepository().loadNPCTriggers(name);
 
     for (vector<NPCTriggerRow>::const_iterator it = rows.begin(); it != rows.end(); ++it) {
@@ -69,17 +66,12 @@ void TriggerManager::load(const string& name)
 
         addTrigger(pTrigger);
     }
-
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Loads the triggers related to the given zone coordinates from the database.
 ////////////////////////////////////////////////////////////////////////////////
 void TriggerManager::load(ZoneID_t zoneid, int left, int top, int right, int bottom) {
-    __BEGIN_TRY
-
     vector<ZoneTriggerRow> rows = defaultZoneInfoRepository().loadZoneTriggers((int)zoneid, left, top, right, bottom);
 
     for (vector<ZoneTriggerRow>::const_iterator it = rows.begin(); it != rows.end(); ++it) {
@@ -96,8 +88,6 @@ void TriggerManager::load(ZoneID_t zoneid, int left, int top, int right, int bot
 
         addTrigger(pTrigger);
     }
-
-    __END_CATCH
 }
 
 
@@ -105,14 +95,10 @@ void TriggerManager::load(ZoneID_t zoneid, int left, int top, int right, int bot
 // refresh condition set
 ////////////////////////////////////////////////////////////////////////////////
 void TriggerManager::refresh() {
-    __BEGIN_TRY
-
     // OR the ConditionSet of every trigger held here into m_ConditionSet.
     for (list<Trigger*>::const_iterator itr = m_Triggers.begin(); itr != m_Triggers.end(); itr++) {
         m_ConditionSet |= (*itr)->getConditionSet();
     }
-
-    __END_CATCH
 }
 
 
@@ -120,8 +106,6 @@ void TriggerManager::refresh() {
 // add trigger
 ////////////////////////////////////////////////////////////////////////////////
 void TriggerManager::addTrigger(Trigger* pTrigger) {
-    __BEGIN_TRY
-
     Assert(pTrigger != NULL);
 
     list<Trigger*>::iterator itr = m_Triggers.begin();
@@ -137,8 +121,6 @@ void TriggerManager::addTrigger(Trigger* pTrigger) {
     m_Triggers.push_back(pTrigger);
 
     m_ConditionSet |= pTrigger->getConditionSet();
-
-    __END_CATCH
 }
 
 
@@ -146,8 +128,6 @@ void TriggerManager::addTrigger(Trigger* pTrigger) {
 // delete trigger
 ////////////////////////////////////////////////////////////////////////////////
 void TriggerManager::deleteTrigger(TriggerID_t triggerID) {
-    __BEGIN_TRY
-
     list<Trigger*>::iterator itr;
     for (itr = m_Triggers.begin(); itr != m_Triggers.end(); itr++) {
         if ((*itr)->getTriggerID() == triggerID) {
@@ -166,8 +146,6 @@ void TriggerManager::deleteTrigger(TriggerID_t triggerID) {
 
     // Rebuild the condition set.
     refresh();
-
-    __END_CATCH
 }
 
 
@@ -175,8 +153,6 @@ void TriggerManager::deleteTrigger(TriggerID_t triggerID) {
 // get trigger
 ////////////////////////////////////////////////////////////////////////////////
 Trigger* TriggerManager::getTrigger(TriggerID_t triggerID) {
-    __BEGIN_TRY
-
     list<Trigger*>::iterator itr;
     for (itr = m_Triggers.begin(); itr != m_Triggers.end(); itr++) {
         if ((*itr)->getTriggerID() == triggerID) {
@@ -188,8 +164,6 @@ Trigger* TriggerManager::getTrigger(TriggerID_t triggerID) {
         throw NoSuchElementException();
 
     return *itr;
-
-    __END_CATCH
 }
 
 
@@ -197,10 +171,6 @@ Trigger* TriggerManager::getTrigger(TriggerID_t triggerID) {
 // get debug string
 ////////////////////////////////////////////////////////////////////////////////
 string TriggerManager::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     return msg.toString();
-
-    __END_CATCH
 }

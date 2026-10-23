@@ -41,8 +41,6 @@ string QuestInfo::toString() const {
 bool QuestInfo::canExecute(PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     if (pPC->getRace() != m_Race)
         return false;
 
@@ -78,6 +76,4 @@ bool QuestInfo::canExecute(PlayerCreature* pPC) const
         return false;
 
     return true;
-
-    __END_CATCH
 }

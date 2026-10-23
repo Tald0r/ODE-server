@@ -31,8 +31,6 @@ static const POINT d[] = {
 void ActionWarpInZone::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_MovePercentage = propertyBuffer.getPropertyInt("MovePercentage");
 
@@ -40,8 +38,6 @@ void ActionWarpInZone::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,8 +46,6 @@ void ActionWarpInZone::read(PropertyBuffer& propertyBuffer)
 void ActionWarpInZone::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
 
     Assert(pCreature1->isNPC());
@@ -88,8 +82,6 @@ void ActionWarpInZone::execute(Creature* pCreature1, Creature* pCreature2)
         makeGCAddNPC(&gcAddNPC, dynamic_cast<NPC*>(pCreature1));
         pZone->broadcastPacket(tx, ty, &gcAddNPC);
     }
-
-    __END_CATCH
 }
 
 
@@ -99,13 +91,9 @@ void ActionWarpInZone::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionWarpInZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ActionWarpInZone(" << "MovePercentage:" << (int)m_MovePercentage << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

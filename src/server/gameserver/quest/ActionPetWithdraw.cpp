@@ -18,14 +18,10 @@
 void ActionPetWithdraw::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -35,8 +31,6 @@ void ActionPetWithdraw::read(PropertyBuffer& propertyBuffer)
 void ActionPetWithdraw::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -49,8 +43,6 @@ void ActionPetWithdraw::execute(Creature* pCreature1, Creature* pCreature2)
     makeGCPetStashList(&gcPetStashList, pPC);
 
     pPC->getPlayer()->sendPacket(&gcPetStashList);
-
-    __END_CATCH
 }
 
 
@@ -60,12 +52,8 @@ void ActionPetWithdraw::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionPetWithdraw::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionPetWithdraw(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -16,17 +16,15 @@
 WarSchedule::WarSchedule(Work* pWork, const VSDateTime& Time, ScheduleType type // = SCHEDULE_TYPE_ONCE
                          )
 
-    : Schedule(pWork, Time, type){__BEGIN_TRY __END_CATCH}
+    : Schedule(pWork, Time, type) {}
 
-      WarSchedule::~WarSchedule()
+WarSchedule::~WarSchedule()
 
 {}
 
 void WarSchedule::makeWarScheduleInfo(WarScheduleInfo* pWSI) const
 
 {
-    __BEGIN_TRY
-
     Assert(m_pWork != NULL);
 
     War* pWar = dynamic_cast<War*>(m_pWork);
@@ -37,15 +35,11 @@ void WarSchedule::makeWarScheduleInfo(WarScheduleInfo* pWSI) const
     pWSI->month = m_ScheduledTime.date().month();
     pWSI->day = m_ScheduledTime.date().day();
     pWSI->hour = m_ScheduledTime.time().hour();
-
-    __END_CATCH
 }
 
 void WarSchedule::makeWarInfo(WarInfo* pWarInfo) const
 
 {
-    __BEGIN_TRY
-
     Assert(pWarInfo != NULL);
 
     const Work* pWork = getWork();
@@ -83,16 +77,11 @@ void WarSchedule::makeWarInfo(WarInfo* pWarInfo) const
     pWar->makeWarInfo(pWarInfo);
     pWarInfo->setRemainTime(remainSec);
     pWarInfo->setStartTime(startTime);
-
-
-    __END_CATCH
 }
 
 void WarSchedule::create()
 
 {
-    __BEGIN_TRY
-
     War* pWar = dynamic_cast<War*>(m_pWork);
     Assert(pWar != NULL);
 
@@ -110,15 +99,11 @@ void WarSchedule::create()
         filelog("WarError.log", "WarSchedule::create() : War info is already in the table, or the table is invalid.");
         return;
     }
-
-    __END_CATCH
 }
 
 void WarSchedule::save()
 
 {
-    __BEGIN_TRY
-
     War* pWar = dynamic_cast<War*>(m_pWork);
     Assert(pWar != NULL);
 
@@ -138,30 +123,21 @@ void WarSchedule::save()
         filelog("WarError.log", "WarSchedule::save() : the war's row could not be written.");
         return;
     }
-
-    __END_CATCH
 }
 
 void WarSchedule::tinysave(const string& query)
 
 {
-    __BEGIN_TRY
-
     War* pWar = dynamic_cast<War*>(m_pWork);
     Assert(pWar != NULL);
 
     defaultWarInfoRepository().tinysaveWarSchedule(query, pWar->getWarID(),
                                                    de::kernelContext().config().getPropertyInt("ServerID"));
-
-
-    __END_CATCH
 }
 
 void WarSchedule::run()
 
 {
-    __BEGIN_TRY
-
     Schedule::run();
 
     if (m_pWork != NULL) {
@@ -172,6 +148,4 @@ void WarSchedule::run()
         snprintf(pState, sizeof(pState), "Status='%s'", pWar->getState2DBString().c_str());
         tinysave(string(pState));
     }
-
-    __END_CATCH
 }

@@ -30,16 +30,12 @@
 void ActionWarRegistration::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_ZoneID = propertyBuffer.getPropertyInt("ZoneID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -49,8 +45,6 @@ void ActionWarRegistration::read(PropertyBuffer& propertyBuffer)
 void ActionWarRegistration::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     GuildManager& guilds = context().guilds();
 
     Assert(pCreature1 != NULL);
@@ -143,8 +137,6 @@ void ActionWarRegistration::execute(Creature* pCreature1, Creature* pCreature2)
     gcNPCResponse.setCode(NPC_RESPONSE_WAR_REGISTRATION_OK);
     pPC->getPlayer()->sendPacket(&gcNPCResponse);
     return;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,12 +145,8 @@ void ActionWarRegistration::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionWarRegistration::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionWarRegistration(" << ",ZoneID:" << (int)m_ZoneID << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

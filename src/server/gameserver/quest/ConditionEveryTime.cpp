@@ -60,12 +60,8 @@ void ConditionEveryTime::read(PropertyBuffer& propertyBuffer)
 string ConditionEveryTime::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionEveryTime(" << "Turn:" << (int)m_Turn << ",NextTurn:" << (int)m_NextTurn.tv_sec << "."
         << (int)m_NextTurn.tv_usec << ")";
     return msg.toString();
-
-    __END_CATCH
 }

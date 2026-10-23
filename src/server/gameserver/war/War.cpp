@@ -65,8 +65,6 @@ War::~War() {}
 void War::initWarIDRegistry()
 
 {
-    __BEGIN_TRY
-
     m_WarIDRegistry = 0;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -83,8 +81,6 @@ void War::initWarIDRegistry()
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     cout << "War::WarIDRegistry:" << m_WarIDRegistry << endl;
-
-    __END_CATCH
 }
 
 const string& War::getState2DBString() const {
@@ -103,8 +99,6 @@ const string& War::getState2DBString() const {
 void War::execute()
 
 {
-    __BEGIN_TRY
-
     switch (m_State) {
     case WAR_STATE_WAIT:
         executeStart();
@@ -125,8 +119,6 @@ void War::execute()
     }
 
     // After execute(), WarSchedule's heartbeat() sets the Status in the DB.
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -139,8 +131,6 @@ void War::execute()
 void War::sendWarStartMessage() const
 
 {
-    __BEGIN_TRY
-
     GCSystemMessage gcSystemMessage;
     // Room for the longest message a GCSystemMessage carries.
     char str[de::wire::kMaxByteStringLength + 1];
@@ -150,8 +140,6 @@ void War::sendWarStartMessage() const
     de::gameContext().zoneGroups().broadcast(&gcSystemMessage);
 
     filelog("WarLog.txt", "[WarID=%u] %s", (int)m_WarID, str);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -160,8 +148,6 @@ void War::sendWarStartMessage() const
 void War::sendWarEndMessage() const
 
 {
-    __BEGIN_TRY
-
     GCSystemMessage gcSystemMessage;
     // Room for the longest message a GCSystemMessage carries.
     char str[de::wire::kMaxByteStringLength + 1];
@@ -171,6 +157,4 @@ void War::sendWarEndMessage() const
     de::gameContext().zoneGroups().broadcast(&gcSystemMessage);
 
     filelog("WarLog.txt", "[WarID=%u] %s", (int)m_WarID, str);
-
-    __END_CATCH
 }

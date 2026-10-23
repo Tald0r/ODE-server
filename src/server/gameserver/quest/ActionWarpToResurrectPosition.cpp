@@ -22,14 +22,10 @@
 void ActionWarpToResurrectPosition::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -39,8 +35,6 @@ void ActionWarpToResurrectPosition::read(PropertyBuffer& propertyBuffer)
 void ActionWarpToResurrectPosition::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature2 != NULL);
     Assert(pCreature2->isPC());
 
@@ -52,8 +46,6 @@ void ActionWarpToResurrectPosition::execute(Creature* pCreature1, Creature* pCre
     context().resurrectLocations().getPosition(pPC, zoneCoord);
 
     transportCreature(pCreature2, zoneCoord.id, zoneCoord.x, zoneCoord.y);
-
-    __END_CATCH
 }
 
 
@@ -63,12 +55,8 @@ void ActionWarpToResurrectPosition::execute(Creature* pCreature1, Creature* pCre
 string ActionWarpToResurrectPosition::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionWarpToResurrectPosition(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

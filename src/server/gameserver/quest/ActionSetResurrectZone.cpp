@@ -23,15 +23,11 @@
 void ActionSetResurrectZone::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ZoneID = propertyBuffer.getPropertyInt("ZoneID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -41,8 +37,6 @@ void ActionSetResurrectZone::read(PropertyBuffer& propertyBuffer)
 void ActionSetResurrectZone::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -68,8 +62,6 @@ void ActionSetResurrectZone::execute(Creature* pCreature1, Creature* pCreature2)
     GCSystemMessage msg;
     msg.setMessage(context().strings().getString(STRID_SET_RESURRECTION_POSITION));
     pPlayer->sendPacket(&msg);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,11 +70,7 @@ void ActionSetResurrectZone::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionSetResurrectZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSetResurrectZone(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

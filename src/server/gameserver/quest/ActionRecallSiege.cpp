@@ -37,15 +37,11 @@
 void ActionRecallSiege::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ZoneID = pb.getPropertyInt("ZoneID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +50,6 @@ void ActionRecallSiege::read(PropertyBuffer& pb)
 void ActionRecallSiege::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -96,7 +91,6 @@ void ActionRecallSiege::execute(Creature* pNPC, Creature* pCreature)
     pGamePlayer->sendPacket(&gcGuildMemberList);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,11 +99,7 @@ void ActionRecallSiege::execute(Creature* pNPC, Creature* pCreature)
 string ActionRecallSiege::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionRecallSiege(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

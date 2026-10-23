@@ -8,13 +8,9 @@
 #include "repository/QuestInfoRepository.h"
 
 void EventQuestAdvance::save(const string& name) {
-    __BEGIN_TRY
-
     if (!defaultQuestInfoRepository().updateEventQuestAdvance((uint)getStatus(), name, (uint)getLevel())) {
         defaultQuestInfoRepository().insertEventQuestAdvance((uint)getLevel(), name, (uint)getStatus());
     }
-
-    __END_CATCH
 }
 
 EventQuestAdvanceManager::EventQuestAdvanceManager(PlayerCreature* pPC) {
@@ -86,30 +82,20 @@ EventQuestAdvance::Status EventQuestAdvanceManager::getStatus(int questLevel) {
 }
 
 void EventQuestAdvanceManager::save() {
-    __BEGIN_TRY
-
     for (int i = 0; i < EVENT_QUEST_LEVEL_MAX; ++i) {
         if (m_Advances[i] != NULL)
             m_Advances[i]->save(m_pOwner->getName());
     }
-
-    __END_CATCH
 }
 
 void EventQuestAdvanceManager::save(int questLevel) {
-    __BEGIN_TRY
-
     Assert(questLevel >= 0);
     Assert(questLevel < EVENT_QUEST_LEVEL_MAX);
     if (m_Advances[questLevel] != NULL)
         m_Advances[questLevel]->save(m_pOwner->getName());
-
-    __END_CATCH
 }
 
 void EventQuestAdvanceManager::load() {
-    __BEGIN_TRY
-
     clear();
 
     vector<EventQuestAdvanceRow> rows = defaultQuestInfoRepository().loadEventQuestAdvances(m_pOwner->getName());
@@ -120,8 +106,6 @@ void EventQuestAdvanceManager::load() {
 
         m_Advances[qLevel] = new EventQuestAdvance(qLevel, status);
     }
-
-    __END_CATCH
 }
 
 bool EventQuestAdvanceManager::canExecute(int questLevel) {

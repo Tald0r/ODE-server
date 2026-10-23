@@ -13,8 +13,6 @@ QuestAdvanceRewardInfo::~QuestAdvanceRewardInfo() {}
 QuestMessage QuestAdvanceRewardInfo::canGiveReward(PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     EventQuestAdvanceManager* pEAM = pPC->getQuestManager()->getEventQuestAdvanceManager();
     Assert(pEAM != NULL);
 
@@ -23,15 +21,11 @@ QuestMessage QuestAdvanceRewardInfo::canGiveReward(PlayerCreature* pPC) const
         return COMPLETE_SUCCESS;
 
     return FAIL_BUG;
-
-    __END_CATCH
 }
 
 QuestMessage QuestAdvanceRewardInfo::giveReward(PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     QuestMessage result = canGiveReward(pPC);
 
     if (result != COMPLETE_SUCCESS)
@@ -42,13 +36,9 @@ QuestMessage QuestAdvanceRewardInfo::giveReward(PlayerCreature* pPC) const
 
     pEAM->advanced(m_ThisQuestLevel);
     return result;
-
-    __END_CATCH
 }
 
 string QuestAdvanceRewardInfo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "QuestAdvanceRewardInfo(" << "ThisQuestLevel : " << m_ThisQuestLevel
@@ -56,6 +46,4 @@ string QuestAdvanceRewardInfo::toString() const {
         << RewardInfo::toString().c_str();
 
     return msg.toString();
-
-    __END_CATCH
 }

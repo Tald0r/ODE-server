@@ -20,14 +20,10 @@
 void ActionAcceptApartCouple::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -37,8 +33,6 @@ void ActionAcceptApartCouple::read(PropertyBuffer& propertyBuffer)
 void ActionAcceptApartCouple::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -71,8 +65,6 @@ void ActionAcceptApartCouple::execute(Creature* pCreature1, Creature* pCreature2
 
     if (pWaitingPC != NULL)
         pWaitingPC->getPlayer()->sendPacket(&gcNPCResponse);
-
-    __END_CATCH
 }
 
 
@@ -82,12 +74,8 @@ void ActionAcceptApartCouple::execute(Creature* pCreature1, Creature* pCreature2
 string ActionAcceptApartCouple::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionAcceptApartCouple(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

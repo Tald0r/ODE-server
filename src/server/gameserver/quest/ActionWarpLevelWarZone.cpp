@@ -29,11 +29,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionWarpLevelWarZone::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Execute the action.
@@ -41,8 +37,6 @@ void ActionWarpLevelWarZone::read(PropertyBuffer& propertyBuffer)
 void ActionWarpLevelWarZone::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature2 != NULL);
     Assert(pCreature2->isPC());
 
@@ -77,8 +71,6 @@ void ActionWarpLevelWarZone::execute(Creature* pCreature1, Creature* pCreature2)
         pPC->getGQuestManager()->illegalWarp();
     transportCreature(pCreature2, pos.id, pos.x, pos.y, false);
     return;
-
-    __END_CATCH
 }
 
 
@@ -88,13 +80,9 @@ void ActionWarpLevelWarZone::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionWarpLevelWarZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ActionWarpLevelWarZone(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

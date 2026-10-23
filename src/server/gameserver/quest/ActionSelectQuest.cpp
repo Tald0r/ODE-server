@@ -27,14 +27,10 @@
 void ActionSelectQuest::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -44,8 +40,6 @@ void ActionSelectQuest::read(PropertyBuffer& propertyBuffer)
 void ActionSelectQuest::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature1->isNPC());
 
@@ -103,8 +97,6 @@ void ActionSelectQuest::execute(Creature* pCreature1, Creature* pCreature2)
     GCSelectQuestID gcSelectQuestID(quests.begin(), quests.end());
 
     pPlayer->sendPacket(&gcSelectQuestID);
-
-    __END_CATCH
 }
 
 
@@ -114,12 +106,8 @@ void ActionSelectQuest::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionSelectQuest::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSelectQuest(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

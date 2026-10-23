@@ -43,15 +43,11 @@
 void ActionEnterGDRLair::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_PortalID = pb.getPropertyInt("PortalID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +56,6 @@ void ActionEnterGDRLair::read(PropertyBuffer& pb)
 void ActionEnterGDRLair::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -130,7 +125,6 @@ void ActionEnterGDRLair::execute(Creature* pNPC, Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -140,11 +134,7 @@ void ActionEnterGDRLair::execute(Creature* pNPC, Creature* pCreature)
 string ActionEnterGDRLair::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionEnterGDRLair(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

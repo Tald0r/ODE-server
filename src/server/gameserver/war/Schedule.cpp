@@ -10,12 +10,9 @@
 
 Schedule::Schedule(Work* pWork, const VSDateTime& Time, ScheduleType type)
 
-    : m_ScheduleType(type), m_pWork(pWork), m_ScheduledTime(Time){__BEGIN_TRY
+    : m_ScheduleType(type), m_pWork(pWork), m_ScheduledTime(Time) {}
 
-
-                                                                      __END_CATCH}
-
-      Schedule::~Schedule() noexcept {
+Schedule::~Schedule() noexcept {
     try {
         SAFE_DELETE(m_pWork);
     } catch (...) {
@@ -34,16 +31,12 @@ Work* Schedule::popWork() {
 bool Schedule::heartbeat()
 
 {
-    __BEGIN_TRY
-
     if (isDue()) {
         run();
         return true;
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool Schedule::isDue() const {
@@ -62,8 +55,6 @@ void Schedule::run() {
 string Schedule::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "Schedule(" << "ScheduleType:" << (int)m_ScheduleType << ",ScheduledTime:" << m_ScheduledTime.toString();
@@ -76,6 +67,4 @@ string Schedule::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

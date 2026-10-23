@@ -25,16 +25,12 @@
 void ActionGiveQuestItem::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_CounterScriptID = propertyBuffer.getPropertyInt("CounterScriptID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -44,8 +40,6 @@ void ActionGiveQuestItem::read(PropertyBuffer& propertyBuffer)
 void ActionGiveQuestItem::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -80,8 +74,6 @@ void ActionGiveQuestItem::execute(Creature* pCreature1, Creature* pCreature2)
         makeGCCreateItem(&gcCreateItem, pItem, pt.x, pt.y);
         pPC->getPlayer()->sendPacket(&gcCreateItem);
     }
-
-    __END_CATCH
 }
 
 
@@ -91,12 +83,8 @@ void ActionGiveQuestItem::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionGiveQuestItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionGiveQuestItem(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

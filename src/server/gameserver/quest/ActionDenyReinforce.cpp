@@ -32,16 +32,12 @@
 void ActionDenyReinforce::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_ZoneID = propertyBuffer.getPropertyInt("ZoneID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -51,8 +47,6 @@ void ActionDenyReinforce::read(PropertyBuffer& propertyBuffer)
 void ActionDenyReinforce::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -130,8 +124,6 @@ void ActionDenyReinforce::execute(Creature* pCreature1, Creature* pCreature2)
     pPC->getPlayer()->sendPacket(&gcNPCResponse);
 
     return;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -140,12 +132,8 @@ void ActionDenyReinforce::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionDenyReinforce::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionDenyReinforce(" << ",ZoneID:" << (int)m_ZoneID << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

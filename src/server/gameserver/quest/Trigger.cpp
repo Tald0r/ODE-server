@@ -20,13 +20,9 @@
 // constructor
 ////////////////////////////////////////////////////////////////////////////////
 Trigger::Trigger(de::GameContext& context) : m_Context(context) {
-    __BEGIN_TRY
-
     m_TriggerType = NPC_TRIGGER;
     m_TriggerID = 0;
     m_QuestID = 0;
-
-    __END_CATCH
 }
 
 
@@ -42,14 +38,10 @@ Trigger::~Trigger() {
 // add condition
 ////////////////////////////////////////////////////////////////////////////////
 void Trigger::addCondition(Condition* pCondition) {
-    __BEGIN_TRY
-
     m_Conditions.push_back(pCondition);
 
     // set condition set
     m_ConditionSet.set(pCondition->getConditionType());
-
-    __END_CATCH
 }
 
 
@@ -57,11 +49,7 @@ void Trigger::addCondition(Condition* pCondition) {
 // add action
 ////////////////////////////////////////////////////////////////////////////////
 void Trigger::addAction(Action* pAction) {
-    __BEGIN_TRY
-
     m_Actions.push_back(pAction);
-
-    __END_CATCH
 }
 
 
@@ -69,11 +57,7 @@ void Trigger::addAction(Action* pAction) {
 // add counter action
 ////////////////////////////////////////////////////////////////////////////////
 void Trigger::addCounterAction(Action* pAction) {
-    __BEGIN_TRY
-
     m_CounterActions.push_back(pAction);
-
-    __END_CATCH
 }
 
 
@@ -81,8 +65,6 @@ void Trigger::addCounterAction(Action* pAction) {
 // is all conditions satisfied?
 ////////////////////////////////////////////////////////////////////////////////
 bool Trigger::isAllSatisfied(TriggerMode triggerMode, Creature* pCreature1, Creature* pCreature2, void* pParam) const {
-    __BEGIN_TRY
-
     uint nConditions = m_Conditions.size();
 
     for (uint i = 0; i < nConditions; i++) {
@@ -97,16 +79,12 @@ bool Trigger::isAllSatisfied(TriggerMode triggerMode, Creature* pCreature1, Crea
     }
 
     return true;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // activate trigger
 ////////////////////////////////////////////////////////////////////////////////
 bool Trigger::activate(Creature* pCreature1, Creature* pCreature2) const {
-    __BEGIN_TRY
-
     uint nActions = m_Actions.size();
 
     if (nActions == 0)
@@ -119,16 +97,12 @@ bool Trigger::activate(Creature* pCreature1, Creature* pCreature2) const {
     }
 
     return true;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // activate trigger
 ////////////////////////////////////////////////////////////////////////////////
 bool Trigger::activateCounter(Creature* pCreature1, Creature* pCreature2) const {
-    __BEGIN_TRY
-
     uint nActions = m_CounterActions.size();
 
     if (nActions == 0)
@@ -141,8 +115,6 @@ bool Trigger::activateCounter(Creature* pCreature1, Creature* pCreature2) const 
     }
 
     return true;
-
-    __END_CATCH
 }
 
 
@@ -161,8 +133,6 @@ bool Trigger::activateCounter(Creature* pCreature1, Creature* pCreature2) const 
 //            Sep = ':'
 ////////////////////////////////////////////////////////////////////////////////
 void Trigger::setConditions(const string& str) {
-    __BEGIN_TRY
-
     PropertyBuffer propertyBuffer(str);
 
     try {
@@ -190,9 +160,6 @@ void Trigger::setConditions(const string& str) {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-
-    __END_CATCH
 }
 
 
@@ -212,8 +179,6 @@ void Trigger::setConditions(const string& str) {
 //         Sep = ':'
 ////////////////////////////////////////////////////////////////////////////////
 void Trigger::setActions(const string& str) {
-    __BEGIN_TRY
-
     if (str.size() == 0)
         return;
 
@@ -246,9 +211,6 @@ void Trigger::setActions(const string& str) {
         cout << nsee.toString() << endl;
         throw Error(nsee.toString());
     }
-
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -267,8 +229,6 @@ void Trigger::setActions(const string& str) {
 //         Sep = ':'
 ////////////////////////////////////////////////////////////////////////////////
 void Trigger::setCounterActions(const string& str) {
-    __BEGIN_TRY
-
     if (str.size() == 0)
         return;
 
@@ -301,9 +261,6 @@ void Trigger::setCounterActions(const string& str) {
         cout << nsee.toString() << endl;
         throw Error(nsee.toString());
     }
-
-
-    __END_CATCH
 }
 
 
@@ -311,8 +268,6 @@ void Trigger::setCounterActions(const string& str) {
 // get debug string
 ////////////////////////////////////////////////////////////////////////////////
 string Trigger::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "Trigger(" << "TriggerType:" << TriggerType2String[m_TriggerType] << ",TriggerID:" << (int)m_TriggerID
@@ -334,6 +289,4 @@ string Trigger::toString() const {
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

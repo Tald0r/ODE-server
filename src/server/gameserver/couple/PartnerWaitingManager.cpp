@@ -27,8 +27,6 @@ PartnerWaitInfo::PartnerWaitInfo(PlayerCreature* pWaitingPC, string RequestedPCN
 
 PartnerWaitInfo* PartnerWaitInfo::getPartnerWaitInfo(PlayerCreature* pWaitingPC, string RequestedPCName,
                                                      WaitType waitType) {
-    __BEGIN_TRY
-
     Assert(pWaitingPC != NULL);
 
     switch (waitType) {
@@ -39,13 +37,9 @@ PartnerWaitInfo* PartnerWaitInfo::getPartnerWaitInfo(PlayerCreature* pWaitingPC,
     default:
         return NULL;
     }
-
-    __END_CATCH
 }
 
 PlayerCreature* PartnerWaitInfo::getWaitingPC() const {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     Creature* pCreature = m_pZone->getCreature(m_WaitingPCOID);
@@ -57,8 +51,6 @@ PlayerCreature* PartnerWaitInfo::getWaitingPC() const {
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 PartnerWaitingManager::~PartnerWaitingManager() {
@@ -73,8 +65,6 @@ PartnerWaitingManager::~PartnerWaitingManager() {
 
 // Build a new PartnerWaitInfo and register it.
 uint PartnerWaitingManager::waitForPartner(PlayerCreature* pWaitingPC, string RequestedPCName) {
-    __BEGIN_TRY
-
     if (!de::gameContext().variables().isActivateCouple())
         return COUPLE_MESSAGE_NOT_EVENT_TERM;
 
@@ -116,14 +106,10 @@ uint PartnerWaitingManager::waitForPartner(PlayerCreature* pWaitingPC, string Re
     m_WaitInfos[RequestedPCName] = pPartnerWaitInfo;
 
     return 0;
-
-    __END_CATCH
 }
 
 // Find and erase the partner request that PC is waiting on.
 bool PartnerWaitingManager::stopWaitForPartner(PlayerCreature* pWaitingPC) {
-    __BEGIN_TRY
-
     Assert(pWaitingPC != NULL);
 
     WaitInfoHashMap::iterator itr = m_WaitInfos.begin();
@@ -137,13 +123,9 @@ bool PartnerWaitingManager::stopWaitForPartner(PlayerCreature* pWaitingPC) {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 uint PartnerWaitingManager::acceptPartner(PlayerCreature* pRequestedPC) {
-    __BEGIN_TRY
-
     if (!de::gameContext().variables().isActivateCouple())
         return COUPLE_MESSAGE_NOT_EVENT_TERM;
 
@@ -172,34 +154,22 @@ uint PartnerWaitingManager::acceptPartner(PlayerCreature* pRequestedPC) {
     m_WaitInfos.erase(itr);
 
     return result;
-
-    __END_CATCH
 }
 
 bool PartnerWaitingManager::isWaitForPartner(PlayerCreature* pRequestedPC) {
-    __BEGIN_TRY
-
     WaitInfoHashMap::iterator itr = m_WaitInfos.find(pRequestedPC->getName());
     return (itr != m_WaitInfos.end());
-
-    __END_CATCH
 }
 
 PlayerCreature* PartnerWaitingManager::getWaitingPartner(PlayerCreature* pRequestedPC) {
-    __BEGIN_TRY
-
     WaitInfoHashMap::iterator itr = m_WaitInfos.find(pRequestedPC->getName());
     if (itr == m_WaitInfos.end())
         return NULL;
 
     return itr->second->getWaitingPC();
-
-    __END_CATCH
 }
 
 void PartnerWaitingManager::heartbeat() {
-    __BEGIN_TRY
-
     WaitInfoHashMap::iterator itr = m_WaitInfos.begin();
 
     for (; itr != m_WaitInfos.end();) {
@@ -221,6 +191,4 @@ void PartnerWaitingManager::heartbeat() {
             itr++;
         }
     }
-
-    __END_CATCH
 }

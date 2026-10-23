@@ -16,12 +16,8 @@
 void ActionQuitDialogue::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     // This action ends the dialogue between the NPC and the player, so it has
     // no parameters to read.
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,8 +26,6 @@ void ActionQuitDialogue::read(PropertyBuffer& propertyBuffer)
 void ActionQuitDialogue::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -43,8 +37,6 @@ void ActionQuitDialogue::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse response;
     response.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
     pPlayer->sendPacket(&response);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,11 +45,7 @@ void ActionQuitDialogue::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionQuitDialogue::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionQuitDialogue(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

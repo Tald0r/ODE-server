@@ -21,16 +21,12 @@
 void ActionTakeDonation::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // Read the amount of money to receive.
         m_Amount = (Gold_t)propertyBuffer.getPropertyInt("Amount");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -40,8 +36,6 @@ void ActionTakeDonation::read(PropertyBuffer& propertyBuffer)
 void ActionTakeDonation::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -172,8 +166,6 @@ void ActionTakeDonation::execute(Creature* pCreature1, Creature* pCreature2)
         pPlayer->sendPacket(&gcModifyInformation);
     } else
         Assert(false);
-
-    __END_CATCH
 }
 
 
@@ -183,11 +175,7 @@ void ActionTakeDonation::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionTakeDonation::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionTakeDonation(" << "Amount:" << (int)m_Amount << ")";
     return msg.toString();
-
-    __END_CATCH
 }

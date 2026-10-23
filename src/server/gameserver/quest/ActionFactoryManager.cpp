@@ -124,8 +124,6 @@
 ActionFactoryManager::ActionFactoryManager(de::GameContext& context)
 
     : m_Context(context), m_Factories(NULL), m_Size(Action::ACTION_MAX) {
-    __BEGIN_TRY
-
     Assert(m_Size > 0);
 
     // Create the action factory array.
@@ -134,8 +132,6 @@ ActionFactoryManager::ActionFactoryManager(de::GameContext& context)
     // Initialize the factory pointers to NULL.
     for (int i = 0; i < m_Size; i++)
         m_Factories[i] = NULL;
-
-    __END_CATCH
 }
 
 
@@ -171,8 +167,6 @@ ActionFactoryManager::~ActionFactoryManager()
 void ActionFactoryManager::init()
 
 {
-    __BEGIN_TRY
-
     addFactory(new ActionSetPositionFactory());
     addFactory(new ActionWanderFactory());
     addFactory(new ActionSayFactory());
@@ -286,8 +280,6 @@ void ActionFactoryManager::init()
     addFactory(new ActionShowDonationDialogFactory());
     addFactory(new ActionEnterQuestZoneFactory());
     addFactory(new ActionShowConfirmGetEventItemDialogFactory());
-
-    __END_CATCH
 }
 
 
@@ -297,8 +289,6 @@ void ActionFactoryManager::init()
 void ActionFactoryManager::addFactory(ActionFactory* pFactory)
 
 {
-    __BEGIN_TRY
-
     Assert(pFactory != NULL);
 
     if (m_Factories[pFactory->getActionType()] != NULL) {
@@ -309,8 +299,6 @@ void ActionFactoryManager::addFactory(ActionFactory* pFactory)
 
     // Register the action factory.
     m_Factories[pFactory->getActionType()] = pFactory;
-
-    __END_CATCH
 }
 
 
@@ -320,8 +308,6 @@ void ActionFactoryManager::addFactory(ActionFactory* pFactory)
 Action* ActionFactoryManager::createAction(ActionType_t actionType) const
 
 {
-    __BEGIN_TRY
-
     // Guard against a segfault from a type outside the factory array.
     // An unknown type is logged and throws an Error.
     if (actionType >= m_Size || m_Factories[actionType] == NULL) {
@@ -335,8 +321,6 @@ Action* ActionFactoryManager::createAction(ActionType_t actionType) const
     pAction->setContext(m_Context);
 
     return pAction;
-
-    __END_CATCH
 }
 
 
@@ -346,8 +330,6 @@ Action* ActionFactoryManager::createAction(ActionType_t actionType) const
 string ActionFactoryManager::getActionName(ActionType_t actionType) const
 
 {
-    __BEGIN_TRY
-
     // Guard against a segfault from a type outside the factory array.
     // An unknown type is logged and throws an Error.
     if (actionType >= m_Size || m_Factories[actionType] == NULL) {
@@ -358,8 +340,6 @@ string ActionFactoryManager::getActionName(ActionType_t actionType) const
     }
 
     return m_Factories[actionType]->getActionName();
-
-    __END_CATCH
 }
 
 
@@ -369,8 +349,6 @@ string ActionFactoryManager::getActionName(ActionType_t actionType) const
 ActionType_t ActionFactoryManager::getActionType(const string& actionname) const
 
 {
-    __BEGIN_TRY
-
 #ifdef __OUTPUT_INIT__
     cout << "Action[" << actionname << "]..." << endl;
 #endif
@@ -386,8 +364,6 @@ ActionType_t ActionFactoryManager::getActionType(const string& actionname) const
     string msg = "no such action type : " + actionname;
     cout << msg << endl;
     throw Error(msg);
-
-    __END_CATCH
 }
 
 
@@ -397,8 +373,6 @@ ActionType_t ActionFactoryManager::getActionType(const string& actionname) const
 string ActionFactoryManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ActionFactoryManager(\n";
@@ -412,6 +386,4 @@ string ActionFactoryManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -35,8 +35,6 @@ VariableInfo::~VariableInfo() {}
 void VariableInfo::parse()
 
 {
-    __BEGIN_TRY
-
     size_t i = m_Buffer.find(Seperator);
     size_t j = m_Buffer.find(LParen);
     size_t k = m_Buffer.find(RParen);
@@ -71,26 +69,18 @@ void VariableInfo::parse()
 
         i = j + 1;
     } while (!bEnd);
-
-    __END_CATCH
 }
 
 const string& VariableInfo::getParameter(int index) const {
-    __BEGIN_TRY
-
     if (index < 0 || index >= (int)m_Parameters.size())
         throw OutOfBoundException("VariableInfo::getParameter() OOB!!");
 
     return m_Parameters[index];
-
-    __END_CATCH
 }
 
 string VariableInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "VariableInfo(" << "Name:" << m_Name << ",Keyword:" << m_Keyword << ",Parameter(";
@@ -104,6 +94,4 @@ string VariableInfo::toString() const
     msg << "))";
 
     return msg.toString();
-
-    __END_CATCH
 }

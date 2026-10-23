@@ -426,8 +426,6 @@ bool ExchangeService::openPointLedger() {
 //////////////////////////////////////////////////////////////////////////////
 
 void ExchangeService::scanExpiredListings() {
-    __BEGIN_TRY
-
     // Scan for expired active listings
     // In production, use indexed query on ExpireAt column
     vector<ExchangeListing> expiredListings = defaultExchangeRepository().getExpiredListings();
@@ -444,8 +442,6 @@ void ExchangeService::scanExpiredListings() {
         // 2. Allow seller to reclaim the item
         defaultExchangeRepository().expireListing(listing.listingID);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////

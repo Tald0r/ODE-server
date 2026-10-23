@@ -28,14 +28,10 @@
 ActionPrepareShop::ActionPrepareShop()
 
 {
-    __BEGIN_TRY
-
     m_ListNum = 0;
     m_MarketCondBuy = 100;
     m_MarketCondSell = 100;
     m_TaxingCastleZoneID = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -55,8 +51,6 @@ ActionPrepareShop::~ActionPrepareShop()
 void ActionPrepareShop::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         int NPCID = propertyBuffer.getPropertyInt("NPCID");
 
@@ -72,8 +66,6 @@ void ActionPrepareShop::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -84,8 +76,6 @@ void ActionPrepareShop::read(PropertyBuffer& propertyBuffer)
 void ActionPrepareShop::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature1->isNPC());
 
@@ -200,8 +190,6 @@ void ActionPrepareShop::execute(Creature* pCreature1, Creature* pCreature2)
 
     pNPC->setMarketCondBuy(m_MarketCondBuy);
     pNPC->setMarketCondSell(m_MarketCondSell);
-
-    __END_CATCH
 }
 
 
@@ -210,12 +198,8 @@ void ActionPrepareShop::execute(Creature* pCreature1, Creature* pCreature2)
 void ActionPrepareShop::addListElement(ShopTemplateID_t id)
 
 {
-    __BEGIN_TRY
-
     m_List.push_back(id);
     m_ListNum++;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -223,8 +207,6 @@ void ActionPrepareShop::addListElement(ShopTemplateID_t id)
 string ActionPrepareShop::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     int i = 0;
 
@@ -235,6 +217,4 @@ string ActionPrepareShop::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

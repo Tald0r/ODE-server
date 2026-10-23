@@ -9,8 +9,6 @@
 #include "repository/QuestInfoRepository.h"
 
 void SimpleQuestRewardManager::load(const string& name) {
-    __BEGIN_TRY
-
     vector<ItemRewardRow> itemRewards = defaultQuestInfoRepository().loadItemRewardsOfNPC(name);
 
     for (size_t r = 0; r < itemRewards.size(); r++) {
@@ -46,6 +44,4 @@ void SimpleQuestRewardManager::load(const string& name) {
         ItemRewardInfo* pItemRI = new ItemRewardInfo(rID, rClass, iClass, iType, option, time);
         m_RewardClasses[rClass]->addRewardInfo(pItemRI);
     }
-
-    __END_CATCH
 }

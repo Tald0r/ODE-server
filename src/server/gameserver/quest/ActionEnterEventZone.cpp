@@ -43,15 +43,11 @@
 void ActionEnterEventZone::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_EventID = pb.getPropertyInt("EventID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +56,6 @@ void ActionEnterEventZone::read(PropertyBuffer& pb)
 void ActionEnterEventZone::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     StringPool& strings = context().strings();
@@ -138,7 +133,6 @@ void ActionEnterEventZone::execute(Creature* pNPC, Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -148,11 +142,7 @@ void ActionEnterEventZone::execute(Creature* pNPC, Creature* pCreature)
 string ActionEnterEventZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionEnterEventZone(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

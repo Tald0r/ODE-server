@@ -33,8 +33,6 @@ ItemRewardInfo::~ItemRewardInfo() {}
 QuestMessage ItemRewardInfo::canGiveReward(PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     Inventory* pInventory = pPC->getInventory();
     ItemInfo* pItemInfo = de::gameContext().itemInfos().getItemInfo(m_IClass, m_IType);
 
@@ -47,15 +45,11 @@ QuestMessage ItemRewardInfo::canGiveReward(PlayerCreature* pPC) const
         return COMPLETE_SUCCESS;
 
     return COMPLETE_FAIL_NO_INVENTORY_SPACE;
-
-    __END_CATCH
 }
 
 QuestMessage ItemRewardInfo::giveReward(PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     _TPOINT tp;
 
     GenderRestriction gender = GENDER_BOTH;
@@ -128,13 +122,9 @@ QuestMessage ItemRewardInfo::giveReward(PlayerCreature* pPC) const
     pItem->whenPCTake(pPC);
 
     return COMPLETE_SUCCESS;
-
-    __END_CATCH
 }
 
 string ItemRewardInfo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ItemRewardInfo(" << "ItemClass : " << (int)m_IClass << ", ItemType : " << (int)m_IType
@@ -143,6 +133,4 @@ string ItemRewardInfo::toString() const {
         << RewardInfo::toString().c_str();
 
     return msg.toString();
-
-    __END_CATCH
 }

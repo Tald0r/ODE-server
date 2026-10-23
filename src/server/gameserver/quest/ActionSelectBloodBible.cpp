@@ -22,14 +22,10 @@
 void ActionSelectBloodBible::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -39,8 +35,6 @@ void ActionSelectBloodBible::read(PropertyBuffer& propertyBuffer)
 void ActionSelectBloodBible::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature1->isNPC());
 
@@ -59,8 +53,6 @@ void ActionSelectBloodBible::execute(Creature* pCreature1, Creature* pCreature2)
     GCBloodBibleList gcPacket;
     context().bloodBibleBonuses().getBloodBibleByRace(pPC->getRace(), back_inserter(gcPacket.getList()));
     pPlayer->sendPacket(&gcPacket);
-
-    __END_CATCH
 }
 
 
@@ -70,12 +62,8 @@ void ActionSelectBloodBible::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionSelectBloodBible::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSelectBloodBible(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -24,10 +24,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionContractGnomesHorn::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,8 +33,6 @@ void ActionContractGnomesHorn::read(PropertyBuffer& propertyBuffer)
 void ActionContractGnomesHorn::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -59,8 +54,6 @@ void ActionContractGnomesHorn::execute(Creature* pCreature1, Creature* pCreature
     gcNPCResponse.setCode(NPC_RESPONSE_GNOME_CONTRACT_OK);
 
     pPC->getPlayer()->sendPacket(&gcNPCResponse);
-
-    __END_CATCH
 }
 
 
@@ -70,11 +63,7 @@ void ActionContractGnomesHorn::execute(Creature* pCreature1, Creature* pCreature
 string ActionContractGnomesHorn::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionContractGnomesHorn(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

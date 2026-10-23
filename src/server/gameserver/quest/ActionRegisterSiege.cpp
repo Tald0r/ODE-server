@@ -33,16 +33,12 @@
 void ActionRegisterSiege::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_ZoneID = propertyBuffer.getPropertyInt("ZoneID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -52,8 +48,6 @@ void ActionRegisterSiege::read(PropertyBuffer& propertyBuffer)
 void ActionRegisterSiege::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -164,8 +158,6 @@ void ActionRegisterSiege::execute(Creature* pCreature1, Creature* pCreature2)
     gcNPCResponse.setCode(NPC_RESPONSE_WAR_REGISTRATION_OK);
     pPC->getPlayer()->sendPacket(&gcNPCResponse);
     return;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -174,12 +166,8 @@ void ActionRegisterSiege::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionRegisterSiege::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionRegisterSiege(" << ",ZoneID:" << (int)m_ZoneID << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -20,10 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionStashSell::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,8 +29,6 @@ void ActionStashSell::read(PropertyBuffer& propertyBuffer)
 void ActionStashSell::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -75,8 +70,6 @@ void ActionStashSell::execute(Creature* pCreature1, Creature* pCreature2)
     Player* pPlayer = pCreature2->getPlayer();
     Assert(pPlayer != NULL);
     pPlayer->sendPacket(&pkt);
-
-    __END_CATCH
 }
 
 
@@ -86,13 +79,9 @@ void ActionStashSell::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionStashSell::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ActionStashSell(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

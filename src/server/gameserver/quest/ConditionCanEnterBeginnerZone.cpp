@@ -34,11 +34,7 @@ void ConditionCanEnterBeginnerZone::read(PropertyBuffer& propertyBuffer)
 string ConditionCanEnterBeginnerZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionCanEnterBeginnerZone(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -31,8 +31,6 @@
 void ActionEnterQuestZone::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ZoneID = pb.getPropertyInt("ZoneID");
         m_X = pb.getPropertyInt("X");
@@ -40,8 +38,6 @@ void ActionEnterQuestZone::read(PropertyBuffer& pb)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +46,6 @@ void ActionEnterQuestZone::read(PropertyBuffer& pb)
 void ActionEnterQuestZone::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -93,7 +88,6 @@ void ActionEnterQuestZone::execute(Creature* pNPC, Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -103,11 +97,7 @@ void ActionEnterQuestZone::execute(Creature* pNPC, Creature* pCreature)
 string ActionEnterQuestZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionEnterQuestZone(" << "ZoneID:" << (int)m_ZoneID << ",X:" << (int)m_X << ",Y:" << (int)m_Y << ")";
     return msg.toString();
-
-    __END_CATCH
 }

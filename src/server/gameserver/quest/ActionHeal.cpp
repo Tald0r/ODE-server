@@ -23,10 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionHeal::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,8 +31,6 @@ void ActionHeal::read(PropertyBuffer& propertyBuffer)
 void ActionHeal::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -229,7 +224,6 @@ void ActionHeal::execute(Creature* pCreature1, Creature* pCreature2)
         pZone->broadcastPacket(pOusters->getX(), pOusters->getY(), &removePkt);
         pZone->broadcastPacket(pOusters->getX(), pOusters->getY(), &hpPkt, pOusters);
     }
-    __END_CATCH
 }
 
 
@@ -238,11 +232,7 @@ void ActionHeal::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionHeal::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionHeal(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

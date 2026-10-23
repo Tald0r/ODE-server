@@ -20,11 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionSwapAdvancementItem::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,8 +29,6 @@ void ActionSwapAdvancementItem::read(PropertyBuffer& propertyBuffer)
 void ActionSwapAdvancementItem::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -65,8 +59,6 @@ void ActionSwapAdvancementItem::execute(Creature* pCreature1, Creature* pCreatur
     GCNPCResponse quit;
     quit.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
     pPlayer->sendPacket(&quit);
-
-    __END_CATCH
 }
 
 
@@ -76,12 +68,8 @@ void ActionSwapAdvancementItem::execute(Creature* pCreature1, Creature* pCreatur
 string ActionSwapAdvancementItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSwapAdvancementItem(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

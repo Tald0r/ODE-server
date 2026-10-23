@@ -64,11 +64,7 @@ void ConditionExistReinforce::read(PropertyBuffer& propertyBuffer)
 string ConditionExistReinforce::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionExistReinforce(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

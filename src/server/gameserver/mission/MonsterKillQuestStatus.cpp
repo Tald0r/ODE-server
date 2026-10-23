@@ -39,8 +39,6 @@ bool MonsterKillQuestStatus::killed(SpriteType_t targetSType, bool isChief) {
 }
 
 string MonsterKillQuestStatus::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "MonsterKillQuestStatus(" << "Target : " << (unsigned long)m_TargetMonsterSpriteType
@@ -48,6 +46,4 @@ string MonsterKillQuestStatus::toString() const {
         << ", Current : " << m_CurrentNum << ") : " << QuestStatus::toString().c_str();
 
     return msg.toString();
-
-    __END_CATCH
 }

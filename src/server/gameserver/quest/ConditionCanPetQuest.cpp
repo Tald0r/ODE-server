@@ -51,11 +51,7 @@ void ConditionCanPetQuest::read(PropertyBuffer& propertyBuffer)
 string ConditionCanPetQuest::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionCanPetQuest(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

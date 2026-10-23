@@ -33,8 +33,6 @@ string MonsterKillQuestInfo::toString() const {
 }
 
 MonsterKillQuestStatus* MonsterKillQuestInfo::makeQuestStatus(PlayerCreature* pPC) const {
-    __BEGIN_TRY
-
     MonsterKillQuestStatus* newQS =
         new MonsterKillQuestStatus(m_QuestID, VSDateTime::currentDateTime().addSecs(m_TimeLimitSec),
                                    m_TargetMonsterSpriteType, m_IsChief, m_GoalNum);
@@ -42,6 +40,4 @@ MonsterKillQuestStatus* MonsterKillQuestInfo::makeQuestStatus(PlayerCreature* pP
     Assert(newQS != NULL);
 
     return newQS;
-
-    __END_CATCH
 }

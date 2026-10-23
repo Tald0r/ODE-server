@@ -50,16 +50,12 @@
 void ActionTradeLairItem::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // Read the amount of money to receive.
         m_Type = (ItemType_t)propertyBuffer.getPropertyInt("Type");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,8 +64,6 @@ void ActionTradeLairItem::read(PropertyBuffer& propertyBuffer)
 void ActionTradeLairItem::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     StringPool& strings = context().strings();
 
     Assert(pCreature1 != NULL);
@@ -393,8 +387,6 @@ void ActionTradeLairItem::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse response;
     response.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
     pPlayer->sendPacket(&response);
-
-    __END_CATCH
 }
 
 
@@ -404,11 +396,7 @@ void ActionTradeLairItem::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionTradeLairItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionTradeLairItem(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

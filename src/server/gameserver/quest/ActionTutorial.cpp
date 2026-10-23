@@ -16,8 +16,6 @@
 void ActionTutorial::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_Interface = propertyBuffer.getProperty("Interface");
 
@@ -27,8 +25,6 @@ void ActionTutorial::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -38,8 +34,6 @@ void ActionTutorial::read(PropertyBuffer& propertyBuffer)
 void ActionTutorial::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -57,8 +51,6 @@ void ActionTutorial::execute(Creature* pCreature1, Creature* pCreature2)
 
     Player* pPlayer = pCreature2->getPlayer();
     pPlayer->sendPacket(&pkt);
-
-    __END_CATCH
 }
 
 
@@ -68,13 +60,9 @@ void ActionTutorial::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionTutorial::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ActionTutorial(" << "Interface : " << m_Interface << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

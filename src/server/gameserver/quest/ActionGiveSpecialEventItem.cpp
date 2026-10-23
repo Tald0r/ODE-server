@@ -30,10 +30,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionGiveSpecialEventItem::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Execute the action.
@@ -41,8 +38,6 @@ void ActionGiveSpecialEventItem::read(PropertyBuffer& propertyBuffer)
 void ActionGiveSpecialEventItem::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -249,8 +244,6 @@ void ActionGiveSpecialEventItem::execute(Creature* pCreature1, Creature* pCreatu
     msg << "Finished\n";
 
     filelog("SpecialEvent.log", "%s", msg.toString().c_str());
-
-    __END_CATCH
 }
 
 
@@ -260,11 +253,7 @@ void ActionGiveSpecialEventItem::execute(Creature* pCreature1, Creature* pCreatu
 string ActionGiveSpecialEventItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionGiveSpecialEventItem(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

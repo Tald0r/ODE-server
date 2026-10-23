@@ -20,8 +20,6 @@
 void ActionCancelEventQuestScript::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_ScriptID[0] = propertyBuffer.getPropertyInt("Level1");
@@ -34,8 +32,6 @@ void ActionCancelEventQuestScript::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -45,8 +41,6 @@ void ActionCancelEventQuestScript::read(PropertyBuffer& propertyBuffer)
 void ActionCancelEventQuestScript::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -70,8 +64,6 @@ void ActionCancelEventQuestScript::execute(Creature* pCreature1, Creature* pCrea
 
     Player* pPlayer = pCreature2->getPlayer();
     pPlayer->sendPacket(&gcNPCAsk);
-
-    __END_CATCH
 }
 
 
@@ -81,12 +73,8 @@ void ActionCancelEventQuestScript::execute(Creature* pCreature1, Creature* pCrea
 string ActionCancelEventQuestScript::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionCancelEventQuestScript(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

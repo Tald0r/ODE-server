@@ -36,14 +36,10 @@
 void ActionTradeGQuestEventItem::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,8 +48,6 @@ void ActionTradeGQuestEventItem::read(PropertyBuffer& propertyBuffer)
 void ActionTradeGQuestEventItem::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -179,8 +173,6 @@ void ActionTradeGQuestEventItem::execute(Creature* pCreature1, Creature* pCreatu
     GCSystemMessage gcSM;
     gcSM.setMessage("The prize has been handed out.");
     pPC->getPlayer()->sendPacket(&gcSM);
-
-    __END_CATCH
 }
 
 
@@ -190,11 +182,7 @@ void ActionTradeGQuestEventItem::execute(Creature* pCreature1, Creature* pCreatu
 string ActionTradeGQuestEventItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionTradeGQuestEventItem(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

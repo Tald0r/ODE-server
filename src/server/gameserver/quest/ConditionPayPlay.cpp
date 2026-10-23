@@ -38,13 +38,9 @@ void ConditionPayPlay::read(PropertyBuffer& propertyBuffer)
 string ConditionPayPlay::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionPayPlay("
         //		<< "Index:" << (int)m_Index
         << ")";
     return msg.toString();
-
-    __END_CATCH
 }

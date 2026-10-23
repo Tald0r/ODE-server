@@ -18,15 +18,11 @@
 void ActionSystemMessage::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_Content = propertyBuffer.getPropertyInt("Content");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -36,8 +32,6 @@ void ActionSystemMessage::read(PropertyBuffer& propertyBuffer)
 void ActionSystemMessage::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature2 != NULL);
     Assert(pCreature2->isPC());
 
@@ -47,8 +41,6 @@ void ActionSystemMessage::execute(Creature* pCreature1, Creature* pCreature2)
     GCSystemMessage gcSystemMessage;
     gcSystemMessage.setMessage(context().strings().getString(m_Content));
     pPlayer->sendPacket(&gcSystemMessage);
-
-    __END_CATCH
 }
 
 
@@ -58,11 +50,7 @@ void ActionSystemMessage::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionSystemMessage::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSystemMessage(" << "Content:" << m_Content << ")";
     return msg.toString();
-
-    __END_CATCH
 }

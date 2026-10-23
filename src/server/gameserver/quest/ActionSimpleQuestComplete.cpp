@@ -18,15 +18,11 @@
 void ActionSimpleQuestComplete::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -35,10 +31,7 @@ void ActionSimpleQuestComplete::read(PropertyBuffer& propertyBuffer)
 ////////////////////////////////////////////////////////////////////////////////
 void ActionSimpleQuestComplete::execute(Creature* pCreature1, Creature* pCreature2)
 
-    {__BEGIN_TRY
-
-
-         __END_CATCH}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,12 +40,8 @@ void ActionSimpleQuestComplete::execute(Creature* pCreature1, Creature* pCreatur
 string ActionSimpleQuestComplete::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSimpleQuestComplete(" << ",ScriptID:" << (int)m_ScriptID << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

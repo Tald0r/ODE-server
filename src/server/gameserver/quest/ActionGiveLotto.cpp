@@ -25,16 +25,12 @@
 void ActionGiveLotto::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_QuestLevel = propertyBuffer.getPropertyInt("QuestLevel") - 1;
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -44,8 +40,6 @@ void ActionGiveLotto::read(PropertyBuffer& propertyBuffer)
 void ActionGiveLotto::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -118,8 +112,6 @@ void ActionGiveLotto::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse gcNPCResponse;
     gcNPCResponse.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
     pPC->getPlayer()->sendPacket(&gcNPCResponse);
-
-    __END_CATCH
 }
 
 
@@ -129,12 +121,8 @@ void ActionGiveLotto::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionGiveLotto::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionGiveLotto(" << "QuestLevel : " << m_QuestLevel << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

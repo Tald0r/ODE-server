@@ -39,17 +39,11 @@ QuestManager::~QuestManager() {
 }
 
 void QuestManager::load() {
-    __BEGIN_TRY
-
     // Resuming a quest is not supported yet.
     m_pEventQuestAdvanceManager->load();
-
-    __END_CATCH
 }
 
 void QuestManager::addQuest(QuestStatus* pQS) {
-    __BEGIN_TRY
-
     Assert(pQS != NULL);
     Assert(!hasQuest(pQS->getQuestID()));
     pQS->setOwnerQM(this);
@@ -57,13 +51,9 @@ void QuestManager::addQuest(QuestStatus* pQS) {
     m_Quests[pQS->getQuestID()] = pQS;
 
     pQS->executeWhenStart();
-
-    __END_CATCH
 }
 
 QuestMessage QuestManager::isQuestComplete(QuestID_t qID) const {
-    __BEGIN_TRY
-
     unordered_map<QuestID_t, QuestStatus*>::const_iterator itr = m_Quests.find(qID);
 
     if (itr == m_Quests.end())
@@ -74,26 +64,18 @@ QuestMessage QuestManager::isQuestComplete(QuestID_t qID) const {
     }
 
     return COMPLETE_FAIL_NOT_COMPLETE;
-
-    __END_CATCH
 }
 
 
 QuestStatus* QuestManager::getQuestStatus(QuestID_t qID) {
-    __BEGIN_TRY
-
     unordered_map<QuestID_t, QuestStatus*>::iterator itr = m_Quests.find(qID);
 
     if (itr == m_Quests.end())
         return NULL;
     return itr->second;
-
-    __END_CATCH
 }
 
 void QuestManager::sendQuestInfo() {
-    __BEGIN_TRY
-
     unordered_map<QuestID_t, QuestStatus*>::iterator itr = m_Quests.begin();
     unordered_map<QuestID_t, QuestStatus*>::iterator endItr = m_Quests.end();
 
@@ -109,13 +91,9 @@ void QuestManager::sendQuestInfo() {
 
         SAFE_DELETE(pPacket);
     }
-
-    __END_CATCH
 }
 
 void QuestManager::adjustQuestStatus() {
-    __BEGIN_TRY
-
     unordered_map<QuestID_t, QuestStatus*>::iterator itr = m_Quests.begin();
 
     while (itr != m_Quests.end()) {
@@ -128,13 +106,9 @@ void QuestManager::adjustQuestStatus() {
             ++itr;
         }
     }
-
-    __END_CATCH
 }
 
 QuestMessage QuestManager::cancelQuest() {
-    __BEGIN_TRY
-
     if (m_Quests.empty()) {
         return CANCEL_NOT_IN_QUEST;
     }
@@ -154,13 +128,9 @@ QuestMessage QuestManager::cancelQuest() {
     }
 
     return result;
-
-    __END_CATCH
 }
 
 QuestMessage QuestManager::failQuest() {
-    __BEGIN_TRY
-
     if (m_Quests.empty()) {
         return CANCEL_NOT_IN_QUEST;
     }
@@ -180,8 +150,6 @@ QuestMessage QuestManager::failQuest() {
     }
 
     return result;
-
-    __END_CATCH
 }
 
 bool QuestManager::hasEventQuest(int questLevel, QuestID_t& qID) const {
@@ -217,8 +185,6 @@ bool QuestManager::successEventQuest(int questLevel, QuestID_t& qID) const {
 QuestStatus* QuestManager::getQuestStatusByQuestClass(QuestClass qClass) const
 
 {
-    __BEGIN_TRY
-
     unordered_map<QuestID_t, QuestStatus*>::const_iterator itr = m_Quests.begin();
     unordered_map<QuestID_t, QuestStatus*>::const_iterator endItr = m_Quests.end();
 
@@ -229,13 +195,9 @@ QuestStatus* QuestManager::getQuestStatusByQuestClass(QuestClass qClass) const
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 bool QuestManager::killedMonster(Monster* pMonster) {
-    __BEGIN_TRY
-
     MonsterKillQuestStatus* pQS =
         dynamic_cast<MonsterKillQuestStatus*>(getQuestStatusByQuestClass(QUEST_CLASS_MONSTER_KILL));
     if (pQS != NULL) {
@@ -243,26 +205,18 @@ bool QuestManager::killedMonster(Monster* pMonster) {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool QuestManager::metNPC(NPC* pNPC) {
-    __BEGIN_TRY
-
     MeetNPCQuestStatus* pQS = dynamic_cast<MeetNPCQuestStatus*>(getQuestStatusByQuestClass(QUEST_CLASS_MEET_NPC));
     if (pQS != NULL) {
         return pQS->met(pNPC->getNPCID());
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool QuestManager::isTargetNPC(NPC* pNPC) {
-    __BEGIN_TRY
-
     MeetNPCQuestStatus* pQS = dynamic_cast<MeetNPCQuestStatus*>(getQuestStatusByQuestClass(QUEST_CLASS_MEET_NPC));
 
     if (pQS != NULL) {
@@ -270,8 +224,6 @@ bool QuestManager::isTargetNPC(NPC* pNPC) {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool QuestManager::submitMiniGameScore(int GameType, uint GameScore) {

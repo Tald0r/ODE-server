@@ -26,8 +26,6 @@
 void ActionTeachSkill::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // Read the domain type.
         string domainType = propertyBuffer.getProperty("DomainType");
@@ -51,8 +49,6 @@ void ActionTeachSkill::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -62,8 +58,6 @@ void ActionTeachSkill::read(PropertyBuffer& propertyBuffer)
 void ActionTeachSkill::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -81,8 +75,6 @@ void ActionTeachSkill::execute(Creature* pCreature1, Creature* pCreature2)
         executeVampire(pCreature1, pCreature2);
     else
         throw Error("ActionTeachSkill::execute() : unknown player creature");
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,8 +83,6 @@ void ActionTeachSkill::execute(Creature* pCreature1, Creature* pCreature2)
 void ActionTeachSkill::executeSlayer(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Slayer* pSlayer = dynamic_cast<Slayer*>(pCreature2);
     Player* pPlayer = pCreature2->getPlayer();
     GCTeachSkillInfo teachinfo;
@@ -118,8 +108,6 @@ void ActionTeachSkill::executeSlayer(Creature* pCreature1, Creature* pCreature2)
     teachinfo.setTargetLevel(SkillType);
 
     pPlayer->sendPacket(&teachinfo);
-
-    __END_CATCH
 }
 
 
@@ -129,8 +117,6 @@ void ActionTeachSkill::executeSlayer(Creature* pCreature1, Creature* pCreature2)
 void ActionTeachSkill::executeVampire(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Vampire* pVampire = dynamic_cast<Vampire*>(pCreature2);
 
 
@@ -148,8 +134,6 @@ void ActionTeachSkill::executeVampire(Creature* pCreature1, Creature* pCreature2
     Player* pPlayer = pCreature2->getPlayer();
     Assert(pPlayer != NULL);
     pPlayer->sendPacket(&teachinfo);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -158,11 +142,7 @@ void ActionTeachSkill::executeVampire(Creature* pCreature1, Creature* pCreature2
 string ActionTeachSkill::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionTeachSkill(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

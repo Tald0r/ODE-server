@@ -45,15 +45,11 @@
 void ActionEnterPKZone::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ZoneID = pb.getPropertyInt("ZoneID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +58,6 @@ void ActionEnterPKZone::read(PropertyBuffer& pb)
 void ActionEnterPKZone::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     StringPool& strings = context().strings();
@@ -132,7 +127,6 @@ void ActionEnterPKZone::execute(Creature* pNPC, Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -142,11 +136,7 @@ void ActionEnterPKZone::execute(Creature* pNPC, Creature* pCreature)
 string ActionEnterPKZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionEnterPKZone(" << "ZoneID:" << (int)m_ZoneID << ")";
     return msg.toString();
-
-    __END_CATCH
 }

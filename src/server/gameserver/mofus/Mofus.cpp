@@ -32,8 +32,6 @@
 // run() and takes the process with it.
 
 int loadPowerPoint(const string& name) {
-    __BEGIN_TRY
-
     int powerpoint = 0;
 
     try {
@@ -43,13 +41,9 @@ int loadPowerPoint(const string& name) {
     }
 
     return powerpoint;
-
-    __END_CATCH
 }
 
 int savePowerPoint(const string& name, int amount) {
-    __BEGIN_TRY
-
     int powerpoint = 0;
 
     // One try around all three statements, as before: a failure in any of
@@ -68,18 +62,12 @@ int savePowerPoint(const string& name, int amount) {
     }
 
     return powerpoint;
-
-    __END_CATCH
 }
 
 void logPowerPoint(const string& name, int recvPoint, int savePoint) {
-    __BEGIN_TRY
-
     try {
         defaultMofusPointRepository().logPowerPoint(name, recvPoint, savePoint);
     } catch (const DatabaseError&) {
         // SQL errors are ignored.
     }
-
-    __END_CATCH
 }

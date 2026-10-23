@@ -22,10 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionSearchMotorcycle::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,8 +30,6 @@ void ActionSearchMotorcycle::read(PropertyBuffer& propertyBuffer)
 void ActionSearchMotorcycle::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -114,15 +109,11 @@ void ActionSearchMotorcycle::execute(Creature* pCreature1, Creature* pCreature2)
 
     GCSearchMotorcycleFail failpkt;
     pPlayer->sendPacket(&failpkt);
-
-    __END_CATCH
 }
 
 bool ActionSearchMotorcycle::search(Item* pItem, uint& zoneid, uint& x, uint& y) const
 
 {
-    __BEGIN_TRY
-
     bool bFound = false;
 
     // Return false if the item is not a key.
@@ -145,8 +136,6 @@ bool ActionSearchMotorcycle::search(Item* pItem, uint& zoneid, uint& x, uint& y)
     }
 
     return bFound;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,11 +144,7 @@ bool ActionSearchMotorcycle::search(Item* pItem, uint& zoneid, uint& x, uint& y)
 string ActionSearchMotorcycle::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSearchMotorcycle(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

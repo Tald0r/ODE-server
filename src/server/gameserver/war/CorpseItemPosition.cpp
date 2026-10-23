@@ -25,22 +25,16 @@
 Item* CorpseItemPosition::popItem(bool bLock)
 
 {
-    __BEGIN_TRY
-
     m_pZone = NULL;
 
     if (bLock)
         return getItem_UNLOCKED(true);
     return getItem_LOCKED(true);
-
-    __END_CATCH
 }
 
 Item* CorpseItemPosition::getItem_LOCKED(bool isDel)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = getZoneByZoneID(m_ZoneID);
     m_pZone = pZone;
 
@@ -50,15 +44,11 @@ Item* CorpseItemPosition::getItem_LOCKED(bool isDel)
     }
 
     return getItem_CORE(pZone, isDel);
-
-    __END_CATCH
 }
 
 Item* CorpseItemPosition::getItem_UNLOCKED(bool isDel)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = getZoneByZoneID(m_ZoneID);
     m_pZone = pZone;
 
@@ -76,15 +66,11 @@ Item* CorpseItemPosition::getItem_UNLOCKED(bool isDel)
     __LEAVE_CRITICAL_SECTION((*pZone))
 
     return pItem;
-
-    __END_CATCH
 }
 
 Item* CorpseItemPosition::getItem_CORE(Zone* pZone, bool isDel)
 
 {
-    __BEGIN_TRY
-
     Corpse* pCorpse = dynamic_cast<Corpse*>(pZone->getItem(m_CorpseObjectID));
     Item* pRet = NULL;
 
@@ -151,8 +137,6 @@ Item* CorpseItemPosition::getItem_CORE(Zone* pZone, bool isDel)
     }
 
     return pRet;
-
-    __END_CATCH
 }
 
 string CorpseItemPosition::toString() const
