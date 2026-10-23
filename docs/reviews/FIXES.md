@@ -28,10 +28,11 @@ the slot to `ADDON_TROUSER`, the value the trousers case sends, where
 `Slayer::takeOffItem` sends `ADDON_SHOULDER` for the same item class. It
 runs when a newly worn item does not apply (`changeShape`), when the all-stat
 recalculation finds a worn item no longer applies (`SlayerStat.cpp`) and when
-a dead slayer drops a worn unique (`PCManager.cpp`), so in each case the zone
-is told the trousers came off rather than the shoulder armour. Found while moving the body out of `Slayer.cpp`; the move kept
-it as it was. A fix changes what the zone is sent, so it wants a test that
-pins the slot `removeShape` sends for each item class.
+a dead slayer drops a worn item, a unique or a random one (`PCManager.cpp`),
+so whenever it sends the packet the zone is told the trousers came off rather
+than the shoulder armor. Found while moving the body out of `Slayer.cpp`; the
+move kept it as it was. A fix changes what the zone is sent, so it wants a
+test that pins the slot `removeShape` sends for each item class.
 
 > **Status:** recorded, not fixed (refactor/slayer-split-r18)
 

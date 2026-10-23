@@ -124,8 +124,9 @@ check_ratchet R6g "Zone.cpp lines" 1265 "$R6g"
 # R6h-j: the three race classes. Persistence, gold, item-shape, inventory,
 # free-play, skill-slot-table, exps, initial-rank, silver-damage and
 # connect-time item-loading bodies now live once on PlayerCreature; what is
-# left in each file is its own wear code, its load/save record code, and the
-# two skill-slot bodies whose content really is per-race (addSkill). The wear
+# left per race is its own wear code (Slayer's in SlayerWear.cpp), its
+# load/save record code, and the two skill-slot bodies whose content really
+# is per-race (addSkill). The wear
 # bodies are still identical in Vampire and Ousters, but only after
 # substituting the class-scoped WearPart enum, whose values are the slot ids
 # the client sends, so reconciling them is a protocol change rather than a
