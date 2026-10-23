@@ -195,7 +195,8 @@ bool ActionRedeemMotorcycle::load(Item* pItem, Slayer* pSlayer, Zone* pZone, Zon
                 if (pt.x == -1) {
                     // The motorcycle could not be added to the zone.
                     filelog("motorError.txt",
-                            "ActionRedeemMotorcycle::load() : cannot add the motorcycle to the zone. zoneID=%d, xy=(%d, %d)",
+                            "ActionRedeemMotorcycle::load() : cannot add the motorcycle to the zone. zoneID=%d, "
+                            "xy=(%d, %d)",
                             (int)pZone->getZoneID(), (int)x, (int)y);
                     throw Error("ActionRedeemMotorcycle::load() : cannot add the motorcycle to the zone");
                 }

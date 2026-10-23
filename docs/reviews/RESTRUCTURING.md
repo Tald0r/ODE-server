@@ -2233,7 +2233,11 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > wrapper whose declarations clash with its block's once the scopes
   > merge, clang-formats the touched files, commits that change with the
   > R5 and R6 rows it moves, and proves the commit with
-  > `--check <commit>~..<commit>`. Hand edits left, in a commit of their
+  > `--check <commit>~..<commit>`. A string literal clang-format splits
+  > because a braced block's indent pushed it past 120 columns stays
+  > whole in that commit, since `--check` accepts the macros' tokens
+  > alone, and is split in a commit of its own (slice 3 had one, in
+  > `ActionRedeemMotorcycle::load`). Hand edits left, in a commit of their
   > own: `UniqueItemManager.cpp`, whose four functions open
   > `__BEGIN_TRY __BEGIN_DEBUG` and close `__END_CATCH __END_DEBUG` (drop
   > the `__BEGIN_TRY` and `__END_CATCH` lines), and
