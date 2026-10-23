@@ -15,17 +15,22 @@
 //   * UnsupportedError() reports the enclosing function of the throw site
 //     as its message, so an unimplemented stub throws it with no argument.
 //   * Every Throwable records its throw site (file, line, function) from
-//     whichever constructor built it, and toString() prints it on the line
-//     after the message, before the stack trace.
+//     whichever constructor of whichever class built it - for an Assert or
+//     ProtocolAssert, the assert's own line - and toString() prints it on
+//     the line after the message, before the stack trace.
 //
 // Both assert helpers append to a log file in the working directory, so
 // the ctest entry runs this from the build tree (see tests/CMakeLists.txt).
 //----------------------------------------------------------------------
 
+#include <cstddef>
+#include <fstream>
+#include <regex>
 #include <string>
 
 #include <gtest/gtest.h>
 #include <source_location>
+#include <type_traits>
 
 #include "Assert.h"
 #include "Assert1.h"
@@ -91,6 +96,25 @@ void expectBuiltAt(const Throwable& t, const std::source_location& here) {
     EXPECT_STREQ(t.getThrowSite().function_name(), here.function_name()) << t.getName();
 }
 
+// Every class Exception.h declares; EveryExceptionClassIsListed fails when one
+// is added there and not here.
+template <typename... T> struct TypeList {
+    using Types = ::testing::Types<T...>;
+    static constexpr std::size_t size = sizeof...(T);
+};
+using ExceptionClasses =
+    TypeList<Throwable, Exception, IOException, NonBlockingIOException, InterruptedIOException, EOFException,
+             FileNotOpenedException, FileAlreadyExistException, FileNotExistException, TimeoutException,
+             SocketException, BindException, ConnectException, PeerClosedException, ProtocolException, IdleException,
+             InvalidProtocolException, InsufficientDataException, DisconnectException, IgnorePacketException,
+             ThreadException, MutexException, MutexAttrException, CondVarException, SemaphoreException, SQLException,
+             SQLWarning, SQLConnectException, SQLQueryException, RuntimeException, InvalidArgumentException,
+             OutOfBoundException, InterruptedException, NoSuchElementException, DuplicatedException, GameException,
+             PortalException, EmptyTileNotExistException, InventoryFullException, Error, GameError, AssertionError,
+             UnsupportedError, LogError, UnknownError>;
+
+template <typename T> class EveryExceptionClass : public ::testing::Test {};
+
 // "thrown at <file>:<line> in <function>\n" for a throw site in this file.
 std::string throwSiteLine(unsigned line, const std::string& function) {
     return "thrown at " + std::string(std::source_location::current().file_name()) + ":" + std::to_string(line) +
@@ -116,6 +140,9 @@ TEST(Diagnostics, AssertReportsCallSite) {
         EXPECT_NE(msg.find("Assertion Failed : "), std::string::npos) << msg;
         EXPECT_NE(msg.find("diagnostics_test.cpp : " + std::to_string(line) + " : "), std::string::npos) << msg;
         EXPECT_NE(msg.find(function + "1 == 2 at "), std::string::npos) << msg;
+        // The throw site is the Assert, not the helper that throws for it.
+        EXPECT_EQ(e.getThrowSite().line(), line);
+        EXPECT_EQ(e.getThrowSite().function_name(), function);
     }
 }
 
@@ -133,6 +160,8 @@ TEST(Diagnostics, ProtocolAssertReportsCallSite) {
         EXPECT_NE(msg.find("Protocol Assertion Failed : "), std::string::npos) << msg;
         EXPECT_NE(msg.find("diagnostics_test.cpp : " + std::to_string(line) + " : "), std::string::npos) << msg;
         EXPECT_NE(msg.find(function + "1 == 2 at "), std::string::npos) << msg;
+        EXPECT_EQ(e.getThrowSite().line(), line);
+        EXPECT_EQ(e.getThrowSite().function_name(), function);
     }
 }
 
@@ -284,4 +313,25 @@ TEST(Diagnostics, ToStringOverridesPrintTheThrowSite) {
     EXPECT_EQ(shortBy.toString(), "InsufficientDataException :  (lack of 4 bytes)\n" + throwSiteLine(line, function));
     EXPECT_EQ(shortByNothing.toString(), "InsufficientDataException : short\n" + throwSiteLine(line + 1, function));
     EXPECT_EQ(unknown.toString(), "UnknownError : unknown (5) \n" + throwSiteLine(line + 2, function));
+}
+
+TYPED_TEST_SUITE(EveryExceptionClass, ExceptionClasses::Types);
+
+// Each class records its caller from its default constructor and, where it
+// has one, its message constructor: a class whose default constructor is
+// implicit records a line of Exception.h instead.
+TYPED_TEST(EveryExceptionClass, RecordsItsCaller) {
+    expectBuiltAt(TypeParam(), std::source_location::current());
+    if constexpr (std::is_constructible_v<TypeParam, std::string>)
+        expectBuiltAt(TypeParam(std::string("message")), std::source_location::current());
+}
+
+TEST(Diagnostics, EveryExceptionClassIsListed) {
+    std::ifstream header(EXCEPTION_HEADER);
+    ASSERT_TRUE(header) << EXCEPTION_HEADER;
+    const std::regex declaration("^class \\w+ : public ");
+    std::size_t classes = 0;
+    for (std::string line; std::getline(header, line);)
+        classes += std::regex_search(line, declaration) ? 1 : 0;
+    EXPECT_EQ(classes, ExceptionClasses::size);
 }

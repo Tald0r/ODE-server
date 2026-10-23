@@ -753,6 +753,7 @@ target_include_directories(diagnostics_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src/Core
 )
 target_link_libraries(diagnostics_tests PRIVATE de-kernel gtest_main Threads::Threads)
+target_compile_definitions(diagnostics_tests PRIVATE EXCEPTION_HEADER="${CMAKE_SOURCE_DIR}/src/Core/Exception.h")
 add_dependencies(wire_tests diagnostics_tests)
 add_test(NAME diagnostics_tests COMMAND diagnostics_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})

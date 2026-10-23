@@ -40,7 +40,7 @@
     ofile << msg.toString() << endl;
     ofile.close();
 
-    throw AssertionError(msg.toString());
+    throw AssertionError(msg.toString(), loc);
 }
 
 //--------------------------------------------------------------------------------
@@ -67,5 +67,5 @@
     ofile << msg.toString() << endl;
     ofile.close();
 
-    throw InvalidProtocolException(msg.toString());
+    throw InvalidProtocolException(msg.toString(), loc);
 }

@@ -11,6 +11,7 @@
 
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
+#include <source_location>
 #include <sys/socket.h>
 
 #include "DatagramSocket.h"
@@ -51,20 +52,24 @@ TEST_F(ListenerStartupTest, SuccessfulBindingRunsOnceWithoutReportingOrRequestin
 }
 
 TEST_F(ListenerStartupTest, ImmediateRetryReportsTheFirstFailureAndRecoveryCount) {
+    // Both failures name one throw site, so the reported text can be built here.
+    const auto site = std::source_location::current();
     de::retryListenerStartup(
         [&] {
             events.push_back("attempt " + std::to_string(++attempts));
             if (attempts < 3)
-                throw BindException("busy " + std::to_string(attempts));
+                throw BindException("busy " + std::to_string(attempts), site);
         },
-        [&](const BindException& error) { events.push_back(error.getMessage()); }, "UDP", 0us,
+        [&](const BindException& error) { events.push_back(error.toString()); }, "UDP", 0us,
         [] { return de::RepeatedErrorReport::TimePoint{}; },
         [&](de::ListenerStartupReport event, std::uint64_t suppressed) {
             EXPECT_EQ(event, de::ListenerStartupReport::Recovered);
             EXPECT_EQ(suppressed, 1u);
             events.push_back("recovered");
         });
-    EXPECT_EQ((std::vector<std::string>{"attempt 1", "busy 1", "attempt 2", "attempt 3", "recovered"}), events);
+    EXPECT_EQ((std::vector<std::string>{"attempt 1", BindException("busy 1", site).toString(), "attempt 2", "attempt 3",
+                                        "recovered"}),
+              events);
     EXPECT_FALSE(ServerShutdown::failed.load());
 }
 
