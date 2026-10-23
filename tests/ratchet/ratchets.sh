@@ -472,10 +472,10 @@ check_ratchet R17 "source lines carrying non-ASCII bytes" 0 "$R17"
 # open a block. The first and last lines of a block carry the delimiters
 # and are left out by the same test that skips a bare "/*" or "*/".
 #
-# The five lines the count still holds are not switched-off code: they are
-# the two block comments in handler/CGWhisperHandler.cpp that name, field by
-# field, what the relay puts into a GGServerChat packet, and the scan reads
-# a line like "pPacket->getColor() = the text color" as a call.
+# A block comment that lists calls beside their meaning reads as code to
+# this scan ("pPacket->getColor() = the text color" opens with an identifier
+# and a "("), so say what such code does in a sentence rather than call by
+# call.
 r18_raw=$(find src \( -name '*.cpp' -o -name '*.h' \) -print0 | perl -0 -ne '
     BEGIN { $files = 0; $count = 0 }
     chomp; my $f = $_;
@@ -528,7 +528,7 @@ if ! [[ "$r18_files" =~ ^[0-9]+$ ]] || [ "$r18_files" -lt 3000 ]; then
     echo "[FAIL] R18 commented-out code: only '$r18_files' files scanned (find or perl broken?)"
     fail=1
 else
-    check_ratchet R18 "commented-out code lines in /* */ blocks" 5 "$R18"
+    check_ratchet R18 "commented-out code lines in /* */ blocks" 0 "$R18"
 fi
 
 # --- Removed dead services must not return --------------------------------

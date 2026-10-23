@@ -23,7 +23,7 @@ is how a never-built header kept redeclaring a global the ratchet R1 had to coun
 source lines that carry a non-ASCII byte at zero: the legacy comments and string literals are all
 English now, and a literal that must keep foreign bytes because data is matched against it is
 written as escaped UTF-8 with an English comment beside it. R13 holds duplicated include-guard
-names at zero and R18 commented-out code inside `/* */` blocks.
+names and R18 commented-out code inside `/* */` blocks at zero.
 
 **Comments are English and describe behaviour.** No task numbers, dates, review history or
 migration narrative in `src/` or `tests/`; translate the legacy Korean or mojibake comments you
