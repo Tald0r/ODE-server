@@ -26,22 +26,16 @@ CoupleRingBase::CoupleRingBase()
 void CoupleRingBase::setPartnerItemID(ItemID_t partnerItemID)
 
 {
-    __BEGIN_TRY
-
     m_PartnerItemID = partnerItemID;
     StringStream msg;
     msg << "PartnerItemID=" << (uint)partnerItemID;
 
     tinysave(msg.toString().c_str());
-
-    __END_CATCH
 }
 
 ItemInfo* CoupleRingBase::getItemInfo(ItemType_t itemType, Race_t race)
 
 {
-    __BEGIN_TRY
-
     switch (race) {
     case RACE_SLAYER:
         return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COUPLE_RING, itemType);
@@ -52,6 +46,4 @@ ItemInfo* CoupleRingBase::getItemInfo(ItemType_t itemType, Race_t race)
     default:
         Assert(false);
     }
-
-    __END_CATCH
 }

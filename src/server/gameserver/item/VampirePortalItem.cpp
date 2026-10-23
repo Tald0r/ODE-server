@@ -28,22 +28,16 @@ Mutex VampirePortalItem::m_Mutex;
 VampirePortalItem::VampirePortalItem()
 
 {
-    __BEGIN_TRY
-
     m_ItemType = 0;
     m_Charge = 0;
     m_ZoneID = 0;
     m_X = 0;
     m_Y = 0;
-
-    __END_CATCH
 }
 
 VampirePortalItem::VampirePortalItem(ItemType_t itemType, const list<OptionType_t>& optionType)
 
 {
-    __BEGIN_TRY
-
     m_ItemType = itemType;
     m_Charge = getMaxCharge();
 
@@ -80,9 +74,6 @@ VampirePortalItem::VampirePortalItem(ItemType_t itemType, const list<OptionType_
         filelog("itembug.log", "VampirePortalItem::VampirePortalItem() : Invalid item type or option type");
         throw Error("VampirePortalItem::VampirePortalItem() : Invalid item type or optionType");
     }
-
-
-    __END_CATCH
 }
 
 VampirePortalItem::~VampirePortalItem()
@@ -96,8 +87,6 @@ void VampirePortalItem::create(const string& ownerID, Storage storage, StorageID
                                ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -112,8 +101,6 @@ void VampirePortalItem::create(const string& ownerID, Storage storage, StorageID
     defaultItemObjectRepository().insertVampirePortal(GEAR_VAMPIRE_PORTAL_ITEM, m_ItemID, m_ObjectID, m_ItemType,
                                                       ownerID, (int)storage, storageID, (int)x, (int)y, m_Charge,
                                                       (int)m_ZoneID, (int)m_X, (int)m_Y);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -122,118 +109,78 @@ void VampirePortalItem::create(const string& ownerID, Storage storage, StorageID
 void VampirePortalItem::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_VAMPIRE_PORTAL_ITEM, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void VampirePortalItem::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateVampirePortal(GEAR_VAMPIRE_PORTAL_ITEM, m_ObjectID, m_ItemType, ownerID,
                                                       (int)storage, storageID, (int)x, (int)y, m_Charge, (int)m_ZoneID,
                                                       (int)m_X, (int)m_Y, m_ItemID);
-
-    __END_CATCH
 }
 
 VolumeWidth_t VampirePortalItem::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext()
         .itemInfos()
         .getItemInfo(Item::ITEM_CLASS_VAMPIRE_PORTAL_ITEM, m_ItemType)
         ->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t VampirePortalItem::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext()
         .itemInfos()
         .getItemInfo(Item::ITEM_CLASS_VAMPIRE_PORTAL_ITEM, m_ItemType)
         ->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t VampirePortalItem::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_VAMPIRE_PORTAL_ITEM, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 string VampirePortalItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "VampirePortalItem(" << "ItemID:" << m_ItemID << ",ItemType:" << (int)m_ItemType << ",Charge:" << m_Charge
         << ",TargetZID:" << (int)m_ZoneID << ",TargetX:" << (int)m_X << ",TargetY:" << (int)m_Y << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 int VampirePortalItem::getMaxCharge(void) const
 
 {
-    __BEGIN_TRY
-
     VampirePortalItemInfo* pInfo = dynamic_cast<VampirePortalItemInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_VAMPIRE_PORTAL_ITEM, m_ItemType));
     Assert(pInfo != NULL);
     return pInfo->getMaxCharge();
-
-    __END_CATCH
 }
 
 Durability_t VampirePortalItem::getDurability() const
 
 {
-    __BEGIN_TRY
-
     WORD highBits = m_X << 8;
     WORD lowBits = m_Y;
     return (WORD)(highBits | lowBits);
-
-    __END_CATCH
 }
 
 Silver_t VampirePortalItem::getSilver() const
 
 {
-    __BEGIN_TRY
-
     return m_ZoneID;
-
-    __END_CATCH
 }
 
 EnchantLevel_t VampirePortalItem::getEnchantLevel() const
 
 {
-    __BEGIN_TRY
-
     return m_Charge;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -243,8 +190,6 @@ EnchantLevel_t VampirePortalItem::getEnchantLevel() const
 void VampirePortalItemInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_VAMPIRE_PORTAL_ITEM);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -269,22 +214,16 @@ void VampirePortalItemInfoManager::load()
 
         addItemInfo(pVampirePortalItemInfo);
     }
-
-    __END_CATCH
 }
 
 string VampirePortalItemInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "VampirePortalItemInfo(" << "ItemType:" << m_ItemType << ",Name:" << m_Name << ",EName:" << m_EName
         << ",Price:" << m_Price << ",VolumeType:" << Volume2String[m_VolumeType] << ",Weight:" << m_Weight
         << ",MaxCharge:" << m_MaxCharge << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -295,8 +234,6 @@ string VampirePortalItemInfo::toString() const
 void VampirePortalItemLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<VampirePortalObjectRow> rows =
@@ -374,15 +311,11 @@ void VampirePortalItemLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void VampirePortalItemLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<VampirePortalObjectRow> rows = defaultItemObjectRepository().loadVampirePortalInZone(
@@ -417,13 +350,8 @@ void VampirePortalItemLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void VampirePortalItemLoader::load(StorageID_t storageID, Inventory* pInventory)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}

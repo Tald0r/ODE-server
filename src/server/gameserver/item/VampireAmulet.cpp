@@ -52,8 +52,6 @@ void VampireAmulet::create(const string& ownerID, Storage storage, StorageID_t s
                            ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -71,8 +69,6 @@ void VampireAmulet::create(const string& ownerID, Storage storage, StorageID_t s
     defaultItemObjectRepository().insertOptionGradeItem(GEAR_VAMPIRE_AMULET, m_ItemID, m_ObjectID, getItemType(),
                                                         ownerID, (int)storage, storageID, (int)x, (int)y, optionField,
                                                         getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -82,11 +78,7 @@ void VampireAmulet::create(const string& ownerID, Storage storage, StorageID_t s
 void VampireAmulet::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_VAMPIRE_AMULET, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -95,16 +87,12 @@ void VampireAmulet::tinysave(const char* field) const
 void VampireAmulet::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateAmulet(GEAR_VAMPIRE_AMULET, m_ObjectID, getItemType(), ownerID, (int)storage,
                                                storageID, (int)x, (int)y, optionField, getGrade(),
                                                (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -147,8 +135,6 @@ string VampireAmuletInfo::toString() const
 void VampireAmuletInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_VAMPIRE_AMULET);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -182,8 +168,6 @@ void VampireAmuletInfoManager::load()
 
         addItemInfo(pVampireAmuletInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -193,8 +177,6 @@ void VampireAmuletInfoManager::load()
 void VampireAmuletLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows =
@@ -301,8 +283,6 @@ void VampireAmuletLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -312,8 +292,6 @@ void VampireAmuletLoader::load(Creature* pCreature)
 void VampireAmuletLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -354,8 +332,6 @@ void VampireAmuletLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -365,12 +341,8 @@ void VampireAmuletLoader::load(Zone* pZone)
 void VampireAmuletLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

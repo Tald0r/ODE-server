@@ -44,8 +44,6 @@ Money::Money(ItemType_t itemType, const list<OptionType_t>& optionType, ItemNum_
 void Money::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -59,8 +57,6 @@ void Money::create(const string& ownerID, Storage storage, StorageID_t storageID
 
     defaultItemObjectRepository().insertMoney(GEAR_MONEY, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                               storageID, (int)x, (int)y, m_Amount, (int)m_Num);
-
-    __END_CATCH
 }
 
 
@@ -70,11 +66,7 @@ void Money::create(const string& ownerID, Storage storage, StorageID_t storageID
 void Money::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveMoney(GEAR_MONEY, field, m_Amount, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -83,12 +75,8 @@ void Money::tinysave(const char* field) const
 void Money::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateMoney(GEAR_MONEY, m_ObjectID, m_ItemType, ownerID, (int)storage, storageID,
                                               (int)x, (int)y, m_Amount, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -112,11 +100,7 @@ string Money::toString() const
 VolumeWidth_t Money::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MONEY, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -126,11 +110,7 @@ VolumeWidth_t Money::getVolumeWidth() const
 VolumeHeight_t Money::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MONEY, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -140,11 +120,7 @@ VolumeHeight_t Money::getVolumeHeight() const
 Weight_t Money::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MONEY, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -170,8 +146,6 @@ string MoneyInfo::toString() const
 void MoneyInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_MONEY);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -194,8 +168,6 @@ void MoneyInfoManager::load()
 
         addItemInfo(pMoneyInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -205,8 +177,6 @@ void MoneyInfoManager::load()
 void MoneyLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<MoneyObjectRow> rows = defaultItemObjectRepository().loadMoneyOfOwner(GEAR_MONEY, pCreature->getName());
@@ -292,8 +262,6 @@ void MoneyLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -303,8 +271,6 @@ void MoneyLoader::load(Creature* pCreature)
 void MoneyLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<MoneyZoneObjectRow> rows =
@@ -338,8 +304,6 @@ void MoneyLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -349,12 +313,8 @@ void MoneyLoader::load(Zone* pZone)
 void MoneyLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

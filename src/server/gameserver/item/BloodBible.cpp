@@ -57,8 +57,6 @@ BloodBible::BloodBible(ItemType_t itemType, const list<OptionType_t>& optionType
 void BloodBible::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -76,8 +74,6 @@ void BloodBible::create(const string& ownerID, Storage storage, StorageID_t stor
         defaultItemObjectRepository().insertWarItem(GEAR_BLOOD_BIBLE, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                     (int)storage, storageID, (int)x, (int)y, m_Durability);
     filelog("WarLog.txt", "%s", sql.c_str());
-
-    __END_CATCH
 }
 
 
@@ -87,15 +83,11 @@ void BloodBible::create(const string& ownerID, Storage storage, StorageID_t stor
 void BloodBible::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     char query[255];
 
     snprintf(query, sizeof(query), "UPDATE BloodBibleObject SET %s WHERE ItemID=%u", field, m_ItemID);
     defaultItemObjectRepository().tinysaveGear(GEAR_BLOOD_BIBLE, field, m_ItemID);
     filelog("WarLog.txt", "%s", query);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -104,15 +96,11 @@ void BloodBible::tinysave(const char* field) const
 void BloodBible::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     logRelicStorage(this, storage, ownerID);
 
     defaultItemObjectRepository().updateWarItem(GEAR_BLOOD_BIBLE, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                 storageID, (int)x, (int)y, m_Durability, (int)getEnchantLevel(),
                                                 m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -137,11 +125,7 @@ string BloodBible::toString() const
 VolumeWidth_t BloodBible::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BLOOD_BIBLE, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -151,11 +135,7 @@ VolumeWidth_t BloodBible::getVolumeWidth() const
 VolumeHeight_t BloodBible::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BLOOD_BIBLE, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -165,11 +145,7 @@ VolumeHeight_t BloodBible::getVolumeHeight() const
 Weight_t BloodBible::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BLOOD_BIBLE, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -179,20 +155,12 @@ Weight_t BloodBible::getWeight() const
 Defense_t BloodBible::getDefenseBonus() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BLOOD_BIBLE, m_ItemType)->getDefenseBonus();
-
-    __END_CATCH
 }
 Protection_t BloodBible::getProtectionBonus() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BLOOD_BIBLE, m_ItemType)->getProtectionBonus();
-
-    __END_CATCH
 }
 
 
@@ -219,8 +187,6 @@ string BloodBibleInfo::toString() const
 void BloodBibleInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_BLOOD_BIBLE);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -248,8 +214,6 @@ void BloodBibleInfoManager::load()
 
         addItemInfo(pBloodBibleInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -259,16 +223,12 @@ void BloodBibleInfoManager::load()
 void BloodBibleLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     // Anything left to load for a BloodBible means, as things stand,
     // that the server went down earlier.
     // So it is deleted.
     defaultItemObjectRepository().deleteWarItemsOfOwner(GEAR_BLOOD_BIBLE, pCreature->getName());
-
-    __END_CATCH
 }
 
 
@@ -278,8 +238,6 @@ void BloodBibleLoader::load(Creature* pCreature)
 void BloodBibleLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<WarItemZoneObjectRow> rows =
@@ -314,8 +272,6 @@ void BloodBibleLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -325,12 +281,8 @@ void BloodBibleLoader::load(Zone* pZone)
 void BloodBibleLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

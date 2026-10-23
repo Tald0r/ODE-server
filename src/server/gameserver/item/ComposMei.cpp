@@ -53,8 +53,6 @@ ComposMei::ComposMei(ItemType_t itemType, const list<OptionType_t>& optionType, 
 void ComposMei::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -68,8 +66,6 @@ void ComposMei::create(const string& ownerID, Storage storage, StorageID_t stora
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_COMPOS_MEI, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                                     (int)storage, storageID, x, y, (int)getNum());
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -78,12 +74,10 @@ void ComposMei::create(const string& ownerID, Storage storage, StorageID_t stora
 bool ComposMei::destroy()
 
 {
-    __BEGIN_TRY
-
-    if (!defaultItemObjectRepository().destroyItemObject(GEAR_COMPOS_MEI, getObjectTableName(), m_ItemID))
-        return false;
-
-    __END_CATCH
+    {
+        if (!defaultItemObjectRepository().destroyItemObject(GEAR_COMPOS_MEI, getObjectTableName(), m_ItemID))
+            return false;
+    }
 
     return true;
 }
@@ -95,11 +89,7 @@ bool ComposMei::destroy()
 void ComposMei::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_COMPOS_MEI, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -108,12 +98,8 @@ void ComposMei::tinysave(const char* field) const
 void ComposMei::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_COMPOS_MEI, m_ObjectID, getItemType(), ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)getNum(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -135,97 +121,65 @@ string ComposMei::toString() const
 int ComposMei::getHPAmount(void) const
 
 {
-    __BEGIN_TRY
-
     ComposMeiInfo* pInfo = dynamic_cast<ComposMeiInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COMPOS_MEI, getItemType()));
     return pInfo->getHPAmount();
-
-    __END_CATCH
 }
 
 int ComposMei::getMPAmount(void) const
 
 {
-    __BEGIN_TRY
-
     ComposMeiInfo* pInfo = dynamic_cast<ComposMeiInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COMPOS_MEI, getItemType()));
     return pInfo->getMPAmount();
-
-    __END_CATCH
 }
 
 int ComposMei::getHPDelay(void) const
 
 {
-    __BEGIN_TRY
-
     ComposMeiInfo* pInfo = dynamic_cast<ComposMeiInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COMPOS_MEI, getItemType()));
     return pInfo->getHPDelay();
-
-    __END_CATCH
 }
 
 int ComposMei::getMPDelay(void) const
 
 {
-    __BEGIN_TRY
-
     ComposMeiInfo* pInfo = dynamic_cast<ComposMeiInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COMPOS_MEI, getItemType()));
     return pInfo->getMPDelay();
-
-    __END_CATCH
 }
 
 int ComposMei::getHPQuantity(void) const
 
 {
-    __BEGIN_TRY
-
     ComposMeiInfo* pInfo = dynamic_cast<ComposMeiInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COMPOS_MEI, getItemType()));
     return pInfo->getHPQuantity();
-
-    __END_CATCH
 }
 
 int ComposMei::getMPQuantity(void) const
 
 {
-    __BEGIN_TRY
-
     ComposMeiInfo* pInfo = dynamic_cast<ComposMeiInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COMPOS_MEI, getItemType()));
     return pInfo->getMPQuantity();
-
-    __END_CATCH
 }
 
 int ComposMei::getHPRecoveryUnit(void) const
 
 {
-    __BEGIN_TRY
-
     ComposMeiInfo* pInfo = dynamic_cast<ComposMeiInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COMPOS_MEI, getItemType()));
     return pInfo->getHPRecoveryUnit();
-
-    __END_CATCH
 }
 
 int ComposMei::getMPRecoveryUnit(void) const
 
 {
-    __BEGIN_TRY
-
     ComposMeiInfo* pInfo = dynamic_cast<ComposMeiInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COMPOS_MEI, getItemType()));
     return pInfo->getMPRecoveryUnit();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -234,8 +188,6 @@ int ComposMei::getMPRecoveryUnit(void) const
 void ComposMeiInfo::parseEffect(const string& effect)
 
 {
-    __BEGIN_TRY
-
     m_HPAmount = 0;
     m_HPDelay = 0;
     m_HPRecoveryUnit = 0;
@@ -277,8 +229,6 @@ void ComposMeiInfo::parseEffect(const string& effect)
             m_MPRecoveryUnit = (int)unit;
         }
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -302,8 +252,6 @@ string ComposMeiInfo::toString() const
 void ComposMeiInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_COMPOS_MEI);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -327,8 +275,6 @@ void ComposMeiInfoManager::load()
 
         addItemInfo(pComposMeiInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -338,8 +284,6 @@ void ComposMeiInfoManager::load()
 void ComposMeiLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -478,8 +422,6 @@ void ComposMeiLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -489,8 +431,6 @@ void ComposMeiLoader::load(Creature* pCreature)
 void ComposMeiLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumOnlyZoneObjectRow> rows =
@@ -524,8 +464,6 @@ void ComposMeiLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -535,12 +473,8 @@ void ComposMeiLoader::load(Zone* pZone)
 void ComposMeiLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

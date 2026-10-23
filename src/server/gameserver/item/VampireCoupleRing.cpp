@@ -38,22 +38,16 @@ VampireCoupleRing::VampireCoupleRing()
 VampireCoupleRing::VampireCoupleRing(ItemType_t itemType, const list<OptionType_t>& optionType)
 
     : m_ItemType(itemType), m_OptionType(optionType) {
-    __BEGIN_TRY
-
     if (!de::gameContext().itemInfos().isPossibleItem(getItemClass(), m_ItemType, optionType)) {
         filelog("itembug.log", "VampireCoupleRing::VampireCoupleRing() : Invalid item type or option type");
         throw Error("VampireCoupleRing::VampireCoupleRing() : Invalid item type or optionType");
     }
-
-    __END_CATCH
 }
 
 void VampireCoupleRing::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y,
                                ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -71,8 +65,6 @@ void VampireCoupleRing::create(const string& ownerID, Storage storage, StorageID
     defaultItemObjectRepository().insertCoupleRing(GEAR_VAMPIRE_COUPLE_RING, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                    (int)storage, storageID, (int)x, (int)y, optionField, getName(),
                                                    getPartnerItemID());
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -81,23 +73,15 @@ void VampireCoupleRing::create(const string& ownerID, Storage storage, StorageID
 void VampireCoupleRing::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_VAMPIRE_COUPLE_RING, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void VampireCoupleRing::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateCoupleRing(GEAR_VAMPIRE_COUPLE_RING, m_ObjectID, m_ItemType, ownerID,
                                                    (int)storage, storageID, (int)x, (int)y, getName(),
                                                    getPartnerItemID(), m_ItemID);
-
-    __END_CATCH
 }
 
 string VampireCoupleRing::toString() const
@@ -111,44 +95,30 @@ string VampireCoupleRing::toString() const
 VolumeWidth_t VampireCoupleRing::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext()
         .itemInfos()
         .getItemInfo(Item::ITEM_CLASS_VAMPIRE_COUPLE_RING, m_ItemType)
         ->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t VampireCoupleRing::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext()
         .itemInfos()
         .getItemInfo(Item::ITEM_CLASS_VAMPIRE_COUPLE_RING, m_ItemType)
         ->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t VampireCoupleRing::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_VAMPIRE_COUPLE_RING, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 bool VampireCoupleRing::hasPartnerItem()
 
 {
-    __BEGIN_TRY
-
     bool bRet = false;
 
     int count = 0;
@@ -164,8 +134,6 @@ bool VampireCoupleRing::hasPartnerItem()
     }
 
     return bRet;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -185,8 +153,6 @@ string VampireCoupleRingInfo::toString() const
 void VampireCoupleRingInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_VAMPIRE_COUPLE_RING);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -209,8 +175,6 @@ void VampireCoupleRingInfoManager::load()
 
         addItemInfo(pVampireCoupleRingInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -220,8 +184,6 @@ void VampireCoupleRingInfoManager::load()
 void VampireCoupleRingLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<CoupleRingObjectRow> rows =
@@ -343,15 +305,11 @@ void VampireCoupleRingLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void VampireCoupleRingLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     cout << "Loading items dropped in a zone is not supported." << endl;
     Assert(false);
 
@@ -386,19 +344,13 @@ void VampireCoupleRingLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void VampireCoupleRingLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

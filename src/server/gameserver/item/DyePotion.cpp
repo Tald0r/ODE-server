@@ -47,8 +47,6 @@ DyePotion::DyePotion(ItemType_t itemType, const list<OptionType_t>& optionType, 
 void DyePotion::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -63,8 +61,6 @@ void DyePotion::create(const string& ownerID, Storage storage, StorageID_t stora
     defaultItemObjectRepository().insertNumItem(GEAR_DYE_POTION, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                                 (int)storage, storageID, (int)x, (int)y, (int)getNum(),
                                                 (int)m_CreateType);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -73,22 +69,14 @@ void DyePotion::create(const string& ownerID, Storage storage, StorageID_t stora
 void DyePotion::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_DYE_POTION, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void DyePotion::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumItem(GEAR_DYE_POTION, m_ObjectID, getItemType(), ownerID, (int)storage,
                                                 storageID, (int)x, (int)y, (int)getNum(), m_ItemID);
-
-    __END_CATCH
 }
 
 string DyePotion::toString() const
@@ -120,8 +108,6 @@ string DyePotionInfo::toString() const
 void DyePotionInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_DYE_POTION);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -146,8 +132,6 @@ void DyePotionInfoManager::load()
 
         addItemInfo(pDyePotionInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -157,8 +141,6 @@ void DyePotionInfoManager::load()
 void DyePotionLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumObjectRow> rows = defaultItemObjectRepository().loadNumItemOfOwner(GEAR_DYE_POTION, pCreature->getName());
@@ -251,15 +233,11 @@ void DyePotionLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void DyePotionLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumZoneObjectRow> rows =
@@ -294,19 +272,13 @@ void DyePotionLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void DyePotionLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

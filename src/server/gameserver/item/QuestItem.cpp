@@ -46,8 +46,6 @@ QuestItem::QuestItem(ItemType_t itemType, const list<OptionType_t>& optionType)
 void QuestItem::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -61,8 +59,6 @@ void QuestItem::create(const string& ownerID, Storage storage, StorageID_t stora
 
     defaultItemObjectRepository().insertFlagItem(GEAR_QUEST_ITEM, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                  (int)storage, storageID, (int)x, (int)y, (int)m_CreateType);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -71,22 +67,14 @@ void QuestItem::create(const string& ownerID, Storage storage, StorageID_t stora
 void QuestItem::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_QUEST_ITEM, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void QuestItem::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updatePlainItem(GEAR_QUEST_ITEM, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                   storageID, (int)x, (int)y, m_ItemID);
-
-    __END_CATCH
 }
 
 string QuestItem::toString() const
@@ -102,31 +90,19 @@ string QuestItem::toString() const
 VolumeWidth_t QuestItem::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_QUEST_ITEM, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t QuestItem::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_QUEST_ITEM, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t QuestItem::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_QUEST_ITEM, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -146,8 +122,6 @@ string QuestItemInfo::toString() const
 void QuestItemInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_QUEST_ITEM);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -171,8 +145,6 @@ void QuestItemInfoManager::load()
 
         addItemInfo(pQuestItemInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -182,8 +154,6 @@ void QuestItemInfoManager::load()
 void QuestItemLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<FlagObjectRow> rows =
@@ -276,15 +246,11 @@ void QuestItemLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void QuestItemLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<FlagZoneObjectRow> rows =
@@ -318,19 +284,13 @@ void QuestItemLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void QuestItemLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

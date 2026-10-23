@@ -50,8 +50,6 @@ Skull::Skull(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Skull::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -65,8 +63,6 @@ void Skull::create(const string& ownerID, Storage storage, StorageID_t storageID
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_SKULL, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)m_Num);
-
-    __END_CATCH
 }
 
 
@@ -76,11 +72,7 @@ void Skull::create(const string& ownerID, Storage storage, StorageID_t storageID
 void Skull::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_SKULL, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -89,12 +81,8 @@ void Skull::tinysave(const char* field) const
 void Skull::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_SKULL, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -116,11 +104,7 @@ string Skull::toString() const
 VolumeWidth_t Skull::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SKULL, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -130,11 +114,7 @@ VolumeWidth_t Skull::getVolumeWidth() const
 VolumeHeight_t Skull::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SKULL, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -144,11 +124,7 @@ VolumeHeight_t Skull::getVolumeHeight() const
 Weight_t Skull::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SKULL, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -174,8 +150,6 @@ string SkullInfo::toString() const
 void SkullInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_SKULL);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -199,8 +173,6 @@ void SkullInfoManager::load()
 
         addItemInfo(pSkullInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -210,8 +182,6 @@ void SkullInfoManager::load()
 void SkullLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -303,8 +273,6 @@ void SkullLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -314,8 +282,6 @@ void SkullLoader::load(Creature* pCreature)
 void SkullLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<SkullZoneObjectRow> rows =
@@ -349,8 +315,6 @@ void SkullLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -360,12 +324,8 @@ void SkullLoader::load(Zone* pZone)
 void SkullLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

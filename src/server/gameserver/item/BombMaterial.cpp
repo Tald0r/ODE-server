@@ -45,8 +45,6 @@ void BombMaterial::create(const string& ownerID, Storage storage, StorageID_t st
                           ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -60,8 +58,6 @@ void BombMaterial::create(const string& ownerID, Storage storage, StorageID_t st
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_BOMB_MATERIAL, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                     (int)storage, storageID, (int)x, (int)y, (int)m_Num);
-
-    __END_CATCH
 }
 
 
@@ -71,11 +67,7 @@ void BombMaterial::create(const string& ownerID, Storage storage, StorageID_t st
 void BombMaterial::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_BOMB_MATERIAL, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -84,12 +76,8 @@ void BombMaterial::tinysave(const char* field) const
 void BombMaterial::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_BOMB_MATERIAL, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -113,11 +101,7 @@ string BombMaterial::toString() const
 VolumeWidth_t BombMaterial::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BOMB_MATERIAL, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -127,11 +111,7 @@ VolumeWidth_t BombMaterial::getVolumeWidth() const
 VolumeHeight_t BombMaterial::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BOMB_MATERIAL, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -141,11 +121,7 @@ VolumeHeight_t BombMaterial::getVolumeHeight() const
 Weight_t BombMaterial::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BOMB_MATERIAL, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -171,8 +147,6 @@ string BombMaterialInfo::toString() const
 void BombMaterialInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_BOMB_MATERIAL);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -195,8 +169,6 @@ void BombMaterialInfoManager::load()
 
         addItemInfo(pBombMaterialInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -206,8 +178,6 @@ void BombMaterialInfoManager::load()
 void BombMaterialLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -293,8 +263,6 @@ void BombMaterialLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -304,8 +272,6 @@ void BombMaterialLoader::load(Creature* pCreature)
 void BombMaterialLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<BombZoneObjectRow> rows =
@@ -337,8 +303,6 @@ void BombMaterialLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -348,12 +312,8 @@ void BombMaterialLoader::load(Zone* pZone)
 void BombMaterialLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

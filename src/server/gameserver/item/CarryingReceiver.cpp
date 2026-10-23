@@ -49,8 +49,6 @@ void CarryingReceiver::create(const string& ownerID, Storage storage, StorageID_
                               ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -68,8 +66,6 @@ void CarryingReceiver::create(const string& ownerID, Storage storage, StorageID_
     defaultItemObjectRepository().insertOptionGradeItem(GEAR_CARRYING_RECEIVER, m_ItemID, m_ObjectID, getItemType(),
                                                         ownerID, (int)storage, storageID, (int)x, (int)y, optionField,
                                                         getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -79,11 +75,7 @@ void CarryingReceiver::create(const string& ownerID, Storage storage, StorageID_
 void CarryingReceiver::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_CARRYING_RECEIVER, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -92,16 +84,12 @@ void CarryingReceiver::tinysave(const char* field) const
 void CarryingReceiver::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateAmulet(GEAR_CARRYING_RECEIVER, m_ObjectID, getItemType(), ownerID, (int)storage,
                                                storageID, (int)x, (int)y, optionField, getGrade(),
                                                (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -143,8 +131,6 @@ string CarryingReceiverInfo::toString() const
 void CarryingReceiverInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_CARRYING_RECEIVER);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -178,8 +164,6 @@ void CarryingReceiverInfoManager::load()
 
         addItemInfo(pCarryingReceiverInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -189,8 +173,6 @@ void CarryingReceiverInfoManager::load()
 void CarryingReceiverLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<OptionGradeObjectRow> rows =
@@ -296,8 +278,6 @@ void CarryingReceiverLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -306,11 +286,7 @@ void CarryingReceiverLoader::load(Creature* pCreature)
 //--------------------------------------------------------------------------------
 void CarryingReceiverLoader::load(Zone* pZone)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 //--------------------------------------------------------------------------------
@@ -318,8 +294,4 @@ void CarryingReceiverLoader::load(Zone* pZone)
 //--------------------------------------------------------------------------------
 void CarryingReceiverLoader::load(StorageID_t storageID, Inventory* pInventory)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
