@@ -381,7 +381,7 @@ void opClearInventory(GamePlayer* pGamePlayer, const string& value1, GCSystemMes
         // Re-send the inventory packets.
         transportCreature(pCreature, pCreature->getZone()->getZoneID(), pCreature->getX(), pCreature->getY(), false);
     } catch (Throwable& t) {
-        gcSystemMessage.setMessage(t.toString().c_str());
+        gcSystemMessage.setMessage(t.toString().substr(0, de::wire::kMaxByteStringLength)); // longer is never sent
     }
 }
 

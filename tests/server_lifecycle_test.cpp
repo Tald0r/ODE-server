@@ -181,10 +181,16 @@ TEST_F(ServerLifecycleTest, PartialInitializationKeepsDependenciesAliveForCleanu
 enum class FailureKind { Throwable, Standard, Unknown };
 struct UnknownFailure {};
 
+// Every Error these tests throw or expect is built on this one line, so the
+// thrown error and the expected text name the same throw site.
+Error lifecycleError(const std::string& message) {
+    return Error(message);
+}
+
 [[noreturn]] void throwFailure(FailureKind kind, const std::string& message) {
     switch (kind) {
     case FailureKind::Throwable:
-        throw Error(message);
+        throw lifecycleError(message);
     case FailureKind::Standard:
         throw std::runtime_error(message);
     case FailureKind::Unknown:
@@ -219,7 +225,7 @@ TEST_P(ServerStartupFailureTest, ReportsFailureBeforeStoppingAndReturnsFailureAf
         throwFailure(kind, "startup failed");
     };
     const std::string diagnostic =
-        kind == FailureKind::Throwable ? Error("startup failed").toString() + "\n" : "unknown exception...\n";
+        kind == FailureKind::Throwable ? lifecycleError("startup failed").toString() + "\n" : "unknown exception...\n";
     actions.stop = [&, original = actions.stop] {
         // Preserve the diagnostic even when the subsequent stop blocks.
         EXPECT_EQ(diagnostic, output.str());
@@ -257,7 +263,7 @@ TEST_P(ServerStartupFailureTest, OutputFailureStillReachesCleanupWithShutdownAlr
                                                   : std::vector<std::string>{"initialize", "start", "stop"};
     EXPECT_EQ(expected, calls);
     if (kind == FailureKind::Throwable)
-        EXPECT_EQ(Error("startup failed").toString() + "\n", readInstantLog());
+        EXPECT_EQ(lifecycleError("startup failed").toString() + "\n", readInstantLog());
     EXPECT_TRUE(errors.str().empty());
 }
 
@@ -277,7 +283,7 @@ TEST_P(ServerStopFailureTest, ReportsFailedDrainAndDoesNotRetryStop) {
     EXPECT_EQ((std::vector<std::string>{"initialize", "start", "stop"}), calls);
     EXPECT_TRUE(output.str().empty());
     EXPECT_FALSE(std::filesystem::exists(instantLog));
-    const std::string diagnostic = GetParam() == FailureKind::Throwable  ? Error("stop failed").toString()
+    const std::string diagnostic = GetParam() == FailureKind::Throwable  ? lifecycleError("stop failed").toString()
                                    : GetParam() == FailureKind::Standard ? "stop failed"
                                                                          : "unknown exception";
     EXPECT_EQ("Shutdown failed: " + diagnostic + "\n", errors.str());
@@ -301,7 +307,7 @@ INSTANTIATE_TEST_SUITE_P(Exceptions, ServerStopFailureTest,
                          ::testing::Values(FailureKind::Throwable, FailureKind::Standard, FailureKind::Unknown));
 
 TEST_F(ServerLifecycleTest, StartupAndStopFailuresKeepBothDiagnostics) {
-    actions.initialize = [] { throw Error("startup failed"); };
+    actions.initialize = [] { throw lifecycleError("startup failed"); };
     actions.stop = [&] {
         EXPECT_TRUE(ServerShutdown::isRequested());
         calls.emplace_back("stop");
@@ -309,17 +315,17 @@ TEST_F(ServerLifecycleTest, StartupAndStopFailuresKeepBothDiagnostics) {
     };
     expectResult(run(), false, EXIT_FAILURE);
     EXPECT_EQ((std::vector<std::string>{"stop"}), calls);
-    EXPECT_EQ(Error("startup failed").toString() + "\n", output.str());
+    EXPECT_EQ(lifecycleError("startup failed").toString() + "\n", output.str());
     EXPECT_EQ(output.str(), readInstantLog());
     EXPECT_EQ("Shutdown failed: stop failed\n", errors.str());
 }
 
 TEST_F(ServerLifecycleTest, AnUnavailableInstantLogDoesNotPreventReportingOrCleanup) {
     instantLog = directory + "/missing/instant.log";
-    actions.initialize = [] { throw Error("startup failed"); };
+    actions.initialize = [] { throw lifecycleError("startup failed"); };
     expectResult(run(), true, EXIT_FAILURE);
     EXPECT_EQ((std::vector<std::string>{"stop"}), calls);
-    EXPECT_EQ(Error("startup failed").toString() + "\n", output.str());
+    EXPECT_EQ(lifecycleError("startup failed").toString() + "\n", output.str());
     EXPECT_FALSE(std::filesystem::exists(instantLog));
 }
 
@@ -331,9 +337,9 @@ TEST_F(ServerLifecycleTest, NormalStartupPreservesAnExistingInstantLog) {
 
 TEST_F(ServerLifecycleTest, AStartupThrowableReplacesThePreviousInstantLog) {
     std::ofstream(instantLog) << "previous failure with a much longer message\n";
-    actions.initialize = [] { throw Error("startup failed"); };
+    actions.initialize = [] { throw lifecycleError("startup failed"); };
     expectResult(run(), true, EXIT_FAILURE);
-    EXPECT_EQ(Error("startup failed").toString() + "\n", readInstantLog());
+    EXPECT_EQ(lifecycleError("startup failed").toString() + "\n", readInstantLog());
 }
 
 class Diagnostic : public Error {

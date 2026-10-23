@@ -57,16 +57,14 @@ TEST_F(ListenerStartupTest, ImmediateRetryReportsTheFirstFailureAndRecoveryCount
             if (attempts < 3)
                 throw BindException("busy " + std::to_string(attempts));
         },
-        [&](const BindException& error) { events.push_back(error.toString()); }, "UDP", 0us,
+        [&](const BindException& error) { events.push_back(error.getMessage()); }, "UDP", 0us,
         [] { return de::RepeatedErrorReport::TimePoint{}; },
         [&](de::ListenerStartupReport event, std::uint64_t suppressed) {
             EXPECT_EQ(event, de::ListenerStartupReport::Recovered);
             EXPECT_EQ(suppressed, 1u);
             events.push_back("recovered");
         });
-    EXPECT_EQ((std::vector<std::string>{"attempt 1", BindException("busy 1").toString(), "attempt 2", "attempt 3",
-                                        "recovered"}),
-              events);
+    EXPECT_EQ((std::vector<std::string>{"attempt 1", "busy 1", "attempt 2", "attempt 3", "recovered"}), events);
     EXPECT_FALSE(ServerShutdown::failed.load());
 }
 

@@ -20,6 +20,21 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## A long GM console error report is never sent (2026-10-23)
+
+The `*command clearInventory` body (`gm/ConsoleCommands.cpp`) answers a
+caught `Throwable` with its whole `toString()` as the `GCSystemMessage`
+text. That field carries at most 255 bytes: `write()` refuses a longer one
+with an `InvalidProtocolException`, `SocketOutputStream::writePacket` takes
+the packet back out of the stream and `GamePlayer::sendPacket` swallows the
+exception, so a report with a few stack frames reached the GM as no reply at
+all. The reply is now cut to 255 bytes. Alongside it,
+`InsufficientDataException::toString()` ended its first line only when it
+had a byte count to print, so a count of 0 ran the message into the first
+stack frame; the line now always ends.
+
+> **Status:** fixed (r5/prep)
+
 ## A slayer's shoulder armour leaving its shape is broadcast as the trousers (2026-10-23)
 
 `Slayer::removeShape` (`SlayerShape.cpp`) clears the shoulder shape for

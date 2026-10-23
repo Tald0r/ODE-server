@@ -14,6 +14,9 @@
 //     formats it as one indented function per line.
 //   * UnsupportedError() reports the enclosing function of the throw site
 //     as its message, so an unimplemented stub throws it with no argument.
+//   * Every Throwable records its throw site (file, line, function) from
+//     whichever constructor built it, and toString() prints it on the line
+//     after the message, before the stack trace.
 //
 // Both assert helpers append to a log file in the working directory, so
 // the ctest entry runs this from the build tree (see tests/CMakeLists.txt).
@@ -33,6 +36,7 @@ namespace {
 // The enclosing function name recorded from inside the helpers below, so the
 // expectations do not have to hard-code a mangled-looking pretty name.
 std::string g_innerFunction;
+unsigned g_innerLine = 0;
 std::string g_outerFunction;
 std::string g_swallowFunction;
 std::string g_stubFunction;
@@ -41,6 +45,7 @@ void innerThrows() {
     __BEGIN_TRY
 
     g_innerFunction = std::source_location::current().function_name();
+    g_innerLine = std::source_location::current().line() + 1;
     throw Exception("inner failed");
 
     __END_CATCH
@@ -78,6 +83,19 @@ struct Stub {
         throw UnsupportedError();
     }
 };
+
+// The object was built on the line `here` names: same file, line and function.
+void expectBuiltAt(const Throwable& t, const std::source_location& here) {
+    EXPECT_STREQ(t.getThrowSite().file_name(), here.file_name()) << t.getName();
+    EXPECT_EQ(t.getThrowSite().line(), here.line()) << t.getName();
+    EXPECT_STREQ(t.getThrowSite().function_name(), here.function_name()) << t.getName();
+}
+
+// "thrown at <file>:<line> in <function>\n" for a throw site in this file.
+std::string throwSiteLine(unsigned line, const std::string& function) {
+    return "thrown at " + std::string(std::source_location::current().file_name()) + ":" + std::to_string(line) +
+           " in " + function + "\n";
+}
 
 } // namespace
 
@@ -204,4 +222,66 @@ TEST(Diagnostics, UnsupportedErrorKeepsExplicitMessage) {
     UnsupportedError e(std::string("storing an NPC inventory is not supported"));
 
     EXPECT_EQ(e.getMessage(), "storing an NPC inventory is not supported");
+}
+
+// A thrown exception records the throw expression's line, not a line of
+// Exception.h, and the record survives the rethrows on the way out.
+TEST(Diagnostics, ThrowSiteIsTheThrowExpression) {
+    try {
+        outerThrows();
+        FAIL() << "outerThrows did not rethrow";
+    } catch (Throwable& t) {
+        ASSERT_NE(g_innerLine, 0u);
+        EXPECT_NE(std::string(t.getThrowSite().file_name()).find("diagnostics_test.cpp"), std::string::npos)
+            << t.getThrowSite().file_name();
+        EXPECT_EQ(t.getThrowSite().line(), g_innerLine);
+        EXPECT_EQ(t.getThrowSite().function_name(), g_innerFunction);
+    }
+}
+
+// Every constructor records its caller, however deep the class sits under
+// Throwable: the message form, inherited with `using`, and the default form
+// each class declares.
+TEST(Diagnostics, EveryConstructorRecordsItsCaller) {
+    expectBuiltAt(Throwable("throwable"), std::source_location::current());
+    expectBuiltAt(Throwable(), std::source_location::current());
+    expectBuiltAt(Error("error"), std::source_location::current());
+    expectBuiltAt(Error(), std::source_location::current());
+    expectBuiltAt(ProtocolException("protocol"), std::source_location::current());
+    expectBuiltAt(ProtocolException(), std::source_location::current());
+    expectBuiltAt(EOFException("eof"), std::source_location::current());
+    expectBuiltAt(EOFException(), std::source_location::current());
+    expectBuiltAt(InvalidProtocolException("invalid"), std::source_location::current());
+    expectBuiltAt(NoSuchElementException(), std::source_location::current());
+    expectBuiltAt(PeerClosedException(), std::source_location::current());
+    expectBuiltAt(InsufficientDataException(4), std::source_location::current());
+    expectBuiltAt(InsufficientDataException("short", 4), std::source_location::current());
+    expectBuiltAt(UnknownError("unknown", 5), std::source_location::current());
+    expectBuiltAt(UnsupportedError(), std::source_location::current());
+    expectBuiltAt(UnsupportedError(std::string("unsupported")), std::source_location::current());
+}
+
+// toString(): the name and message, the throw site, then the function stack.
+TEST(Diagnostics, ToStringPrintsTheThrowSite) {
+    try {
+        outerThrows();
+        FAIL() << "outerThrows did not rethrow";
+    } catch (Throwable& t) {
+        EXPECT_EQ(t.toString(), "Exception : inner failed\n" + throwSiteLine(g_innerLine, g_innerFunction) + " " +
+                                    g_outerFunction + "\n  " + g_innerFunction + "\n");
+    }
+}
+
+// The two classes that print more than the message keep their first line and
+// add the throw site after it, as every other class does.
+TEST(Diagnostics, ToStringOverridesPrintTheThrowSite) {
+    const std::string function = std::source_location::current().function_name();
+    const unsigned line = std::source_location::current().line() + 1;
+    const InsufficientDataException shortBy(4);
+    const InsufficientDataException shortByNothing("short");
+    const UnknownError unknown("unknown", 5);
+
+    EXPECT_EQ(shortBy.toString(), "InsufficientDataException :  (lack of 4 bytes)\n" + throwSiteLine(line, function));
+    EXPECT_EQ(shortByNothing.toString(), "InsufficientDataException : short\n" + throwSiteLine(line + 1, function));
+    EXPECT_EQ(unknown.toString(), "UnknownError : unknown (5) \n" + throwSiteLine(line + 2, function));
 }
