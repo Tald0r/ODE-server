@@ -43,6 +43,12 @@
   [toolchain notes](build/toolchain.md), [the fix log](reviews/FIXES.md) and
   [the plan](reviews/RESTRUCTURING.md) (tasks 3.4 and 5.1) point at the concepts that hold what
   they cited.
+* **Update**: `README.md` is a getting-started guide: prerequisites, the compose quick start,
+  local and container builds, database setup, configuration, running the servers, accounts,
+  English content, troubleshooting and the pre-built image. Its long account of what the tests
+  cover moved to [test coverage](testing/test-coverage.md), and its native macOS build and tests
+  to [native macOS builds](build/native-macos.md), which [the fix log](reviews/FIXES.md) now
+  names for the forced include.
 
 ## 2026-10-21
 

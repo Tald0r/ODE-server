@@ -2873,8 +2873,9 @@ do.
   file system.** `src/Core` is on every target's include path, so on macOS
   the C header resolves to the project's own and googletest's `gtest.cc`
   loses `assert`. The servers build regardless; the test suite needs the
-  forced include the README gives. Keeping the project's include path off
-  the googletest targets would end it.
+  forced include [native macOS builds](../build/native-macos.md) gives.
+  Keeping the project's include path off the googletest targets would end
+  it.
   > **Status:** recorded, not fixed (fix/macos-native-build)
 - **`tests/ratchet/ratchets.sh` rejects BSD `wc -l` output.** macOS's `wc`
   pads its count with spaces, and `check_ratchet` refuses `'       0'` as
