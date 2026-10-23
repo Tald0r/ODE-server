@@ -31,23 +31,29 @@
 # lines are tokens of their own, so a macro name inside one is never a
 # site.
 #
-# Usage:
+# Usage (from the repository root, whose src/ holds the macro table):
 #   perl tools/r5_retire_try.pl [--brace FILE:LINE]... FILE...
 #       rewrite the files in place; --brace keeps the wrapper site whose
-#       __BEGIN_TRY is on that line as braces. Prints one line per file
-#       and a SKIP or REFUSE line for each site or file it leaves alone.
-#   perl tools/r5_retire_try.pl --check REV[..REV]
-#       prove that every file the range changes differs from its old
+#       __BEGIN_TRY is on that line of FILE (spelled as on the command
+#       line) as braces, and one that names no pair writes nothing.
+#       Prints one line per changed file and a SKIP or REFUSE line for
+#       each site or file it leaves alone.
+#   perl tools/r5_retire_try.pl --check REV | REV..REV | REV...REV
+#       prove that every C++ file the range modifies differs from its old
 #       version only by rethrowing pairs that were removed (wrapper sites
-#       only) or turned into braces; with one revision the working tree is
-#       the new side. Exits non-zero on the first file that does not.
+#       only) or turned into braces; REV alone compares with the working
+#       tree, REV...REV starts from the merge base. Other files are
+#       reported and skipped; a git error, an added or deleted C++ file, a
+#       failing file or a range that modifies no C++ file exits non-zero.
 #   perl tools/r5_retire_try.pl --self-test
 #
-# Perl, like tests/tools/: the dev image ships it and has no python3.
+# Perl, like tests/tools/.
 #----------------------------------------------------------------------
 use strict;
 use warnings;
+use Cwd qw(getcwd);
 use File::Find;
+use File::Temp qw(tempdir);
 
 my %OPEN = (
     '__BEGIN_TRY' => 'TRY',
@@ -71,10 +77,12 @@ my %CLOSE = (
 # literal), w (word or number), o (punctuation). start and end are byte
 # offsets into the text, line the 1-based line the token starts on.
 #----------------------------------------------------------------------
-my $PUNCT = qr/->\*|->|\+\+|--|<=>|<<=|<<|<=|==|!=|&&|\|\||::|\.\.\.|\.\*|[-+*\/%&|^!=]=|##|[^\s\w]/;
+my $PUNCT = qr/->\*|->|\+\+|--|<=>|<<=|>>=|<<|>>|<=|>=|==|!=|&&|\|\||::|\.\.\.|\.\*|[-+*\/%&|^!=]=|##|[^\s\w]/;
 
+# $inDirective: the text is a directive's own body, where a `#` is an
+# operator, not the start of another directive.
 sub tokenize {
-    my ($text) = @_;
+    my ($text, $inDirective) = @_;
     my @tokens;
     my $bol = 1;    # only whitespace since the last newline
     my $line = 1;
@@ -84,7 +92,7 @@ sub tokenize {
         if ($text =~ /\G[ \t\r\f\x0B]+/gc) { next; }
         if ($text =~ /\G\n/gc) { $bol = 1; $line++; next; }
         my $type;
-        if ($bol && $text =~ /\G#/gc) {
+        if ($bol && !$inDirective && $text =~ /\G#/gc) {
             # A directive runs to the first newline outside a comment or a
             # literal that no backslash continues.
             while (1) {
@@ -130,13 +138,17 @@ sub tokenize {
     return \@tokens;
 }
 
-# The text a token is compared by: whitespace runs inside a comment or a
-# directive collapse to one space, so re-indenting them is not a change.
+# The text a token is compared by. A comment's whitespace runs collapse to
+# one space, so re-indenting it is not a change; a directive is compared as
+# its own tokens, so its literals stay verbatim and a line splice (`\`)
+# stays a token; everything else is verbatim.
 sub norm {
     my ($t) = @_;
-    return $t->[1] unless $t->[0] eq 'c' || $t->[0] eq 'p';
-    (my $s = $t->[1]) =~ s/\\\r?\n/ /g;
-    $s =~ s/\s+/ /g;
+    if ($t->[0] eq 'p') {
+        return join "\0", '#', map { norm($_) } @{ tokenize(substr($t->[1], 1), 1) };
+    }
+    return $t->[1] unless $t->[0] eq 'c';
+    (my $s = $t->[1]) =~ s/\s+/ /g;
     $s =~ s/^\s+|\s+$//g;
     return $s;
 }
@@ -157,7 +169,7 @@ sub classifyDefine {
     return if $OPEN{$name} || $CLOSE{$name};
     # What the body leaves open or closes once its own pairs are matched.
     my (@open, @closed);
-    for my $t (@{ tokenize($rest) }) {
+    for my $t (@{ tokenize($rest, 1) }) {
         next unless $t->[0] eq 'w' || $t->[0] eq 'o';
         my $k = $t->[1] eq '{' ? '{' : $t->[1] eq '}' ? '/{' : $OPEN{$t->[1]} || ($CLOSE{$t->[1]} ? '/' . $CLOSE{$t->[1]} : undef);
         next unless defined $k;
@@ -174,10 +186,8 @@ sub classifyDefine {
     $into->{$name} = (!defined $old || $old eq $kind) ? $kind : '?';
 }
 
-my $braceMacrosLoaded = 0;
 sub loadBraceMacros {
-    return if $braceMacrosLoaded++;
-    return unless -d 'src';
+    die "run from the repository root: src/Core/Exception.h is not here\n" unless -f 'src/Core/Exception.h';
     find({ no_chdir => 1, wanted => sub {
         return unless /\.(?:h|hpp|cpp)$/ && -f $_;
         my $text = slurp($_);
@@ -185,6 +195,7 @@ sub loadBraceMacros {
             classifyDefine($&, \%braceMacro);
         }
     } }, 'src');
+    return \%braceMacro;
 }
 
 sub slurp {
@@ -268,7 +279,8 @@ sub analyse {
 }
 
 #----------------------------------------------------------------------
-# rewrite(text, macros, braceLines) -> (newText, removed, braced, skipped, refused, swallowing)
+# rewrite(text, macros, braceLines)
+#     -> (newText, removed, braced, skipped, refused, swallowing, pairLines)
 #----------------------------------------------------------------------
 sub rewrite {
     my ($text, $macros, $braceLines) = @_;
@@ -291,8 +303,16 @@ sub rewrite {
     my %touched;    # output offset of each edit => whether it removed a macro
     for my $e (sort { $a->[0] <=> $b->[0] } @edits) {
         my ($s, $t, $r) = @$e;
-        if ($r eq '' && $s > 0 && substr($text, $s - 1, 1) =~ /[ \t]/) {
-            $t++ while substr($text, $t, 1) =~ /[ \t]/;    # "x __BEGIN_TRY y" -> "x y"
+        if ($r eq '') {
+            # Only the blanks beside the macro go, never text inside a
+            # literal or comment: at the end of a line both sides' blanks
+            # ("x __END_CATCH" -> "x"), elsewhere the right side's when the
+            # left side has some ("x __BEGIN_TRY y" -> "x y").
+            my ($before, $after) = ($s, $t);
+            $before-- while $before > $cursor && substr($text, $before - 1, 1) =~ /[ \t]/;
+            $after++ while $after < length $text && substr($text, $after, 1) =~ /[ \t]/;
+            if ($after == length $text || substr($text, $after, 1) =~ /[\r\n]/) { ($s, $t) = ($before, $after); }
+            elsif ($before < $s) { $t = $after; }
         }
         $out .= substr($text, $cursor, $s - $cursor);
         $touched{ length $out } = $r eq '';
@@ -301,17 +321,16 @@ sub rewrite {
     }
     $out .= substr($text, $cursor);
     # A line a removal left blank goes, with the blank lines on the inside of
-    # the block it opened or closed; trailing blanks on edited lines go too.
+    # the block it opened or closed.
     my @lines = split /(?<=\n)/, $out;
-    my ($offset, @keep) = (0);
-    my @starts = sort { $a <=> $b } keys %touched;
+    my $offset = 0;
+    my @starts = sort { $a <=> $b } grep { $touched{$_} } keys %touched;
     my @kill;
     for my $i (0 .. $#lines) {
         my $len = length $lines[$i];
         while (@starts && $starts[0] < $offset + $len) {
-            my $s = shift @starts;
-            $kill[$i] = 1 if $touched{$s} && $lines[$i] =~ /^[ \t]*\r?\n?$/;
-            $lines[$i] =~ s/[ \t]+(\r?\n?)$/$1/;
+            shift @starts;
+            $kill[$i] = 1 if $lines[$i] =~ /^[ \t]*\r?\n?$/;
         }
         $offset += $len;
     }
@@ -329,7 +348,8 @@ sub rewrite {
         }
     }
     $out = join '', map { $kill[$_] ? () : $lines[$_] } 0 .. $#lines;
-    return ($out, $removed, $braced, $an->{skipped}, undef, $an->{swallow});
+    my @pairLines = map { $toks->[ $_->{begin} ][4] } @{ $an->{pairs} };
+    return ($out, $removed, $braced, $an->{skipped}, undef, $an->{swallow}, \@pairLines);
 }
 
 #----------------------------------------------------------------------
@@ -398,45 +418,88 @@ sub check {
 #----------------------------------------------------------------------
 sub git {
     my @args = @_;
-    open(my $fh, '-|', 'git', @args) or die "git @args: $!\n";
+    open(my $fh, '-|', 'git', @args) or return ('', -1);
     local $/;
     my $out = <$fh>;
     close $fh;
-    return ($out, $?);
+    return ($out // '', $?);
 }
 
-sub runCheck {
+# REV, REV..REV or REV...REV (from the two revisions' merge base) ->
+# (from, to or undef for the working tree, symmetric); () when malformed.
+sub parseRange {
     my ($range) = @_;
-    loadBraceMacros();
-    my ($from, $to) = $range =~ /^(.+?)\.\.(.+)$/ ? ($1, $2) : ($range, undef);
-    my ($list) = git('diff', '--name-status', '--no-renames', $from, defined $to ? $to : ());
-    my ($files, $bad) = (0, 0);
+    if ($range =~ /^(.+?)(\.\.\.?)(.+)$/) {
+        my ($from, $dots, $to) = ($1, $2, $3);
+        return if $from =~ /\.$/ || $to =~ /^\./;
+        return ($from, $to, $dots eq '...');
+    }
+    return if $range eq '' || $range =~ /\.\./;
+    return ($range, undef, 0);
+}
+
+# runCheck(range, macros, git, readWorktree, say) -> exit status. Every
+# modified C++ file must pass check(); other files are reported and
+# skipped; a git error, an added or deleted C++ file, or a range that
+# changes no C++ file at all fails.
+sub runCheck {
+    my ($range, $macros, $git, $read, $say) = @_;
+    my ($from, $to, $symmetric) = parseRange($range);
+    unless (defined $from) {
+        $say->("check: '$range' is not REV, REV..REV or REV...REV\n");
+        return 1;
+    }
+    if ($symmetric) {
+        my ($base, $status) = $git->('merge-base', $from, $to);
+        if ($status) { $say->("check: git merge-base $from $to failed\n"); return 1; }
+        chomp($from = $base);
+    }
+    my ($list, $status) = $git->('diff', '--name-status', '--no-renames', $from, defined $to ? $to : ());
+    if ($status) { $say->("check: git diff $range failed\n"); return 1; }
+    my ($files, $bad, $skipped) = (0, 0, 0);
     for my $row (split /\n/, $list) {
-        my ($status, $path) = split /\t/, $row;
+        my ($change, $path) = split /\t/, $row;
+        if ($path !~ /\.(?:cpp|h|hpp)$/) {
+            $say->("SKIP $path: not a C++ source\n");
+            $skipped++;
+            next;
+        }
         $files++;
-        if ($status ne 'M' || $path !~ /\.(?:cpp|h|hpp)$/) {
-            print "FAIL $path: $status, not a modified C++ source\n";
+        if ($change ne 'M') {
+            $say->("FAIL $path: $change, not a modification\n");
             $bad++;
             next;
         }
-        my ($old, $s1) = git('show', "$from:$path");
-        my ($new, $s2) = defined $to ? git('show', "$to:$path") : (slurp($path), 0);
-        die "cannot read $path\n" if $s1 || $s2;
-        my $why = check($old, $new, \%braceMacro);
-        if ($why) { print "FAIL $path: $why\n"; $bad++; }
+        my ($old, $s1) = $git->('show', "$from:$path");
+        my ($new, $s2) = defined $to ? $git->('show', "$to:$path") : ($read->($path), 0);
+        my $why = $s1 || $s2 || !defined $new ? 'cannot read both versions' : check($old, $new, $macros);
+        if ($why) { $say->("FAIL $path: $why\n"); $bad++; }
     }
-    print "check: $files file(s), " . ($bad ? "$bad FAILED" : 'all only retire rethrowing pairs') . "\n";
+    if (!$files) {
+        $say->("check: $range changes no C++ source, so nothing was checked\n");
+        return 1;
+    }
+    $say->("check: $files C++ file(s), $skipped other(s) skipped, "
+        . ($bad ? "$bad FAILED" : 'all only retire rethrowing pairs') . "\n");
     return $bad ? 1 : 0;
 }
 
+# Every --brace must name a rethrowing pair's __BEGIN_TRY line in one of the
+# files, or nothing is written.
 sub runRewrite {
-    my ($braces, @files) = @_;
-    loadBraceMacros();
+    my ($macros, $braces, @files) = @_;
+    my %brace;    # path => { line => 1 }
+    for my $b (@$braces) {
+        die "--brace wants FILE:LINE, not '$b'\n" unless $b =~ /^(.+):(\d+)$/;
+        $brace{$1}{$2} = 1;
+    }
     my ($files, $removed, $braced, $skipped, $refused, $swallow) = (0, 0, 0, 0, 0, 0);
+    my @writes;
     for my $path (@files) {
         my $text = slurp($path);
-        my %lines = map { (split /:/)[1] => 1 } grep { /^\Q$path\E:\d+$/ } @$braces;
-        my ($out, $r, $b, $skips, $why, $sw) = rewrite($text, \%braceMacro, \%lines);
+        my %lines = %{ $brace{$path} || {} };
+        my ($out, $r, $b, $skips, $why, $sw, $pairLines) = rewrite($text, $macros, \%lines);
+        delete $brace{$path}{$_} for @{ $pairLines || [] };
         $files++;
         if ($why) {
             my $n = () = $text =~ /\b__BEGIN_TRY\b/g;
@@ -449,11 +512,18 @@ sub runRewrite {
         $removed += $r;
         $braced += $b;
         $swallow += $sw;
-        next if $out eq $text;
-        open(my $fh, '>:raw', $path) or die "$path: $!\n";
-        print $fh $out;
+        push @writes, [$path, $out, "$path: $r removed, $b braced\n"] if $out ne $text;
+    }
+    my @unmatched = map { my $p = $_; map { "$p:$_" } sort { $a <=> $b } keys %{ $brace{$p} } } sort keys %brace;
+    if (@unmatched) {
+        print "ERROR --brace $_ names no rethrowing pair's __BEGIN_TRY line; nothing written\n" for @unmatched;
+        return 1;
+    }
+    for my $w (@writes) {
+        open(my $fh, '>:raw', $w->[0]) or die "$w->[0]: $!\n";
+        print $fh $w->[1];
         close $fh;
-        print "$path: $r removed, $b braced\n";
+        print $w->[2];
     }
     print "total: $files file(s), $removed wrapper site(s) removed, $braced inner site(s) braced, "
         . "$swallow swallowing pair(s) left, $skipped site(s) skipped, $refused file(s) refused\n";
@@ -494,6 +564,9 @@ sub selfTest {
          "#define OPEN(x) beginProfileEx(x);\nvoid f() {\n    OPEN(1)\n    {\n    g();\n    }\n    endProfileEx(1);\n}\n"],
         ["auto s = R\"x(__BEGIN_TRY })x\"; void f() { __BEGIN_TRY g(); __END_CATCH }\n",
          "auto s = R\"x(__BEGIN_TRY })x\"; void f() { g(); }\n"],
+        # The blanks of a raw string that runs past the edited line stay.
+        ["void f() {\n    __BEGIN_TRY auto s = R\"(abc   \ndef)\"; g(s);\n    __END_CATCH\n}\n",
+         "void f() {\n    auto s = R\"(abc   \ndef)\"; g(s);\n}\n"],
     );
     my $failed = 0;
     for my $n (0 .. $#cases) {
@@ -526,6 +599,12 @@ sub selfTest {
         ["void f() {\n    __BEGIN_TRY\n    b();\n    c();\n    __END_CATCH\n}\n", "void f() {\n    c();\n    b();\n}\n"],
         ["void f() {\n    // one\n    __BEGIN_TRY b(); __END_CATCH\n}\n", "void f() {\n    // two\n    b();\n}\n"],
         ["void f() {\n    __BEGIN_TRY\n    b();\n    __END_CATCH\n}\n", "void f() {\n    {\n    b();\n    __END_CATCH\n}\n"],
+        ["#define S \"a  b\"\nint x;\n", "#define S \"a b\"\nint x;\n"],
+        ["#define X a \\\n    b\nint x;\n", "#define X a b\nint x;\n"],
+        ["int x = a >= b;\n", "int x = a > = b;\n"],
+        ["int x = a >> b;\n", "int x = a > > b;\n"],
+        ["void f() { x >>= 1; }\n", "void f() { x >> = 1; }\n"],
+        ["char c = ' ';\n", "char c = '  ';\n"],
     );
     for my $n (0 .. $#rejects) {
         unless (check($rejects[$n][0], $rejects[$n][1], \%none)) {
@@ -533,6 +612,64 @@ sub selfTest {
             $failed++;
         }
     }
+    # The checker accepts a directive and a comment re-indented by a formatter.
+    if (my $c = check("#define X a \\\n  b // c\n/* d\n   e */\n", "#define X a \\\n    b   // c\n/* d\n e */\n", \%none)) {
+        print "reindent: the checker rejected it: $c\n";
+        $failed++;
+    }
+
+    # --check over a fake git: revisions A, B (A with a retired pair and a
+    # changed document), C (a changed statement), D (a document only), E
+    # (an added source), and the working tree.
+    my $before = "void f() {\n    __BEGIN_TRY\n    g();\n    __END_CATCH\n}\n";
+    my %blob = ('A:x.cpp' => $before, 'B:x.cpp' => "void f() {\n    g();\n}\n", 'C:x.cpp' => "void f() {\n    h();\n}\n");
+    my %diff = ('A B' => "M\tx.cpp\nM\tdocs/plan.md\n", 'A C' => "M\tx.cpp\n", 'A A' => '',
+                'A D' => "M\tdocs/plan.md\n", 'A E' => "A\ty.cpp\n", 'A' => "M\tx.cpp\n");
+    my $fakeGit = sub {
+        my ($cmd, @args) = @_;
+        return ("A\n", 0) if $cmd eq 'merge-base' && $args[0] eq 'Z';
+        return ($blob{ $args[0] }, 0) if $cmd eq 'show' && exists $blob{ $args[0] };
+        my $key = join ' ', @args[ 2 .. $#args ];
+        return ($diff{$key}, 0) if $cmd eq 'diff' && exists $diff{$key};
+        return ('', 128 << 8);    # fatal: unknown revision
+    };
+    my $worktree = sub { "void f() {\n    {\n    g();\n    }\n}\n" };
+    my %ranges = ('A..B' => 0, 'Z...B' => 0, 'A' => 0, 'A..C' => 1, 'A..A' => 1, 'A..D' => 1, 'A..E' => 1,
+                  'A..Q' => 1, 'Q..B' => 1, 'Q...B' => 1, 'A....B' => 1, 'A..' => 1, '..B' => 1, '' => 1);
+    for my $range (sort keys %ranges) {
+        my $said = '';
+        my $got = runCheck($range, \%none, $fakeGit, $worktree, sub { $said .= join '', @_ });
+        if ($got != $ranges{$range}) {
+            print "--check '$range': exit $got, want $ranges{$range}:\n$said";
+            $failed++;
+        }
+    }
+
+    # A --brace that names no pair writes nothing, and the brace-macro table
+    # is not read outside the repository root.
+    my $dir = tempdir(CLEANUP => 1);
+    my $file = "$dir/x.cpp";
+    open(my $fh, '>', $file) or die "$file: $!\n";
+    print $fh $before;
+    close $fh;
+    my $sink = '';
+    open(my $quiet, '>', \$sink) or die;
+    my $previous = select $quiet;
+    my $got = runRewrite(\%none, ["$file:3"], $file);
+    select $previous;
+    if ($got != 1 || slurp($file) ne $before) {
+        print "--brace on a line with no pair: exit $got, file " . (slurp($file) eq $before ? 'unchanged' : 'rewritten') . "\n";
+        $failed++;
+    }
+    my $home = getcwd();
+    chdir $dir or die "$dir: $!\n";
+    my $loaded = eval { loadBraceMacros(); 1 };
+    chdir $home or die "$home: $!\n";
+    if ($loaded) {
+        print "loadBraceMacros ran outside the repository root\n";
+        $failed++;
+    }
+
     print $failed ? "self-test: $failed FAILED\n" : "self-test: OK\n";
     return $failed ? 1 : 0;
 }
@@ -541,14 +678,14 @@ sub selfTest {
 my (@braces, @files, $check, $selfTest);
 while (@ARGV) {
     my $arg = shift @ARGV;
-    if ($arg eq '--brace') { push @braces, shift @ARGV; }
-    elsif ($arg eq '--check') { $check = shift @ARGV; }
+    if ($arg eq '--brace') { push @braces, shift(@ARGV) // die "--brace wants FILE:LINE\n"; }
+    elsif ($arg eq '--check') { $check = shift(@ARGV) // die "--check wants a revision range\n"; }
     elsif ($arg eq '--self-test') { $selfTest = 1; }
     elsif ($arg =~ /^-/) { die "unknown option $arg\n"; }
     else { push @files, $arg; }
 }
 exit selfTest() if $selfTest;
-exit runCheck($check) if defined $check;
+exit runCheck($check, loadBraceMacros(), \&git, sub { -f $_[0] ? slurp($_[0]) : undef }, sub { print @_ }) if defined $check;
 die "usage: perl tools/r5_retire_try.pl [--brace FILE:LINE]... FILE... | --check REV[..REV] | --self-test\n"
     unless @files;
-exit runRewrite(\@braces, @files);
+exit runRewrite(loadBraceMacros(), \@braces, @files);
