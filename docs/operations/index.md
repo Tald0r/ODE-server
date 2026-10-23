@@ -5,4 +5,4 @@
 # Runbooks
 
 * [Production logging](logging.md) - DARKEDEN_TRACE is off by default and turns on the migrated diagnostics; the severity policy for new events and how a deployment migrates its logging.
-* [Running the servers](running-the-servers.md) - Start the login, shared and game servers in that order with their conf files; the container image does it in docker/start.sh with its own conf directory.
+* [Running the servers](running-the-servers.md) - Start the login, shared and game servers in that order with their conf files and arguments; the container image does it in docker/start.sh, and docker compose down drains the gameserver first within 45 seconds.

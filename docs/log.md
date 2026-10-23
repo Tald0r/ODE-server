@@ -1,5 +1,24 @@
 # Knowledge Bundle Update Log
 
+## 2026-10-23
+
+* **Creation**: [rules and owners](testing/rules-and-owners.md), the whole "Rules and the tests
+  that own them" table `CLAUDE.md` carried, row for row, with a column naming the concept that
+  explains each rule.
+* **Creation**: [test coverage](testing/test-coverage.md), the README's account of what the
+  runtime, startup, socket and worker tests exercise, grouped by process and library.
+* **Creation**: [native macOS builds](build/native-macos.md), the README's native macOS build,
+  its test-suite workaround and the three macOS-only failures.
+* **Update**: the facts `CLAUDE.md` and `README.md` held that no concept stated yet moved into
+  their concepts: the startup libraries' dependencies and test scope
+  ([startup composition](startup/overview.md)); the directory tree's de-core file list, `docs/`
+  entry and repository directories and the game-concept glosses
+  ([server architecture](architecture/overview.md)); the fuzz switches' gate detail
+  ([fuzzing](protocol/fuzzing.md)); the billing threads ([threads](threading/overview.md)); R10a
+  and R10b ([exceptions and outcomes](architecture/exceptions-and-outcomes.md)); migration 004
+  ([database setup](database/overview.md)); the server arguments and the compose shutdown order
+  ([running the servers](operations/running-the-servers.md)).
+
 ## 2026-10-21
 
 * **Creation**: the bundle. `docs/` is now an Open Knowledge Format v0.2 bundle structured like

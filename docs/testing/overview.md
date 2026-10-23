@@ -9,7 +9,9 @@ generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 # Testing overview
 
 **Every architectural rule is owned by something that fails, never by a memory.** The rule tables
-in this bundle name the owner of each rule; the suite below is where those owners run.
+in this bundle name the owner of each rule, [rules and owners](rules-and-owners.md) holds them all
+in one table, and the suite below is where those owners run; [test coverage](test-coverage.md)
+says what the runtime and library tests exercise beyond the rule each owns.
 
 ```bash
 make test              # build and run the suite with a local C++20 compiler

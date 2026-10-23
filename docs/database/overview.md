@@ -45,8 +45,10 @@ change needs `initdb/migrations/001-argon2-password-column.sql` run once; its pl
 rehashed by the loginserver on each account's next login. `bin/hashpw` hashes a password for a
 manual `UPDATE`. The later migrations are one-time too: `002-war-schedule-castle-war-kind.sql`
 (the `CastleWarKind` column) and `003-castle-tax-balance-signed.sql` (the castle tax balance saved
-as a signed relative change; on the old unsigned column an owner change can fail whole). Nothing
-checks them at startup; run each once on a database created before it.
+as a signed relative change; on the old unsigned column an owner change can fail whole), and
+`004-english-content.sql` (the English content text of the seed tables, written by the scripts in
+`tools/i18n/`, which leaves accounts, characters and items alone). Nothing checks them at startup;
+run each once on a database created before it.
 
 All SQL is reached through repository seams ([repository seams](../architecture/repository-seams.md)),
 and `make integration-test` runs those implementations against a throwaway MySQL 5.7 with this
