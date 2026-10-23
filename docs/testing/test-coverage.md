@@ -250,7 +250,8 @@ Throwing formatters and rejected output cannot skip cleanup or hide its result;
 process failure is marked before reporting, and startup log/console diagnostics
 are attempted independently.
 `server_process_shutdown_tests` checks the shared signal handlers and deadline,
-including signals on worker threads and blocked startup/cleanup in subprocesses.
+delivering real signals to main and worker threads, and blocked startup/cleanup
+in subprocesses.
 `server_fatal_handler_tests` injects allocation failures on main and worker
 threads in subprocesses with core dumps disabled, to check fatal diagnostics,
 failure status and handler restoration without a server.
@@ -275,7 +276,8 @@ Final reporting preserves the completed drain result, attempts both flushes
 independently and returns failed exit status for exceptions or stream error flags.
 `server_worker_shutdown_tests` exercises the three servers' shared auxiliary
 worker drain with real cooperative threads, checking stop-before-join order,
-partial startup, dependency lifetime and retained failure reporting.
+partial startup, dependency lifetime and retained failure reporting, without
+linking a runtime or database.
 Stop, zone-drain, join and diagnostic failures do not skip remaining work;
 reporting follows all joins and the first error reaches the lifecycle after
 the drain attempts. Throwing worker overrides fall back to managed stop/join.
@@ -292,7 +294,8 @@ Rules: [sockets and connections](../startup/sockets-and-connections.md).
 helper against loopback peers, including socket options, byte exchange and
 refused connections. `socket_construction_tests` and game runtime tests inject
 allocation failures in child processes to check socket/stream cleanup and
-complete Mofus connection publication. Shared-server and Mofus ports use the
+complete Mofus connection publication, without starting a server or database.
+Shared-server and Mofus ports use the
 same checked reader when those features connect.
 Socket construction coverage also checks accepted-socket adoption and failed
 reconnects, including descriptor reuse and successful retries after failure.

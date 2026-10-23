@@ -11,7 +11,9 @@ generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 
 **A failing golden or inventory diff is a protocol change, not a test to silence.** The client
 repository keeps hand-maintained copies of every packet class; ship the identical change there and
-link the two commits. Re-record deliberately: `UPDATE_GOLDENS=1 ./bin/wire_tests`.
+link the two commits. Re-record deliberately: `UPDATE_GOLDENS=1 ./bin/wire_tests` after
+`make test`, or `bash tools/devbuild.sh test --record` in the container, which also re-records
+de-core's parity vectors.
 
 | Rule | Owner | What fails when it is broken |
 |------|-------|------------------------------|

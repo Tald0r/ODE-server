@@ -74,7 +74,7 @@ perl tests/tools/check_knowledge_bundle.pl .   # the bundle check alone, before 
 
 ## Configuration and operations
 
-- For Exchange purchases the `DB_*` and `UI_DB_*` blocks name one MySQL server and `DB_USER` must be able to read and write `AccountPoint` and `PointLedger`; diagnostics carry no SQL or private payloads - [configuration](docs/database/configuration.md).
+- For Exchange purchases the `DB_*` and `UI_DB_*` blocks must name one MySQL server and `DB_USER` must be able to read and write `AccountPoint` and `PointLedger`; diagnostics carry no SQL or private payloads - [configuration](docs/database/configuration.md).
 - Read configuration through `de::kernelContext().config()`; a read before `main()` registers it is a startup-order bug - [contexts, not globals](docs/architecture/contexts-not-globals.md).
 - Start login, shared, then game; `docker compose down` drains the gameserver first - [running the servers](docs/operations/running-the-servers.md).
 - Diagnostics are off unless `DARKEDEN_TRACE=1` - [production logging](docs/operations/logging.md); browser clients go through the [WebSocket gateway](docs/operations/websocket-gateway.md).

@@ -3,9 +3,8 @@
 ## 2026-10-23
 
 * **Update**: `CLAUDE.md`'s "Rules and the tests that own them" table has one home, the area
-  concepts, each holding its own rows. A first cut moved it whole into
-  `testing/rules-and-owners.md`, a second copy of 83 rows nothing kept in step with the area
-  tables; that file is gone. Where an area row had dropped detail (the runtime test binary a
+  concepts, each holding its own rows; `CLAUDE.md` no longer repeats it. Where an area row had
+  dropped detail (the runtime test binary a
   fixture runs in, the frame gate's caveats) it has the fuller wording back, and the ten rules
   only prose stated have a row: [module layering](architecture/module-layering.md),
   [packet system](protocol/overview.md), [server architecture](architecture/overview.md),
