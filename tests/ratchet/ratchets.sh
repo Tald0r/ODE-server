@@ -70,9 +70,9 @@ check_ratchet R4 "packet headers with execute()" 0 "$R4"
 # those same handler bodies at a new address, not new debt. Including either
 # set would jump the baseline without anything having been written. Fold them
 # in (with a re-baseline note) when they become de-core extraction targets in
-# 3.x.
-R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' | grep -vE 'gameserver/(gm|handler|packetfill)/' | wc -l)
-check_ratchet R5 "__BEGIN_TRY sites in gameserver" 5114 "$R5"
+# 3.x. Headers count too: a template's body holds pairs as live as a .cpp's.
+R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' --include='*.h' | grep -vE 'gameserver/(gm|handler|packetfill)/' | wc -l)
+check_ratchet R5 "__BEGIN_TRY sites in gameserver" 5119 "$R5"
 
 # --- R6: god-file line counts (task 3.3 files only, so far) -----------------
 # Formula extraction to de-core (src/domain) shrinks these; each delegation
