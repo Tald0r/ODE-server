@@ -18,7 +18,7 @@
 
 GoodsInfo::GoodsInfo() {}
 
-GoodsInfo::~GoodsInfo(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
+GoodsInfo::~GoodsInfo() {}
 
 string GoodsInfo::toString() const {
     StringStream msg;
@@ -38,11 +38,7 @@ GoodsInfoManager::GoodsInfoManager()
 
 GoodsInfoManager::~GoodsInfoManager()
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void GoodsInfoManager::init()
 

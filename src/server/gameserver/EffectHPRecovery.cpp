@@ -37,10 +37,7 @@ EffectHPRecovery::EffectHPRecovery(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Cr
 
 EffectHPRecovery::~EffectHPRecovery()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void EffectHPRecovery::affect()
 

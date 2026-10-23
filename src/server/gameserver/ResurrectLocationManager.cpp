@@ -39,12 +39,12 @@ ResurrectLocationManager::ResurrectLocationManager()
 ResurrectLocationManager::~ResurrectLocationManager()
 
 {
-    __BEGIN_TRY
-
-    m_SlayerPosition.clear();
-    m_VampirePosition.clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        m_SlayerPosition.clear();
+        m_VampirePosition.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void ResurrectLocationManager::init()

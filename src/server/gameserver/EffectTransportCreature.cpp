@@ -48,10 +48,7 @@ EffectTransportCreature::EffectTransportCreature(Creature* pCreature, ZoneID_t z
 //----------------------------------------------------------------------
 EffectTransportCreature::~EffectTransportCreature()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void EffectTransportCreature::affect()
 

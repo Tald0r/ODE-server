@@ -33,10 +33,7 @@ TreasureOptionType::TreasureOptionType()
 
 TreasureOptionType::~TreasureOptionType()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void TreasureOptionType::loadFromFile(ifstream& file)
 
@@ -106,16 +103,16 @@ TreasureItemType::TreasureItemType()
 TreasureItemType::~TreasureItemType()
 
 {
-    __BEGIN_TRY
+    try {
+        for (uint i = 0; i < m_TreasureOptionTypes.size(); i++) {
+            TreasureOptionType* pTOT = m_TreasureOptionTypes[i];
+            SAFE_DELETE(pTOT);
+        }
 
-    for (uint i = 0; i < m_TreasureOptionTypes.size(); i++) {
-        TreasureOptionType* pTOT = m_TreasureOptionTypes[i];
-        SAFE_DELETE(pTOT);
+        m_TreasureOptionTypes.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_TreasureOptionTypes.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 void TreasureItemType::loadFromFile(int itemClass, ifstream& file)
@@ -308,16 +305,16 @@ TreasureItemClass::TreasureItemClass()
 TreasureItemClass::~TreasureItemClass()
 
 {
-    __BEGIN_TRY
+    try {
+        for (uint i = 0; i < m_TreasureItemTypes.size(); i++) {
+            TreasureItemType* pTIT = m_TreasureItemTypes[i];
+            SAFE_DELETE(pTIT);
+        }
 
-    for (uint i = 0; i < m_TreasureItemTypes.size(); i++) {
-        TreasureItemType* pTIT = m_TreasureItemTypes[i];
-        SAFE_DELETE(pTIT);
+        m_TreasureItemTypes.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_TreasureItemTypes.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 void TreasureItemClass::loadFromFile(ifstream& file)
@@ -485,16 +482,16 @@ Treasure::Treasure()
 Treasure::~Treasure()
 
 {
-    __BEGIN_TRY
+    try {
+        for (uint i = 0; i < m_TreasureItemClasses.size(); i++) {
+            TreasureItemClass* pTIC = m_TreasureItemClasses[i];
+            SAFE_DELETE(pTIC);
+        }
 
-    for (uint i = 0; i < m_TreasureItemClasses.size(); i++) {
-        TreasureItemClass* pTIC = m_TreasureItemClasses[i];
-        SAFE_DELETE(pTIC);
+        m_TreasureItemClasses.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_TreasureItemClasses.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 void Treasure::loadFromFile(ifstream& file)
@@ -721,10 +718,7 @@ TreasureList::TreasureList()
 
 TreasureList::~TreasureList()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void TreasureList::loadFromFile(ifstream& file)
 

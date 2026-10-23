@@ -113,142 +113,142 @@ GamePlayer::GamePlayer(Socket* pSocket)
 //////////////////////////////////////////////////////////////////////////////
 
 GamePlayer::~GamePlayer() noexcept {
-    __BEGIN_TRY
-
-    //__ENTER_CRITICAL_SECTION(m_Mutex)
-
-    // Whatever deletes a player object, its status has to be logged out.
-    // So ending a player session means putting it in the logged-out state.
-    Assert(m_PlayerStatus == GPS_END_SESSION);
-
     try {
-        // Delete creature
-        if (m_pCreature != NULL) {
-            GuildManager& guilds = de::gameContext().guilds();
-            SharedServerManager& sharedServer = de::gameContext().sharedServer();
-            // Drop the relic. A drop that fails (no free tile) is logged and
-            // the relic goes with the creature: the session still ends, the
-            // finder removal below included, so no name outlives its player.
-            if (m_pCreature->hasRelicItem()) {
+        //__ENTER_CRITICAL_SECTION(m_Mutex)
+
+        // Whatever deletes a player object, its status has to be logged out.
+        // So ending a player session means putting it in the logged-out state.
+        Assert(m_PlayerStatus == GPS_END_SESSION);
+
+        try {
+            // Delete creature
+            if (m_pCreature != NULL) {
+                GuildManager& guilds = de::gameContext().guilds();
+                SharedServerManager& sharedServer = de::gameContext().sharedServer();
+                // Drop the relic. A drop that fails (no free tile) is logged and
+                // the relic goes with the creature: the session still ends, the
+                // finder removal below included, so no name outlives its player.
+                if (m_pCreature->hasRelicItem()) {
+                    try {
+                        dropRelicToZone(m_pCreature, false);
+                    } catch (Throwable& t) {
+                        filelog("WarError.log", "%s logged out holding a relic that could not be dropped: %s",
+                                m_pCreature->getName().c_str(), t.toString().c_str());
+                    }
+                }
+
+                dropFlagToZone(m_pCreature, false);
+                dropSweeperToZone(m_pCreature);
+
+                de::gameContext().playerCreatures().deleteCreature(m_pCreature->getName());
+
+                // From here on postToPlayer() cannot find this player, so what
+                // is still queued for it runs its ifGone handlers now. Each
+                // handler's own failure is logged inside; the try covers the
+                // drain itself (an allocation), since this destructor is noexcept.
                 try {
-                    dropRelicToZone(m_pCreature, false);
-                } catch (Throwable& t) {
-                    filelog("WarError.log", "%s logged out holding a relic that could not be dropped: %s",
-                            m_pCreature->getName().c_str(), t.toString().c_str());
+                    de::abandonPlayerMailbox(*this);
+                } catch (...) {
                 }
+
+
+                // Remove from the guild list of currently connected members.
+                if (m_pCreature->isSlayer()) {
+                    Slayer* pSlayer = dynamic_cast<Slayer*>(m_pCreature);
+                    if (pSlayer->getGuildID() != 99) {
+                        Guild* pGuild = guilds.getGuild(pSlayer->getGuildID());
+                        if (pGuild != NULL) {
+                            pGuild->deleteCurrentMember(pSlayer->getName());
+
+                            GSGuildMemberLogOn gsGuildMemberLogOn;
+                            gsGuildMemberLogOn.setGuildID(pGuild->getID());
+                            gsGuildMemberLogOn.setName(pSlayer->getName());
+                            gsGuildMemberLogOn.setLogOn(false);
+
+                            sharedServer.sendPacket(&gsGuildMemberLogOn);
+
+                            // Update the database.
+                            defaultSessionRepository().markGuildMemberLoggedOff(pSlayer->getName());
+                        } else
+                            filelog("GuildMissing.log", "[NoSuchGuild] GuildID : %d, Name : %s\n",
+                                    (int)pSlayer->getGuildID(), pSlayer->getName().c_str());
+                    }
+                } else if (m_pCreature->isVampire()) {
+                    Vampire* pVampire = dynamic_cast<Vampire*>(m_pCreature);
+                    if (pVampire->getGuildID() != 0) {
+                        Guild* pGuild = guilds.getGuild(pVampire->getGuildID());
+                        if (pGuild != NULL) {
+                            pGuild->deleteCurrentMember(pVampire->getName());
+
+                            GSGuildMemberLogOn gsGuildMemberLogOn;
+                            gsGuildMemberLogOn.setGuildID(pGuild->getID());
+                            gsGuildMemberLogOn.setName(pVampire->getName());
+                            gsGuildMemberLogOn.setLogOn(false);
+
+                            sharedServer.sendPacket(&gsGuildMemberLogOn);
+
+                            // Update the database.
+                            defaultSessionRepository().markGuildMemberLoggedOff(pVampire->getName());
+                        } else
+                            filelog("GuildMissing.log", "[NoSuchGuild] GuildID : %d, Name : %s\n",
+                                    (int)pVampire->getGuildID(), pVampire->getName().c_str());
+                    }
+                } else if (m_pCreature->isOusters()) {
+                    Ousters* pOusters = dynamic_cast<Ousters*>(m_pCreature);
+                    if (pOusters->getGuildID() != 66) {
+                        Guild* pGuild = guilds.getGuild(pOusters->getGuildID());
+                        if (pGuild != NULL) {
+                            pGuild->deleteCurrentMember(pOusters->getName());
+
+                            GSGuildMemberLogOn gsGuildMemberLogOn;
+                            gsGuildMemberLogOn.setGuildID(pGuild->getID());
+                            gsGuildMemberLogOn.setName(pOusters->getName());
+                            gsGuildMemberLogOn.setLogOn(false);
+
+                            sharedServer.sendPacket(&gsGuildMemberLogOn);
+
+                            // Update the database.
+                            defaultSessionRepository().markGuildMemberLoggedOff(pOusters->getName());
+                        } else
+                            filelog("GuildMissing.log", "[NoSuchGuild] GuildID : %d, Name : %s\n",
+                                    (int)pOusters->getGuildID(), pOusters->getName().c_str());
+                    }
+                }
+
+                int PartyID = m_pCreature->getPartyID();
+
+                if (PartyID != 0) {
+                    Zone* pZone = m_pCreature->getZone();
+                    if (pZone != NULL) {
+                        LocalPartyManager* pLocalPartyManager = pZone->getLocalPartyManager();
+                        pLocalPartyManager->deletePartyMember(PartyID, m_pCreature);
+                    }
+                }
+
+                SAFE_DELETE(m_pCreature);
+                // m_pCreature->setPlayer( NULL );
             }
-
-            dropFlagToZone(m_pCreature, false);
-            dropSweeperToZone(m_pCreature);
-
-            de::gameContext().playerCreatures().deleteCreature(m_pCreature->getName());
-
-            // From here on postToPlayer() cannot find this player, so what
-            // is still queued for it runs its ifGone handlers now. Each
-            // handler's own failure is logged inside; the try covers the
-            // drain itself (an allocation), since this destructor is noexcept.
-            try {
-                de::abandonPlayerMailbox(*this);
-            } catch (...) {
-            }
-
-
-            // Remove from the guild list of currently connected members.
-            if (m_pCreature->isSlayer()) {
-                Slayer* pSlayer = dynamic_cast<Slayer*>(m_pCreature);
-                if (pSlayer->getGuildID() != 99) {
-                    Guild* pGuild = guilds.getGuild(pSlayer->getGuildID());
-                    if (pGuild != NULL) {
-                        pGuild->deleteCurrentMember(pSlayer->getName());
-
-                        GSGuildMemberLogOn gsGuildMemberLogOn;
-                        gsGuildMemberLogOn.setGuildID(pGuild->getID());
-                        gsGuildMemberLogOn.setName(pSlayer->getName());
-                        gsGuildMemberLogOn.setLogOn(false);
-
-                        sharedServer.sendPacket(&gsGuildMemberLogOn);
-
-                        // Update the database.
-                        defaultSessionRepository().markGuildMemberLoggedOff(pSlayer->getName());
-                    } else
-                        filelog("GuildMissing.log", "[NoSuchGuild] GuildID : %d, Name : %s\n",
-                                (int)pSlayer->getGuildID(), pSlayer->getName().c_str());
-                }
-            } else if (m_pCreature->isVampire()) {
-                Vampire* pVampire = dynamic_cast<Vampire*>(m_pCreature);
-                if (pVampire->getGuildID() != 0) {
-                    Guild* pGuild = guilds.getGuild(pVampire->getGuildID());
-                    if (pGuild != NULL) {
-                        pGuild->deleteCurrentMember(pVampire->getName());
-
-                        GSGuildMemberLogOn gsGuildMemberLogOn;
-                        gsGuildMemberLogOn.setGuildID(pGuild->getID());
-                        gsGuildMemberLogOn.setName(pVampire->getName());
-                        gsGuildMemberLogOn.setLogOn(false);
-
-                        sharedServer.sendPacket(&gsGuildMemberLogOn);
-
-                        // Update the database.
-                        defaultSessionRepository().markGuildMemberLoggedOff(pVampire->getName());
-                    } else
-                        filelog("GuildMissing.log", "[NoSuchGuild] GuildID : %d, Name : %s\n",
-                                (int)pVampire->getGuildID(), pVampire->getName().c_str());
-                }
-            } else if (m_pCreature->isOusters()) {
-                Ousters* pOusters = dynamic_cast<Ousters*>(m_pCreature);
-                if (pOusters->getGuildID() != 66) {
-                    Guild* pGuild = guilds.getGuild(pOusters->getGuildID());
-                    if (pGuild != NULL) {
-                        pGuild->deleteCurrentMember(pOusters->getName());
-
-                        GSGuildMemberLogOn gsGuildMemberLogOn;
-                        gsGuildMemberLogOn.setGuildID(pGuild->getID());
-                        gsGuildMemberLogOn.setName(pOusters->getName());
-                        gsGuildMemberLogOn.setLogOn(false);
-
-                        sharedServer.sendPacket(&gsGuildMemberLogOn);
-
-                        // Update the database.
-                        defaultSessionRepository().markGuildMemberLoggedOff(pOusters->getName());
-                    } else
-                        filelog("GuildMissing.log", "[NoSuchGuild] GuildID : %d, Name : %s\n",
-                                (int)pOusters->getGuildID(), pOusters->getName().c_str());
-                }
-            }
-
-            int PartyID = m_pCreature->getPartyID();
-
-            if (PartyID != 0) {
-                Zone* pZone = m_pCreature->getZone();
-                if (pZone != NULL) {
-                    LocalPartyManager* pLocalPartyManager = pZone->getLocalPartyManager();
-                    pLocalPartyManager->deletePartyMember(PartyID, m_pCreature);
-                }
-            }
-
-            SAFE_DELETE(m_pCreature);
-            // m_pCreature->setPlayer( NULL );
+        } catch (NoSuchElementException& nsee) {
+            cerr << "GamePlayer::~GamePlayer() : " << nsee.toString() << endl;
+            throw Error("GamePlayer::~GamePlayer() : NoSuchElementException");
+        } catch (Throwable& t) {
+            t.addStack();
+            throw;
         }
-    } catch (NoSuchElementException& nsee) {
-        cerr << "GamePlayer::~GamePlayer() : " << nsee.toString() << endl;
-        throw Error("GamePlayer::~GamePlayer() : NoSuchElementException");
-    } catch (Throwable& t) {
-        t.addStack();
-        throw;
+
+        // Delete the packets.
+        while (!m_PacketHistory.empty()) {
+            Packet* pPacket = m_PacketHistory.front();
+            SAFE_DELETE(pPacket);
+            m_PacketHistory.pop_front();
+        }
+
+        SAFE_DELETE(m_pReconnectPacket);
+
+        //__LEAVE_CRITICAL_SECTION(m_Mutex)
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    // Delete the packets.
-    while (!m_PacketHistory.empty()) {
-        Packet* pPacket = m_PacketHistory.front();
-        SAFE_DELETE(pPacket);
-        m_PacketHistory.pop_front();
-    }
-
-    SAFE_DELETE(m_pReconnectPacket);
-
-    //__LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH_NO_RETHROW
 }
 //////////////////////////////////////////////////////////////////////
 //

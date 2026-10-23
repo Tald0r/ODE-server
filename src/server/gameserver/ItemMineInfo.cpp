@@ -15,7 +15,7 @@
 
 ItemMineInfo::ItemMineInfo() : m_ID(0) {}
 
-ItemMineInfo::~ItemMineInfo(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
+ItemMineInfo::~ItemMineInfo() {}
 
 Item* ItemMineInfo::getItem() {
     Item* pItem =
@@ -35,19 +35,19 @@ string ItemMineInfo::toString() const {
 ItemMineInfoManager::ItemMineInfoManager() {}
 
 ItemMineInfoManager::~ItemMineInfoManager() {
-    __BEGIN_TRY
+    try {
+        HashMapItemMineInfoItor itr = m_ItemMineInfos.begin();
+        HashMapItemMineInfoItor endItr = m_ItemMineInfos.end();
 
-    HashMapItemMineInfoItor itr = m_ItemMineInfos.begin();
-    HashMapItemMineInfoItor endItr = m_ItemMineInfos.end();
+        for (; itr != endItr; itr++) {
+            ItemMineInfo* pInfo = itr->second;
+            SAFE_DELETE(pInfo);
+        }
 
-    for (; itr != endItr; itr++) {
-        ItemMineInfo* pInfo = itr->second;
-        SAFE_DELETE(pInfo);
+        m_ItemMineInfos.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_ItemMineInfos.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 void ItemMineInfoManager::load()

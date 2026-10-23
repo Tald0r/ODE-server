@@ -21,6 +21,12 @@ precedence between refusals and the content of the reply are values a test check
 repository with no database, the way `decideLogin()` is tested in `login_decision_tests`.
 Exceptions are for programming and configuration errors.
 
+**A catch that drops a `Throwable` is control flow.** A `catch (Throwable&)` whose body is empty,
+comments aside, ends the exception there: the caller never learns its block failed. The
+gameserver's swallowing try macros became such catches unchanged and are still to be judged, each
+test first; R19 counts them in R5's scope (the gameserver outside `gm/`, `handler/` and
+`packetfill/`), so a new one fails the suite, and R5 holds the try macros there at zero.
+
 A malformed packet body is the one exception class with a contract of its own: a reader refuses it
 only with a `ProtocolException`, and the fuzz targets abort on anything else
 ([frame gate](../protocol/frame-gate.md)).

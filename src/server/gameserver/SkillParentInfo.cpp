@@ -31,10 +31,7 @@ SkillParentInfo::SkillParentInfo(SkillType_t SkillType)
 //----------------------------------------------------------------------
 SkillParentInfo::~SkillParentInfo()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 
 //----------------------------------------------------------------------
@@ -130,13 +127,13 @@ SkillParentInfoManager::SkillParentInfoManager()
 SkillParentInfoManager::~SkillParentInfoManager()
 
 {
-    __BEGIN_TRY
+    try {
+        // Not everything is freed here.
 
-    // Not everything is freed here.
-
-    SAFE_DELETE_ARRAY(m_SkillParentInfoList);
-
-    __END_CATCH_NO_RETHROW
+        SAFE_DELETE_ARRAY(m_SkillParentInfoList);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //--------------------------------------------------------------------

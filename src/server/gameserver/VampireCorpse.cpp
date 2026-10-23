@@ -20,7 +20,8 @@ VampireCorpse::VampireCorpse(Vampire* pVampire)
 
 VampireCorpse::~VampireCorpse()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW} string VampireCorpse::toString() const {
+{}
+string VampireCorpse::toString() const {
     StringStream msg;
     msg << "VampireCorpse(" << m_VampireInfo.toString() << ")";
     return msg.toString();

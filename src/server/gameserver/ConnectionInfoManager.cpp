@@ -46,18 +46,18 @@ ConnectionInfoManager::ConnectionInfoManager()
 ConnectionInfoManager::~ConnectionInfoManager()
 
 {
-    __BEGIN_TRY
+    try {
+        // Every ConnectionInfo must be deleted.
+        HashMapConnectionInfo::iterator itr = m_ConnectionInfos.begin();
+        for (; itr != m_ConnectionInfos.end(); itr++) {
+            SAFE_DELETE(itr->second);
+        }
 
-    // Every ConnectionInfo must be deleted.
-    HashMapConnectionInfo::iterator itr = m_ConnectionInfos.begin();
-    for (; itr != m_ConnectionInfos.end(); itr++) {
-        SAFE_DELETE(itr->second);
+        // Delete every pair in the hash map.
+        m_ConnectionInfos.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    // Delete every pair in the hash map.
-    m_ConnectionInfos.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -30,20 +30,20 @@ EffectScheduleWork::EffectScheduleWork()
 EffectScheduleWork::~EffectScheduleWork()
 
 {
-    __BEGIN_TRY
+    try {
+        // SAFE_DELETE(m_pData);
 
-    // SAFE_DELETE(m_pData);
-
-    // Depending on the code, void* m_pData must be cast
-    // and deleted appropriately.
-    if (m_Code == WORKCODE_ADD_VAMPIRE_PORTAL) {
-        Assert(m_pData == NULL);
-    } else if (m_Code == WORKCODE_DELETE) {
-        Assert(m_pData == NULL);
-    } else {
+        // Depending on the code, void* m_pData must be cast
+        // and deleted appropriately.
+        if (m_Code == WORKCODE_ADD_VAMPIRE_PORTAL) {
+            Assert(m_pData == NULL);
+        } else if (m_Code == WORKCODE_DELETE) {
+            Assert(m_pData == NULL);
+        } else {
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -59,14 +59,14 @@ EffectSchedule::EffectSchedule()
 EffectSchedule::~EffectSchedule()
 
 {
-    __BEGIN_TRY
-
-    while (!m_WorkList.empty()) {
-        EffectScheduleWork* pWork = getFrontWork();
-        SAFE_DELETE(pWork);
+    try {
+        while (!m_WorkList.empty()) {
+            EffectScheduleWork* pWork = getFrontWork();
+            SAFE_DELETE(pWork);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 void EffectSchedule::addWork(int WorkCode, void* pData)
@@ -103,15 +103,15 @@ EffectScheduleManager::EffectScheduleManager()
 EffectScheduleManager::~EffectScheduleManager()
 
 {
-    __BEGIN_TRY
-
-    while (!m_EffectScheduleList.empty()) {
-        EffectSchedule* pSchedule = m_EffectScheduleList.front();
-        m_EffectScheduleList.pop_front();
-        SAFE_DELETE(pSchedule);
+    try {
+        while (!m_EffectScheduleList.empty()) {
+            EffectSchedule* pSchedule = m_EffectScheduleList.front();
+            m_EffectScheduleList.pop_front();
+            SAFE_DELETE(pSchedule);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 void EffectScheduleManager::addEffectSchedule(EffectSchedule* pEffectSchedule)

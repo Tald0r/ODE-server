@@ -21,7 +21,7 @@ the factory registrations, `AllPacketFactories.inc`, the per-code encrypter gold
 ([factory registrations](../protocol/factory-registrations.md), [wire contract](../protocol/wire-contract.md))
 and the seed-data rules ([seed-data rules](../database/seed-data-rules.md)).
 
-The eighteen ratchets, by what each counts (the plan's table has each command and the history of
+The nineteen ratchets, by what each counts (the plan's table has each command and the history of
 every move):
 
 | # | Metric |
@@ -44,3 +44,4 @@ every move):
 | R16 | Headers under `src/` that nothing includes |
 | R17 | Source lines carrying a non-ASCII byte |
 | R18 | Commented-out code lines inside multi-line `/* */` blocks |
+| R19 | `catch (Throwable&)` clauses in the gameserver that drop the exception ([exceptions and outcomes](../architecture/exceptions-and-outcomes.md)) |

@@ -38,11 +38,7 @@ EffectRideMotorcycle::EffectRideMotorcycle(Slayer* pOwner, Item* pMotorcycle, Zo
 //----------------------------------------------------------------------
 EffectRideMotorcycle::~EffectRideMotorcycle()
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 
 //----------------------------------------------------------------------

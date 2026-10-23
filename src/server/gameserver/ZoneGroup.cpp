@@ -48,12 +48,8 @@ ZoneGroup::ZoneGroup(ZoneGroupID_t zoneGroupID)
 ZoneGroup::~ZoneGroup()
 
 {
-    __BEGIN_TRY
-
     // Deleting the pairs of the hash map by hand is not needed. The Snapshot member frees the
     // published map with the object; nothing to clear by hand.
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////

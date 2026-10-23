@@ -71,17 +71,17 @@ PartyInviteInfoManager::PartyInviteInfoManager()
 PartyInviteInfoManager::~PartyInviteInfoManager()
 
 {
-    __BEGIN_TRY
+    try {
+        unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.begin();
+        for (; itr != m_InfoMap.end(); itr++) {
+            PartyInviteInfo* pInfo = itr->second;
+            SAFE_DELETE(pInfo);
+        }
 
-    unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.begin();
-    for (; itr != m_InfoMap.end(); itr++) {
-        PartyInviteInfo* pInfo = itr->second;
-        SAFE_DELETE(pInfo);
+        m_InfoMap.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_InfoMap.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 bool PartyInviteInfoManager::hasInviteInfo(const string& HostName)
@@ -288,15 +288,15 @@ Party::Party(Creature::CreatureClass CClass)
 Party::~Party()
 
 {
-    __BEGIN_TRY
+    try {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        m_MemberMap.clear();
 
-    m_MemberMap.clear();
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH_NO_RETHROW
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 // Find a party member by name and return it.
@@ -1766,10 +1766,7 @@ PartyManager::PartyManager()
 
 PartyManager::~PartyManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 bool PartyManager::createParty(int ID, Creature::CreatureClass CClass)
 
@@ -1874,10 +1871,7 @@ LocalPartyManager::LocalPartyManager()
 
 LocalPartyManager::~LocalPartyManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void LocalPartyManager::heartbeat(void)
 
@@ -2263,10 +2257,7 @@ GlobalPartyManager::GlobalPartyManager()
 
 GlobalPartyManager::~GlobalPartyManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 bool GlobalPartyManager::canAddMember(int ID)
 

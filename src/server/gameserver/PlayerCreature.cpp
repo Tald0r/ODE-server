@@ -142,67 +142,67 @@ PlayerCreature::PlayerCreature(ObjectID_t OID, Player* pPlayer)
 PlayerCreature::~PlayerCreature()
 
 {
-    __BEGIN_TRY
+    try {
+        // Delete inventories and pointer-held item.
+        SAFE_DELETE(m_pInventory);
 
-    // Delete inventories and pointer-held item.
-    SAFE_DELETE(m_pInventory);
+        SAFE_DELETE(m_pGoodsInventory);
 
-    SAFE_DELETE(m_pGoodsInventory);
-
-    // Delete the item attached to the cursor.
-    if (m_pExtraInventorySlot != NULL) {
-        Item* pItem = m_pExtraInventorySlot->getItem();
-        if (pItem != NULL) {
-            if (pItem->getItemClass() == Item::ITEM_CLASS_KEY) {
-                Key* pKey = dynamic_cast<Key*>(pItem);
-                // Remove the motorcycle box directly from the zone here.
-                if (de::gameContext().parking().hasMotorcycleBox(pKey->getTarget())) {
-                    de::gameContext().parking().deleteMotorcycleBox(pKey->getTarget());
+        // Delete the item attached to the cursor.
+        if (m_pExtraInventorySlot != NULL) {
+            Item* pItem = m_pExtraInventorySlot->getItem();
+            if (pItem != NULL) {
+                if (pItem->getItemClass() == Item::ITEM_CLASS_KEY) {
+                    Key* pKey = dynamic_cast<Key*>(pItem);
+                    // Remove the motorcycle box directly from the zone here.
+                    if (de::gameContext().parking().hasMotorcycleBox(pKey->getTarget())) {
+                        de::gameContext().parking().deleteMotorcycleBox(pKey->getTarget());
+                    }
                 }
+
+                m_pExtraInventorySlot->deleteItem();
+                SAFE_DELETE(pItem);
             }
 
-            m_pExtraInventorySlot->deleteItem();
-            SAFE_DELETE(pItem);
+            SAFE_DELETE(m_pExtraInventorySlot);
         }
 
-        SAFE_DELETE(m_pExtraInventorySlot);
+        // Delete stash.
+        SAFE_DELETE(m_pStash);
+
+        // Delete flag set.
+        SAFE_DELETE(m_pFlagSet);
+
+        // Delete rank bonus map entries.
+        for (HashMapRankBonusItor itr = m_RankBonuses.begin(); itr != m_RankBonuses.end(); itr++) {
+            SAFE_DELETE(itr->second);
+        }
+        m_RankBonuses.clear();
+
+        if (m_pTimeLimitItemManager != NULL)
+            SAFE_DELETE(m_pTimeLimitItemManager);
+
+        if (m_pQuestManager != NULL)
+            SAFE_DELETE(m_pQuestManager);
+
+        if (m_pQuestItem != NULL)
+            SAFE_DELETE(m_pQuestItem);
+
+        SAFE_DELETE(m_pRank);
+
+        for (int i = 0; i < MAX_PET_STASH; ++i) {
+            SAFE_DELETE(m_PetStash[i]);
+        }
+
+        SAFE_DELETE(m_pSMSAddressBook);
+        SAFE_DELETE(m_pNicknameBook);
+        SAFE_DELETE(m_pGQuestManager);
+        SAFE_DELETE(m_pBloodBibleSign);
+        SAFE_DELETE(m_pStore);
+        SAFE_DELETE(m_pAdvancementClass);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    // Delete stash.
-    SAFE_DELETE(m_pStash);
-
-    // Delete flag set.
-    SAFE_DELETE(m_pFlagSet);
-
-    // Delete rank bonus map entries.
-    for (HashMapRankBonusItor itr = m_RankBonuses.begin(); itr != m_RankBonuses.end(); itr++) {
-        SAFE_DELETE(itr->second);
-    }
-    m_RankBonuses.clear();
-
-    if (m_pTimeLimitItemManager != NULL)
-        SAFE_DELETE(m_pTimeLimitItemManager);
-
-    if (m_pQuestManager != NULL)
-        SAFE_DELETE(m_pQuestManager);
-
-    if (m_pQuestItem != NULL)
-        SAFE_DELETE(m_pQuestItem);
-
-    SAFE_DELETE(m_pRank);
-
-    for (int i = 0; i < MAX_PET_STASH; ++i) {
-        SAFE_DELETE(m_PetStash[i]);
-    }
-
-    SAFE_DELETE(m_pSMSAddressBook);
-    SAFE_DELETE(m_pNicknameBook);
-    SAFE_DELETE(m_pGQuestManager);
-    SAFE_DELETE(m_pBloodBibleSign);
-    SAFE_DELETE(m_pStore);
-    SAFE_DELETE(m_pAdvancementClass);
-
-    __END_CATCH_NO_RETHROW
 }
 
 bool PlayerCreature::load() {

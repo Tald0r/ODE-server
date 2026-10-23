@@ -43,11 +43,7 @@ SharedServerClient::SharedServerClient(Socket* pSocket)
 
 SharedServerClient::~SharedServerClient() noexcept
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 
 //////////////////////////////////////////////////////////////////////

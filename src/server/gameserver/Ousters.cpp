@@ -134,42 +134,42 @@ Ousters::Ousters()
 Ousters::~Ousters()
 
 {
-    __BEGIN_TRY
+    try {
+        // Persist outlook info before destruction. by sigi. 2002.6.18
+        char pField[128];
+        snprintf(pField, sizeof(pField), "CoatType=%d,ArmType=%d,CoatColor=%d,ArmColor=%d,BootsColor=%d",
+                 m_OustersInfo.getCoatType(), m_OustersInfo.getArmType(), m_OustersInfo.getCoatColor(),
+                 m_OustersInfo.getArmColor(), m_OustersInfo.getBootsColor());
 
-    // Persist outlook info before destruction. by sigi. 2002.6.18
-    char pField[128];
-    snprintf(pField, sizeof(pField), "CoatType=%d,ArmType=%d,CoatColor=%d,ArmColor=%d,BootsColor=%d",
-             m_OustersInfo.getCoatType(), m_OustersInfo.getArmType(), m_OustersInfo.getCoatColor(),
-             m_OustersInfo.getArmColor(), m_OustersInfo.getBootsColor());
+        tinysave(pField);
 
-    tinysave(pField);
+        // Persist equipment/exp/skills before destruction.
+        saveGears();
+        saveExps(m_GoalExp, m_SilverDamage);
+        saveSkills();
 
-    // Persist equipment/exp/skills before destruction.
-    saveGears();
-    saveExps(m_GoalExp, m_SilverDamage);
-    saveSkills();
+        // Destroy equipped items (ownership transfers to garbage collector).
+        destroyGears();
 
-    // Destroy equipped items (ownership transfers to garbage collector).
-    destroyGears();
+        // Cancel any pending trade tied to this character before cleanup.
+        TradeManager* pTradeManager = m_pZone->getTradeManager();
+        TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
+        if (pInfo != NULL) {
+            // Cancel the live trade session if one exists.
+            pTradeManager->cancelTrade(this);
+        }
 
-    // Cancel any pending trade tied to this character before cleanup.
-    TradeManager* pTradeManager = m_pZone->getTradeManager();
-    TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
-    if (pInfo != NULL) {
-        // Cancel the live trade session if one exists.
-        pTradeManager->cancelTrade(this);
+        // Clear party info to avoid stale references in zone cleanup flows.
+        deleteAllPartyInfo(this);
+
+        unordered_map<SkillType_t, OustersSkillSlot*>::iterator itr = m_SkillSlot.begin();
+        for (; itr != m_SkillSlot.end(); itr++) {
+            OustersSkillSlot* pOustersSkillSlot = itr->second;
+            SAFE_DELETE(pOustersSkillSlot);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    // Clear party info to avoid stale references in zone cleanup flows.
-    deleteAllPartyInfo(this);
-
-    unordered_map<SkillType_t, OustersSkillSlot*>::iterator itr = m_SkillSlot.begin();
-    for (; itr != m_SkillSlot.end(); itr++) {
-        OustersSkillSlot* pOustersSkillSlot = itr->second;
-        SAFE_DELETE(pOustersSkillSlot);
-    }
-
-    __END_CATCH_NO_RETHROW
 }
 
 // registerObject

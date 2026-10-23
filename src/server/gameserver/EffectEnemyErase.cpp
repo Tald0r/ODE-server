@@ -27,10 +27,7 @@ EffectEnemyErase::EffectEnemyErase(Creature* pCreature)
 
 EffectEnemyErase::~EffectEnemyErase()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void EffectEnemyErase::affect(Creature* pCreature)
 

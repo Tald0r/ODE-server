@@ -20,7 +20,7 @@ VampEXPInfo::VampEXPInfo()
 
 VampEXPInfo::~VampEXPInfo()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW}
+{}
 
 string VampEXPInfo::toString() const
 
@@ -45,16 +45,16 @@ VampEXPInfoManager::VampEXPInfoManager()
 VampEXPInfoManager::~VampEXPInfoManager()
 
 {
-    __BEGIN_TRY
+    try {
+        if (m_VampEXPInfoList != NULL) {
+            for (uint i = 0; i < m_VampEXPCount; i++)
+                SAFE_DELETE(m_VampEXPInfoList[i]);
 
-    if (m_VampEXPInfoList != NULL) {
-        for (uint i = 0; i < m_VampEXPCount; i++)
-            SAFE_DELETE(m_VampEXPInfoList[i]);
-
-        SAFE_DELETE_ARRAY(m_VampEXPInfoList);
+            SAFE_DELETE_ARRAY(m_VampEXPInfoList);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 void VampEXPInfoManager::init()

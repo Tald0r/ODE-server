@@ -41,11 +41,11 @@ TradeInfo::TradeInfo()
 TradeInfo::~TradeInfo()
 
 {
-    __BEGIN_TRY
-
-    m_ItemList.clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        m_ItemList.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 bool TradeInfo::hasItem(Item* pItem)
@@ -111,17 +111,17 @@ TradeManager::TradeManager()
 TradeManager::~TradeManager()
 
 {
-    __BEGIN_TRY
+    try {
+        unordered_map<string, TradeInfo*>::iterator itr = m_InfoMap.begin();
+        for (; itr != m_InfoMap.end(); itr++) {
+            TradeInfo* pInfo = itr->second;
+            SAFE_DELETE(pInfo);
+        }
 
-    unordered_map<string, TradeInfo*>::iterator itr = m_InfoMap.begin();
-    for (; itr != m_InfoMap.end(); itr++) {
-        TradeInfo* pInfo = itr->second;
-        SAFE_DELETE(pInfo);
+        m_InfoMap.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_InfoMap.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 void TradeManager::init()

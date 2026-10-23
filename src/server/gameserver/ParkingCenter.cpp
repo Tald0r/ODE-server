@@ -24,17 +24,17 @@ MotorcycleBox::MotorcycleBox(Motorcycle* pMotorcycle, Zone* pZone, ZoneCoord_t X
 MotorcycleBox::~MotorcycleBox()
 
 {
-    __BEGIN_TRY
+    try {
+        if (m_pMotorcycle != NULL) {
+            // Deleted through m_pZone because of an m_pZone synchronization problem.
+            // by sigi. 2002.5.3
+            m_pZone->deleteMotorcycle(m_X, m_Y, m_pMotorcycle);
+        }
 
-    if (m_pMotorcycle != NULL) {
-        // Deleted through m_pZone because of an m_pZone synchronization problem.
-        // by sigi. 2002.5.3
-        m_pZone->deleteMotorcycle(m_X, m_Y, m_pMotorcycle);
+        m_pZone = NULL;
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_pZone = NULL;
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -51,22 +51,22 @@ ParkingCenter::ParkingCenter()
 ParkingCenter::~ParkingCenter()
 
 {
-    __BEGIN_TRY
+    try {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        unordered_map<ItemID_t, MotorcycleBox*>::iterator itr = m_Motorcycles.begin();
 
-    unordered_map<ItemID_t, MotorcycleBox*>::iterator itr = m_Motorcycles.begin();
+        for (; itr != m_Motorcycles.end(); itr++) {
+            MotorcycleBox* pBox = itr->second;
+            SAFE_DELETE(pBox);
+        }
 
-    for (; itr != m_Motorcycles.end(); itr++) {
-        MotorcycleBox* pBox = itr->second;
-        SAFE_DELETE(pBox);
+        m_Motorcycles.clear();
+
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_Motorcycles.clear();
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH_NO_RETHROW
 }
 
 void ParkingCenter::addMotorcycleBox(MotorcycleBox* pMotorcycleBox)

@@ -25,7 +25,7 @@ ShopTemplate::ShopTemplate()
 
 ShopTemplate::~ShopTemplate()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW}
+{}
 
 string ShopTemplate::toString() const
 
@@ -50,17 +50,17 @@ ShopTemplateManager::ShopTemplateManager()
 ShopTemplateManager::~ShopTemplateManager()
 
 {
-    __BEGIN_TRY
+    try {
+        unordered_map<ShopTemplateID_t, ShopTemplate*>::iterator itr = m_Entries.begin();
+        for (; itr != m_Entries.end(); itr++) {
+            ShopTemplate* pTemplate = itr->second;
+            SAFE_DELETE(pTemplate);
+        }
 
-    unordered_map<ShopTemplateID_t, ShopTemplate*>::iterator itr = m_Entries.begin();
-    for (; itr != m_Entries.end(); itr++) {
-        ShopTemplate* pTemplate = itr->second;
-        SAFE_DELETE(pTemplate);
+        m_Entries.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_Entries.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 void ShopTemplateManager::init()

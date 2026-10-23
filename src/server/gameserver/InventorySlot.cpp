@@ -13,11 +13,11 @@
 InventorySlot::~InventorySlot()
 
 {
-    __BEGIN_TRY
-
-    Assert(m_pItem == NULL);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        Assert(m_pItem == NULL);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void InventorySlot::addItem(Item* pItem)

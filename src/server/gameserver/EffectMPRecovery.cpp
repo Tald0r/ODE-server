@@ -33,10 +33,7 @@ EffectMPRecovery::EffectMPRecovery(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Cr
 
 EffectMPRecovery::~EffectMPRecovery()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void EffectMPRecovery::affect()
 

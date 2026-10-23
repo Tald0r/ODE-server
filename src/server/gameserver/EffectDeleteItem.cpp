@@ -38,11 +38,11 @@ EffectDeleteItem::EffectDeleteItem(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Ob
 EffectDeleteItem::~EffectDeleteItem()
 
 {
-    __BEGIN_TRY
-
-    unaffect(m_pZone, m_X, m_Y, m_pTarget);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        unaffect(m_pZone, m_X, m_Y, m_pTarget);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 

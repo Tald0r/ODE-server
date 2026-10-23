@@ -65,11 +65,11 @@ PrivatePortal::PrivatePortal(ObjectID_t objectID)
 PrivatePortal::~PrivatePortal()
 
 {
-    __BEGIN_TRY
-
-    SAFE_DELETE(m_pTarget);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        SAFE_DELETE(m_pTarget);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 ZoneID_t PrivatePortal::getZoneID() const

@@ -38,7 +38,7 @@ const int DefaultSkill[DefaultSkillMax][4] = {
 
 SkillProperty::SkillProperty() {}
 
-SkillProperty::~SkillProperty(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
+SkillProperty::~SkillProperty() {}
 
 string SkillProperty::toString() const {
     StringStream msg;
@@ -62,11 +62,11 @@ SkillPropertyManager::SkillPropertyManager()
 SkillPropertyManager::~SkillPropertyManager()
 
 {
-    __BEGIN_TRY
-
-    clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void SkillPropertyManager::init()

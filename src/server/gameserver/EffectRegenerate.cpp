@@ -26,10 +26,7 @@ EffectRegenerate::EffectRegenerate(Creature* pCreature)
 //////////////////////////////////////////////////////////////////////////////
 EffectRegenerate::~EffectRegenerate()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void EffectRegenerate::affect() {
     setNextTime(m_Tick);

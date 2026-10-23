@@ -16,7 +16,7 @@
 
 CastleSkillInfo::CastleSkillInfo() {}
 
-CastleSkillInfo::~CastleSkillInfo(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
+CastleSkillInfo::~CastleSkillInfo() {}
 
 string CastleSkillInfo::toString() const {
     StringStream msg;
@@ -36,11 +36,11 @@ CastleSkillInfoManager::CastleSkillInfoManager()
 CastleSkillInfoManager::~CastleSkillInfoManager()
 
 {
-    __BEGIN_TRY
-
-    clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void CastleSkillInfoManager::clear()

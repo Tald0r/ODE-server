@@ -20,7 +20,8 @@ OustersCorpse::OustersCorpse(Ousters* pOusters)
 
 OustersCorpse::~OustersCorpse()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW} string OustersCorpse::toString() const {
+{}
+string OustersCorpse::toString() const {
     StringStream msg;
     msg << "OustersCorpse(" << m_OustersInfo.toString() << ")";
     return msg.toString();

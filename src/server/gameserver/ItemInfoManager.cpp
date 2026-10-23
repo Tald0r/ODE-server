@@ -118,13 +118,13 @@ ItemInfoManager::ItemInfoManager()
 ItemInfoManager::~ItemInfoManager()
 
 {
-    __BEGIN_TRY
-
-    for (int i = 0; i < Item::ITEM_CLASS_MAX; i++) {
-        SAFE_DELETE(m_InfoClassManagers[i]);
+    try {
+        for (int i = 0; i < Item::ITEM_CLASS_MAX; i++) {
+            SAFE_DELETE(m_InfoClassManagers[i]);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////

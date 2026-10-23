@@ -36,10 +36,7 @@ SkillInfo::SkillInfo() {
     m_CanDelete = 0;
 }
 
-SkillInfo::~SkillInfo() {
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+SkillInfo::~SkillInfo() {}
 
 void SkillInfo::setRequireSkill(const string& requireSkill) {
     if (requireSkill == "")
@@ -160,12 +157,12 @@ SkillInfoManager::SkillInfoManager()
 SkillInfoManager::~SkillInfoManager()
 
 {
-    __BEGIN_TRY
-
-    // This alone is not enough, but it is never called anyway, so leave it.
-    SAFE_DELETE_ARRAY(m_SkillInfoList);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        // This alone is not enough, but it is never called anyway, so leave it.
+        SAFE_DELETE_ARRAY(m_SkillInfoList);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void SkillInfoManager::init() {

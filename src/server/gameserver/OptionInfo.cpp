@@ -197,10 +197,7 @@ OptionInfo::OptionInfo()
 
 OptionInfo::~OptionInfo()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void OptionInfo::setReqAbility(const string& req)
 
@@ -294,11 +291,11 @@ OptionInfoSet::OptionInfoSet()
 OptionInfoSet::~OptionInfoSet()
 
 {
-    __BEGIN_TRY
-
-    m_OptionTypes.clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        m_OptionTypes.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 // Put the option type into the map under the given level.
@@ -365,11 +362,11 @@ OptionInfoManager::OptionInfoManager()
 OptionInfoManager::~OptionInfoManager()
 
 {
-    __BEGIN_TRY
-
-    release();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        release();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void OptionInfoManager::release()

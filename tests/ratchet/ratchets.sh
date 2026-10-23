@@ -66,6 +66,10 @@ R4=$(grep -rlE 'void execute\(Player' src/Core --include='*.h' | wc -l)
 check_ratchet R4 "packet headers with execute()" 0 "$R4"
 
 # --- R5: __BEGIN_TRY control-flow macro sites in gameserver ----------------
+# None is left: the rethrowing pairs went, the throw site every Throwable
+# records standing in for the function chain they built, and the swallowing
+# ones are the explicit catches R19 counts. The count holds at zero, so a new
+# __BEGIN_TRY in the gameserver fails here.
 # handler/, packetfill/ and gm/ are excluded. handler/ and packetfill/ hold
 # sources that moved there from src/Core in task 2.4, where this metric never
 # counted them; gm/ holds the GM command bodies that moved out of
@@ -77,7 +81,7 @@ check_ratchet R4 "packet headers with execute()" 0 "$R4"
 # (5,114 -> 5,119 on 2026-10-23, the widening: four live header sites and one
 # comment line).
 R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' --include='*.h' | grep -vE 'gameserver/(gm|handler|packetfill)/' | wc -l)
-check_ratchet R5 "__BEGIN_TRY sites in gameserver" 151 "$R5"
+check_ratchet R5 "__BEGIN_TRY sites in gameserver" 0 "$R5"
 
 # --- R6: god-file line counts (task 3.3 files only, so far) -----------------
 # Formula extraction to de-core (src/domain) shrinks these; each delegation
@@ -537,6 +541,40 @@ if ! [[ "$r18_files" =~ ^[0-9]+$ ]] || [ "$r18_files" -lt 3000 ]; then
     fail=1
 else
     check_ratchet R18 "commented-out code lines in /* */ blocks" 0 "$R18"
+fi
+
+# --- R19: catch (Throwable&) clauses that drop the exception ---------------
+# A catch whose body is empty, comments aside, ends the Throwable there: the
+# caller never learns the block failed, and whatever the block had not done
+# yet stays undone. That is control flow nobody has judged yet -- most of
+# these were swallowing try macros, written out unchanged -- so each one that
+# goes is a decision made test first: let the exception reach a caller that
+# handles it, or handle it here, with a test that pins which.
+#
+# R5's scope: the gameserver's .cpp and .h files outside gm/, handler/ and
+# packetfill/. A perl match over each file's text: `Throwable&`,
+# `Throwable &`, `const Throwable&` and a named variable all count, and the
+# body may hold only blanks and comments. Textual, so a commented-out clause
+# counts too. It cannot see a swallow spelled another way: a body that only
+# logs or calls addStack(), a `catch (...)`, a catch of a Throwable subclass,
+# or the __END_CATCH_NO_RETHROW macro, which R5 keeps out of this scope.
+r19_raw=$(find src/server/gameserver \( -name '*.cpp' -o -name '*.h' \) -print0 | perl -0 -ne '
+    BEGIN { $files = 0; $count = 0 }
+    chomp; next if m{gameserver/(?:gm|handler|packetfill)/};
+    open(my $fh, "<", $_) or next; $files++;
+    my $src = do { local $/; <$fh> }; close $fh;
+    $count++ while $src =~ m{\bcatch\s*\(\s*(?:const\s+)?Throwable\s*&\s*\w*\s*\)\s*\{(?:\s|//[^\n]*+|/\*(?:[^*]|\*(?!/))*+\*/)*+\}}g;
+    END { print "$files $count\n" }
+')
+# R13's rule: a scan that found almost nothing must fail loudly. The scope
+# holds well over two thousand sources.
+r19_files=${r19_raw%% *}
+R19=${r19_raw##* }
+if ! [[ "$r19_files" =~ ^[0-9]+$ ]] || [ "$r19_files" -lt 2000 ]; then
+    echo "[FAIL] R19 swallowing catches: only '$r19_files' files scanned (find or perl broken?)"
+    fail=1
+else
+    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 107 "$R19"
 fi
 
 # --- Removed dead services must not return --------------------------------

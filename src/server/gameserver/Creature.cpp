@@ -50,18 +50,18 @@ Creature::Creature(ObjectID_t objectID, Player* pPlayer)
 Creature::~Creature()
 
 {
-    __BEGIN_TRY
+    try {
+        m_pPlayer = NULL; // Deleted externally.
+        SAFE_DELETE(m_pEffectManager);
 
-    m_pPlayer = NULL; // Deleted externally.
-    SAFE_DELETE(m_pEffectManager);
-
-    if (m_CClass == CREATURE_CLASS_SLAYER || m_CClass == CREATURE_CLASS_VAMPIRE) {
-        if (!m_bDeriveDestructed) {
-            filelog("destructor.log", "Name : %s Class : %d value : %d", m_Owner.c_str(), (int)m_CClass, m_Value);
+        if (m_CClass == CREATURE_CLASS_SLAYER || m_CClass == CREATURE_CLASS_VAMPIRE) {
+            if (!m_bDeriveDestructed) {
+                filelog("destructor.log", "Name : %s Class : %d value : %d", m_Owner.c_str(), (int)m_CClass, m_Value);
+            }
         }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////

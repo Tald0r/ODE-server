@@ -20,7 +20,7 @@ OustersEXPInfo::OustersEXPInfo()
 
 OustersEXPInfo::~OustersEXPInfo()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW}
+{}
 
 string OustersEXPInfo::toString() const
 
@@ -45,16 +45,16 @@ OustersEXPInfoManager::OustersEXPInfoManager()
 OustersEXPInfoManager::~OustersEXPInfoManager()
 
 {
-    __BEGIN_TRY
+    try {
+        if (m_OustersEXPInfoList != NULL) {
+            for (uint i = 0; i < m_OustersEXPCount; i++)
+                SAFE_DELETE(m_OustersEXPInfoList[i]);
 
-    if (m_OustersEXPInfoList != NULL) {
-        for (uint i = 0; i < m_OustersEXPCount; i++)
-            SAFE_DELETE(m_OustersEXPInfoList[i]);
-
-        SAFE_DELETE_ARRAY(m_OustersEXPInfoList);
+            SAFE_DELETE_ARRAY(m_OustersEXPInfoList);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 void OustersEXPInfoManager::init()

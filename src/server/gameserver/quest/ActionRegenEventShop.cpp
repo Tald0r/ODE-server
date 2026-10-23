@@ -38,11 +38,11 @@ ActionRegenEventShop::ActionRegenEventShop()
 ActionRegenEventShop::~ActionRegenEventShop()
 
 {
-    __BEGIN_TRY
-
-    clearList();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        clearList();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 

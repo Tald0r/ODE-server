@@ -34,28 +34,28 @@ EffectLoaderManager::EffectLoaderManager()
 EffectLoaderManager::~EffectLoaderManager()
 
 {
-    __BEGIN_TRY
+    try {
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_BLOOD_DRAIN]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_LIGHT]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_AFTERMATH]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_ENEMY_ERASE]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_RESTORE]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_KILL_AFTERMATH]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_MUTE]);
 
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_BLOOD_DRAIN]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_LIGHT]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_AFTERMATH]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_ENEMY_ERASE]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_RESTORE]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_KILL_AFTERMATH]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_MUTE]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_GREEN_POISON]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_YELLOW_POISON]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_DARKNESS]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_ACID_SWAMP]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_CONTINUAL_BLOODY_WALL]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_ICE_FIELD]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_PROMINENCE]);
 
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_GREEN_POISON]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_YELLOW_POISON]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_DARKNESS]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_ACID_SWAMP]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_CONTINUAL_BLOODY_WALL]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_ICE_FIELD]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_PROMINENCE]);
-
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_ON_BRIDGE]);
-    SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_CAN_ENTER_GDR_LAIR]);
-
-    __END_CATCH_NO_RETHROW
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_ON_BRIDGE]);
+        SAFE_DELETE(m_pEffectLoaders[Effect::EFFECT_CLASS_CAN_ENTER_GDR_LAIR]);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void EffectLoaderManager::init()

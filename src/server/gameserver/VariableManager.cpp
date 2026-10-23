@@ -222,10 +222,7 @@ VariableManager::VariableManager()
 //////////////////////////////////////////////////////////////////////////////
 VariableManager::~VariableManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void VariableManager::init()
 

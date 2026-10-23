@@ -81,64 +81,64 @@ Inventory::Inventory(const Inventory* pInventory)
 Inventory::~Inventory()
 
 {
-    __BEGIN_TRY
-
-    int i, j, k;
-
     try {
-        if (m_pInventorySlot != NULL) {
-            // Delete every item held in the inventory.
-            // Using the item size would allow further optimization.
-            for (j = 0; j < m_Height; j++) {
-                for (i = 0; i < m_Width; i++) {
-                    Item* pItem = m_pInventorySlot[i][j].getItem();
-                    if (pItem != NULL) {
-                        // Set the inventory slot to NULL.
+        int i, j, k;
 
-                        deleteItem(i, j);
+        try {
+            if (m_pInventorySlot != NULL) {
+                // Delete every item held in the inventory.
+                // Using the item size would allow further optimization.
+                for (j = 0; j < m_Height; j++) {
+                    for (i = 0; i < m_Width; i++) {
+                        Item* pItem = m_pInventorySlot[i][j].getItem();
+                        if (pItem != NULL) {
+                            // Set the inventory slot to NULL.
 
-                        if (m_bDeleteAll) {
-                            // For a key, take the motorcycle information out of the ParkingCenter,
-                            // remove the motorcycle from the Zone, then delete it from the ParkingCenter.
-                            // Cleanly this would belong in the destructor of GamePlayer or Creature,
-                            // but it is done here as a shortcut to save search time.
-                            // Removing this breaks things.
-                            if (pItem->getItemClass() == Item::ITEM_CLASS_KEY) {
-                                Key* pKey = dynamic_cast<Key*>(pItem);
-                                // The call below also takes care of removing it from the zone.
-                                if (de::gameContext().parking().hasMotorcycleBox(pKey->getTarget())) {
-                                    de::gameContext().parking().deleteMotorcycleBox(pKey->getTarget());
+                            deleteItem(i, j);
+
+                            if (m_bDeleteAll) {
+                                // For a key, take the motorcycle information out of the ParkingCenter,
+                                // remove the motorcycle from the Zone, then delete it from the ParkingCenter.
+                                // Cleanly this would belong in the destructor of GamePlayer or Creature,
+                                // but it is done here as a shortcut to save search time.
+                                // Removing this breaks things.
+                                if (pItem->getItemClass() == Item::ITEM_CLASS_KEY) {
+                                    Key* pKey = dynamic_cast<Key*>(pItem);
+                                    // The call below also takes care of removing it from the zone.
+                                    if (de::gameContext().parking().hasMotorcycleBox(pKey->getTarget())) {
+                                        de::gameContext().parking().deleteMotorcycleBox(pKey->getTarget());
+                                    }
                                 }
-                            }
 
-                            SAFE_DELETE(pItem);
-                        } // end of if (m_bDeleteAll)
-                    } // end of if (pItem != NULL)
+                                SAFE_DELETE(pItem);
+                            } // end of if (m_bDeleteAll)
+                        } // end of if (pItem != NULL)
+                    } // end of for
                 } // end of for
-            } // end of for
 
-            // Assert(m_TotalNum == 0);
-            // Assert(m_TotalWeight == 0);
-            // Temporary code, just to look at the number.
-            if (m_TotalNum != 0) {
-                filelog("inventoryBug.txt", "TotalNum=%d", m_TotalNum);
-            }
-
-            Assert(m_TotalNum == 0);
-
-            for (k = 0; k < m_Width; k++) {
-                if (m_pInventorySlot[k] != NULL) {
-                    SAFE_DELETE_ARRAY(m_pInventorySlot[k]);
+                // Assert(m_TotalNum == 0);
+                // Assert(m_TotalWeight == 0);
+                // Temporary code, just to look at the number.
+                if (m_TotalNum != 0) {
+                    filelog("inventoryBug.txt", "TotalNum=%d", m_TotalNum);
                 }
+
+                Assert(m_TotalNum == 0);
+
+                for (k = 0; k < m_Width; k++) {
+                    if (m_pInventorySlot[k] != NULL) {
+                        SAFE_DELETE_ARRAY(m_pInventorySlot[k]);
+                    }
+                }
+
+                SAFE_DELETE_ARRAY(m_pInventorySlot);
             }
-
-            SAFE_DELETE_ARRAY(m_pInventorySlot);
+        } catch (Throwable& t) {
+            // cerr << t.toString() << endl;
         }
-    } catch (Throwable& t) {
-        // cerr << t.toString() << endl;
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 

@@ -257,28 +257,28 @@ Guild::Guild()
 Guild::~Guild()
 
 {
-    __BEGIN_TRY
+    try {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        HashMapGuildMemberItor itr = m_Members.begin();
+        for (; itr != m_Members.end(); itr++) {
+            SAFE_DELETE(itr->second);
+        }
 
-    HashMapGuildMemberItor itr = m_Members.begin();
-    for (; itr != m_Members.end(); itr++) {
-        SAFE_DELETE(itr->second);
-    }
+        m_Members.clear();
 
-    m_Members.clear();
-
-    for (size_t i = 0; i < m_RetiredMembers.size(); i++)
-        SAFE_DELETE(m_RetiredMembers[i]);
-    m_RetiredMembers.clear();
+        for (size_t i = 0; i < m_RetiredMembers.size(); i++)
+            SAFE_DELETE(m_RetiredMembers[i]);
+        m_RetiredMembers.clear();
 
 #ifdef __GAME_SERVER__
-    m_CurrentMembers.clear();
+        m_CurrentMembers.clear();
 #endif
 
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH_NO_RETHROW
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 

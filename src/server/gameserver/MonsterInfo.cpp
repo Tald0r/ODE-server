@@ -161,19 +161,19 @@ MonsterInfo::MonsterInfo()
 MonsterInfo::~MonsterInfo()
 
 {
-    __BEGIN_TRY
+    try {
+        // This is managed by MonsterInfo.
+        // SAFE_DELETE(m_pSlayerTreasureList);
+        // SAFE_DELETE(m_pVampireTreasureList);
 
-    // This is managed by MonsterInfo.
-    // SAFE_DELETE(m_pSlayerTreasureList);
-    // SAFE_DELETE(m_pVampireTreasureList);
+        m_pSlayerTreasureList = NULL;
+        m_pVampireTreasureList = NULL;
+        m_pOustersTreasureList = NULL;
 
-    m_pSlayerTreasureList = NULL;
-    m_pVampireTreasureList = NULL;
-    m_pOustersTreasureList = NULL;
-
-    SAFE_DELETE(m_pMonsterSummonInfo);
-
-    __END_CATCH_NO_RETHROW
+        SAFE_DELETE(m_pMonsterSummonInfo);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void MonsterInfo::setRegenType(RegenType rt, int percent) {
@@ -431,11 +431,11 @@ MonsterInfoManager::MonsterInfoManager()
 MonsterInfoManager::~MonsterInfoManager()
 
 {
-    __BEGIN_TRY
-
-    SAFE_DELETE_ARRAY(m_MonsterInfos);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        SAFE_DELETE_ARRAY(m_MonsterInfos);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void MonsterInfoManager::init()

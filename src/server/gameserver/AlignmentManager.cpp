@@ -20,7 +20,7 @@ AlignmentManager::AlignmentManager()
 
 AlignmentManager::~AlignmentManager()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW}
+{}
 
 Alignment AlignmentManager::getAlignmentType(Alignment_t Alignment)
 

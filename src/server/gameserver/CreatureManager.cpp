@@ -53,18 +53,18 @@ CreatureManager::CreatureManager()
 CreatureManager::~CreatureManager()
 
 {
-    __BEGIN_TRY
+    try {
+        unordered_map<ObjectID_t, Creature*>::iterator itr = m_Creatures.begin();
 
-    unordered_map<ObjectID_t, Creature*>::iterator itr = m_Creatures.begin();
+        for (; itr != m_Creatures.end(); itr++) {
+            Creature* pCreature = itr->second;
+            SAFE_DELETE(pCreature);
+        }
 
-    for (; itr != m_Creatures.end(); itr++) {
-        Creature* pCreature = itr->second;
-        SAFE_DELETE(pCreature);
+        m_Creatures.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_Creatures.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 

@@ -63,23 +63,23 @@ ConditionFactoryManager::ConditionFactoryManager()
 ConditionFactoryManager::~ConditionFactoryManager()
 
 {
-    __BEGIN_TRY
+    try {
+        Assert(m_Factories != NULL);
 
-    Assert(m_Factories != NULL);
-
-    // Delete each condition factory.
-    for (int i = 0; i < m_Size; i++) {
-        if (m_Factories[i] != NULL) {
-            delete m_Factories[i];
-            m_Factories[i] = NULL;
+        // Delete each condition factory.
+        for (int i = 0; i < m_Size; i++) {
+            if (m_Factories[i] != NULL) {
+                delete m_Factories[i];
+                m_Factories[i] = NULL;
+            }
         }
+
+        // Delete the condition factory array.
+        delete[] m_Factories;
+        m_Factories = NULL;
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    // Delete the condition factory array.
-    delete[] m_Factories;
-    m_Factories = NULL;
-
-    __END_CATCH_NO_RETHROW
 }
 
 

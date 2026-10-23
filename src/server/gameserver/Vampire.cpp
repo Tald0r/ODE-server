@@ -115,64 +115,64 @@ Vampire::Vampire()
 Vampire::~Vampire()
 
 {
-    __BEGIN_TRY
-
     try {
-        // Build the outfit information.
-        DWORD flag;
-        Color_t color[PCVampireInfo::VAMPIRE_COLOR_MAX];
-        getShapeInfo(flag, color);
+        try {
+            // Build the outfit information.
+            DWORD flag;
+            Color_t color[PCVampireInfo::VAMPIRE_COLOR_MAX];
+            getShapeInfo(flag, color);
 
-        char pField[128];
-        snprintf(pField, sizeof(pField), "Shape=%u, CoatColor=%d", flag, color[PCVampireInfo::VAMPIRE_COLOR_COAT]);
+            char pField[128];
+            snprintf(pField, sizeof(pField), "Shape=%u, CoatColor=%d", flag, color[PCVampireInfo::VAMPIRE_COLOR_COAT]);
 
-        // cout << "SAVE = " << pField << endl;
+            // cout << "SAVE = " << pField << endl;
 
-        tinysave(pField);
+            tinysave(pField);
 
 
-        // Save the items' remaining durability, the experience and the alignment.
-        saveGears();
-        saveExps(m_GoalExp, m_SilverDamage);
-        saveSkills();
+            // Save the items' remaining durability, the experience and the alignment.
+            saveGears();
+            saveExps(m_GoalExp, m_SilverDamage);
+            saveSkills();
 
-        // Delete the items being worn from memory.
-        destroyGears();
+            // Delete the items being worn from memory.
+            destroyGears();
 
-        // When the class is deleted the matching trade information must be deleted,
-        // and the trade partner must be told as well.
-        TradeManager* pTradeManager = m_pZone->getTradeManager();
-        TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
-        if (pInfo != NULL) {
-            // Delete the trade information.
-            pTradeManager->cancelTrade(this);
+            // When the class is deleted the matching trade information must be deleted,
+            // and the trade partner must be told as well.
+            TradeManager* pTradeManager = m_pZone->getTradeManager();
+            TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
+            if (pInfo != NULL) {
+                // Delete the trade information.
+                pTradeManager->cancelTrade(this);
+            }
+
+            // Delete the global party information.
+            // On a normal logout
+            // CGLogoutHandler calls Zone::deleteCreature(), and
+            // even in an abnormal case
+            // GamePlayer::disconnect() calls Zone::deleteCreature(), so
+            // the local party, party invitation and trade information need no care here.
+            deleteAllPartyInfo(this);
+
+            // Delete the skills.
+            unordered_map<SkillType_t, VampireSkillSlot*>::iterator itr = m_SkillSlot.begin();
+            for (; itr != m_SkillSlot.end(); itr++) {
+                VampireSkillSlot* pVampireSkillSlot = itr->second;
+                SAFE_DELETE(pVampireSkillSlot);
+            }
+        } catch (Throwable& t) {
+            diagnosticFilelog("vampireDestructor.txt", "%s", t.toString().c_str());
+        } catch (exception& e) {
+            diagnosticFilelog("vampireDestructor.txt", "Unknown std::exception");
+        } catch (...) {
+            diagnosticFilelog("vampireDestructor.txt", "Unknown ... exception");
         }
 
-        // Delete the global party information.
-        // On a normal logout
-        // CGLogoutHandler calls Zone::deleteCreature(), and
-        // even in an abnormal case
-        // GamePlayer::disconnect() calls Zone::deleteCreature(), so
-        // the local party, party invitation and trade information need no care here.
-        deleteAllPartyInfo(this);
-
-        // Delete the skills.
-        unordered_map<SkillType_t, VampireSkillSlot*>::iterator itr = m_SkillSlot.begin();
-        for (; itr != m_SkillSlot.end(); itr++) {
-            VampireSkillSlot* pVampireSkillSlot = itr->second;
-            SAFE_DELETE(pVampireSkillSlot);
-        }
-    } catch (Throwable& t) {
-        diagnosticFilelog("vampireDestructor.txt", "%s", t.toString().c_str());
-    } catch (exception& e) {
-        diagnosticFilelog("vampireDestructor.txt", "Unknown std::exception");
-    } catch (...) {
-        diagnosticFilelog("vampireDestructor.txt", "Unknown ... exception");
+        m_bDeriveDestructed = true;
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_bDeriveDestructed = true;
-
-    __END_CATCH_NO_RETHROW
 }
 
 // registerObject

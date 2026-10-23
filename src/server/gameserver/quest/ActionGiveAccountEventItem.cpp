@@ -43,13 +43,13 @@ ActionGiveAccountEventItem::ActionGiveAccountEventItem()
 //
 ////////////////////////////////////////////////////////////////////////////////
 ActionGiveAccountEventItem::~ActionGiveAccountEventItem() {
-    __BEGIN_TRY
-
-    SAFE_DELETE(m_pLuaState);
-    SAFE_DELETE(m_pLuaSlayerItem);
-    SAFE_DELETE(m_pLuaVampireItem);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        SAFE_DELETE(m_pLuaState);
+        SAFE_DELETE(m_pLuaSlayerItem);
+        SAFE_DELETE(m_pLuaVampireItem);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

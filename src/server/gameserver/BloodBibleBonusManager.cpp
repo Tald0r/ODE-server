@@ -23,11 +23,11 @@ BloodBibleBonusManager::BloodBibleBonusManager()
 BloodBibleBonusManager::~BloodBibleBonusManager()
 
 {
-    __BEGIN_TRY
-
-    clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void BloodBibleBonusManager::init()

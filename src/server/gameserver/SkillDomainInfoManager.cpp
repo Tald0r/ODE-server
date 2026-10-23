@@ -21,7 +21,7 @@ DomainInfo::DomainInfo()
 
 DomainInfo::~DomainInfo()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW}
+{}
 
 //--------------------------------------------------------------------------------
 // get debug string
@@ -55,13 +55,13 @@ SkillDomainInfoManager::SkillDomainInfoManager()
 SkillDomainInfoManager::~SkillDomainInfoManager()
 
 {
-    __BEGIN_TRY
-
-    for (int i = 0; i < SKILL_DOMAIN_MAX; i++)
-        for (int j = 0; j <= 150; j++)
-            SAFE_DELETE(m_DomainInfoLists[i][j]);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        for (int i = 0; i < SKILL_DOMAIN_MAX; i++)
+            for (int j = 0; j <= 150; j++)
+                SAFE_DELETE(m_DomainInfoLists[i][j]);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //--------------------------------------------------------------------

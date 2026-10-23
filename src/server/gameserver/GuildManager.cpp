@@ -37,26 +37,26 @@ GuildManager::GuildManager()
 GuildManager::~GuildManager()
 
 {
-    __BEGIN_TRY
+    try {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        // Delete every guild object from memory.
+        unordered_map<GuildID_t, Guild*>::iterator itr = m_Guilds.begin();
+        for (; itr != m_Guilds.end(); itr++) {
+            Guild* pGuild = itr->second;
+            SAFE_DELETE(pGuild);
+        }
 
-    // Delete every guild object from memory.
-    unordered_map<GuildID_t, Guild*>::iterator itr = m_Guilds.begin();
-    for (; itr != m_Guilds.end(); itr++) {
-        Guild* pGuild = itr->second;
-        SAFE_DELETE(pGuild);
+        m_Guilds.clear();
+
+        for (size_t i = 0; i < m_RetiredGuilds.size(); i++)
+            SAFE_DELETE(m_RetiredGuilds[i]);
+        m_RetiredGuilds.clear();
+
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_Guilds.clear();
-
-    for (size_t i = 0; i < m_RetiredGuilds.size(); i++)
-        SAFE_DELETE(m_RetiredGuilds[i]);
-    m_RetiredGuilds.clear();
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH_NO_RETHROW
 }
 
 

@@ -84,18 +84,18 @@ string LevelWarZoneInfo::toString() const
 LevelWarZoneInfoManager::LevelWarZoneInfoManager() {}
 
 LevelWarZoneInfoManager::~LevelWarZoneInfoManager() {
-    __BEGIN_TRY
+    try {
+        unordered_map<ZoneID_t, LevelWarZoneInfo*>::iterator itr = m_LevelWarZoneInfos.begin();
+        unordered_map<ZoneID_t, LevelWarZoneInfo*>::iterator endItr = m_LevelWarZoneInfos.end();
+        for (; itr != endItr; itr++) {
+            LevelWarZoneInfo* pLevelWarZoneInfo = itr->second;
+            SAFE_DELETE(pLevelWarZoneInfo);
+        }
 
-    unordered_map<ZoneID_t, LevelWarZoneInfo*>::iterator itr = m_LevelWarZoneInfos.begin();
-    unordered_map<ZoneID_t, LevelWarZoneInfo*>::iterator endItr = m_LevelWarZoneInfos.end();
-    for (; itr != endItr; itr++) {
-        LevelWarZoneInfo* pLevelWarZoneInfo = itr->second;
-        SAFE_DELETE(pLevelWarZoneInfo);
+        m_LevelWarZoneInfos.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_LevelWarZoneInfos.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 void LevelWarZoneInfoManager::init()

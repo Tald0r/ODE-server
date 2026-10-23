@@ -22,14 +22,14 @@ EventManager::EventManager()
 EventManager::~EventManager()
 
 {
-    __BEGIN_TRY
-
-    while (!m_Events.empty()) {
-        SAFE_DELETE(m_Events.front());
-        m_Events.pop_front();
+    try {
+        while (!m_Events.empty()) {
+            SAFE_DELETE(m_Events.front());
+            m_Events.pop_front();
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////

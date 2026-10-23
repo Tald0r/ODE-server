@@ -104,26 +104,26 @@ GameServer::GameServer()
 GameServer::~GameServer()
 
 {
-    __BEGIN_TRY
-
-    stop();
-    // Zone workers must stop while their zone and database dependencies are
-    // still alive.
-    SAFE_DELETE(m_pThreadManager);
-    SAFE_DELETE(m_pClientManager);
-    SAFE_DELETE(m_pObjectManager);
-    SAFE_DELETE(m_pPacketValidator);
-    SAFE_DELETE(m_pPacketFactoryManager);
-    SAFE_DELETE(m_pLoginServerManager);
-    SAFE_DELETE(m_pSharedServerManager);
+    try {
+        stop();
+        // Zone workers must stop while their zone and database dependencies are
+        // still alive.
+        SAFE_DELETE(m_pThreadManager);
+        SAFE_DELETE(m_pClientManager);
+        SAFE_DELETE(m_pObjectManager);
+        SAFE_DELETE(m_pPacketValidator);
+        SAFE_DELETE(m_pPacketFactoryManager);
+        SAFE_DELETE(m_pLoginServerManager);
+        SAFE_DELETE(m_pSharedServerManager);
 #ifdef __MOFUS__
-    SAFE_DELETE(m_pMPlayerManager);
-    SAFE_DELETE(m_pMPacketManager);
+        SAFE_DELETE(m_pMPlayerManager);
+        SAFE_DELETE(m_pMPacketManager);
 #endif
-    SAFE_DELETE(m_pGameServerInfoManager);
-    SAFE_DELETE(m_pDatabaseManager);
-
-    __END_CATCH_NO_RETHROW
+        SAFE_DELETE(m_pGameServerInfoManager);
+        SAFE_DELETE(m_pDatabaseManager);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////

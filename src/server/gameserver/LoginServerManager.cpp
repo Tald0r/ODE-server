@@ -57,11 +57,11 @@ LoginServerManager::LoginServerManager() : m_pDatagramSocket(NULL) {
 LoginServerManager::~LoginServerManager() noexcept {
     stop();
     join();
-    __BEGIN_TRY
-
-    SAFE_DELETE(m_pDatagramSocket);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        SAFE_DELETE(m_pDatagramSocket);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //////////////////////////////////////////////////////////////////////

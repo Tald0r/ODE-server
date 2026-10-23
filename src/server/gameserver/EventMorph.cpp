@@ -47,10 +47,7 @@ EventMorph::EventMorph(GamePlayer* pGamePlayer)
 
 EventMorph::~EventMorph()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void EventMorph::activate()
 

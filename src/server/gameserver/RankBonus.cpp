@@ -24,8 +24,4 @@ RankBonus::RankBonus(DWORD type, DWORD point, Rank_t rank)
 
 RankBonus::~RankBonus()
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH_NO_RETHROW
-}
+{}

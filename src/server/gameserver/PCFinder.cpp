@@ -23,11 +23,11 @@ PCFinder::PCFinder()
 PCFinder::~PCFinder()
 
 {
-    __BEGIN_TRY
-
-    m_PCs.clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        m_PCs.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 // add creature to unordered_map

@@ -141,23 +141,23 @@ ActionFactoryManager::ActionFactoryManager(de::GameContext& context)
 ActionFactoryManager::~ActionFactoryManager()
 
 {
-    __BEGIN_TRY
+    try {
+        Assert(m_Factories != NULL);
 
-    Assert(m_Factories != NULL);
-
-    // Delete each action factory.
-    for (int i = 0; i < m_Size; i++) {
-        if (m_Factories[i] != NULL) {
-            delete m_Factories[i];
-            m_Factories[i] = NULL;
+        // Delete each action factory.
+        for (int i = 0; i < m_Size; i++) {
+            if (m_Factories[i] != NULL) {
+                delete m_Factories[i];
+                m_Factories[i] = NULL;
+            }
         }
+
+        // Delete the action factory array.
+        delete[] m_Factories;
+        m_Factories = NULL;
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    // Delete the action factory array.
-    delete[] m_Factories;
-    m_Factories = NULL;
-
-    __END_CATCH_NO_RETHROW
 }
 
 

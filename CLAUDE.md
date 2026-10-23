@@ -92,5 +92,5 @@ allocation faults; what each one exercises is in [test coverage](docs/testing/te
 
 ## Records
 
-- [The restructuring plan](docs/reviews/RESTRUCTURING.md): every task with its Status line and the R1-R18 ratchet table.
+- [The restructuring plan](docs/reviews/RESTRUCTURING.md): every task with its Status line and the R1-R19 ratchet table.
 - [The fix log](docs/reviews/FIXES.md): every bug found, newest first, each with its Status.

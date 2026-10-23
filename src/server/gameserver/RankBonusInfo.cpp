@@ -16,7 +16,7 @@
 
 RankBonusInfo::RankBonusInfo() {}
 
-RankBonusInfo::~RankBonusInfo(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
+RankBonusInfo::~RankBonusInfo() {}
 
 string RankBonusInfo::toString() const {
     StringStream msg;
@@ -40,11 +40,11 @@ RankBonusInfoManager::RankBonusInfoManager()
 RankBonusInfoManager::~RankBonusInfoManager()
 
 {
-    __BEGIN_TRY
-
-    SAFE_DELETE_ARRAY(m_RankBonusInfoList);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        SAFE_DELETE_ARRAY(m_RankBonusInfoList);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void RankBonusInfoManager::init()

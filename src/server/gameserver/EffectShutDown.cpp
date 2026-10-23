@@ -49,10 +49,7 @@ EffectShutDown::EffectShutDown(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Corpse
 //----------------------------------------------------------------------
 EffectShutDown::~EffectShutDown()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void EffectShutDown::affect()
 
