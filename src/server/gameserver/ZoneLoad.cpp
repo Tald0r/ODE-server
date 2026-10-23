@@ -190,8 +190,6 @@
 void Zone::init()
 
 {
-    __BEGIN_TRY
-
 #ifdef __USE_ENCRYPTER__
     int serverID = de::kernelContext().config().getPropertyInt("ServerID");
 
@@ -253,8 +251,6 @@ void Zone::init()
     }
 
     m_bCastleZone = de::gameContext().castleInfos().isCastleZone(m_ZoneID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -263,7 +259,6 @@ void Zone::init()
 void Zone::load(bool bOutput)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Properties& config = de::kernelContext().config();
@@ -993,7 +988,6 @@ void Zone::load(bool bOutput)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1002,7 +996,6 @@ void Zone::load(bool bOutput)
 void Zone::reload(bool bOutput)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
     try {
         DWORD versionLen;
@@ -1585,7 +1578,6 @@ void Zone::reload(bool bOutput)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1594,8 +1586,6 @@ void Zone::reload(bool bOutput)
 void Zone::loadTriggeredPortal()
 
 {
-    __BEGIN_TRY
-
     // A dynamic zone loads its template zone's triggers.
     ZoneID_t zoneID = m_ZoneID;
     if (isDynamicZone()) {
@@ -1635,8 +1625,6 @@ void Zone::loadTriggeredPortal()
             }
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1645,8 +1633,6 @@ void Zone::loadTriggeredPortal()
 void Zone::initSpriteCount()
 
 {
-    __BEGIN_TRY
-
     m_NPCCount = 0;
     m_MonsterCount = 0;
 
@@ -1678,27 +1664,19 @@ void Zone::initSpriteCount()
         m_MonsterTypes[m_MonsterCount] = i->first;
         m_MonsterCount++;
     }
-
-    __END_CATCH
 }
 
 void Zone::loadNPCs(Race_t race)
 
 {
-    __BEGIN_TRY
-
     m_pNPCManager->load(getZoneID(), race);
 
     sendNPCInfo();
-
-    __END_CATCH
 }
 
 void Zone::loadEffect()
 
 {
-    __BEGIN_TRY
-
     ///////////////////////////////////////////////////////////////////////////////
     // Load the EffectPKZoneRegen rectangles.
     ///////////////////////////////////////////////////////////////////////////////
@@ -1755,6 +1733,4 @@ void Zone::loadEffect()
         registerObject(pEffect);
         addEffect(pEffect);
     }
-
-    __END_CATCH
 }

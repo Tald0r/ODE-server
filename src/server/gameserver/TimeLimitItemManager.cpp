@@ -20,8 +20,6 @@ TimeLimitItemManager::~TimeLimitItemManager() {
 void TimeLimitItemManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<TimeLimitItemRow> rows = defaultItemRepository().loadTimeLimitItems(m_pOwnerPC->getName(), (uint)VALID);
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -37,8 +35,6 @@ void TimeLimitItemManager::load()
     }
 
     m_loaded = true;
-
-    __END_CATCH
 }
 
 // Compares the item against the table and registers its object id.
@@ -48,8 +44,6 @@ void TimeLimitItemManager::load()
 bool TimeLimitItemManager::registerItem(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (m_ItemTimeLimits.find(pItem->getObjectID()) != m_ItemTimeLimits.end())
         return false;
 
@@ -68,15 +62,11 @@ bool TimeLimitItemManager::registerItem(Item* pItem)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool TimeLimitItemManager::checkTimeLimit(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(m_loaded);
 
     ObjectID_t objectID = pItem->getObjectID();
@@ -100,15 +90,11 @@ bool TimeLimitItemManager::checkTimeLimit(Item* pItem)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool TimeLimitItemManager::wasteIfTimeOver(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (checkTimeLimit(pItem))
         return false;
 
@@ -118,15 +104,11 @@ bool TimeLimitItemManager::wasteIfTimeOver(Item* pItem)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool TimeLimitItemManager::makeTimeLimitItemInfo(GCTimeLimitItemInfo& gcTLII) const
 
 {
-    __BEGIN_TRY
-
     Assert(m_loaded);
 
     if (m_ItemTimeLimits.empty())
@@ -148,29 +130,21 @@ bool TimeLimitItemManager::makeTimeLimitItemInfo(GCTimeLimitItemInfo& gcTLII) co
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool TimeLimitItemManager::updateItemTimeLimit(Item* pItem, DWORD time) {
-    __BEGIN_TRY
-
     if (pItem->getCreateType() != Item::CREATE_TYPE_TIME_EXTENSION)
         return false;
     if (!changeStatus(pItem, EXTENDED))
         return false;
     addTimeLimitItem(pItem, time);
     return true;
-
-    __END_CATCH
 }
 
 // Must be called only after the item has been registered in the zone.
 void TimeLimitItemManager::addTimeLimitItem(Item* pItem, DWORD time)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
     Assert(time != 0);
 
@@ -188,14 +162,10 @@ void TimeLimitItemManager::addTimeLimitItem(Item* pItem, DWORD time)
     m_TableRecords.push_back(pTableRecord);
 
     registerItem(pItem);
-
-    __END_CATCH
 }
 
 // An entry still in memory is one whose time has not run out yet.
 bool TimeLimitItemManager::changeStatus(Item* pItem, TimeLimitStatus status) {
-    __BEGIN_TRY
-
     Assert(status != VALID);
 
     if (!defaultItemRepository().updateTimeLimitItemStatus((uint)status, m_pOwnerPC->getName(),
@@ -231,6 +201,4 @@ bool TimeLimitItemManager::changeStatus(Item* pItem, TimeLimitStatus status) {
     }
 
     return true;
-
-    __END_CATCH
 }

@@ -28,31 +28,22 @@
 EffectLoveChain::EffectLoveChain(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // setTarget(pCreature);
 
     m_OwnerOID = pCreature->getObjectID();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectLoveChain::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectLoveChain::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectLoveChain " << "unaffect BEGIN" << endl;
 
     Assert(pCreature != NULL);
@@ -136,8 +127,6 @@ void EffectLoveChain::unaffect(Creature* pCreature)
         _GCCannotUse.setObjectID(m_ItemObjectID);
         pGamePlayer->sendPacket(&_GCCannotUse);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -145,15 +134,11 @@ void EffectLoveChain::unaffect(Creature* pCreature)
 void EffectLoveChain::unaffect()
 
 {
-    __BEGIN_TRY
-
     if (m_pZone != NULL) {
         Creature* pCreature = m_pZone->getCreature(m_OwnerOID);
         if (pCreature != NULL)
             unaffect(pCreature);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -161,11 +146,7 @@ void EffectLoveChain::unaffect()
 string EffectLoveChain::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectLoveChain(" << "ObjectID:" << getObjectID() << "TargetName:" << m_TargetName << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -34,7 +34,7 @@ const ZoneID_t OUSTERS_DEFAULT_ZONE_ID = 1311;
 
 ResurrectLocationManager::ResurrectLocationManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 ResurrectLocationManager::~ResurrectLocationManager()
 
@@ -50,18 +50,12 @@ ResurrectLocationManager::~ResurrectLocationManager()
 void ResurrectLocationManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void ResurrectLocationManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<ResurrectLocationRow> rows = defaultZoneInfoRepository().loadResurrectLocations();
 
     if (rows.empty()) {
@@ -90,15 +84,11 @@ void ResurrectLocationManager::load()
         addVampirePosition(ID, vampire_coord);
         addOustersPosition(ID, ousters_coord);
     }
-
-    __END_CATCH
 }
 
 bool ResurrectLocationManager::getSlayerPosition(ZoneID_t id, ZONE_COORD& zoneCoord) const
 // NoSuchElementException)
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_SlayerPosition.find(id);
 
     if (itr == m_SlayerPosition.end()) {
@@ -113,16 +103,12 @@ bool ResurrectLocationManager::getSlayerPosition(ZoneID_t id, ZONE_COORD& zoneCo
     zoneCoord = itr->second;
 
     return true;
-
-    __END_CATCH
 }
 
 
 void ResurrectLocationManager::addSlayerPosition(ZoneID_t id, const ZONE_COORD& coord)
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_SlayerPosition.find(id);
 
     if (itr != m_SlayerPosition.end()) {
@@ -131,15 +117,11 @@ void ResurrectLocationManager::addSlayerPosition(ZoneID_t id, const ZONE_COORD& 
     }
 
     m_SlayerPosition[id] = coord;
-
-    __END_CATCH
 }
 
 bool ResurrectLocationManager::getVampirePosition(ZoneID_t id, ZONE_COORD& zoneCoord) const
 // NoSuchElementException)
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_VampirePosition.find(id);
 
     if (itr == m_VampirePosition.end()) {
@@ -154,16 +136,12 @@ bool ResurrectLocationManager::getVampirePosition(ZoneID_t id, ZONE_COORD& zoneC
     zoneCoord = itr->second;
 
     return true;
-
-    __END_CATCH
 }
 
 
 void ResurrectLocationManager::addVampirePosition(ZoneID_t id, const ZONE_COORD& coord)
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_VampirePosition.find(id);
 
     if (itr != m_VampirePosition.end()) {
@@ -172,16 +150,12 @@ void ResurrectLocationManager::addVampirePosition(ZoneID_t id, const ZONE_COORD&
     }
 
     m_VampirePosition[id] = coord;
-
-    __END_CATCH
 }
 
 
 bool ResurrectLocationManager::getOustersPosition(ZoneID_t id, ZONE_COORD& zoneCoord) const
 // NoSuchElementException)
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_OustersPosition.find(id);
 
     if (itr == m_OustersPosition.end()) {
@@ -191,16 +165,12 @@ bool ResurrectLocationManager::getOustersPosition(ZoneID_t id, ZONE_COORD& zoneC
     zoneCoord = itr->second;
 
     return true;
-
-    __END_CATCH
 }
 
 
 void ResurrectLocationManager::addOustersPosition(ZoneID_t id, const ZONE_COORD& coord)
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, ZONE_COORD>::const_iterator itr = m_OustersPosition.find(id);
 
     if (itr != m_OustersPosition.end()) {
@@ -208,15 +178,11 @@ void ResurrectLocationManager::addOustersPosition(ZoneID_t id, const ZONE_COORD&
     }
 
     m_OustersPosition[id] = coord;
-
-    __END_CATCH
 }
 
 bool ResurrectLocationManager::getPosition(PlayerCreature* pPC, ZONE_COORD& zoneCoord) const
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     CastleInfoManager& castleInfos = de::gameContext().castleInfos();
@@ -303,15 +269,11 @@ bool ResurrectLocationManager::getPosition(PlayerCreature* pPC, ZONE_COORD& zone
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool ResurrectLocationManager::getBasicPosition(PlayerCreature* pPC, ZONE_COORD& zoneCoord) const
 
 {
-    __BEGIN_TRY
-
     // First take the resurrection position set on the PlayerCreature.
     if (pPC->isSlayer()) {
         Slayer* pSlayer = dynamic_cast<Slayer*>(pPC);
@@ -351,15 +313,11 @@ bool ResurrectLocationManager::getBasicPosition(PlayerCreature* pPC, ZONE_COORD&
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool ResurrectLocationManager::getRaceDefaultPosition(Race_t race, ZONE_COORD& zoneCoord) const
 
 {
-    __BEGIN_TRY
-
     if (race == RACE_SLAYER)
         return getSlayerPosition(SLAYER_DEFAULT_ZONE_ID, zoneCoord);
     else if (race == RACE_VAMPIRE)
@@ -368,6 +326,4 @@ bool ResurrectLocationManager::getRaceDefaultPosition(Race_t race, ZONE_COORD& z
         return getOustersPosition(OUSTERS_DEFAULT_ZONE_ID, zoneCoord);
 
     return false;
-
-    __END_CATCH
 }

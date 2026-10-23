@@ -56,8 +56,6 @@
 bool Monster::isRealEnemy(Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     Assert(pEnemy != NULL);
 
     if (m_pBrain == NULL)
@@ -103,16 +101,12 @@ bool Monster::isRealEnemy(Creature* pEnemy)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // constructor
 //////////////////////////////////////////////////////////////////////////////
 Monster::Monster(MonsterType_t monsterType) : m_MonsterType(monsterType) {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
 
     try {
@@ -373,8 +367,6 @@ Monster::Monster(MonsterType_t monsterType) : m_MonsterType(monsterType) {
         pEffect->setNextTime(0);
         addEffect(pEffect);
     }
-
-    __END_CATCH
 }
 
 
@@ -394,61 +386,37 @@ Monster::~Monster()
 SpriteType_t Monster::getSpriteType() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType)->getSpriteType();
-
-    __END_CATCH
 }
 
 Level_t Monster::getLevel() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType)->getLevel();
-
-    __END_CATCH
 }
 
 uint Monster::getBodySize() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType)->getBodySize();
-
-    __END_CATCH
 }
 
 Color_t Monster::getMainColor() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType)->getMainColor();
-
-    __END_CATCH
 }
 
 Color_t Monster::getSubColor() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType)->getSubColor();
-
-    __END_CATCH
 }
 
 MAlignment Monster::getAlignment() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType)->getAlignment();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -457,8 +425,6 @@ MAlignment Monster::getAlignment() const
 void Monster::registerObject()
 
 {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
 
     ObjectRegistry& OR = getZone()->getObjectRegistry();
@@ -468,8 +434,6 @@ void Monster::registerObject()
     OR.registerObject_NOLOCKED(this);
 
     __LEAVE_CRITICAL_SECTION(OR)
-
-    __END_CATCH
 }
 
 
@@ -480,7 +444,6 @@ void Monster::registerObject()
 void Monster::act(const Timeval& currentTime)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (m_RegenAmount != 0 && currentTime > m_NextRegenTime) {
@@ -666,14 +629,11 @@ void Monster::act(const Timeval& currentTime)
     __END_PROFILE_MONSTER("M_REGEN_HP");
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void Monster::actDeadAction(void)
 
 {
-    __BEGIN_TRY
-
     // PCs that logged out or entered a safe zone in the meantime
     // are removed from the enemy list.
     verifyEnemies();
@@ -704,8 +664,6 @@ void Monster::actDeadAction(void)
         SkillHandler* pSkillHandler = de::gameContext().skillHandlers().getSkillHandler(SKILL_SUMMON_MONSTERS);
         pSkillHandler->execute(this);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -721,7 +679,6 @@ void Monster::actDeadAction(void)
 void Monster::addEnemy(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -1047,7 +1004,6 @@ void Monster::addEnemy(Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -1059,8 +1015,6 @@ void Monster::addEnemy(Creature* pCreature)
 void Monster::addPotentialEnemy(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     // Only if it is not itself.
@@ -1092,8 +1046,6 @@ void Monster::addPotentialEnemy(Creature* pCreature)
         // Left out for now because the load is too high.
         // m_pZone->getMonsterManager()->addPotentialEnemy(this, pCreature);
     }
-
-    __END_CATCH
 }
 
 
@@ -1101,8 +1053,6 @@ void Monster::addPotentialEnemy(Creature* pCreature)
 // Delete a particular creature from the enemy list.
 //////////////////////////////////////////////////////////////////////////////
 void Monster::deleteEnemy(ObjectID_t enemyID) {
-    __BEGIN_TRY
-
     list<ObjectID_t>::iterator itr = find(m_Enemies.begin(), m_Enemies.end(), enemyID);
 
     if (itr == m_Enemies.end()) {
@@ -1114,8 +1064,6 @@ void Monster::deleteEnemy(ObjectID_t enemyID) {
     }
 
     m_Enemies.erase(itr);
-
-    __END_CATCH
 }
 
 
@@ -1125,8 +1073,6 @@ void Monster::deleteEnemy(ObjectID_t enemyID) {
 void Monster::verifyEnemies()
 
 {
-    __BEGIN_TRY
-
     list<ObjectID_t>::iterator before = m_Enemies.end();
     list<ObjectID_t>::iterator current = m_Enemies.begin();
     Creature* pEnemy = NULL;
@@ -1165,8 +1111,6 @@ void Monster::verifyEnemies()
             }
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -1176,7 +1120,6 @@ void Monster::verifyEnemies()
 Creature* Monster::getPrimaryEnemy() const
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // by sigi. 2002.10.7
@@ -1251,7 +1194,6 @@ Creature* Monster::getPrimaryEnemy() const
     return pEnemy;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -1259,8 +1201,6 @@ Creature* Monster::getPrimaryEnemy() const
 // Return the id of the creature at a particular position in the enemy list.
 //////////////////////////////////////////////////////////////////////////////
 ObjectID_t Monster::getEnemy(EnemyPriority enemyPriority) const {
-    __BEGIN_TRY
-
     EnemyPriority ep = ENEMY_PRIMARY;
     list<ObjectID_t>::const_iterator itr = m_Enemies.begin();
 
@@ -1272,8 +1212,6 @@ ObjectID_t Monster::getEnemy(EnemyPriority enemyPriority) const {
 
     cerr << "Monster::getEnemy() : NoSuchElementException" << endl;
     throw NoSuchElementException();
-
-    __END_CATCH
 }
 
 
@@ -1306,8 +1244,6 @@ uint Monster::getMaxEnemies() const
 string Monster::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     __BEGIN_DEBUG
@@ -1327,8 +1263,6 @@ string Monster::toString() const
     __END_DEBUG
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1336,14 +1270,10 @@ string Monster::toString() const
 void Monster::setDamaged(bool value)
 
 {
-    __BEGIN_TRY
-
     // If there is an AI...
     if (m_pBrain != NULL) {
         m_pBrain->setDamaged(value);
     }
-
-    __END_CATCH
 }
 
 void Monster::addPrecedence(const string& Name, int PartyID, int damage) {
@@ -1368,16 +1298,14 @@ void Monster::clearEnemyLimitTime() {
 bool Monster::hasNextMonsterSummonInfo()
 
 {
-    __BEGIN_TRY
+    {
+        const MonsterInfo* pMonsterInfo = de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType);
+        Assert(pMonsterInfo != NULL);
 
-    const MonsterInfo* pMonsterInfo = de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType);
-    Assert(pMonsterInfo != NULL);
-
-    if (pMonsterInfo->hasNextMonsterSummonInfo(m_MonsterSummonStep)) {
-        return true;
+        if (pMonsterInfo->hasNextMonsterSummonInfo(m_MonsterSummonStep)) {
+            return true;
+        }
     }
-
-    __END_CATCH
 
     return false;
 }
@@ -1385,19 +1313,17 @@ bool Monster::hasNextMonsterSummonInfo()
 bool Monster::getMonsterSummonInfo(SUMMON_INFO2& summonInfo)
 
 {
-    __BEGIN_TRY
+    {
+        const MonsterInfo* pMonsterInfo = de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType);
+        Assert(pMonsterInfo != NULL);
 
-    const MonsterInfo* pMonsterInfo = de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType);
-    Assert(pMonsterInfo != NULL);
+        if (pMonsterInfo->getMonsterSummonInfo(m_MonsterSummonStep, summonInfo)) {
+            // Prepare the next summon step.
+            m_MonsterSummonStep++;
 
-    if (pMonsterInfo->getMonsterSummonInfo(m_MonsterSummonStep, summonInfo)) {
-        // Prepare the next summon step.
-        m_MonsterSummonStep++;
-
-        return true;
+            return true;
+        }
     }
-
-    __END_CATCH
 
     return false;
 }

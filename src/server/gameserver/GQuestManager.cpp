@@ -26,8 +26,6 @@
 void GQuestManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<SavedQuestRow> rows = defaultPlayRecordRepository().loadSavedQuests(m_pOwner->getName());
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -60,25 +58,17 @@ void GQuestManager::load()
             m_pOwner->addEffect(pEffect);
         }
     }
-
-    __END_CATCH
 }
 
 void GQuestManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
     m_GQuestInventory.load(m_pOwner->getName());
     refreshQuest(false);
-
-    __END_CATCH
 }
 
 void GQuestManager::refreshQuest(bool sendPacket) {
-    __BEGIN_TRY
-
     unordered_map<DWORD, GQuestInfo*>& infos = GQuestInfoManager::Instance().getInfos();
 
     unordered_map<DWORD, GQuestInfo*>::iterator itr = infos.begin();
@@ -107,8 +97,6 @@ void GQuestManager::refreshQuest(bool sendPacket) {
         m_pOwner->getPlayer()->sendPacket(getStatusInfoPacket());
         m_pOwner->getPlayer()->sendPacket(m_GQuestInventory.getInventoryPacket());
     }
-
-    __END_CATCH
 }
 
 Packet* GQuestManager::getStatusInfoPacket() const {

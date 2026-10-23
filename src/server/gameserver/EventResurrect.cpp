@@ -42,7 +42,6 @@ EventResurrect::~EventResurrect()
 void EventResurrect::activate()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(m_pGamePlayer != NULL);
@@ -100,7 +99,6 @@ void EventResurrect::activate()
     // pDeadPC->registerObject();
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EventResurrect::toString() const

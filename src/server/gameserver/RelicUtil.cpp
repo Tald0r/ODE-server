@@ -36,8 +36,6 @@
 void sendBloodBibleEffect(Object* pObject, Effect::EffectClass EClass)
 
 {
-    __BEGIN_TRY
-
     Assert(pObject != NULL);
 
     switch (pObject->getObjectClass()) {
@@ -71,8 +69,6 @@ void sendBloodBibleEffect(Object* pObject, Effect::EffectClass EClass)
     default:
         return;
     }
-
-    __END_CATCH
 }
 
 
@@ -85,8 +81,6 @@ void sendBloodBibleEffect(Object* pObject, Effect::EffectClass EClass)
 void sendHolyLandWarpEffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     bool bSend = false;
@@ -167,15 +161,11 @@ void sendHolyLandWarpEffect(Creature* pCreature)
 
         pCreature->getZone()->broadcastPacket(x, y, &gcAddEffectToTile);
     }
-
-    __END_CATCH
 }
 
 bool addEffectRelicPosition(Item* pItem, ZoneID_t zoneID, TPOINT pt)
 
 {
-    __BEGIN_TRY
-
     if (!pItem->isFlag(Effect::EFFECT_CLASS_RELIC_POSITION)) {
         EffectRelicPosition* pPosition = new EffectRelicPosition(pItem);
         // pPosition->setNextTime(10);     // broadcast the message after 1 second
@@ -192,15 +182,11 @@ bool addEffectRelicPosition(Item* pItem, ZoneID_t zoneID, TPOINT pt)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool deleteEffectRelicPosition(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     // Remove the EffectRelicPosition.
@@ -217,16 +203,12 @@ bool deleteEffectRelicPosition(Item* pItem)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 // Removes the effects related to pItem attached to the corpse.
 bool deleteRelicEffect(Corpse* pCorpse, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pCorpse != NULL);
     Assert(pItem != NULL);
 
@@ -271,15 +253,11 @@ bool deleteRelicEffect(Corpse* pCorpse, Item* pItem)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 void saveItemInCorpse(Item* pItem, Corpse* pCorpse)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
     Assert(pCorpse != NULL);
 
@@ -298,8 +276,6 @@ void saveItemInCorpse(Item* pItem, Corpse* pCorpse)
 
         pItem->tinysave(pField);
     }
-
-    __END_CATCH
 }
 
 bool isRelicItem(const Item* pItem) {
@@ -333,8 +309,6 @@ bool isRelicItem(Item::ItemClass IClass) {
 bool addHasRelicEffect(Zone* pZone, Corpse* pCorpse, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (pZone == NULL)
         return false;
 
@@ -377,16 +351,12 @@ bool addHasRelicEffect(Zone* pZone, Corpse* pCorpse, Item* pItem)
     pZone->broadcastPacket(pCorpse->getX(), pCorpse->getY(), &gcAddEffect);
 
     return true;
-
-    __END_CATCH
 }
 
 
 bool deleteRelicEffect(Creature* pCreature, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
     Assert(pCreature != NULL);
 
@@ -424,15 +394,11 @@ bool deleteRelicEffect(Creature* pCreature, Item* pItem)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool addRelicEffect(Creature* pCreature, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pItem != NULL);
 
@@ -505,8 +471,6 @@ bool addRelicEffect(Creature* pCreature, Item* pItem)
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
 
     return true;
-
-    __END_CATCH
 }
 
 
@@ -553,8 +517,6 @@ bool dropRelicToZone(PlayerCreature* pPC, Item* pItem)
 bool dropRelicToZone(Creature* pCreature, bool bSendPacket)
 
 {
-    __BEGIN_TRY
-
     bool bDrop = false;
 
     ///////////////////////////////////////////////////////////////////
@@ -639,8 +601,6 @@ bool dropRelicToZone(Creature* pCreature, bool bSendPacket)
     }
 
     return bDrop;
-
-    __END_CATCH
 }
 
 
@@ -648,8 +608,6 @@ bool dropRelicToZone(Creature* pCreature, bool bSendPacket)
 bool dissectionRelicItem(Corpse* pCorpse, Item* pItem, const TPOINT& pt)
 
 {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
 
     if (!isRelicItem(pItem))
@@ -780,8 +738,6 @@ bool dissectionRelicItem(Corpse* pCorpse, Item* pItem, const TPOINT& pt)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 // When a relic warps away from pCorpse,
@@ -789,8 +745,6 @@ bool dissectionRelicItem(Corpse* pCorpse, Item* pItem, const TPOINT& pt)
 void sendRelicWarpEffect(Corpse* pCorpse)
 
 {
-    __BEGIN_TRY
-
     Assert(pCorpse != NULL);
 
     if (pCorpse->isFlag(Effect::EFFECT_CLASS_SHRINE_GUARD)) {
@@ -815,6 +769,4 @@ void sendRelicWarpEffect(Corpse* pCorpse)
             sendBloodBibleEffect(pCorpse, Effect::EFFECT_CLASS_CASTLE_SHRINE_VAMPIRE_WARP);
         }
     }
-
-    __END_CATCH
 }

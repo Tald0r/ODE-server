@@ -14,27 +14,19 @@
 //////////////////////////////////////////////////////////////////////////////
 EffectDragonEye::EffectDragonEye(Creature* pCreature)
 
-    : EffectHasRelic(pCreature){__BEGIN_TRY
+    : EffectHasRelic(pCreature) {}
 
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+EffectDragonEye::EffectDragonEye(Item* pItem)
 
-                                    __END_CATCH}
-
-      //////////////////////////////////////////////////////////////////////////////
-      //////////////////////////////////////////////////////////////////////////////
-      EffectDragonEye::EffectDragonEye(Item * pItem)
-
-    : EffectHasRelic(pItem) {
-    __BEGIN_TRY
-    __END_CATCH
-}
+    : EffectHasRelic(pItem) {}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDragonEye::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Double the HP
     if (pCreature->isSlayer()) {
         Slayer* pSlayer = dynamic_cast<Slayer*>(pCreature);
@@ -55,8 +47,6 @@ void EffectDragonEye::affect(Creature* pCreature)
         pOusters->initAllStat();
         pOusters->sendModifyInfo(prev);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -64,8 +54,6 @@ void EffectDragonEye::affect(Creature* pCreature)
 void EffectDragonEye::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Restore the HP
     if (pCreature->isSlayer()) {
         Slayer* pSlayer = dynamic_cast<Slayer*>(pCreature);
@@ -88,24 +76,18 @@ void EffectDragonEye::unaffect(Creature* pCreature)
     }
 
     EffectHasRelic::unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDragonEye::affect(Item* pItem)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDragonEye::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectDragonEye(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -17,11 +17,7 @@
 BloodBibleBonusManager::BloodBibleBonusManager()
 
 {
-    __BEGIN_TRY
-
     m_Count = 0;
-
-    __END_CATCH
 }
 
 BloodBibleBonusManager::~BloodBibleBonusManager()
@@ -37,32 +33,23 @@ BloodBibleBonusManager::~BloodBibleBonusManager()
 void BloodBibleBonusManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void BloodBibleBonusManager::clear()
 
 {
-    __BEGIN_TRY
-
     BloodBibleBonusHashMapItor itr = m_BloodBibleBonuses.begin();
     for (; itr != m_BloodBibleBonuses.end(); itr++) {
         SAFE_DELETE(itr->second);
     }
 
     m_BloodBibleBonuses.clear();
-
-    __END_CATCH
 }
 
 void BloodBibleBonusManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     clear();
@@ -90,22 +77,15 @@ void BloodBibleBonusManager::load()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void BloodBibleBonusManager::save()
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 BloodBibleBonus* BloodBibleBonusManager::getBloodBibleBonus(BloodBibleBonusType_t bloodBibleBonusType) const {
-    __BEGIN_TRY
-
     BloodBibleBonusHashMapConstItor itr = m_BloodBibleBonuses.find(bloodBibleBonusType);
 
     if (itr == m_BloodBibleBonuses.end()) {
@@ -114,15 +94,11 @@ BloodBibleBonus* BloodBibleBonusManager::getBloodBibleBonus(BloodBibleBonusType_
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 void BloodBibleBonusManager::addBloodBibleBonus(BloodBibleBonus* pBloodBibleBonus)
 
 {
-    __BEGIN_TRY
-
     Assert(pBloodBibleBonus != NULL);
 
     BloodBibleBonusHashMapConstItor itr = m_BloodBibleBonuses.find(pBloodBibleBonus->getType());
@@ -131,31 +107,21 @@ void BloodBibleBonusManager::addBloodBibleBonus(BloodBibleBonus* pBloodBibleBonu
     }
 
     m_BloodBibleBonuses[pBloodBibleBonus->getType()] = pBloodBibleBonus;
-
-    __END_CATCH
 }
 
 void BloodBibleBonusManager::setBloodBibleBonusRace(BloodBibleBonusType_t bloodBibleBonusType, Race_t race)
 
 {
-    __BEGIN_TRY
-
     getBloodBibleBonus(bloodBibleBonusType)->setRace(race);
-
-    __END_CATCH
 }
 
 void BloodBibleBonusManager::makeHolyLandBonusInfo(GCHolyLandBonusInfo& gcHolyLandBonusInfo)
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 string BloodBibleBonusManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "BloodBibleBonusManager(\n";
@@ -166,6 +132,4 @@ string BloodBibleBonusManager::toString() const
     }
 
     return msg.toString();
-
-    __END_CATCH
 }

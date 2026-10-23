@@ -131,8 +131,6 @@ TPOINT randPos(int ox, int oy, int threshold, Zone* pZone)
 MonsterAI::MonsterAI(Monster* pMonster, uint type)
 
 {
-    __BEGIN_TRY
-
     Assert(pMonster != NULL); // by sigi
 
     m_pBody = pMonster;
@@ -188,8 +186,6 @@ MonsterAI::MonsterAI(Monster* pMonster, uint type)
     m_pCondChecker[DIRECTIVE_COND_ENEMY_ON_AIR] = checkEnemyOnAir;
     m_pCondChecker[DIRECTIVE_COND_ENEMY_ON_SAFE_ZONE] = checkEnemyOnSafeZone;
     m_pCondChecker[DIRECTIVE_COND_CAN_ATTACK_THROWING_AXE] = checkCanAttackThrowingAxe;
-
-    __END_CATCH
 }
 
 MonsterAI::~MonsterAI()
@@ -205,11 +201,7 @@ MonsterAI::~MonsterAI()
 void MonsterAI::addDirective(Directive* pDirective)
 
 {
-    __BEGIN_TRY
-
     m_pDirectiveSet->addDirective(pDirective);
-
-    __END_CATCH
 }
 
 
@@ -220,20 +212,14 @@ void MonsterAI::addDirective(Directive* pDirective)
 bool MonsterAI::checkCondition(int condition, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     Assert(0 <= condition && condition < DIRECTIVE_COND_MAX);
     //	cout << m_pBody->toString() << " check condition " << condition << " to" << pEnemy->toString() << endl;
     return m_pCondChecker[condition](m_pBody, pEnemy);
-
-    __END_CATCH
 }
 
 bool MonsterAI::checkDirective(Directive* pDirective, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     if (pDirective == NULL)
         return false;
 
@@ -252,8 +238,6 @@ bool MonsterAI::checkDirective(Directive* pDirective, Creature* pEnemy)
     }
 
     return rValue;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -577,8 +561,6 @@ bool MonsterAI::move(ZoneCoord_t ex, ZoneCoord_t ey)
 bool MonsterAI::move(Creature* pEnemy, bool bRetreat)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = m_pBody->getZone();
     ZoneCoord_t enemyX = pEnemy->getX();
     ZoneCoord_t enemyY = pEnemy->getY();
@@ -623,15 +605,11 @@ bool MonsterAI::move(Creature* pEnemy, bool bRetreat)
     }
 
     return move(ex, ey);
-
-    __END_CATCH
 }
 
 bool MonsterAI::flee(Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     if (m_Panic == 0) {
         if (m_Courage == 0) {
             m_Panic = m_PanicMax;
@@ -649,14 +627,11 @@ bool MonsterAI::flee(Creature* pEnemy)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 int MonsterAI::useSkill(Creature* pEnemy, SkillType_t SkillType, int ratio)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pEnemy != NULL);
@@ -920,7 +895,6 @@ int MonsterAI::useSkill(Creature* pEnemy, SkillType_t SkillType, int ratio)
     return 0;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -930,8 +904,6 @@ int MonsterAI::useSkill(Creature* pEnemy, SkillType_t SkillType, int ratio)
 void MonsterAI::deal(Creature* pEnemy, const Timeval& currentTime)
 
 {
-    __BEGIN_TRY
-
     Assert(pEnemy != NULL); // by sigi
 
     // Get the directive list.
@@ -1164,16 +1136,12 @@ void MonsterAI::deal(Creature* pEnemy, const Timeval& currentTime)
     }
 
     __END_PROFILE_MONSTER("MAI_POST_DEAL");
-
-    __END_CATCH
 }
 
 // Take the action performed on death.
 void MonsterAI::actDeadAction(Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     // Because of MonsterAI's limits, the actions that can be performed
     // when there is no enemy are limited.
     if (pEnemy != NULL) {
@@ -1222,15 +1190,11 @@ void MonsterAI::actDeadAction(Creature* pEnemy)
             }
         }
     }
-
-    __END_CATCH
 }
 
 void MonsterAI::setDelay(const Timeval& currentTime)
 
 {
-    __BEGIN_TRY
-
     // Reuse the time obtained earlier, to save computation.
     // Timeval currentTime;
     // getCurrentTime(currentTime);
@@ -1262,15 +1226,11 @@ void MonsterAI::setDelay(const Timeval& currentTime)
     } else {
         m_pBody->setNextTurn(currentTime + nexttime);
     }
-
-    __END_CATCH
 }
 
 void MonsterAI::setAttackDelay(const Timeval& currentTime)
 
 {
-    __BEGIN_TRY
-
     // Reuse the time obtained earlier, to save computation.
     // Timeval currentTime;
     // getCurrentTime(currentTime);
@@ -1296,9 +1256,6 @@ void MonsterAI::setAttackDelay(const Timeval& currentTime)
     } else {
         m_pBody->setNextTurn(currentTime + nexttime);
     }
-
-
-    __END_CATCH
 }
 
 

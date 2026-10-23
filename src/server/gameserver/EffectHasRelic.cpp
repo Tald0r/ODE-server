@@ -27,11 +27,7 @@
 EffectHasRelic::EffectHasRelic(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,19 +35,13 @@ EffectHasRelic::EffectHasRelic(Creature* pCreature)
 EffectHasRelic::EffectHasRelic(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     setTarget(pItem);
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectHasRelic::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pTarget != NULL);
 
     switch (m_pTarget->getObjectClass()) {
@@ -68,17 +58,11 @@ void EffectHasRelic::affect()
     default:
         return;
     }
-
-
-    __END_CATCH
 }
 
 void EffectHasRelic::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     switch (m_pTarget->getObjectClass()) {
     case OBJECT_CLASS_CREATURE: {
         Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
@@ -93,8 +77,6 @@ void EffectHasRelic::unaffect()
     default:
         throw Error("Wrong Object Class");
     }
-
-    __END_CATCH
 }
 
 
@@ -103,7 +85,6 @@ void EffectHasRelic::unaffect()
 void EffectHasRelic::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectHasCastleSymbol" << "unaffect BEGIN" << endl;
@@ -125,7 +106,6 @@ void EffectHasRelic::unaffect(Creature* pCreature)
     // cout << "EffectHasCastleSymbol" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -133,7 +113,6 @@ void EffectHasRelic::unaffect(Creature* pCreature)
 void EffectHasRelic::unaffect(Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -160,5 +139,4 @@ void EffectHasRelic::unaffect(Item* pItem)
 
 
     __END_DEBUG
-    __END_CATCH
 }

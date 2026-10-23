@@ -27,12 +27,8 @@ const uint TREASURE_RATIO_MODULUS = 100000;
 TreasureOptionType::TreasureOptionType()
 
 {
-    __BEGIN_TRY
-
     m_Ratio = 0;
     m_OptionType = 0;
-
-    __END_CATCH
 }
 
 TreasureOptionType::~TreasureOptionType()
@@ -45,8 +41,6 @@ TreasureOptionType::~TreasureOptionType()
 void TreasureOptionType::loadFromFile(ifstream& file)
 
 {
-    __BEGIN_TRY
-
     file.read((char*)&m_OptionType, sizeof(int));
     file.read((char*)&m_Ratio, sizeof(int));
 
@@ -57,15 +51,11 @@ void TreasureOptionType::loadFromFile(ifstream& file)
         cerr << "TreasureOptionType::loadFromFile() : Unknown Option" << endl;
         throw Error("TreasureOptionType::loadFromFile() : Unknown Option");
     }
-
-    __END_CATCH
 }
 
 void TreasureOptionType::parseString(const string& text)
 
 {
-    __BEGIN_TRY
-
     // cout << "OptionTypeText:" << text << endl;
 
     if (text.size() < 3)
@@ -89,20 +79,14 @@ void TreasureOptionType::parseString(const string& text)
         cerr << "TreasureOptionType::parseString() : Error[" << text << "]" << endl;
         throw Error("TreasureOptionType::parseString() : Error");
     }
-
-    __END_CATCH
 }
 
 string TreasureOptionType::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "TreasureOptionType(" << "OptionType:" << m_OptionType << ",Ratio:" << m_Ratio << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -112,14 +96,11 @@ string TreasureOptionType::toString(void) const
 TreasureItemType::TreasureItemType()
 
 {
-    __BEGIN_TRY
-
     m_ItemType = 0;
     m_Ratio = 0;
     // add by sonic 2006.10.21;
     m_OptionRatioMax = 2;
     // end by sonic
-    __END_CATCH
 }
 
 TreasureItemType::~TreasureItemType()
@@ -140,8 +121,6 @@ TreasureItemType::~TreasureItemType()
 void TreasureItemType::loadFromFile(int itemClass, ifstream& file)
 
 {
-    __BEGIN_TRY
-
     int OptionTypeCount = 0;
 
     file.read((char*)&m_ItemType, sizeof(int));
@@ -168,15 +147,11 @@ void TreasureItemType::loadFromFile(int itemClass, ifstream& file)
         TreasureOptionType* pTOT = m_TreasureOptionTypes[i];
         m_OptionTypeTotalRatio += pTOT->getRatio();
     }
-
-    __END_CATCH
 }
 
 void TreasureItemType::parseString(int itemClass, const string& text)
 
 {
-    __BEGIN_TRY
-
     ////////////////////////////////////////////////////////////
     // (1,50) (STR+1,50)(STR+2,30)(STR+30)
     ////////////////////////////////////////////////////////////
@@ -238,15 +213,11 @@ void TreasureItemType::parseString(int itemClass, const string& text)
         TreasureOptionType* pTOT = m_TreasureOptionTypes[i];
         m_OptionTypeTotalRatio += pTOT->getRatio();
     }
-
-    __END_CATCH
 }
 
 bool TreasureItemType::getRandomOption(ITEM_TEMPLATE* pTemplate)
 
 {
-    __BEGIN_TRY
-
     if (m_OptionTypeTotalRatio == 0) {
         // pTemplate->OptionType.clear();
         // cout << "OptionTypeTotalRatio = 0" << endl;
@@ -303,15 +274,11 @@ bool TreasureItemType::getRandomOption(ITEM_TEMPLATE* pTemplate)
     //	<< optionRatio << ", "
     //	<< ratioSum << endl;
     return false;
-
-    __END_CATCH
 }
 
 string TreasureItemType::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "\tTreasureItemType\n\t\t\t(" << "\n\t\t\t\tItemType:" << m_ItemType << ",Ratio:" << m_Ratio << "\n";
 
@@ -321,8 +288,6 @@ string TreasureItemType::toString(void) const
 
     msg << "\n\t\t\t)";
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -332,15 +297,12 @@ string TreasureItemType::toString(void) const
 TreasureItemClass::TreasureItemClass()
 
 {
-    __BEGIN_TRY
-
     m_ItemClass = Item::ITEM_CLASS_MAX;
     m_Ratio = 0;
 
     // add By Sonic 2006.10.21
     m_OptionRatioMax = 2;
     // end by sonic
-    __END_CATCH
 }
 
 TreasureItemClass::~TreasureItemClass()
@@ -361,8 +323,6 @@ TreasureItemClass::~TreasureItemClass()
 void TreasureItemClass::loadFromFile(ifstream& file)
 
 {
-    __BEGIN_TRY
-
     int ItemTypeCount = 0;
     file.read((char*)&m_ItemClass, sizeof(int));
     file.read((char*)&m_Ratio, sizeof(int));
@@ -379,15 +339,11 @@ void TreasureItemClass::loadFromFile(ifstream& file)
         TreasureItemType* pTIT = m_TreasureItemTypes[i];
         m_ItemTypeTotalRatio += pTIT->getRatio();
     }
-
-    __END_CATCH
 }
 
 void TreasureItemClass::parseString(const string& text)
 
 {
-    __BEGIN_TRY
-
     ////////////////////////////////////////////////////////////
     // (SWORD, 50)
     // <(1,50) (STR+1,50)(STR+2,30)(STR+3,20)>
@@ -442,15 +398,11 @@ void TreasureItemClass::parseString(const string& text)
         TreasureItemType* pTIT = m_TreasureItemTypes[i];
         m_ItemTypeTotalRatio += pTIT->getRatio();
     }
-
-    __END_CATCH
 }
 
 bool TreasureItemClass::getRandomItem(ITEM_TEMPLATE* pTemplate)
 
 {
-    __BEGIN_TRY
-
     int itemTypeRatio = rand() % TREASURE_RATIO_MODULUS;
     int ratioSum = 0;
 
@@ -485,15 +437,11 @@ bool TreasureItemClass::getRandomItem(ITEM_TEMPLATE* pTemplate)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 string TreasureItemClass::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "\tTreasureItemClass\n\t\t(" << "\n\t\t\tItemClass:" << m_ItemClass << ",Ratio:" << m_Ratio << "\n";
 
@@ -503,15 +451,11 @@ string TreasureItemClass::toString(void) const
 
     msg << "\n\t\t)";
     return msg.toString();
-
-    __END_CATCH
 }
 
 Item::ItemClass TreasureItemClass::getItemClassFromString(const string& text)
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < Item::ITEM_CLASS_MAX; i++) {
         if (strcasecmp(text.c_str(), ItemClass2ShortString[i].c_str()) == 0) {
             return (Item::ItemClass)i;
@@ -522,8 +466,6 @@ Item::ItemClass TreasureItemClass::getItemClassFromString(const string& text)
     msg << "TreasureItemClass::getItemClassFromString() : Unknown String[" << text << "]";
     cerr << msg.toString() << endl;
     throw msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -533,15 +475,11 @@ Item::ItemClass TreasureItemClass::getItemClassFromString(const string& text)
 Treasure::Treasure()
 
 {
-    __BEGIN_TRY
-
     m_ItemRatio = 0;
     m_OptionRatio = 0;
     m_ItemClassTotalRatio = 0;
     // add by sonic 2006.10.21;
     m_OptionRatioMax = 2;
-
-    __END_CATCH
 }
 
 Treasure::~Treasure()
@@ -562,8 +500,6 @@ Treasure::~Treasure()
 void Treasure::loadFromFile(ifstream& file)
 
 {
-    __BEGIN_TRY
-
     int ItemClassCount = 0;
 
     file.read((char*)&m_ItemRatio, sizeof(int));
@@ -581,15 +517,11 @@ void Treasure::loadFromFile(ifstream& file)
         TreasureItemClass* pTIC = m_TreasureItemClasses[i];
         m_ItemClassTotalRatio += pTIC->getRatio();
     }
-
-    __END_CATCH
 }
 
 void Treasure::parseString(const string& text)
 
 {
-    __BEGIN_TRY
-
     ////////////////////////////////////////////////////////////
     // (50,50)
     // BEGIN_ITEM_CLASS (SWORD, 50)
@@ -666,16 +598,11 @@ void Treasure::parseString(const string& text)
         TreasureItemClass* pTIC = m_TreasureItemClasses[i];
         m_ItemClassTotalRatio += pTIC->getRatio();
     }
-
-    __END_CATCH
 }
 
 bool Treasure::getRandomItem(ITEM_TEMPLATE* pTemplate)
 
 {
-    __BEGIN_TRY
-
-
     if (0 == m_ItemClassTotalRatio)
         return false;
 
@@ -720,15 +647,11 @@ bool Treasure::getRandomItem(ITEM_TEMPLATE* pTemplate)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool Treasure::getRandomItem(ITEM_TEMPLATE* pTemplate, int nPercent)
 
 {
-    __BEGIN_TRY
-
     int ItemRatio = rand() % TREASURE_RATIO_MODULUS;
 
     int ModifyItemRatio = getPercentValue(m_ItemRatio, nPercent);
@@ -772,15 +695,11 @@ bool Treasure::getRandomItem(ITEM_TEMPLATE* pTemplate, int nPercent)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 string Treasure::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "\tTreasure\n\t(" << "\n\t\tItemRatio:" << m_ItemRatio << "\n\t\tOptionRatio:" << m_ItemRatio << "\n";
 
@@ -790,8 +709,6 @@ string Treasure::toString(void) const
 
     msg << "\n\t)";
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -800,7 +717,7 @@ string Treasure::toString(void) const
 
 TreasureList::TreasureList()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 TreasureList::~TreasureList()
 
@@ -812,9 +729,6 @@ TreasureList::~TreasureList()
 void TreasureList::loadFromFile(ifstream& file)
 
 {
-    __BEGIN_TRY
-
-
     list<Treasure*>::iterator itr = m_Treasures.begin();
     for (; itr != m_Treasures.end(); itr++) {
         Treasure* pTreasure = *itr;
@@ -831,15 +745,11 @@ void TreasureList::loadFromFile(ifstream& file)
         pTreasure->loadFromFile(file);
         addTreasure(pTreasure);
     }
-
-    __END_CATCH
 }
 
 void TreasureList::parseString(const string& text)
 
 {
-    __BEGIN_TRY
-
     ////////////////////////////////////////////////////////////
     // BEGIN_TREASURE (50)
     //   BEGIN_ITEM_CLASS (SWORD, 50)
@@ -879,26 +789,18 @@ void TreasureList::parseString(const string& text)
 
         substring.clear();
     }
-
-    __END_CATCH
 }
 
 void TreasureList::addTreasure(Treasure* pTreasure)
 
 {
-    __BEGIN_TRY
-
     Assert(pTreasure != NULL);
     m_Treasures.push_back(pTreasure);
-
-    __END_CATCH
 }
 
 string TreasureList::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "TreasureList\n(\n";
 
@@ -909,8 +811,6 @@ string TreasureList::toString(void) const
 
     msg << "\n)";
     return msg.toString();
-
-    __END_CATCH
 }
 
 TreasureLists::TreasureLists() {}

@@ -20,11 +20,7 @@
 EffectShareHP::EffectShareHP(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -32,16 +28,12 @@ EffectShareHP::EffectShareHP(Creature* pCreature)
 void EffectShareHP::affect()
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectShareHP " << "begin begin" << endl;
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
 
     // cout << "EffectShareHP " << "begin end" << endl;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -49,12 +41,8 @@ void EffectShareHP::affect()
 void EffectShareHP::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectShareHP " << "begin" << endl;
     // cout << "EffectShareHP " << "end" << endl;
-
-    __END_CATCH
 }
 
 
@@ -62,17 +50,13 @@ void EffectShareHP::affect(Creature* pCreature)
 //////////////////////////////////////////////////////////////////////////////
 void EffectShareHP::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectShareHP::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -83,7 +67,6 @@ void EffectShareHP::unaffect(Creature* pCreature)
     pCreature->removeFlag(Effect::EFFECT_CLASS_SHARE_HP);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -91,33 +74,22 @@ void EffectShareHP::unaffect(Creature* pCreature)
 void EffectShareHP::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectShareHP::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY
-
-
-         __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectShareHP::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectShareHP(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

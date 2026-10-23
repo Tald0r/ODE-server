@@ -173,15 +173,11 @@ template <class T>
 typename PCLimiter<T>::LimitInfo_t* PCLimiter<T>::getLimitInfoByIndex(int index)
 
 {
-    __BEGIN_TRY
-
     if (index < 0 || index >= (int)m_LimitInfos.size()) {
         return NULL;
     }
 
     return &(m_LimitInfos[index]);
-
-    __END_CATCH
 }
 
 #endif

@@ -85,8 +85,6 @@
 #include "skill/VampireCastleSkillSlot.h"
 
 void Slayer::initCastleSkill() {
-    __BEGIN_TRY
-
     removeAllCastleSkill();
 
     if (!getZone()->isHolyLand())
@@ -120,13 +118,9 @@ void Slayer::initCastleSkill() {
 
         addSkill(pCastleSkillSlot);
     }
-
-    __END_CATCH
 }
 
 void Slayer::initAllStat(int numPartyMember) {
-    __BEGIN_TRY
-
     BASIC_ATTR attr{};
     Creature::CreatureClass CClass = getCreatureClass();
 
@@ -1081,9 +1075,6 @@ void Slayer::initAllStat(int numPartyMember) {
     // When current HP exceeds MAX HP.
 
     // Attributes can change with the size of the party.
-
-
-    __END_CATCH
 }
 
 int Slayer::getBloodBibleSignOpenNum() const {
@@ -1125,8 +1116,6 @@ int Slayer::getBloodBibleSignOpenNum() const {
 // BASIC   = change contributed by items
 //////////////////////////////////////////////////////////////////////////////
 void Slayer::computeStatOffset(void) {
-    __BEGIN_TRY
-
     Creature::CreatureClass CClass = getCreatureClass();
     BASIC_ATTR cur_attr{};
 
@@ -1167,13 +1156,9 @@ void Slayer::computeStatOffset(void) {
 
     m_CriticalRatio[ATTR_CURRENT] = computeCriticalRatio(CClass, &cur_attr);
     m_CriticalRatio[ATTR_CURRENT] += m_CriticalRatio[ATTR_MAX];
-
-    __END_CATCH
 }
 
 void Slayer::computeItemStat(Item* pItem) {
-    __BEGIN_TRY
-
     if (isSlayerWeapon(pItem->getItemClass())) {
         // For a weapon, add the weapon's speed parameter.
         ItemInfo* pItemInfo = de::gameContext().itemInfos().getItemInfo(pItem->getItemClass(), pItem->getItemType());
@@ -1217,14 +1202,9 @@ void Slayer::computeItemStat(Item* pItem) {
     for (iOptions = defaultOptions.begin(); iOptions != defaultOptions.end(); iOptions++) {
         computeOptionStat(*iOptions);
     }
-
-
-    __END_CATCH
 }
 
 void Slayer::computeOptionStat(Item* pItem) {
-    __BEGIN_TRY
-
     // Fetch the option types.
 
     // Additional options.
@@ -1241,9 +1221,6 @@ void Slayer::computeOptionStat(Item* pItem) {
     for (iOptions = defaultOptions.begin(); iOptions != defaultOptions.end(); iOptions++) {
         computeOptionStat(*iOptions);
     }
-
-
-    __END_CATCH
 }
 
 void Slayer::computeOptionClassStat(OptionClass OClass, int PlusPoint) {
@@ -1447,20 +1424,13 @@ void Slayer::computeOptionClassStat(OptionClass OClass, int PlusPoint) {
 }
 
 void Slayer::computeOptionStat(OptionType_t optionType) {
-    __BEGIN_TRY
-
     OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(optionType);
     computeOptionClassStat(pOptionInfo->getClass(), pOptionInfo->getPlusPoint());
-
-
-    __END_CATCH
 }
 
 void Slayer::addModifyInfo(const SLAYER_RECORD& prev, ModifyInfo& pkt) const
 
 {
-    __BEGIN_TRY
-
     if (prev.pSTR[ATTR_CURRENT] != m_STR[ATTR_CURRENT])
         pkt.addShortData(MODIFY_CURRENT_STR, m_STR[ATTR_CURRENT]);
     if (prev.pSTR[ATTR_MAX] != m_STR[ATTR_MAX])
@@ -1511,15 +1481,11 @@ void Slayer::addModifyInfo(const SLAYER_RECORD& prev, ModifyInfo& pkt) const
         pkt.addShortData(MODIFY_RANK, getRank());
         pkt.addLongData(MODIFY_RANK_EXP, getRankGoalExp());
     }
-
-    __END_CATCH
 }
 
 void Slayer::sendModifyInfo(const SLAYER_RECORD& prev) const
 
 {
-    __BEGIN_TRY
-
     GCModifyInformation gcModifyInformation;
     addModifyInfo(prev, gcModifyInformation);
     m_pPlayer->sendPacket(&gcModifyInformation);
@@ -1528,8 +1494,6 @@ void Slayer::sendModifyInfo(const SLAYER_RECORD& prev) const
     GCBloodBibleSignInfo gcInfo;
     gcInfo.setSignInfo(pInfo);
     m_pPlayer->sendPacket(&gcInfo);
-
-    __END_CATCH
 }
 
 void Slayer::initAllStatAndSend() {

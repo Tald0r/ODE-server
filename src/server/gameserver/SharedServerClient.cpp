@@ -33,11 +33,7 @@
 SharedServerClient::SharedServerClient(Socket* pSocket)
 
     : Player(pSocket) {
-    __BEGIN_TRY
-
     m_Mutex.setName("SharedServerClient");
-
-    __END_CATCH
 }
 
 
@@ -60,8 +56,6 @@ SharedServerClient::~SharedServerClient() noexcept
 //
 //////////////////////////////////////////////////////////////////////
 void SharedServerClient::processCommand() {
-    __BEGIN_TRY
-
     // Buffer that temporarily holds the packet header.
     char header[szPacketHeader];
     PacketID_t packetID;
@@ -147,8 +141,6 @@ void SharedServerClient::processCommand() {
         }
     } catch (InsufficientDataException& ide) {
     }
-
-    __END_CATCH
 }
 
 
@@ -161,8 +153,6 @@ void SharedServerClient::processCommand() {
 //
 //////////////////////////////////////////////////////////////////////
 void SharedServerClient::processOutput() {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     try {
@@ -172,8 +162,6 @@ void SharedServerClient::processOutput() {
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -183,8 +171,6 @@ void SharedServerClient::processOutput() {
 //
 //////////////////////////////////////////////////////////////////////
 void SharedServerClient::sendPacket(Packet* pPacket) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     try {
@@ -193,8 +179,6 @@ void SharedServerClient::sendPacket(Packet* pPacket) {
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -205,8 +189,6 @@ void SharedServerClient::sendPacket(Packet* pPacket) {
 string SharedServerClient::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     //////////////////////////////////////////////////
@@ -222,6 +204,4 @@ string SharedServerClient::toString() const
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return msg.toString();
-
-    __END_CATCH
 }

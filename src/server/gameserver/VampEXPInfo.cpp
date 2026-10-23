@@ -16,7 +16,7 @@
 
 VampEXPInfo::VampEXPInfo()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 VampEXPInfo::~VampEXPInfo()
 
@@ -25,14 +25,10 @@ VampEXPInfo::~VampEXPInfo()
 string VampEXPInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "VampEXPInfo (" << " Level : " << (int)m_Level << " GoalExp : " << (int)m_GoalExp
         << " AccumExp : " << (int)m_AccumExp << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,12 +38,8 @@ string VampEXPInfo::toString() const
 VampEXPInfoManager::VampEXPInfoManager()
 
 {
-    __BEGIN_TRY
-
     m_VampEXPCount = 0;
     m_VampEXPInfoList = NULL;
-
-    __END_CATCH
 }
 
 VampEXPInfoManager::~VampEXPInfoManager()
@@ -68,17 +60,12 @@ VampEXPInfoManager::~VampEXPInfoManager()
 void VampEXPInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void VampEXPInfoManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     int maxLevel = 0;
@@ -112,38 +99,27 @@ void VampEXPInfoManager::load()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void VampEXPInfoManager::addVampEXPInfo(VampEXPInfo* pVampEXPInfo)
 
 {
-    __BEGIN_TRY
-
     Assert(pVampEXPInfo != NULL);
     Assert(m_VampEXPInfoList[pVampEXPInfo->getLevel()] == NULL);
 
     m_VampEXPInfoList[pVampEXPInfo->getLevel()] = pVampEXPInfo;
-
-    __END_CATCH
 }
 
 VampEXPInfo* VampEXPInfoManager::getVampEXPInfo(uint VampEXPType) const {
-    __BEGIN_TRY
-
     Assert(VampEXPType < m_VampEXPCount);
     Assert(m_VampEXPInfoList[VampEXPType] != NULL);
 
     return m_VampEXPInfoList[VampEXPType];
-
-    __END_CATCH
 }
 
 string VampEXPInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "VampEXPInfoManager(";
@@ -159,6 +135,4 @@ string VampEXPInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

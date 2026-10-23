@@ -34,8 +34,6 @@ EventKick::~EventKick()
 void EventKick::sendMessage()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pGamePlayer != NULL);
     Creature* pCreature = m_pGamePlayer->getCreature();
 
@@ -53,15 +51,12 @@ void EventKick::sendMessage()
     GCSystemMessage gcSystemMessage;
     gcSystemMessage.setMessage(sMsg);
     pCreature->getPlayer()->sendPacket(&gcSystemMessage);
-
-    __END_CATCH
 }
 
 
 void EventKick::activate()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -71,7 +66,6 @@ void EventKick::activate()
     m_pGamePlayer->setItemRatioBonusPoint(5);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EventKick::toString() const

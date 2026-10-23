@@ -8,7 +8,7 @@
 
 HolyLandManager::HolyLandManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 HolyLandManager::~HolyLandManager()
 
@@ -21,8 +21,6 @@ HolyLandManager::~HolyLandManager()
 }
 
 void HolyLandManager::addHolyLand(Zone* pZone) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     HashMapZoneItor itr = m_HolyLands.find(pZone->getZoneID());
@@ -34,8 +32,6 @@ void HolyLandManager::addHolyLand(Zone* pZone) {
     m_HolyLands[pZone->getZoneID()] = pZone;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void HolyLandManager::broadcast(Packet* pPacket) const {
@@ -83,8 +79,6 @@ void HolyLandManager::remainRaceWarPlayers() {
 void HolyLandManager::refreshHolyLandPlayers()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     HashMapZoneConstItor itr = m_HolyLands.begin();
@@ -97,6 +91,4 @@ void HolyLandManager::refreshHolyLandPlayers()
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }

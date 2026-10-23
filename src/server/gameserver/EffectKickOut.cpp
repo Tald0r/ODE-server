@@ -19,14 +19,10 @@ void EffectKickOut::affect() {
 }
 
 void EffectKickOut::unaffect() {
-    __BEGIN_TRY
-
     GCSystemMessage gcSM;
     gcSM.setMessage("The time limit has passed. Moving to the resurrection point in 10 seconds.");
     m_pZone->broadcastPacket(&gcSM);
 
     if (m_pZone != NULL)
         m_pZone->getPCManager()->transportAllCreatures(0xffff);
-
-    __END_CATCH
 }

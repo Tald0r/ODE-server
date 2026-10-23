@@ -60,8 +60,6 @@ private:
 
 template <typename GoalExpType, typename LevelType, LevelType MinLevel, LevelType MaxLevel, typename TotalExpType>
 void ExpTable<GoalExpType, LevelType, MinLevel, MaxLevel, TotalExpType>::load() {
-    __BEGIN_TRY
-
     vector<ExpTableRow> rows =
         defaultBalanceInfoRepository().loadExpTable(getDBLevelFieldName(), getDBGoalExpFieldName(),
                                                     getDBAccumExpFieldName(), getDBTableName(), getDBQueryCondition());
@@ -73,8 +71,6 @@ void ExpTable<GoalExpType, LevelType, MinLevel, MaxLevel, TotalExpType>::load() 
         m_Records[level].m_GoalExp = rows[r].goalExp;
         m_Records[level].m_AccumExp = rows[r].accumExp;
     }
-
-    __END_CATCH
 }
 
 template <class ExpTableClass> class SomethingGrowingUp {

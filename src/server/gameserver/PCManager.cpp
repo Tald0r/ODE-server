@@ -79,11 +79,7 @@
 PCManager::PCManager()
 
 {
-    __BEGIN_TRY
-
     m_bRefreshHolyLandPlayer = false;
-
-    __END_CATCH
 }
 
 
@@ -114,8 +110,6 @@ PCManager::~PCManager()
 void PCManager::processCreatures()
 
 {
-    __BEGIN_TRY
-
     WarSystem& warSystem = de::gameContext().warSystem();
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -926,8 +920,6 @@ void PCManager::processCreatures()
 
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -940,7 +932,6 @@ void PCManager::processCreatures()
 void PCManager::killCreature(Creature* pDeadCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pDeadCreature != NULL);
@@ -1157,7 +1148,6 @@ void PCManager::killCreature(Creature* pDeadCreature)
     pGamePlayer->setPlayerStatus(GPS_IGNORE_ALL);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1167,8 +1157,6 @@ void PCManager::transportAllCreatures(ZoneID_t ZoneID, ZoneCoord_t ZoneX, ZoneCo
                                       Turn_t delay) const
 
 {
-    __BEGIN_TRY
-
     vector<ObjectID_t> creatureIDs;
 
     Zone* pZone = NULL;
@@ -1249,9 +1237,6 @@ void PCManager::transportAllCreatures(ZoneID_t ZoneID, ZoneCoord_t ZoneX, ZoneCo
     } catch (Throwable& t) {
         filelog("PCManagerBug.log", "transportAllCreaturesBUG : %s", t.toString().c_str());
     }
-
-
-    __END_CATCH
 }
 
 vector<uint> PCManager::getPCNumByRace() const {
@@ -1278,13 +1263,9 @@ vector<uint> PCManager::getPCNumByRace() const {
 string PCManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "PCManager(" << CreatureManager::toString() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

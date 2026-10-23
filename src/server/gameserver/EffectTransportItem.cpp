@@ -22,8 +22,6 @@ EffectTransportItem::EffectTransportItem(Zone* pZone, ZoneCoord_t sx, ZoneCoord_
                                          ZoneCoord_t y, Item* pItem, Turn_t delay)
 
     : Effect(pZone, x, y, pItem, delay) {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
     Assert(getTarget() != NULL);
     Assert(pTargetZone != NULL);
@@ -39,8 +37,6 @@ EffectTransportItem::EffectTransportItem(Zone* pZone, ZoneCoord_t sx, ZoneCoord_
 
     // Server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 
@@ -66,11 +62,7 @@ EffectTransportItem::~EffectTransportItem()
 void EffectTransportItem::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     //	throw UnsupportedError();
-
-    __END_CATCH
 }
 
 
@@ -80,8 +72,6 @@ void EffectTransportItem::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Obje
 void EffectTransportItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectTransportItem unaffect(pZone,x,y,pTarget)" << endl;
 
     // pTargetZone, x, y
@@ -136,8 +126,6 @@ void EffectTransportItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Ob
     }
 
     pTarget = NULL;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -146,11 +134,7 @@ void EffectTransportItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Ob
 void EffectTransportItem::unaffect()
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectTransportItem unaffect" << endl;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -158,7 +142,7 @@ void EffectTransportItem::unaffect()
 //----------------------------------------------------------------------
 void EffectTransportItem::unaffect(Creature* pCreature)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //----------------------------------------------------------------------
 // get debug string

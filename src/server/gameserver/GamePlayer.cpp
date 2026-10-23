@@ -77,8 +77,6 @@ const int PCRoomLottoMaxAmount = 3; // Maximum number of lottery tickets that ca
 
 GamePlayer::GamePlayer(Socket* pSocket)
     : Player(pSocket, 0, 0), m_pCreature(NULL), m_PlayerStatus(GPS_NONE), m_pReconnectPacket(NULL) {
-    __BEGIN_TRY
-
     auto streams =
         de::makeEncryptedSocketStreams(m_pSocket, defaultGamePlayerInputStreamSize, defaultGamePlayerOutputStreamSize);
     m_pInputStream = streams.input.release();
@@ -107,8 +105,6 @@ GamePlayer::GamePlayer(Socket* pSocket)
     m_LoginDateTime = VSDateTime::currentDateTime();
 
     //	m_NProtectCSAuth.Init();
-
-    __END_CATCH
 }
 
 
@@ -260,8 +256,6 @@ GamePlayer::~GamePlayer() noexcept {
 //
 //////////////////////////////////////////////////////////////////////
 void GamePlayer::processCommand(bool Option) {
-    __BEGIN_TRY
-
     Packet* pPacket = NULL;
 
     PacketFactoryManager& packetFactories = de::kernelContext().packetFactories();
@@ -402,8 +396,6 @@ void GamePlayer::processCommand(bool Option) {
         }
     }
     // Commented out. by sigi. 2002.5.14
-
-    __END_CATCH
 }
 
 
@@ -461,8 +453,6 @@ void GamePlayer::refuseFrame(const de::GameFrame& frame) {
 //
 //////////////////////////////////////////////////////////////////////
 void GamePlayer::processOutput() {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     try {
@@ -472,8 +462,6 @@ void GamePlayer::processOutput() {
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -483,8 +471,6 @@ void GamePlayer::processOutput() {
 //
 //////////////////////////////////////////////////////////////////////
 void GamePlayer::sendPacket(Packet* pPacket) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     try {
@@ -509,8 +495,6 @@ void GamePlayer::sendPacket(Packet* pPacket) {
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -523,8 +507,6 @@ void GamePlayer::sendPacket(Packet* pPacket) {
 //
 //--------------------------------------------------------------------------------
 void GamePlayer::disconnect(bool bDisconnected) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     //--------------------------------------------------------------------------------
@@ -610,8 +592,6 @@ void GamePlayer::disconnect(bool bDisconnected) {
     m_pSocket->close();
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -625,8 +605,6 @@ void GamePlayer::disconnect(bool bDisconnected) {
 //
 //////////////////////////////////////////////////////////////////////
 Packet* GamePlayer::getOldPacket(uint prev) {
-    __BEGIN_TRY
-
     if (prev >= nPacketHistorySize)
         throw OutOfBoundException();
 
@@ -638,8 +616,6 @@ Packet* GamePlayer::getOldPacket(uint prev) {
         throw NoSuchElementException("packet history is empty");
 
     return pPacket;
-
-    __END_CATCH
 }
 
 
@@ -649,8 +625,6 @@ Packet* GamePlayer::getOldPacket(uint prev) {
 //
 //////////////////////////////////////////////////////////////////////
 Packet* GamePlayer::getOldPacket(PacketID_t packetID) {
-    __BEGIN_TRY
-
     Packet* pPacket = NULL;
     deque<Packet*>::reverse_iterator ritr = m_PacketHistory.rbegin();
 
@@ -665,41 +639,27 @@ Packet* GamePlayer::getOldPacket(PacketID_t packetID) {
         throw NoSuchElementException("packet history is empty");
 
     return pPacket;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------
 void GamePlayer::addEvent(Event* pEvent) {
-    __BEGIN_TRY
-
     m_EventManager.addEvent(pEvent);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------
 void GamePlayer::deleteEvent(Event::EventClass EClass) {
-    __BEGIN_TRY
-
     m_EventManager.deleteEvent(EClass);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------
 Event* GamePlayer::getEvent(Event::EventClass EClass) {
-    __BEGIN_TRY
-
     return m_EventManager.getEvent(EClass);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -708,8 +668,6 @@ Event* GamePlayer::getEvent(Event::EventClass EClass) {
 //
 //////////////////////////////////////////////////////////////////////
 string GamePlayer::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     //////////////////////////////////////////////////
@@ -725,8 +683,6 @@ string GamePlayer::toString() const {
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -739,8 +695,6 @@ string GamePlayer::toString() const {
 // verifyHeartbeat and only the session's state lives here. The one caller is
 // the CGVerifyTime handler, which disconnects the player on a false.
 bool GamePlayer::verifySpeed() {
-    __BEGIN_TRY
-
     Timeval CurrentTime;
     getCurrentTime(CurrentTime);
 
@@ -750,34 +704,22 @@ bool GamePlayer::verifySpeed() {
     params.maxEarlyCount = maxVerifyCount;
 
     return de::verifyHeartbeat(params, CurrentTime.tv_sec, m_SpeedVerify);
-
-    __END_CATCH
 }
 
 void GamePlayer::loadSpecialEventCount(void) {
-    __BEGIN_TRY
-
     DWORD count = 0;
     if (!defaultSessionRepository().loadSpecialEventCount(m_ID, count)) {
         throw Error("GamePlayer::loadSpecialEventCount() : unable to dispatch data");
     }
     m_SpecialEventCount = count;
-
-    __END_CATCH
 }
 
 void GamePlayer::saveSpecialEventCount(void) {
-    __BEGIN_TRY
-
     defaultSessionRepository().saveSpecialEventCount(m_SpecialEventCount, m_ID);
-
-    __END_CATCH
 }
 
 // Set the encryption code.
 void GamePlayer::setEncryptCode() {
-    __BEGIN_TRY
-
 #ifdef __USE_ENCRYPTER__
     Assert(m_pCreature != NULL);
 
@@ -793,13 +735,9 @@ void GamePlayer::setEncryptCode() {
     pEIS->setEncryptCode(code);
 //	}
 #endif
-
-    __END_CATCH
 }
 
 void GamePlayer::kickPlayer(uint nSeconds, uint KickMessageType) {
-    __BEGIN_TRY
-
     // Ignore it when an EventKick already exists.
     if (m_EventManager.getEvent(Event::EVENT_CLASS_KICK) != NULL)
         return;
@@ -813,8 +751,6 @@ void GamePlayer::kickPlayer(uint nSeconds, uint KickMessageType) {
     gcKickMessage.setType(KickMessageType);
     gcKickMessage.setSeconds(nSeconds);
     sendPacket(&gcKickMessage);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////
@@ -822,37 +758,29 @@ void GamePlayer::kickPlayer(uint nSeconds, uint KickMessageType) {
 //////////////////////////////////////////////////////////////////
 bool GamePlayer::loginPayPlay(PayType payType, const string& PayPlayDate, int PayPlayHours, uint payPlayFlag,
                               const string& ip, const string& playerID) {
-    __BEGIN_TRY
     return PaySystem::loginPayPlay(payType, PayPlayDate, PayPlayHours, payPlayFlag, ip, playerID);
-    __END_CATCH
 }
 
 bool GamePlayer::loginPayPlay(const string& ip, const string& playerID) {
-    __BEGIN_TRY
     bool bRet = PaySystem::loginPayPlay(ip, playerID);
 
     if (bRet)
         setPCRoomLottoStartTime();
 
     return bRet;
-    __END_CATCH
 }
 
 bool GamePlayer::updatePayPlayTime(const string& playerID, const VSDateTime& currentDateTime,
                                    const Timeval& currentTime) {
-    __BEGIN_TRY
     checkPCRoomLotto(currentTime);
 
     return PaySystem::updatePayPlayTime(playerID, currentDateTime, currentTime);
-    __END_CATCH
 }
 
 void GamePlayer::logoutPayPlay(const string& playerID, bool bClear, bool bDecreaseTime) {
-    __BEGIN_TRY
     savePCRoomLottoTime();
 
     PaySystem::logoutPayPlay(playerID, bClear, bDecreaseTime);
-    __END_CATCH
 }
 
 bool GamePlayer::isPayPlaying() const {

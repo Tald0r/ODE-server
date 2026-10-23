@@ -28,26 +28,18 @@
 EffectVampireRelic::EffectVampireRelic(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_HPRecovery = 1;
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 EffectVampireRelic::EffectVampireRelic(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     m_HPRecovery = 1;
 
     setTarget(pItem);
-
-    __END_CATCH
 }
 
 
@@ -56,8 +48,6 @@ EffectVampireRelic::EffectVampireRelic(Item* pItem)
 void EffectVampireRelic::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Room for the longest message a GCSystemMessage carries.
     char msg[de::wire::kMaxByteStringLength + 1];
     snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_TAKE_VAMPIRE_RELIC),
@@ -81,25 +71,16 @@ void EffectVampireRelic::affect(Creature* pCreature)
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectVampireRelic::affect(Item* pItem)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 void EffectVampireRelic::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     switch (m_pTarget->getObjectClass()) {
     case OBJECT_CLASS_CREATURE: {
         Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
@@ -114,9 +95,6 @@ void EffectVampireRelic::unaffect()
     default:
         throw Error("Wrong Object Class");
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -124,7 +102,6 @@ void EffectVampireRelic::unaffect()
 void EffectVampireRelic::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectVampireRelic" << "unaffect BEGIN" << endl;
@@ -146,14 +123,12 @@ void EffectVampireRelic::unaffect(Creature* pCreature)
     // cout << "EffectVampireRelic" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectVampireRelic::unaffect(Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectVampireRelic" << "unaffect BEGIN" << endl;
@@ -178,17 +153,12 @@ void EffectVampireRelic::unaffect(Item* pItem)
     // cout << "EffectVampireRelic" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectVampireRelic::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectVampireRelic(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -16,16 +16,12 @@
 EffectMasterLairPass::EffectMasterLairPass(Creature* pCreature, ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
-
     m_ZoneID = zoneID;
 
     setTarget(pCreature);
 
     // Server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -33,34 +29,21 @@ EffectMasterLairPass::EffectMasterLairPass(Creature* pCreature, ZoneID_t zoneID)
 void EffectMasterLairPass::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMasterLairPass::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-
-
-    __END_CATCH
-}
+{}
 
 void EffectMasterLairPass::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -68,7 +51,6 @@ void EffectMasterLairPass::unaffect()
 void EffectMasterLairPass::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectMasterLairPass" << "unaffect BEGIN" << endl;
@@ -85,17 +67,12 @@ void EffectMasterLairPass::unaffect(Creature* pCreature)
     // cout << "EffectMasterLairPass" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectMasterLairPass::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectMasterLairPass(" << "ObjectID:" << getObjectID() << ",ZoneID:" << m_ZoneID << ")";
     return msg.toString();
-
-    __END_CATCH
 }

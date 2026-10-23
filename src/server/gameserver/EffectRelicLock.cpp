@@ -23,35 +23,23 @@
 EffectRelicLock::EffectRelicLock(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     // m_LockTime.tv_sec = 0;
     // m_LockTime.tv_usec = 0;
     setTarget(pItem);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectRelicLock::affect(Item* pItem)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 void EffectRelicLock::unaffect()
 
 {
-    __BEGIN_TRY
-
     Item* pItem = dynamic_cast<Item*>(m_pTarget);
     unaffect(pItem);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -59,26 +47,20 @@ void EffectRelicLock::unaffect()
 void EffectRelicLock::unaffect(Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     pItem->removeFlag(Effect::EFFECT_CLASS_RELIC_LOCK);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectRelicLock::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectRelicLock("
         //		<< "LockTime:" << m_LockTime.tv_sec
         << ")";
     return msg.toString();
-
-    __END_CATCH
 }

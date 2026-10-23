@@ -16,7 +16,7 @@
 
 OustersEXPInfo::OustersEXPInfo()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 OustersEXPInfo::~OustersEXPInfo()
 
@@ -25,14 +25,10 @@ OustersEXPInfo::~OustersEXPInfo()
 string OustersEXPInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "OustersEXPInfo (" << " Level : " << (int)m_Level << " GoalExp : " << (int)m_GoalExp
         << " AccumExp : " << (int)m_AccumExp << " SkillPointBonus : " << (int)m_SkillPointBonus << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,12 +38,8 @@ string OustersEXPInfo::toString() const
 OustersEXPInfoManager::OustersEXPInfoManager()
 
 {
-    __BEGIN_TRY
-
     m_OustersEXPCount = 0;
     m_OustersEXPInfoList = NULL;
-
-    __END_CATCH
 }
 
 OustersEXPInfoManager::~OustersEXPInfoManager()
@@ -68,17 +60,12 @@ OustersEXPInfoManager::~OustersEXPInfoManager()
 void OustersEXPInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void OustersEXPInfoManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     int maxLevel = 0;
@@ -113,38 +100,27 @@ void OustersEXPInfoManager::load()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void OustersEXPInfoManager::addOustersEXPInfo(OustersEXPInfo* pOustersEXPInfo)
 
 {
-    __BEGIN_TRY
-
     Assert(pOustersEXPInfo != NULL);
     Assert(m_OustersEXPInfoList[pOustersEXPInfo->getLevel()] == NULL);
 
     m_OustersEXPInfoList[pOustersEXPInfo->getLevel()] = pOustersEXPInfo;
-
-    __END_CATCH
 }
 
 OustersEXPInfo* OustersEXPInfoManager::getOustersEXPInfo(uint OustersEXPType) const {
-    __BEGIN_TRY
-
     Assert(OustersEXPType < m_OustersEXPCount);
     Assert(m_OustersEXPInfoList[OustersEXPType] != NULL);
 
     return m_OustersEXPInfoList[OustersEXPType];
-
-    __END_CATCH
 }
 
 string OustersEXPInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "OustersEXPInfoManager(";
@@ -160,6 +136,4 @@ string OustersEXPInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

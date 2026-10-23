@@ -78,8 +78,6 @@ const Color_t QUEST_COLOR = 0xFFFE;
 Ousters::Ousters()
 
     : PlayerCreature(0, NULL), m_pRealWearingCheck{} {
-    __BEGIN_TRY
-
     m_CClass = CREATURE_CLASS_OUSTERS;
 
     m_Mutex.setName("Ousters");
@@ -131,8 +129,6 @@ Ousters::Ousters()
     m_ExpSaveCount = 0;
     m_FameSaveCount = 0;
     m_AlignmentSaveCount = 0;
-
-    __END_CATCH
 }
 
 Ousters::~Ousters()
@@ -181,8 +177,6 @@ Ousters::~Ousters()
 void Ousters::registerObject()
 
 {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
 
     // Register within the zone object registry.
@@ -236,16 +230,12 @@ void Ousters::registerObject()
 
     m_OustersInfo.setObjectID(m_ObjectID);
     m_pStore->updateStoreInfo();
-
-    __END_CATCH
 }
 
 // Register this Ousters and items during initial load (with trace logging where needed).
 void Ousters::registerInitObject()
 
 {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
 
     ObjectRegistry& OR = getZone()->getObjectRegistry();
@@ -296,13 +286,9 @@ void Ousters::registerInitObject()
     __LEAVE_CRITICAL_SECTION(OR)
 
     m_OustersInfo.setObjectID(m_ObjectID);
-
-    __END_CATCH
 }
 
 void Ousters::checkItemTimeLimit() {
-    __BEGIN_TRY
-
     {
         list<Item*> ItemList;
         int height = m_pInventory->getHeight();
@@ -361,13 +347,9 @@ void Ousters::checkItemTimeLimit() {
             SAFE_DELETE(pSlotItem);
         }
     }
-
-    __END_CATCH
 }
 
 void Ousters::updateEventItemTime(DWORD time) {
-    __BEGIN_TRY
-
     {
         list<Item*> ItemList;
         int height = m_pInventory->getHeight();
@@ -412,8 +394,6 @@ void Ousters::updateEventItemTime(DWORD time) {
             updateItemTimeLimit(pSlotItem, time);
         }
     }
-
-    __END_CATCH
 }
 
 void Ousters::loadOwnedItems() {
@@ -438,8 +418,6 @@ void Ousters::giveNewbieItems() {
 bool Ousters::load()
 
 {
-    __BEGIN_TRY
-
     if (!PlayerCreature::load())
         return false;
 
@@ -624,8 +602,6 @@ bool Ousters::load()
     }
 
     return true;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -633,8 +609,6 @@ bool Ousters::load()
 void Ousters::save() const
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     OustersVitalsRecord record;
@@ -653,8 +627,6 @@ void Ousters::save() const
     m_pEffectManager->save(m_Name);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -662,11 +634,7 @@ void Ousters::save() const
 SkillBonus_t Ousters::getSumOfUsedSkillBonus() const
 
 {
-    __BEGIN_TRY
-
     return 0;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -683,8 +651,6 @@ OustersSkillSlot* Ousters::getSkill(SkillType_t SkillType) const {
 void Ousters::addSkill(SkillType_t SkillType)
 
 {
-    __BEGIN_TRY
-
     switch (SkillType) {
     case SKILL_UN_BURROW:
     case SKILL_UN_TRANSFORM:
@@ -718,15 +684,11 @@ void Ousters::addSkill(SkillType_t SkillType)
 
         m_SkillSlot[SkillType] = pOustersSkillSlot;
     }
-
-    __END_CATCH
 }
 
 void Ousters::addSkill(OustersSkillSlot* pOustersSkillSlot)
 
 {
-    __BEGIN_TRY
-
     SkillType_t SkillType = pOustersSkillSlot->getSkillType();
     switch (SkillType) {
     case SKILL_UN_BURROW:
@@ -751,15 +713,11 @@ void Ousters::addSkill(OustersSkillSlot* pOustersSkillSlot)
     else {
         delete pOustersSkillSlot;
     }
-
-    __END_CATCH
 }
 
 void Ousters::removeSkill(SkillType_t SkillType)
 
 {
-    __BEGIN_TRY
-
     unordered_map<SkillType_t, OustersSkillSlot*>::iterator itr = m_SkillSlot.find(SkillType);
 
     if (itr != m_SkillSlot.end()) {
@@ -769,8 +727,6 @@ void Ousters::removeSkill(SkillType_t SkillType)
 
         m_SkillSlot.erase(itr);
     }
-
-    __END_CATCH
 }
 
 void Ousters::removeCastleSkill(SkillType_t SkillType) {
@@ -798,8 +754,6 @@ void Ousters::removeAllCastleSkill() {
 void Ousters::wearItem(WearPart Part, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     Item* pPrevItem = NULL;
@@ -904,8 +858,6 @@ void Ousters::wearItem(WearPart Part, Item* pItem)
     default:
         break;
     }
-
-    __END_CATCH
 }
 
 
@@ -915,8 +867,6 @@ void Ousters::wearItem(WearPart Part, Item* pItem)
 void Ousters::wearItem(WearPart Part)
 
 {
-    __BEGIN_TRY
-
     Item* pItem = getExtraInventorySlotItem();
     Assert(pItem != NULL);
 
@@ -1073,8 +1023,6 @@ void Ousters::wearItem(WearPart Part)
             m_pZone->broadcastPacket(m_X, m_Y, &gcOtherModifyInfo, this);
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -1086,8 +1034,6 @@ void Ousters::wearItem(WearPart Part)
 void Ousters::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
 
 {
-    __BEGIN_TRY
-
     OUSTERS_RECORD prev;
 
     Item* pItem = m_pWearItem[Part];
@@ -1172,8 +1118,6 @@ void Ousters::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
             m_pZone->broadcastPacket(m_X, m_Y, &gcOtherModifyInfo, this);
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -1183,7 +1127,6 @@ void Ousters::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
 void Ousters::destroyGears()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     for (int j = 0; j < OUSTERS_WEAR_MAX; j++) {
@@ -1218,7 +1161,6 @@ void Ousters::destroyGears()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1226,8 +1168,6 @@ void Ousters::destroyGears()
 bool Ousters::isRealWearing(WearPart part) const
 
 {
-    __BEGIN_TRY
-
     if (part >= OUSTERS_WEAR_MAX)
         throw Error("Ousters::isRealWearing() : invalid wear point!");
 
@@ -1239,8 +1179,6 @@ bool Ousters::isRealWearing(WearPart part) const
     }
 
     return isRealWearing(m_pWearItem[part]);
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1248,8 +1186,6 @@ bool Ousters::isRealWearing(WearPart part) const
 bool Ousters::isRealWearing(Item* pItem) const
 
 {
-    __BEGIN_TRY
-
     if (pItem == NULL)
         return false;
 
@@ -1285,8 +1221,6 @@ bool Ousters::isRealWearing(Item* pItem) const
     const decore::EquipRequirement required = computeEquipRequirement(decore::EquipRace::Ousters, pItem, pItemInfo);
     const decore::EquipStats current = {m_STR[ATTR_CURRENT], m_DEX[ATTR_CURRENT], m_INT[ATTR_CURRENT], m_Level, m_Sex};
     return decore::meetsRequirement(decore::EquipRace::Ousters, required, current);
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1300,8 +1234,6 @@ bool Ousters::isRealWearingEx(WearPart part) const {
 DWORD Ousters::sendRealWearingInfo(void) const
 
 {
-    __BEGIN_TRY
-
     DWORD info = 0;
     DWORD flag = 1;
 
@@ -1316,8 +1248,6 @@ DWORD Ousters::sendRealWearingInfo(void) const
     m_pPlayer->sendPacket(&pkt);
 
     return info;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1330,7 +1260,6 @@ DWORD Ousters::sendRealWearingInfo(void) const
 PCOustersInfo2* Ousters::getOustersInfo2()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     PCOustersInfo2* pInfo = new PCOustersInfo2();
@@ -1386,7 +1315,6 @@ PCOustersInfo2* Ousters::getOustersInfo2()
     return pInfo;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -1396,7 +1324,6 @@ PCOustersInfo2* Ousters::getOustersInfo2()
 PCOustersInfo3 Ousters::getOustersInfo3() const
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     m_OustersInfo.setObjectID(m_ObjectID);
@@ -1426,7 +1353,6 @@ PCOustersInfo3 Ousters::getOustersInfo3() const
     return m_OustersInfo;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1437,7 +1363,6 @@ PCOustersInfo3 Ousters::getOustersInfo3() const
 GearInfo* Ousters::getGearInfo() const
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     GearInfo* pGearInfo = new GearInfo();
@@ -1459,7 +1384,6 @@ GearInfo* Ousters::getGearInfo() const
     return pGearInfo;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1468,7 +1392,6 @@ GearInfo* Ousters::getGearInfo() const
 void Ousters::sendOustersSkillInfo()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     OustersSkillInfo* pOustersSkillInfo = new OustersSkillInfo();
@@ -1507,7 +1430,6 @@ void Ousters::sendOustersSkillInfo()
     m_pPlayer->sendPacket(&gcSkillInfo);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -1523,7 +1445,6 @@ void Ousters::sendOustersSkillInfo()
 void Ousters::heartbeat(const Timeval& currentTime)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     PlayerCreature::heartbeat(currentTime);
@@ -1561,14 +1482,11 @@ void Ousters::heartbeat(const Timeval& currentTime)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void Ousters::getOustersRecord(OUSTERS_RECORD& record) const
 
 {
-    __BEGIN_TRY
-
     record.pSTR[0] = m_STR[0];
     record.pSTR[1] = m_STR[1];
     record.pSTR[2] = m_STR[2];
@@ -1596,8 +1514,6 @@ void Ousters::getOustersRecord(OUSTERS_RECORD& record) const
     record.ToHit = m_ToHit[0];
     record.Protection = m_Protection[0];
     record.AttackSpeed = m_AttackSpeed[0];
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1606,8 +1522,6 @@ void Ousters::getOustersRecord(OUSTERS_RECORD& record) const
 string Ousters::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "Ousters("
@@ -1624,8 +1538,6 @@ string Ousters::toString() const
         << ",XCoord:" << (int)m_X << ",YCoord:" << (int)m_Y << ",Sight:" << (int)m_Sight << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 void Ousters::saveSkills(void) const {
@@ -1633,18 +1545,12 @@ void Ousters::saveSkills(void) const {
 }
 
 Sight_t Ousters::getEffectedSight() {
-    __BEGIN_TRY
-
     return Creature::getEffectedSight();
-
-    __END_CATCH
 }
 
 void Ousters::saveGears(void) const
 
 {
-    __BEGIN_TRY
-
     char pField[80];
 
     for (int i = 0; i < Ousters::OUSTERS_WEAR_MAX; i++) {
@@ -1658,8 +1564,6 @@ void Ousters::saveGears(void) const
             }
         }
     }
-
-    __END_CATCH
 }
 
 

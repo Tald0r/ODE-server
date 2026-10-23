@@ -16,19 +16,15 @@
 // class GoodsInfo member methods
 //////////////////////////////////////////////////////////////////////////////
 
-GoodsInfo::GoodsInfo(){__BEGIN_TRY __END_CATCH}
+GoodsInfo::GoodsInfo() {}
 
 GoodsInfo::~GoodsInfo(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
 
 string GoodsInfo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "GoodsInfo (" << "Type:" << (int)m_ItemType << ",Name:" << m_Name << ",ItemClass:" << (int)m_ItemClass
         << ",ItemType:" << (int)m_ItemType << ",TimeLimit:" << (m_bTimeLimit ? "Y" : "N") << ",Hour:" << m_Hour << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -38,9 +34,7 @@ string GoodsInfo::toString() const {
 
 GoodsInfoManager::GoodsInfoManager()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 GoodsInfoManager::~GoodsInfoManager()
 
@@ -53,18 +47,12 @@ GoodsInfoManager::~GoodsInfoManager()
 void GoodsInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void GoodsInfoManager::clear()
 
 {
-    __BEGIN_TRY
-
     HashMapGoodsInfoItr itr = m_GoodsInfos.begin();
 
     for (; itr != m_GoodsInfos.end(); itr++) {
@@ -72,14 +60,11 @@ void GoodsInfoManager::clear()
     }
 
     m_GoodsInfos.clear();
-
-    __END_CATCH
 }
 
 void GoodsInfoManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     clear();
@@ -107,14 +92,11 @@ void GoodsInfoManager::load()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void GoodsInfoManager::addGoodsInfo(GoodsInfo* pGoodsInfo)
 
 {
-    __BEGIN_TRY
-
     Assert(pGoodsInfo != NULL);
 
     HashMapGoodsInfoItr itr = m_GoodsInfos.find(pGoodsInfo->getID());
@@ -123,30 +105,22 @@ void GoodsInfoManager::addGoodsInfo(GoodsInfo* pGoodsInfo)
         throw DuplicatedException();
 
     m_GoodsInfos[pGoodsInfo->getID()] = pGoodsInfo;
-
-    __END_CATCH
 }
 
 GoodsInfo* GoodsInfoManager::getGoodsInfo(DWORD id) const
 
 {
-    __BEGIN_TRY
-
     HashMapGoodsInfoConstItr itr = m_GoodsInfos.find(id);
 
     if (itr == m_GoodsInfos.end())
         return NULL;
 
     return itr->second;
-
-    __END_CATCH
 }
 
 string GoodsInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "GoodsInfoManager(\n";
@@ -161,6 +135,4 @@ string GoodsInfoManager::toString() const
     }
 
     return msg.toString();
-
-    __END_CATCH
 }

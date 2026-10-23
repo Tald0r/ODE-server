@@ -19,11 +19,7 @@
 EffectCanEnterGDRLair::EffectCanEnterGDRLair(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 EffectCanEnterGDRLair::~EffectCanEnterGDRLair()
@@ -35,27 +31,18 @@ EffectCanEnterGDRLair::~EffectCanEnterGDRLair()
 
 void EffectCanEnterGDRLair::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectCanEnterGDRLair::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectCanEnterGDRLair::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     pCreature->removeFlag(getEffectClass());
@@ -71,65 +58,45 @@ void EffectCanEnterGDRLair::unaffect(Creature* pCreature)
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     destroy(pCreature->getName());
-
-    __END_CATCH
 }
 
 void EffectCanEnterGDRLair::create(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().insertDeadline(EFFECT_TABLE_CAN_ENTER_GDR_LAIR, ownerID, currentYearTime,
                                                  m_Deadline.tv_sec);
-
-    __END_CATCH
 }
 
 void EffectCanEnterGDRLair::destroy(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     defaultEffectSaveRepository().deleteDeadline(EFFECT_TABLE_CAN_ENTER_GDR_LAIR, ownerID);
-
-    __END_CATCH
 }
 
 void EffectCanEnterGDRLair::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().updateDeadline(EFFECT_TABLE_CAN_ENTER_GDR_LAIR, ownerID, currentYearTime,
                                                  m_Deadline.tv_sec);
-
-    __END_CATCH
 }
 
 string EffectCanEnterGDRLair::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectCanEnterGDRLair(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 void EffectCanEnterGDRLairLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Assert(pCreature != NULL);
     if (pCreature == NULL) {
         return;
@@ -157,6 +124,4 @@ void EffectCanEnterGDRLairLoader::load(Creature* pCreature)
         pEffectManager->addEffect(pEffectCanEnterGDRLair);
         pCreature->setFlag(pEffectCanEnterGDRLair->getEffectClass());
     }
-
-    __END_CATCH
 }

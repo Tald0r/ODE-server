@@ -28,8 +28,6 @@ EffectTransportCreature::EffectTransportCreature(Creature* pCreature, ZoneID_t z
                                                  Turn_t delay)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->getZone() != NULL);
 
@@ -42,8 +40,6 @@ EffectTransportCreature::EffectTransportCreature(Creature* pCreature, ZoneID_t z
 
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 
@@ -60,16 +56,12 @@ EffectTransportCreature::~EffectTransportCreature()
 void EffectTransportCreature::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = m_pZone->getCreature(m_CreatureID);
     // Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     if (pCreature != NULL) {
         affect(pCreature);
     }
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -78,8 +70,6 @@ void EffectTransportCreature::affect()
 void EffectTransportCreature::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Timeval nextTime = getNextTime();
     Timeval deadLine = getDeadline();
     Turn_t RemainTime = deadLine.tv_sec - nextTime.tv_sec;
@@ -99,8 +89,6 @@ void EffectTransportCreature::affect(Creature* pCreature)
     pCreature->getPlayer()->sendPacket(&gcSystemMessage);
 
     setNextTime(m_MessageTick);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -109,16 +97,12 @@ void EffectTransportCreature::affect(Creature* pCreature)
 void EffectTransportCreature::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = m_pZone->getCreature(m_CreatureID);
     // Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     if (pCreature != NULL) {
         unaffect(pCreature);
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -127,14 +111,10 @@ void EffectTransportCreature::unaffect()
 void EffectTransportCreature::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(m_pZone != NULL);
 
     transportCreature(pCreature, m_ZoneID, getX(), getY(), false);
-
-    __END_CATCH
 }
 
 

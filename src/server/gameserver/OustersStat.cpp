@@ -85,8 +85,6 @@
 #include "skill/VampireCastleSkillSlot.h"
 
 void Ousters::initCastleSkill() {
-    __BEGIN_TRY
-
     removeAllCastleSkill();
 
     if (!getZone()->isHolyLand())
@@ -119,15 +117,11 @@ void Ousters::initCastleSkill() {
 
         addSkill(pCastleSkillSlot);
     }
-
-    __END_CATCH
 }
 
 void Ousters::initAllStat(int numPartyMember)
 
 {
-    __BEGIN_TRY
-
     BASIC_ATTR attr;
     Creature::CreatureClass CClass = getCreatureClass();
 
@@ -945,9 +939,6 @@ void Ousters::initAllStat(int numPartyMember)
     }
 
     initCastleSkill();
-
-
-    __END_CATCH
 }
 
 int Ousters::getBloodBibleSignOpenNum() const {
@@ -989,8 +980,6 @@ int Ousters::getBloodBibleSignOpenNum() const {
 void Ousters::computeStatOffset()
 
 {
-    __BEGIN_TRY
-
     Creature::CreatureClass CClass = getCreatureClass();
     BASIC_ATTR cur_attr;
 
@@ -1027,15 +1016,11 @@ void Ousters::computeStatOffset()
 
     m_CriticalRatio[ATTR_CURRENT] = computeCriticalRatio(CClass, &cur_attr);
     m_CriticalRatio[ATTR_CURRENT] += m_CriticalRatio[ATTR_MAX];
-
-    __END_CATCH
 }
 
 void Ousters::computeItemStat(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (pItem->getItemClass() == Item::ITEM_CLASS_OUSTERS_CHAKRAM) {
         // For a weapon, add the speed parameter the weapon carries.
         ItemInfo* pItemInfo = de::gameContext().itemInfos().getItemInfo(pItem->getItemClass(), pItem->getItemType());
@@ -1112,15 +1097,11 @@ void Ousters::computeItemStat(Item* pItem)
     for (iOptions = defaultOptions.begin(); iOptions != defaultOptions.end(); iOptions++) {
         computeOptionStat(*iOptions);
     }
-
-    __END_CATCH
 }
 
 void Ousters::computeOptionStat(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     // Additional options
     const list<OptionType_t>& optionType = pItem->getOptionTypeList();
     list<OptionType_t>::const_iterator itr;
@@ -1135,8 +1116,6 @@ void Ousters::computeOptionStat(Item* pItem)
     for (iOptions = defaultOptions.begin(); iOptions != defaultOptions.end(); iOptions++) {
         computeOptionStat(*iOptions);
     }
-
-    __END_CATCH
 }
 
 void Ousters::computeOptionClassStat(OptionClass OClass, int PlusPoint) {
@@ -1275,19 +1254,13 @@ void Ousters::computeOptionClassStat(OptionClass OClass, int PlusPoint) {
 void Ousters::computeOptionStat(OptionType_t OptionType)
 
 {
-    __BEGIN_TRY
-
     OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(OptionType);
     computeOptionClassStat(pOptionInfo->getClass(), pOptionInfo->getPlusPoint());
-
-    __END_CATCH
 }
 
 void Ousters::addModifyInfo(const OUSTERS_RECORD& prev, ModifyInfo& pkt) const
 
 {
-    __BEGIN_TRY
-
     if (prev.pSTR[ATTR_CURRENT] != m_STR[ATTR_CURRENT])
         pkt.addShortData(MODIFY_CURRENT_STR, m_STR[ATTR_CURRENT]);
     if (prev.pSTR[ATTR_MAX] != m_STR[ATTR_MAX])
@@ -1338,15 +1311,11 @@ void Ousters::addModifyInfo(const OUSTERS_RECORD& prev, ModifyInfo& pkt) const
         pkt.addShortData(MODIFY_RANK, getRank());
         pkt.addLongData(MODIFY_RANK_EXP, getRankGoalExp());
     }
-
-    __END_CATCH
 }
 
 void Ousters::sendModifyInfo(const OUSTERS_RECORD& prev) const
 
 {
-    __BEGIN_TRY
-
     GCModifyInformation gcModifyInformation;
     addModifyInfo(prev, gcModifyInformation);
     m_pPlayer->sendPacket(&gcModifyInformation);
@@ -1355,8 +1324,6 @@ void Ousters::sendModifyInfo(const OUSTERS_RECORD& prev) const
     GCBloodBibleSignInfo gcInfo;
     gcInfo.setSignInfo(pInfo);
     m_pPlayer->sendPacket(&gcInfo);
-
-    __END_CATCH
 }
 
 void Ousters::initAllStatAndSend() {

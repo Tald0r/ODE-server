@@ -19,14 +19,10 @@
 EffectEnemyErase::EffectEnemyErase(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
 
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectEnemyErase::~EffectEnemyErase()
@@ -38,26 +34,18 @@ EffectEnemyErase::~EffectEnemyErase()
 
 void EffectEnemyErase::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectEnemyErase::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectEnemyErase::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (pCreature->isSlayer()) {
@@ -92,62 +80,43 @@ void EffectEnemyErase::unaffect(Creature* pCreature)
     destroy(pCreature->getName());
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void EffectEnemyErase::create(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().insertEnemyErase(ownerID, currentYearTime, m_Deadline.tv_sec, m_EnemyName);
-
-    __END_CATCH
 }
 
 void EffectEnemyErase::destroy(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     defaultEffectSaveRepository().deleteEnemyErase(ownerID, m_EnemyName);
-
-    __END_CATCH
 }
 
 void EffectEnemyErase::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().updateEnemyErase(ownerID, currentYearTime, m_Deadline.tv_sec, m_EnemyName);
-
-    __END_CATCH
 }
 
 string EffectEnemyErase::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectEnemyErase(" << "EnemyName:" << getEnemyName() << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 void EffectEnemyEraseLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Assert(pCreature != NULL);
     if (pCreature == NULL) {
         return;
@@ -186,6 +155,4 @@ void EffectEnemyEraseLoader::load(Creature* pCreature)
             pOusters->addEnemy(pEffectEnemyErase->getEnemyName());
         }
     }
-
-    __END_CATCH
 }

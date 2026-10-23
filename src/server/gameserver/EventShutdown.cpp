@@ -25,8 +25,6 @@ EventShutdown::EventShutdown(GamePlayer* pGamePlayer)
 void EventShutdown::activate()
 
 {
-    __BEGIN_TRY
-
     try {
         const unordered_map<ZoneGroupID_t, ZoneGroup*>& zoneGroups = de::gameContext().zoneGroups().getZoneGroups();
         unordered_map<ZoneGroupID_t, ZoneGroup*>::const_iterator itr = zoneGroups.begin();
@@ -50,8 +48,6 @@ void EventShutdown::activate()
     //	kill( getppid(), 9 );
 
     kill(getpid(), 9);
-
-    __END_CATCH
 }
 
 string EventShutdown::toString() const

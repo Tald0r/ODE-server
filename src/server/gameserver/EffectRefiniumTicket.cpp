@@ -14,8 +14,6 @@
 EffectRefiniumTicket::EffectRefiniumTicket(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     // Assert(pCreature->isOusters());
     setBroadcastingEffect(false);
@@ -25,8 +23,6 @@ EffectRefiniumTicket::EffectRefiniumTicket(Creature* pCreature)
     m_PrevExitZoneID = pCreature->getZoneID();
     m_PrevExitX = pCreature->getX();
     m_PrevExitY = pCreature->getY();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -34,15 +30,10 @@ EffectRefiniumTicket::EffectRefiniumTicket(Creature* pCreature)
 void EffectRefiniumTicket::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     // Clear the flag.
     pCreature->removeFlag(Effect::EFFECT_CLASS_REFINIUM_TICKET);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,22 +41,14 @@ void EffectRefiniumTicket::unaffect(Creature* pCreature)
 void EffectRefiniumTicket::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectRefiniumTicket::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectRefiniumTicket(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

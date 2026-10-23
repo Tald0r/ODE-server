@@ -20,8 +20,6 @@
 EffectRelicTable::EffectRelicTable(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     m_SafeTime.tv_sec = 0;
     m_SafeTime.tv_usec = 0;
 
@@ -29,8 +27,6 @@ EffectRelicTable::EffectRelicTable(Item* pItem)
     m_LockTime.tv_usec = 0;
 
     setTarget(pItem);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -38,33 +34,21 @@ EffectRelicTable::EffectRelicTable(Item* pItem)
 void EffectRelicTable::affect()
 
 {
-    __BEGIN_TRY
-
     Item* pItem = dynamic_cast<Item*>(m_pTarget);
     affect(pItem);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectRelicTable::affect(Item* pItem)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 void EffectRelicTable::unaffect()
 
 {
-    __BEGIN_TRY
-
     Item* pItem = dynamic_cast<Item*>(m_pTarget);
     unaffect(pItem);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,13 +56,11 @@ void EffectRelicTable::unaffect()
 void EffectRelicTable::unaffect(Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     pItem->removeFlag(getEffectClass());
 
     __END_DEBUG
-    __END_CATCH
 }
 
 // The relic cannot be taken out until SafeTime has passed.
@@ -100,11 +82,7 @@ bool EffectRelicTable::isLockTime() const {
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectRelicTable::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectRelicTable(" << "SafeTime:" << m_SafeTime.tv_sec << ")";
     return msg.toString();
-
-    __END_CATCH
 }

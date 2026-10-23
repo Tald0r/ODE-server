@@ -26,8 +26,6 @@
 Creature::Creature(ObjectID_t objectID, Player* pPlayer)
 
     : Object(objectID) {
-    __BEGIN_TRY
-
     m_pPlayer = pPlayer;
     m_MoveMode = MOVE_MODE_WALKING;
     m_pZone = NULL;
@@ -44,8 +42,6 @@ Creature::Creature(ObjectID_t objectID, Player* pPlayer)
     Assert(m_pEffectManager != NULL);
 
     m_LastTarget = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -76,8 +72,6 @@ Creature::~Creature()
 ObjectPriority Creature::getObjectPriority() const
 
 {
-    __BEGIN_TRY
-
     switch (m_MoveMode) {
     case MOVE_MODE_WALKING:
         return OBJECT_PRIORITY_WALKING_CREATURE;
@@ -88,8 +82,6 @@ ObjectPriority Creature::getObjectPriority() const
     default:
         throw Error("invalid move mode");
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -142,8 +134,6 @@ ZoneID_t Creature::getNewZoneID() const
 void Creature::setZoneID(ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
-
     try {
         ZoneInfo* m_pZoneInfo = de::gameContext().zoneInfos().getZoneInfo(zoneID);
         Assert(m_pZoneInfo != NULL);
@@ -162,8 +152,6 @@ void Creature::setZoneID(ZoneID_t zoneID)
 
         throw Error(msg.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -228,79 +216,51 @@ void Creature::recoverHP(HP_t addHP) {}
 Distance_t Creature::getDistance(ZoneCoord_t x1, ZoneCoord_t y1, ZoneCoord_t x2, ZoneCoord_t y2) const
 
 {
-    __BEGIN_TRY
-
     return max(abs(x1 - x2), abs(y1 - y2));
-
-    __END_CATCH
 }
 
 Distance_t Creature::getDistance(ZoneCoord_t x1, ZoneCoord_t y1) const
 
 {
-    __BEGIN_TRY
-
     return max(abs(m_X - x1), abs(m_Y - y1));
-
-    __END_CATCH
 }
 
 bool Creature::isEffect(Effect::EffectClass EClass)
 
 {
-    __BEGIN_TRY
-
     Assert(m_pEffectManager != NULL);
     return m_pEffectManager->isEffect(EClass);
-
-    __END_CATCH
 }
 
 void Creature::deleteEffect(Effect::EffectClass EClass)
 
 {
-    __BEGIN_TRY
-
     Assert(m_pEffectManager != NULL);
     m_pEffectManager->deleteEffect(this, EClass);
-
-    __END_CATCH
 }
 
 Effect* Creature::findEffect(Effect::EffectClass EClass) const
 
 {
-    __BEGIN_TRY
-
     Assert(m_pEffectManager != NULL);
     return m_pEffectManager->findEffect(EClass);
-
-    __END_CATCH
 }
 
 void Creature::addEffect(Effect* pEffect)
 
 {
-    __BEGIN_TRY
-
     Assert(m_pEffectManager != NULL);
     m_pEffectManager->addEffect(pEffect);
-
-    __END_CATCH
 }
 
 LocalPartyManager* Creature::getLocalPartyManager(void) const
 
 {
-    __BEGIN_TRY
-
     if (m_pZone != NULL) {
         return m_pZone->getLocalPartyManager();
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 bool Creature::hasRelicItem() const {

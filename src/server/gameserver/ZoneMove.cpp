@@ -212,8 +212,6 @@ int g_FastMoveSearchY[8][4] = {
 void Zone::pushPC(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -221,8 +219,6 @@ void Zone::pushPC(Creature* pCreature)
     m_PCListQueue.push_back(pCreature);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -235,8 +231,6 @@ void Zone::pushPC(Creature* pCreature)
 void Zone::movePC(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature->isPC());
 
     Player* pPlayer = pCreature->getPlayer();
@@ -379,7 +373,6 @@ void Zone::movePC(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir
             throw;
         }
     }
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -393,8 +386,6 @@ void Zone::movePC(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir
 void Zone::moveCreature(Creature* pCreature, ZoneCoord_t nx, ZoneCoord_t ny, Dir_t dir)
 
 {
-    __BEGIN_TRY
-
     if (m_pZoneGroup != NULL)
         m_pZoneGroup->assertOwned();
 
@@ -430,8 +421,6 @@ void Zone::moveCreature(Creature* pCreature, ZoneCoord_t nx, ZoneCoord_t ny, Dir
 
     // Broadcast GCMove and GCAddMonster/GCAddNPC automatically.
     moveCreatureBroadcast(pCreature, cx, cy, nx, ny);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -441,7 +430,6 @@ void Zone::moveCreature(Creature* pCreature, ZoneCoord_t nx, ZoneCoord_t ny, Dir
 //////////////////////////////////////////////////////////////////////////////
 bool Zone::moveFastPC(Creature* pPC, ZoneCoord_t x1, ZoneCoord_t y1, ZoneCoord_t x2, ZoneCoord_t y2,
                       SkillType_t skillType) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // This method targets a PC.
@@ -1021,7 +1009,6 @@ bool Zone::moveFastPC(Creature* pPC, ZoneCoord_t x1, ZoneCoord_t y1, ZoneCoord_t
     return true;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -1032,7 +1019,6 @@ bool Zone::moveFastPC(Creature* pPC, ZoneCoord_t x1, ZoneCoord_t y1, ZoneCoord_t
 //////////////////////////////////////////////////////////////////////////////
 bool Zone::moveFastMonster(Monster* pMonster, ZoneCoord_t x1, ZoneCoord_t y1, ZoneCoord_t x2, ZoneCoord_t y2,
                            SkillType_t skillType) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (
@@ -1347,5 +1333,4 @@ bool Zone::moveFastMonster(Monster* pMonster, ZoneCoord_t x1, ZoneCoord_t y1, Zo
     return true;
 
     __END_DEBUG
-    __END_CATCH
 }

@@ -31,9 +31,7 @@
 //----------------------------------------------------------------------
 EffectShutDown::EffectShutDown()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 //----------------------------------------------------------------------
 // constructor
@@ -41,12 +39,8 @@ EffectShutDown::EffectShutDown()
 EffectShutDown::EffectShutDown(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Corpse* pCorpse, Turn_t delay)
 
     : Effect(pZone, x, y, pCorpse, delay) {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
     Assert(getTarget() != NULL);
-
-    __END_CATCH
 }
 
 
@@ -63,13 +57,9 @@ EffectShutDown::~EffectShutDown()
 void EffectShutDown::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -78,8 +68,6 @@ void EffectShutDown::affect()
 void EffectShutDown::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Timeval nextTime = getNextTime();
     Timeval deadLine = getDeadline();
     Turn_t RemainTime = deadLine.tv_sec - nextTime.tv_sec;
@@ -112,9 +100,6 @@ void EffectShutDown::affect(Creature* pCreature)
         ZonePlayerManager* pZonePlayerManager = pZoneGroup->getZonePlayerManager();
         pZonePlayerManager->broadcastPacket(&gcSystemMessage);
     }
-
-
-    __END_CATCH
 }
 
 
@@ -126,11 +111,7 @@ void EffectShutDown::affect(Creature* pCreature)
 void EffectShutDown::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -139,8 +120,6 @@ void EffectShutDown::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* p
 void EffectShutDown::unaffect()
 
 {
-    __BEGIN_TRY
-
     //	StringStream msg;
 
     // msg << "The server is shutting down.";
@@ -175,8 +154,6 @@ void EffectShutDown::unaffect()
     pEventShutdown->setDeadline(0);
 
     de::gameContext().clients().addEvent(pEventShutdown);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -184,10 +161,7 @@ void EffectShutDown::unaffect()
 //--------------------------------------------------------------------
 void EffectShutDown::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 //----------------------------------------------------------------------
@@ -195,9 +169,7 @@ void EffectShutDown::unaffect(Creature* pCreature)
 //----------------------------------------------------------------------
 void EffectShutDown::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 
 //----------------------------------------------------------------------

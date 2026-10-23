@@ -14,8 +14,6 @@
 EffectPrecedence::EffectPrecedence(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isMonster());
 
@@ -25,15 +23,11 @@ EffectPrecedence::EffectPrecedence(Creature* pCreature)
     m_bBroadcastingEffect = false;
 
     m_bItem = false;
-
-    __END_CATCH
 }
 
 EffectPrecedence::EffectPrecedence(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
     setTarget(pItem);
 
@@ -41,39 +35,25 @@ EffectPrecedence::EffectPrecedence(Item* pItem)
 
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 void EffectPrecedence::affect()
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectPrecedence::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectPrecedence::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 void EffectPrecedence::unaffect()
 
 {
-    __BEGIN_TRY
-
     if (m_bItem) {
         Item* pItem = dynamic_cast<Item*>(m_pTarget);
         pItem->removeFlag(getEffectClass());
@@ -83,28 +63,18 @@ void EffectPrecedence::unaffect()
         Assert(pCreature->isMonster());
         pCreature->removeFlag(getEffectClass());
     }
-
-    __END_CATCH
 }
 
 void EffectPrecedence::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(false);
-
-    __END_CATCH
 }
 
 void EffectPrecedence::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     Assert(false);
-
-    __END_CATCH
 }
 
 string EffectPrecedence::toString() const

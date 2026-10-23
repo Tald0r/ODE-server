@@ -87,8 +87,6 @@
 PlayerCreature::PlayerCreature(ObjectID_t OID, Player* pPlayer)
 
     : Creature(OID, pPlayer), m_pAdvancementClass(NULL) {
-    __BEGIN_TRY
-
     m_pInventory = new Inventory(10, 6);
     m_pExtraInventorySlot = new InventorySlot();
 
@@ -136,8 +134,6 @@ PlayerCreature::PlayerCreature(ObjectID_t OID, Player* pPlayer)
     m_AdvancedDEX = 0;
     m_AdvancedINT = 0;
     m_MasterEffectColor = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -210,15 +206,11 @@ PlayerCreature::~PlayerCreature()
 }
 
 bool PlayerCreature::load() {
-    __BEGIN_TRY
-
     m_pSMSAddressBook->load();
 
     m_PowerPoint = loadPowerPoint(getName());
 
     return true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -228,8 +220,6 @@ bool PlayerCreature::load() {
 void PlayerCreature::registerItem(Item* pItem, ObjectRegistry& OR)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     // Assign object ID to the item.
@@ -251,8 +241,6 @@ void PlayerCreature::registerItem(Item* pItem, ObjectRegistry& OR)
             }
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -262,8 +250,6 @@ void PlayerCreature::registerItem(Item* pItem, ObjectRegistry& OR)
 void PlayerCreature::registerInventory(ObjectRegistry& OR)
 
 {
-    __BEGIN_TRY
-
     list<Item*> ItemList;
     int height = m_pInventory->getHeight();
     int width = m_pInventory->getWidth();
@@ -287,15 +273,11 @@ void PlayerCreature::registerInventory(ObjectRegistry& OR)
             }
         }
     }
-
-    __END_CATCH
 }
 
 void PlayerCreature::registerInitInventory(ObjectRegistry& OR)
 
 {
-    __BEGIN_TRY
-
     list<Item*> ItemList;
     int height = m_pInventory->getHeight();
     int width = m_pInventory->getWidth();
@@ -318,8 +300,6 @@ void PlayerCreature::registerInitInventory(ObjectRegistry& OR)
             }
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -327,8 +307,6 @@ void PlayerCreature::registerInitInventory(ObjectRegistry& OR)
 void PlayerCreature::registerStash(void)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = getZone();
     ObjectRegistry& OR = pZone->getObjectRegistry();
 
@@ -345,41 +323,29 @@ void PlayerCreature::registerStash(void)
     __LEAVE_CRITICAL_SECTION(OR)
 
     m_bStashStatus = true;
-
-    __END_CATCH
 }
 
 void PlayerCreature::registerGoodsInventory(ObjectRegistry& OR)
 
 {
-    __BEGIN_TRY
-
     GoodsInventory::ListItem& goods = m_pGoodsInventory->getGoods();
     GoodsInventory::ListItemItr itr = goods.begin();
 
     for (; itr != goods.end(); itr++) {
         registerItem((*itr).m_pItem, OR);
     }
-
-    __END_CATCH
 }
 
 
 void PlayerCreature::loadTimeLimitItem() {
-    __BEGIN_TRY
-
     Assert(m_pTimeLimitItemManager != NULL);
 
     m_pTimeLimitItemManager->load();
-
-    __END_CATCH
 }
 
 void PlayerCreature::loadItem()
 
 {
-    __BEGIN_TRY
-
     loadTimeLimitItem();
 
     m_pNicknameBook->load();
@@ -389,13 +355,9 @@ void PlayerCreature::loadItem()
     for (size_t i = 0; i < signs.size(); ++i) {
         m_pBloodBibleSign->getList().push_back(signs[i]);
     }
-
-    __END_CATCH
 }
 
 void PlayerCreature::loadItem(bool checkTimeLimit) {
-    __BEGIN_TRY
-
     PlayerCreature::loadItem();
 
     // Create the inventory. Delete the previous one before creating it.
@@ -419,15 +381,11 @@ void PlayerCreature::loadItem(bool checkTimeLimit) {
 
     // Compute the attributes from the equipped gear.
     initAllStat(-1);
-
-    __END_CATCH
 }
 
 bool PlayerCreature::wasteIfTimeLimitExpired(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (pItem == NULL)
         return false;
 
@@ -437,22 +395,16 @@ bool PlayerCreature::wasteIfTimeLimitExpired(Item* pItem)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 void PlayerCreature::sendTimeLimitItemInfo()
 
 {
-    __BEGIN_TRY
-
     GCTimeLimitItemInfo gcTimeLimitItemInfo;
 
     if (m_pTimeLimitItemManager->makeTimeLimitItemInfo(gcTimeLimitItemInfo)) {
         getPlayer()->sendPacket(&gcTimeLimitItemInfo);
     }
-
-    __END_CATCH
 }
 
 void PlayerCreature::addTimeLimitItem(Item* pItem, DWORD time) {
@@ -460,30 +412,18 @@ void PlayerCreature::addTimeLimitItem(Item* pItem, DWORD time) {
 }
 
 void PlayerCreature::sellItem(Item* pItem) {
-    __BEGIN_TRY
-
     if (pItem->isTimeLimitItem())
         m_pTimeLimitItemManager->itemSold(pItem);
-
-    __END_CATCH
 }
 
 void PlayerCreature::deleteItemByMorph(Item* pItem) {
-    __BEGIN_TRY
-
     if (pItem->isTimeLimitItem())
         m_pTimeLimitItemManager->deleteItemByMorph(pItem);
-
-    __END_CATCH
 }
 
 void PlayerCreature::updateItemTimeLimit(Item* pItem, DWORD time) {
-    __BEGIN_TRY
-
     if (pItem->isTimeLimitItem())
         m_pTimeLimitItemManager->updateItemTimeLimit(pItem, time);
-
-    __END_CATCH
 }
 
 void PlayerCreature::sendCurrentQuestInfo() const {
@@ -572,13 +512,9 @@ void PlayerCreature::whenQuestLevelUpgrade() {
 void PlayerCreature::setStashNumEx(BYTE num)
 
 {
-    __BEGIN_TRY
-
     setStashNum(num);
 
     defaultStashRepository().saveStashNum(getName(), isOusters(), num);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -586,14 +522,10 @@ void PlayerCreature::setStashNumEx(BYTE num)
 void PlayerCreature::setStashGoldEx(Gold_t gold)
 
 {
-    __BEGIN_TRY
-
     // cout << "setStashGoldEx Called" << "Name:" << getName() << " Gold: " << (int)gold << endl;
     setStashGold(gold);
 
     defaultStashRepository().saveStashGold(getName(), isOusters(), gold);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -601,13 +533,9 @@ void PlayerCreature::setStashGoldEx(Gold_t gold)
 void PlayerCreature::increaseStashGoldEx(Gold_t gold)
 
 {
-    __BEGIN_TRY
-
     setStashGold(m_StashGold + gold);
 
     defaultStashRepository().saveStashGold(getName(), isOusters(), m_StashGold);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -615,13 +543,9 @@ void PlayerCreature::increaseStashGoldEx(Gold_t gold)
 void PlayerCreature::decreaseStashGoldEx(Gold_t gold)
 
 {
-    __BEGIN_TRY
-
     setStashGold(m_StashGold - gold);
 
     defaultStashRepository().saveStashGold(getName(), isOusters(), m_StashGold);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -630,12 +554,8 @@ void PlayerCreature::decreaseStashGoldEx(Gold_t gold)
 void PlayerCreature::deleteStash(void)
 
 {
-    __BEGIN_TRY
-
     SAFE_DELETE(m_pStash);
     m_StashNum = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -644,11 +564,7 @@ void PlayerCreature::deleteStash(void)
 void PlayerCreature::deleteFlagSet(void)
 
 {
-    __BEGIN_TRY
-
     SAFE_DELETE(m_pFlagSet);
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -747,8 +663,6 @@ RankExp_t PlayerCreature::getRankGoalExp() const {
 RankBonus* PlayerCreature::getRankBonus(RankBonus::RankBonusType type) const
 
 {
-    __BEGIN_TRY
-
     HashMapRankBonusConstItor itr = m_RankBonuses.find(type);
 
     if (itr == m_RankBonuses.end()) {
@@ -756,15 +670,11 @@ RankBonus* PlayerCreature::getRankBonus(RankBonus::RankBonusType type) const
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 void PlayerCreature::addRankBonus(RankBonus* rankBonus)
 
 {
-    __BEGIN_TRY
-
     HashMapRankBonusItor itr = m_RankBonuses.find(rankBonus->getType());
 
     if (itr == m_RankBonuses.end()) {
@@ -773,15 +683,11 @@ void PlayerCreature::addRankBonus(RankBonus* rankBonus)
     } else {
         SAFE_DELETE(rankBonus);
     }
-
-    __END_CATCH
 }
 
 void PlayerCreature::clearRankBonus()
 
 {
-    __BEGIN_TRY
-
     HashMapRankBonusItor itr = m_RankBonuses.begin();
     for (; itr != m_RankBonuses.end(); itr++) {
         SAFE_DELETE(itr->second);
@@ -791,15 +697,11 @@ void PlayerCreature::clearRankBonus()
     m_RankBonusFlag.reset();
 
     defaultRankBonusRepository().deleteAll(getName());
-
-    __END_CATCH
 }
 
 RankBonus* PlayerCreature::getRankBonusByRank(Rank_t rank) const
 
 {
-    __BEGIN_TRY
-
     HashMapRankBonusConstItor itr = m_RankBonuses.begin();
 
     for (; itr != m_RankBonuses.end(); itr++) {
@@ -811,15 +713,11 @@ RankBonus* PlayerCreature::getRankBonusByRank(Rank_t rank) const
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 void PlayerCreature::clearRankBonus(Rank_t rank)
 
 {
-    __BEGIN_TRY
-
     RankBonus* pRankBonus = getRankBonusByRank(rank);
     if (pRankBonus == NULL)
         return;
@@ -834,8 +732,6 @@ void PlayerCreature::clearRankBonus(Rank_t rank)
     }
 
     defaultRankBonusRepository().deleteOne(getName(), rankBonusType);
-
-    __END_CATCH
 }
 
 bool PlayerCreature::learnRankBonus(DWORD type)
@@ -887,8 +783,6 @@ bool PlayerCreature::learnRankBonus(DWORD type)
 void PlayerCreature::sendRankBonusInfo()
 
 {
-    __BEGIN_TRY
-
     HashMapRankBonusConstItor itr = m_RankBonuses.begin();
 
     GCRankBonusInfo gcRankBonusInfo;
@@ -898,15 +792,11 @@ void PlayerCreature::sendRankBonusInfo()
     }
 
     m_pPlayer->sendPacket(&gcRankBonusInfo);
-
-    __END_CATCH
 }
 
 void PlayerCreature::loadRankBonus()
 
 {
-    __BEGIN_TRY
-
     vector<DWORD> types = defaultRankBonusRepository().loadTypes(getName());
 
     for (size_t i = 0; i < types.size(); ++i) {
@@ -924,8 +814,6 @@ void PlayerCreature::loadRankBonus()
             addRankBonus(pRankBonus);
         }
     }
-
-    __END_CATCH
 }
 
 void PlayerCreature::increaseRankExp(RankExp_t Point) {
@@ -980,24 +868,18 @@ void PlayerCreature::increaseRankExp(RankExp_t Point) {
 bool PlayerCreature::isPayPlayAvaiable()
 
 {
-    __BEGIN_TRY
-
     if (m_pPlayer == NULL)
         return false;
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(m_pPlayer);
 
     return pGamePlayer->isPayPlaying();
-
-    __END_CATCH
 }
 
 
 void PlayerCreature::loadGoods()
 
 {
-    __BEGIN_TRY
-
     if (m_pGoodsInventory->getNum() != 0) {
         filelog("GoodsReload.log", "  ? : %s", getName().c_str());
         m_pGoodsInventory->clear();
@@ -1016,8 +898,6 @@ void PlayerCreature::loadGoods()
             }
         }
     }
-
-    __END_CATCH
 }
 
 void PlayerCreature::addDefaultOptionSet(DefaultOptionSetType_t type)
@@ -1221,16 +1101,10 @@ CharacterRace PlayerCreature::characterRace() const {
 }
 
 void PlayerCreature::tinysave(const string& field) const {
-    __BEGIN_TRY
-
     defaultCharacterRepository().tinysave(m_Name, characterRace(), field);
-
-    __END_CATCH
 }
 
 void PlayerCreature::saveExps(Exp_t goalExp, Silver_t silverDamage) const {
-    __BEGIN_TRY
-
     // The skill handlers persist experience only every tenth tick, so the
     // gain below that threshold lives in memory alone. A character that
     // logs out normally flushes it here.
@@ -1244,33 +1118,22 @@ void PlayerCreature::saveExps(Exp_t goalExp, Silver_t silverDamage) const {
     record.advancementClass = getAdvancementClassLevel();
     record.advancementGoalExp = getAdvancementClassGoalExp();
     defaultCharacterRepository().saveExps(m_Name, characterRace(), record);
-
-    __END_CATCH
 }
 
 void PlayerCreature::setGold(Gold_t gold) {
-    __BEGIN_TRY
-
     // Never let the amount pass MAX_MONEY.
     m_Gold = min((Gold_t)MAX_MONEY, gold);
-
-    __END_CATCH
 }
 
 void PlayerCreature::setGoldEx(Gold_t gold) {
-    __BEGIN_TRY
-
     setGold(gold);
 
     char pField[80];
     snprintf(pField, sizeof(pField), "Gold=%u", m_Gold);
     tinysave(pField);
-
-    __END_CATCH
 }
 
 void PlayerCreature::increaseGoldEx(Gold_t gold) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // Prevent going over MAX_MONEY
@@ -1282,11 +1145,9 @@ void PlayerCreature::increaseGoldEx(Gold_t gold) {
     defaultGoldRepository().increaseGold(m_Name, characterRace(), gold);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void PlayerCreature::decreaseGoldEx(Gold_t gold) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // Prevent going below 0. Below 0 it underflows and causes chaos.
@@ -1298,60 +1159,41 @@ void PlayerCreature::decreaseGoldEx(Gold_t gold) {
     defaultGoldRepository().decreaseGold(m_Name, characterRace(), gold);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 bool PlayerCreature::checkGoldIntegrity() {
-    __BEGIN_TRY
-
     int gold = 0;
     if (!defaultGoldRepository().loadGold(m_Name, characterRace(), gold))
         return false;
 
     return gold == m_Gold;
-
-    __END_CATCH
 }
 
 bool PlayerCreature::checkStashGoldIntegrity() {
-    __BEGIN_TRY
-
     int gold = 0;
     if (!defaultStashRepository().loadStashGold(m_Name, characterRace(), gold))
         return false;
 
     return gold == m_StashGold;
-
-    __END_CATCH
 }
 
 void PlayerCreature::setResurrectZoneIDEx(ZoneID_t id) {
-    __BEGIN_TRY
-
     setResurrectZoneID(id);
 
     char pField[80];
     snprintf(pField, sizeof(pField), "ResurrectZone=%d", id);
     tinysave(pField);
-
-    __END_CATCH
 }
 
 void PlayerCreature::saveAlignment(Alignment_t alignment) {
-    __BEGIN_TRY
-
     setAlignment(alignment);
 
     char pField[80];
     snprintf(pField, sizeof(pField), "Alignment=%d", alignment);
     tinysave(pField);
-
-    __END_CATCH
 }
 
 void PlayerCreature::saveSilverDamage(Silver_t damage) {
-    __BEGIN_TRY
-
     // A slayer row has no SilverDamage column; the value stays at zero.
     if (getRace() == RACE_SLAYER)
         return;
@@ -1361,8 +1203,6 @@ void PlayerCreature::saveSilverDamage(Silver_t damage) {
     char pField[80];
     snprintf(pField, sizeof(pField), "SilverDamage=%d", m_SilverDamage);
     tinysave(pField);
-
-    __END_CATCH
 }
 
 void PlayerCreature::saveInitialRank() {
@@ -1411,7 +1251,6 @@ Color_t PlayerCreature::getItemShapeColor(Item* pItem, OptionInfo* pOptionInfo) 
 
 // The item held on the mouse cursor, as the client is told to draw it.
 ExtraInfo* PlayerCreature::getExtraInfo() const {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     ExtraInfo* pExtraInfo = new ExtraInfo();
@@ -1428,12 +1267,10 @@ ExtraInfo* PlayerCreature::getExtraInfo() const {
     return pExtraInfo;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 // The carried inventory, as the client is told to draw it.
 InventoryInfo* PlayerCreature::getInventoryInfo() const {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     InventoryInfo* pInventoryInfo = new InventoryInfo();
@@ -1469,7 +1306,6 @@ InventoryInfo* PlayerCreature::getInventoryInfo() const {
     return pInventoryInfo;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1483,23 +1319,17 @@ InventoryInfo* PlayerCreature::getInventoryInfo() const {
 template <class SlotType>
 SlotType* PlayerCreature::findSkillSlot(const unordered_map<SkillType_t, SlotType*>& skillSlots,
                                         SkillType_t SkillType) const {
-    __BEGIN_TRY
-
     typename unordered_map<SkillType_t, SlotType*>::const_iterator itr = skillSlots.find(SkillType);
     if (itr != skillSlots.end()) {
         return itr->second;
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 // Removes a castle skill.
 template <class SlotType, class CastleSlotType>
 void PlayerCreature::removeCastleSkillSlot(unordered_map<SkillType_t, SlotType*>& skillSlots, SkillType_t SkillType) {
-    __BEGIN_TRY
-
     // Only a castle skill may be removed.
     if (de::gameContext().castleSkills().getZoneID(SkillType) == 0)
         return;
@@ -1513,15 +1343,11 @@ void PlayerCreature::removeCastleSkillSlot(unordered_map<SkillType_t, SlotType*>
 
         skillSlots.erase(itr);
     }
-
-    __END_CATCH
 }
 
 // Removes every castle skill the character has.
 template <class SlotType>
 void PlayerCreature::removeAllCastleSkillSlots(unordered_map<SkillType_t, SlotType*>& skillSlots) {
-    __BEGIN_TRY
-
     typename unordered_map<SkillType_t, SlotType*>::iterator itr = skillSlots.begin();
 
     while (itr != skillSlots.end()) {
@@ -1544,14 +1370,10 @@ void PlayerCreature::removeAllCastleSkillSlots(unordered_map<SkillType_t, SlotTy
             Assert(false);
         }
     }
-
-    __END_CATCH
 }
 
 template <class SlotType>
 void PlayerCreature::saveSkillSlots(const unordered_map<SkillType_t, SlotType*>& skillSlots) const {
-    __BEGIN_TRY
-
     typename unordered_map<SkillType_t, SlotType*>::const_iterator itr = skillSlots.begin();
     for (; itr != skillSlots.end(); itr++) {
         SlotType* pSkillSlot = itr->second;
@@ -1562,8 +1384,6 @@ void PlayerCreature::saveSkillSlots(const unordered_map<SkillType_t, SlotType*>&
             pSkillSlot->save(m_Name);
         }
     }
-
-    __END_CATCH
 }
 
 // The three races that keep such a table.

@@ -11,7 +11,6 @@
 Stash::Stash()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     m_pRack = new ItemRack[STASH_RACK_MAX];
@@ -21,7 +20,6 @@ Stash::Stash()
         m_pRack[i].init(STASH_INDEX_MAX);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 Stash::~Stash()
@@ -39,7 +37,6 @@ Stash::~Stash()
 bool Stash::isExist(BYTE rack, BYTE index) const
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (rack >= STASH_RACK_MAX)
@@ -47,13 +44,11 @@ bool Stash::isExist(BYTE rack, BYTE index) const
     return m_pRack[rack].isExist(index);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void Stash::insert(BYTE rack, BYTE index, Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (rack >= STASH_RACK_MAX)
@@ -61,11 +56,9 @@ void Stash::insert(BYTE rack, BYTE index, Item* pItem)
     m_pRack[rack].insert(index, pItem);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void Stash::remove(BYTE rack, BYTE index) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (rack >= STASH_RACK_MAX)
@@ -73,11 +66,9 @@ void Stash::remove(BYTE rack, BYTE index) {
     m_pRack[rack].remove(index);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 Item* Stash::get(BYTE rack, BYTE index) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (rack >= STASH_RACK_MAX)
@@ -85,22 +76,18 @@ Item* Stash::get(BYTE rack, BYTE index) {
     return m_pRack[rack].get(index);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void Stash::clear(void) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     for (int i = 0; i < STASH_RACK_MAX; i++)
         m_pRack[i].clear();
 
     __END_DEBUG
-    __END_CATCH
 }
 
 BYTE Stash::getFirstEmptySlot(BYTE rack) const {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (rack >= STASH_RACK_MAX)
@@ -108,11 +95,9 @@ BYTE Stash::getFirstEmptySlot(BYTE rack) const {
     return m_pRack[rack].getFirstEmptySlot();
 
     __END_DEBUG
-    __END_CATCH
 }
 
 BYTE Stash::getLastEmptySlot(BYTE rack) const {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (rack >= STASH_RACK_MAX)
@@ -120,5 +105,4 @@ BYTE Stash::getLastEmptySlot(BYTE rack) const {
     return m_pRack[rack].getLastEmptySlot();
 
     __END_DEBUG
-    __END_CATCH
 }

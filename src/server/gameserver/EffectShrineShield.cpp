@@ -24,12 +24,8 @@
 EffectShrineShield::EffectShrineShield(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_ShrineID = 0;
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -37,39 +33,24 @@ EffectShrineShield::EffectShrineShield(Creature* pCreature)
 EffectShrineShield::EffectShrineShield(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     setTarget(pItem);
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectShrineShield::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectShrineShield::affect(Item* pItem)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 void EffectShrineShield::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     switch (m_pTarget->getObjectClass()) {
     case OBJECT_CLASS_CREATURE: {
         Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
@@ -84,8 +65,6 @@ void EffectShrineShield::unaffect()
     default:
         throw Error("Wrong Object Class");
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -93,7 +72,6 @@ void EffectShrineShield::unaffect()
 void EffectShrineShield::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectShrineShield" << "unaffect BEGIN" << endl;
@@ -115,7 +93,6 @@ void EffectShrineShield::unaffect(Creature* pCreature)
     // cout << "EffectShrineShield" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -123,7 +100,6 @@ void EffectShrineShield::unaffect(Creature* pCreature)
 void EffectShrineShield::unaffect(Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectShrineShield" << "unaffect BEGIN" << endl;
@@ -148,18 +124,13 @@ void EffectShrineShield::unaffect(Item* pItem)
     // cout << "EffectShrineShield" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectShrineShield::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectShrineShield(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

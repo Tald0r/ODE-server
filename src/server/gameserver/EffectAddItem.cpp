@@ -25,8 +25,6 @@
 EffectAddItem::EffectAddItem(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Item* pItem, Turn_t delay, bool bAllowCreature)
 
     : Effect(pZone, x, y, pItem, delay) {
-    __BEGIN_TRY
-
     // Server-only effect.
     m_bBroadcastingEffect = false;
 
@@ -36,8 +34,6 @@ EffectAddItem::EffectAddItem(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Item* pI
     // m_ObjectID = pItem->getObjectID();
     m_ObjectID = pItem->getObjectID();
     m_bAllowCreature = bAllowCreature;
-
-    __END_CATCH
 }
 
 
@@ -63,11 +59,7 @@ EffectAddItem::~EffectAddItem()
 void EffectAddItem::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     //	throw UnsupportedError();
-
-    __END_CATCH
 }
 
 
@@ -77,8 +69,6 @@ void EffectAddItem::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pT
 void EffectAddItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectAddItem::unaffect (Zone* pZone , ZoneCoord_t x , ZoneCoord_t y , Object* pTarget)" << endl;
 
     // The coordinates must be valid.
@@ -98,8 +88,6 @@ void EffectAddItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* 
     }
 
     pTarget = NULL;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -107,17 +95,14 @@ void EffectAddItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* 
 //----------------------------------------------------------------------
 void EffectAddItem::unaffect()
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //----------------------------------------------------------------------
 // unaffect()
 //----------------------------------------------------------------------
 void EffectAddItem::unaffect(Creature* pCreature)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //----------------------------------------------------------------------
 // get debug string

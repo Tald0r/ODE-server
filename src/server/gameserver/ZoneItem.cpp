@@ -198,8 +198,6 @@ TPOINT Zone::addItem(Item* pItem, ZoneCoord_t cx, ZoneCoord_t cy, bool bAllowCre
                      ObjectID_t DropPetOID)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_DEBUG
 
     TPOINT pt;
@@ -435,7 +433,6 @@ TPOINT Zone::addItem(Item* pItem, ZoneCoord_t cx, ZoneCoord_t cy, bool bAllowCre
     return pt;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -459,8 +456,6 @@ Item* Zone::getItem(ObjectID_t id) const
 void Zone::deleteItem(Object* pObject, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_DELETE_ITEM")
 
     deleteFromItemList(pObject->getObjectID());
@@ -502,21 +497,13 @@ void Zone::deleteItem(Object* pObject, ZoneCoord_t x, ZoneCoord_t y)
 
 
     __END_PROFILE_ZONE("Z_DELETE_ITEM")
-
-    __END_CATCH
 }
 
 void Zone::addToItemList(Item* pItem) {
-    __BEGIN_TRY
-
     m_Items[pItem->getObjectID()] = pItem;
-
-    __END_CATCH
 }
 
 void Zone::deleteFromItemList(ObjectID_t id) {
-    __BEGIN_TRY
-
     unordered_map<ObjectID_t, Item*>::iterator itr = m_Items.find(id);
 
     if (itr == m_Items.end()) {
@@ -524,15 +511,11 @@ void Zone::deleteFromItemList(ObjectID_t id) {
     }
 
     m_Items.erase(itr);
-
-    __END_CATCH
 }
 
 void Zone::addVampirePortal(ZoneCoord_t cx, ZoneCoord_t cy, Vampire* pVampire, const ZONE_COORD& ZoneCoord)
 
 {
-    __BEGIN_TRY
-
     Assert(m_OuterRect.ptInRect(cx, cy));
     Assert(pVampire != NULL);
 
@@ -553,8 +536,6 @@ void Zone::addVampirePortal(ZoneCoord_t cx, ZoneCoord_t cy, Vampire* pVampire, c
     pEffectSchedule->setEffect(pEffectVampirePortal);
     pEffectSchedule->addWork(WORKCODE_ADD_VAMPIRE_PORTAL, NULL);
     m_pEffectScheduleManager->addEffectSchedule(pEffectSchedule);
-
-    __END_CATCH
 }
 
 //-------------------------------------------------------------
@@ -566,8 +547,6 @@ void Zone::addVampirePortal(ZoneCoord_t cx, ZoneCoord_t cy, Vampire* pVampire, c
 void Zone::deleteMotorcycle(ZoneCoord_t cx, ZoneCoord_t cy, Motorcycle* pMotorcycle)
 
 {
-    __BEGIN_TRY
-
     Assert(m_OuterRect.ptInRect(cx, cy));
     Assert(pMotorcycle != NULL);
 
@@ -576,8 +555,6 @@ void Zone::deleteMotorcycle(ZoneCoord_t cx, ZoneCoord_t cy, Motorcycle* pMotorcy
     pEffectDecayItem->setNextTime(999999);
     m_ObjectRegistry.registerObject(pEffectDecayItem);
     addEffect_LOCKING(pEffectDecayItem);
-
-    __END_CATCH
 }
 
 //-------------------------------------------------------------
@@ -589,8 +566,6 @@ void Zone::deleteMotorcycle(ZoneCoord_t cx, ZoneCoord_t cy, Motorcycle* pMotorcy
 void Zone::transportItemToCorpse(Item* pItem, Zone* pTargetZone, ObjectID_t corpseObjectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     if (pTargetZone->getZoneGroup() == this->getZoneGroup()) {
@@ -623,8 +598,6 @@ void Zone::transportItemToCorpse(Item* pItem, Zone* pTargetZone, ObjectID_t corp
         m_ObjectRegistry.registerObject(pEffectTransportItem);
         addEffect_LOCKING(pEffectTransportItem);
     }
-
-    __END_CATCH
 }
 
 //-------------------------------------------------------------
@@ -636,9 +609,6 @@ void Zone::transportItemToCorpse(Item* pItem, Zone* pTargetZone, ObjectID_t corp
 void Zone::transportItem(ZoneCoord_t x, ZoneCoord_t y, Item* pItem, Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy)
 
 {
-    __BEGIN_TRY
-
-
     Assert(m_OuterRect.ptInRect(x, y));
     Assert(pItem != NULL);
 
@@ -661,8 +631,6 @@ void Zone::transportItem(ZoneCoord_t x, ZoneCoord_t y, Item* pItem, Zone* pZone,
         m_ObjectRegistry.registerObject(pEffectTransportItem);
         addEffect_LOCKING(pEffectTransportItem);
     }
-
-    __END_CATCH
 }
 
 //-------------------------------------------------------------
@@ -674,16 +642,12 @@ void Zone::transportItem(ZoneCoord_t x, ZoneCoord_t y, Item* pItem, Zone* pZone,
 void Zone::addItemToCorpseDelayed(Item* pItem, ObjectID_t corpseItemID)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     EffectAddItemToCorpse* pEffectAddItem = new EffectAddItemToCorpse(this, pItem, corpseItemID, 0);
     pEffectAddItem->setNextTime(999999);
     m_ObjectRegistry.registerObject(pEffectAddItem);
     addEffect_LOCKING(pEffectAddItem);
-
-    __END_CATCH
 }
 
 //-------------------------------------------------------------
@@ -695,8 +659,6 @@ void Zone::addItemToCorpseDelayed(Item* pItem, ObjectID_t corpseItemID)
 void Zone::addItemDelayed(Item* pItem, ZoneCoord_t cx, ZoneCoord_t cy, bool bAllowCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(m_OuterRect.ptInRect(cx, cy));
     Assert(pItem != NULL);
 
@@ -704,16 +666,12 @@ void Zone::addItemDelayed(Item* pItem, ZoneCoord_t cx, ZoneCoord_t cy, bool bAll
     pEffectAddItem->setNextTime(999999);
     m_ObjectRegistry.registerObject(pEffectAddItem);
     addEffect_LOCKING(pEffectAddItem);
-
-    __END_CATCH
 }
 
 // This code has not been tested yet.
 void Zone::deleteItemDelayed(Object* pObject, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     Assert(m_OuterRect.ptInRect(x, y));
     Assert(pObject != NULL);
 
@@ -721,8 +679,6 @@ void Zone::deleteItemDelayed(Object* pObject, ZoneCoord_t x, ZoneCoord_t y)
     pEffectDeleteItem->setNextTime(999999);
     m_ObjectRegistry.registerObject(pEffectDeleteItem);
     addEffect_LOCKING(pEffectDeleteItem);
-
-    __END_CATCH
 }
 
 //-------------------------------------------------------------
@@ -734,9 +690,6 @@ void Zone::deleteItemDelayed(Object* pObject, ZoneCoord_t x, ZoneCoord_t y)
 bool Zone::addRelicItem(int relicIndex)
 
 {
-    __BEGIN_TRY
-
-
     const RelicInfo* pRelicInfo =
         dynamic_cast<RelicInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_RELIC, relicIndex));
 
@@ -840,8 +793,6 @@ bool Zone::addRelicItem(int relicIndex)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 //-------------------------------------------------------------
@@ -853,8 +804,6 @@ bool Zone::addRelicItem(int relicIndex)
 bool Zone::deleteRelicItem()
 
 {
-    __BEGIN_TRY
-
     // Return if there is no relic table.
     if (!m_bHasRelicTable) {
         return false;
@@ -876,6 +825,4 @@ bool Zone::deleteRelicItem()
     m_bHasRelicTable = false;
 
     return true;
-
-    __END_CATCH
 }

@@ -18,11 +18,7 @@ ZoneInfo::~ZoneInfo() {}
 void ZoneInfo::load(ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
-
     Assert(false);
-
-    __END_CATCH
 }
 
 void ZoneInfo::setZoneType(const string& zoneType)

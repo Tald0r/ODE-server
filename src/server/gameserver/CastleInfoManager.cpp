@@ -60,21 +60,13 @@ CastleInfo::~CastleInfo() {}
 void CastleInfo::setOptionTypeList(const string& options)
 
 {
-    __BEGIN_TRY
-
     makeOptionList(options, m_BonusOptionList);
-
-    __END_CATCH
 }
 
 void CastleInfo::setZoneIDList(const string& zoneIDs)
 
 {
-    __BEGIN_TRY
-
     makeZoneIDList(zoneIDs, m_CastleZoneIDList);
-
-    __END_CATCH
 }
 
 void CastleInfo::setResurrectPosition(ResurrectPriority resurrectPriority, const ZONE_COORD& zoneCoord) {
@@ -95,8 +87,6 @@ void CastleInfo::broadcast(Packet* pPacket) const {
 bool CastleInfo::isCastleZone(ZoneID_t targetZoneID) const
 
 {
-    __BEGIN_TRY
-
     list<ZoneID_t>::const_iterator itr = m_CastleZoneIDList.begin();
 
     for (; itr != m_CastleZoneIDList.end(); itr++) {
@@ -107,28 +97,22 @@ bool CastleInfo::isCastleZone(ZoneID_t targetZoneID) const
     }
 
     return false;
-
-    __END_CATCH
 }
 
 
 string CastleInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "CastleInfo(" << "ZoneID:" << m_ZoneID << ",Item Tax Ratie:" << m_ItemTaxRatio.load()
         << ",Entrance Fee:" << m_EntranceFee.load() << ",Tax Balance:" << m_TaxBalance.load() << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // constructor
 //////////////////////////////////////////////////////////////////////////////
-CastleInfoManager::CastleInfoManager(){__BEGIN_TRY __END_CATCH}
+CastleInfoManager::CastleInfoManager() {}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -156,12 +140,8 @@ CastleInfoManager::~CastleInfoManager() {
 void CastleInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     // init == load
     load();
-
-    __END_CATCH
 }
 
 
@@ -173,8 +153,6 @@ void CastleInfoManager::init()
 void CastleInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     clearCastleZoneIDs();
 
     vector<CastleRow> rows =
@@ -235,8 +213,6 @@ void CastleInfoManager::load()
 
         de::diagnosticTrace([&](std::ostream& output) { output << pCastleInfo->toString().c_str(); });
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -245,8 +221,6 @@ void CastleInfoManager::load()
 void CastleInfoManager::addCastleInfo(CastleInfo* pCastleInfo)
 
 {
-    __BEGIN_TRY
-
     // First check if a zone with the same ID already exists.
     unordered_map<ZoneID_t, CastleInfo*>::iterator itr = m_CastleInfos.find(pCastleInfo->getZoneID());
 
@@ -264,8 +238,6 @@ void CastleInfoManager::addCastleInfo(CastleInfo* pCastleInfo)
         ZoneID_t zoneID = *iZoneID;
         setCastleZoneID(zoneID, pCastleInfo->getZoneID());
     }
-
-    __END_CATCH
 }
 
 
@@ -275,8 +247,6 @@ void CastleInfoManager::addCastleInfo(CastleInfo* pCastleInfo)
 void CastleInfoManager::deleteCastleInfo(ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, CastleInfo*>::iterator itr = m_CastleInfos.find(zoneID);
 
     if (itr != m_CastleInfos.end()) {
@@ -289,8 +259,6 @@ void CastleInfoManager::deleteCastleInfo(ZoneID_t zoneID)
         // If no such zone ID is found
         return;
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -299,8 +267,6 @@ void CastleInfoManager::deleteCastleInfo(ZoneID_t zoneID)
 CastleInfo* CastleInfoManager::getCastleInfo(ZoneID_t zoneID) const
 
 {
-    __BEGIN_TRY
-
     CastleInfo* pCastleInfo = NULL;
 
     unordered_map<ZoneID_t, CastleInfo*>::const_iterator itr = m_CastleInfos.find(zoneID);
@@ -315,8 +281,6 @@ CastleInfo* CastleInfoManager::getCastleInfo(ZoneID_t zoneID) const
     }
 
     return pCastleInfo;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -325,8 +289,6 @@ CastleInfo* CastleInfoManager::getCastleInfo(ZoneID_t zoneID) const
 string CastleInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "CastleInfoManager(";
@@ -343,30 +305,22 @@ string CastleInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::modifyCastleOwner(ZoneID_t zoneID, PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     Race_t race = pPC->getRace();
     GuildID_t guildID = pPC->getGuildID();
 
     return modifyCastleOwner(zoneID, race, guildID);
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::modifyCastleOwner(ZoneID_t zoneID, Race_t race, GuildID_t guildID)
 
 {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
     VariableManager& variables = de::gameContext().variables();
 
@@ -467,8 +421,6 @@ bool CastleInfoManager::modifyCastleOwner(ZoneID_t zoneID, Race_t race, GuildID_
     }
 
     return true;
-
-    __END_CATCH
 }
 
 void CastleInfoManager::postCastleWarEnd(ZoneID_t castleZoneID, bool bChangeOwner, Race_t winnerRace,
@@ -536,8 +488,6 @@ void CastleInfoManager::saveTaxBalanceChange(ZoneID_t zoneID, int64_t delta) {
 bool CastleInfoManager::setItemTaxRatio(Zone* pZone, int itemTaxRatio)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     CastleInfo* pCastleInfo = getCastleInfo(pZone->getZoneID());
     if (pCastleInfo == NULL)
@@ -557,15 +507,11 @@ bool CastleInfoManager::setItemTaxRatio(Zone* pZone, int itemTaxRatio)
     pZone->broadcastPacket(&gcNoticeEvent);
 
     return true;
-
-    __END_CATCH
 }
 
 int CastleInfoManager::getItemTaxRatio(const PlayerCreature* pPC, const NPC* pNPC) const
 
 {
-    __BEGIN_TRY
-
     if (pNPC == NULL)
         return 100;
 
@@ -590,15 +536,11 @@ int CastleInfoManager::getItemTaxRatio(const PlayerCreature* pPC, const NPC* pNP
     }
 
     return 100;
-
-    __END_CATCH
 }
 
 Gold_t CastleInfoManager::getEntranceFee(ZoneID_t zoneID, PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
     const CastleInfo* pCastleInfo = getCastleInfo(zoneID);
 
@@ -616,15 +558,11 @@ Gold_t CastleInfoManager::getEntranceFee(ZoneID_t zoneID, PlayerCreature* pPC) c
     }
 
     return 0;
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::isCastleMember(PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
     Zone* pZone = pPC->getZone();
     const CastleInfo* pCastleInfo = getCastleInfo(pZone->getZoneID());
@@ -640,15 +578,11 @@ bool CastleInfoManager::isCastleMember(PlayerCreature* pPC) const
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::isCastleMember(ZoneID_t zoneID, PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
     const CastleInfo* pCastleInfo = getCastleInfo(zoneID);
 
@@ -664,15 +598,11 @@ bool CastleInfoManager::isCastleMember(ZoneID_t zoneID, PlayerCreature* pPC) con
         return false;
 
     return true;
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::hasOtherBloodBible(ZoneID_t zoneID, PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     if (pPC->isFlag(Effect::EFFECT_CLASS_HAS_BLOOD_BIBLE)) {
         // Block entry if carrying a Blood Bible that does not belong to this castle.
         EffectHasBloodBible* pEffect =
@@ -691,15 +621,11 @@ bool CastleInfoManager::hasOtherBloodBible(ZoneID_t zoneID, PlayerCreature* pPC)
     } else {
         return false;
     }
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::isPossibleEnter(ZoneID_t zoneID, PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
     const CastleInfo* pCastleInfo = getCastleInfo(zoneID);
 
@@ -720,15 +646,11 @@ bool CastleInfoManager::isPossibleEnter(ZoneID_t zoneID, PlayerCreature* pPC) co
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::canPortalActivate(ZoneID_t zoneID, PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     WarSystem& warSystem = de::gameContext().warSystem();
 
     const CastleInfo* pCastleInfo = getCastleInfo(zoneID);
@@ -751,15 +673,11 @@ bool CastleInfoManager::canPortalActivate(ZoneID_t zoneID, PlayerCreature* pPC) 
     }
 
     return false;
-
-    __END_CATCH
 }
 
 CastleInfo* CastleInfoManager::getGuildCastleInfo(GuildID_t guildID) const
 
 {
-    __BEGIN_TRY
-
     if (guildID == SlayerCommon || guildID == VampireCommon || guildID == OustersCommon) {
         return NULL;
     }
@@ -775,15 +693,11 @@ CastleInfo* CastleInfoManager::getGuildCastleInfo(GuildID_t guildID) const
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 list<CastleInfo*> CastleInfoManager::getGuildCastleInfos(GuildID_t guildID) const
 
 {
-    __BEGIN_TRY
-
     list<CastleInfo*> castleList;
 
     if (guildID == SlayerCommon || guildID == VampireCommon || guildID == OustersCommon) {
@@ -801,8 +715,6 @@ list<CastleInfo*> CastleInfoManager::getGuildCastleInfos(GuildID_t guildID) cons
     }
 
     return castleList;
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::getResurrectPosition(PlayerCreature* pPC, ZONE_COORD& zoneCoord)
@@ -870,8 +782,6 @@ bool CastleInfoManager::getResurrectPosition(PlayerCreature* pPC, ZONE_COORD& zo
 bool CastleInfoManager::tinysave(ZoneID_t zoneID, const string& query)
 
 {
-    __BEGIN_TRY
-
     CastleInfo* pCastleInfo = getCastleInfo(zoneID);
     if (pCastleInfo == NULL)
         return false;
@@ -880,15 +790,11 @@ bool CastleInfoManager::tinysave(ZoneID_t zoneID, const string& query)
         query, pCastleInfo->getZoneID(), de::kernelContext().config().getPropertyInt("ServerID"));
 
     return isAffected;
-
-    __END_CATCH
 }
 
 void CastleInfoManager::deleteAllNPCs()
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, CastleInfo*>::const_iterator itr = m_CastleInfos.begin();
 
     for (; itr != m_CastleInfos.end(); itr++) {
@@ -905,8 +811,6 @@ void CastleInfoManager::deleteAllNPCs()
 
         __LEAVE_CRITICAL_SECTION((*pZone))
     }
-
-    __END_CATCH
 }
 
 // The castles' own zones, whose safe zones the race war lifts while it runs.
@@ -969,8 +873,6 @@ void CastleInfoManager::transportAllOtherRace() {
 void CastleInfoManager::loadAllNPCs()
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, CastleInfo*>::const_iterator itr = m_CastleInfos.begin();
 
     for (; itr != m_CastleInfos.end(); itr++) {
@@ -986,15 +888,11 @@ void CastleInfoManager::loadAllNPCs()
 
         __LEAVE_CRITICAL_SECTION((*pZone))
     }
-
-    __END_CATCH
 }
 
 ZoneID_t CastleInfoManager::getCastleZoneID(ShrineID_t shrineID) const
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, CastleInfo*>::const_iterator itr = m_CastleInfos.begin();
 
     for (; itr != m_CastleInfos.end(); itr++) {
@@ -1011,41 +909,29 @@ ZoneID_t CastleInfoManager::getCastleZoneID(ShrineID_t shrineID) const
     throw Error(msg.toString());
 
     return 0;
-
-    __END_CATCH
 }
 
 void CastleInfoManager::broadcastShrinePacket(ShrineID_t shrineID, Packet* pPacket) const
 
 {
-    __BEGIN_TRY
-
     ZoneID_t castleZoneID = getCastleZoneID(shrineID);
 
     const CastleInfo* pCastleInfo = getCastleInfo(castleZoneID);
     Assert(pCastleInfo != NULL);
 
     pCastleInfo->broadcast(pPacket);
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::isCastleZone(ZoneID_t castleZoneID, ZoneID_t targetZoneID) const
 
 {
-    __BEGIN_TRY
-
     const CastleInfo* pCastleInfo = getCastleInfo(castleZoneID);
     Assert(pCastleInfo != NULL);
 
     return pCastleInfo->isCastleZone(targetZoneID);
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::isCastleZone(ZoneID_t zoneID) const {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, CastleInfo*>::const_iterator itr = m_CastleInfos.begin();
 
     for (; itr != m_CastleInfos.end(); ++itr) {
@@ -1054,25 +940,17 @@ bool CastleInfoManager::isCastleZone(ZoneID_t zoneID) const {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 void CastleInfoManager::clearCastleZoneIDs()
 
 {
-    __BEGIN_TRY
-
     m_CastleZoneIDs.clear();
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::getCastleZoneID(ZoneID_t zoneID, ZoneID_t& castleZoneID) const
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, ZoneID_t>::const_iterator itr = m_CastleZoneIDs.find(zoneID);
 
     if (itr != m_CastleZoneIDs.end()) {
@@ -1081,25 +959,17 @@ bool CastleInfoManager::getCastleZoneID(ZoneID_t zoneID, ZoneID_t& castleZoneID)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 void CastleInfoManager::setCastleZoneID(ZoneID_t zoneID, ZoneID_t castleZoneID)
 
 {
-    __BEGIN_TRY
-
     m_CastleZoneIDs[zoneID] = castleZoneID;
-
-    __END_CATCH
 }
 
 bool CastleInfoManager::isSameCastleZone(ZoneID_t zoneID1, ZoneID_t zoneID2) const
 
 {
-    __BEGIN_TRY
-
     ZoneID_t castleZoneID1, castleZoneID2;
 
     bool isCastle1 = getCastleZoneID(zoneID1, castleZoneID1);
@@ -1110,15 +980,11 @@ bool CastleInfoManager::isSameCastleZone(ZoneID_t zoneID1, ZoneID_t zoneID2) con
         return false;
 
     return castleZoneID1 == castleZoneID2;
-
-    __END_CATCH
 }
 
 SkillType_t CastleInfoManager::getCastleSkillType(ZoneID_t zoneID, GuildID_t guildID) const
 
 {
-    __BEGIN_TRY
-
     const CastleInfo* pCastleInfo = getCastleInfo(zoneID);
 
     if (pCastleInfo != NULL) {
@@ -1139,6 +1005,4 @@ SkillType_t CastleInfoManager::getCastleSkillType(ZoneID_t zoneID, GuildID_t gui
     }
 
     return SKILL_MAX;
-
-    __END_CATCH
 }

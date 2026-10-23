@@ -14,14 +14,10 @@
 #include "PlayerCreature.h"
 
 EffectEventQuestReset::EffectEventQuestReset(Creature* pCreature, int type) : m_Type(type) {
-    __BEGIN_TRY
-
     setTarget(pCreature);
 
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectEventQuestReset::~EffectEventQuestReset()
@@ -34,20 +30,14 @@ EffectEventQuestReset::~EffectEventQuestReset()
 void EffectEventQuestReset::affect()
 
 {
-    __BEGIN_TRY
-
     setNextTime(BROADCASTING_DELAY * 10);
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectEventQuestReset::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (!pCreature->isPC())
         return;
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
@@ -65,26 +55,18 @@ void EffectEventQuestReset::affect(Creature* pCreature)
     pPC->getPlayer()->sendPacket(&gcSM);
 
     cout << gcSM.getMessage() << endl;
-
-    __END_CATCH
 }
 
 void EffectEventQuestReset::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectEventQuestReset::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (!pCreature->isPC())
         return;
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
@@ -106,16 +88,10 @@ void EffectEventQuestReset::unaffect(Creature* pCreature)
     GCSystemMessage gcSM;
     gcSM.setMessage("The 12-hour time limit has passed. You may apply for grade A quests again.");
     pPC->getPlayer()->sendPacket(&gcSM);
-
-    __END_CATCH
 }
 
 string EffectEventQuestReset::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectEventQuestReset(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

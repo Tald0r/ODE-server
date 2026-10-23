@@ -17,26 +17,18 @@
 EffectMPRecovery::EffectMPRecovery()
 
 {
-    __BEGIN_TRY
-
     // Server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectMPRecovery::EffectMPRecovery(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Creature* pCreature, Turn_t delay)
 
     : Effect(pZone, x, y, pCreature, delay) {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
     Assert(getTarget() != NULL);
 
     // Server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectMPRecovery::~EffectMPRecovery()
@@ -49,23 +41,17 @@ EffectMPRecovery::~EffectMPRecovery()
 void EffectMPRecovery::affect()
 
 {
-    __BEGIN_TRY
-
     // MP recovery according to the delay.
     setNextTime(m_Delay);
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     affect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectMPRecovery::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature->isFlag(Effect::EFFECT_CLASS_PLEASURE_EXPLOSION)) {
         cout << "No MP recovery under Pleasure Explosion." << endl;
         return;
@@ -126,37 +112,25 @@ void EffectMPRecovery::affect(Creature* pCreature)
 
         m_Period = RecoveryPeriod;
     }
-
-    __END_CATCH
 }
 
 void EffectMPRecovery::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 void EffectMPRecovery::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectMPRecovery::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature->isSlayer()) {
         Slayer* pSlayer = dynamic_cast<Slayer*>(pCreature);
 
@@ -194,15 +168,11 @@ void EffectMPRecovery::unaffect(Creature* pCreature)
 
         pOusters->removeFlag(Effect::EFFECT_CLASS_MP_RECOVERY);
     }
-
-    __END_CATCH
 }
 
 void EffectMPRecovery::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 string EffectMPRecovery::toString() const
 

@@ -13,13 +13,9 @@
 //////////////////////////////////////////////////////////////////////////////
 SimpleTileEffect::SimpleTileEffect(EffectClass eClass, Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
     : m_EffectClass(eClass) {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = x;
     m_Y = y;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -27,12 +23,8 @@ SimpleTileEffect::SimpleTileEffect(EffectClass eClass, Zone* pZone, ZoneCoord_t 
 void SimpleTileEffect::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,11 +32,7 @@ void SimpleTileEffect::unaffect()
 string SimpleTileEffect::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "SimpleTileEffect(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

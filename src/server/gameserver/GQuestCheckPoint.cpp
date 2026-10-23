@@ -11,8 +11,6 @@
 #include "ZoneUtil.h"
 
 void GQuestCheckPoint::load() {
-    __BEGIN_TRY
-
     XMLTree* pTree = new XMLTree;
     pTree->LoadFromFile((de::kernelContext().config().getProperty("HomePath") + "/data/EventCheckPoint.xml").c_str());
 
@@ -64,8 +62,6 @@ void GQuestCheckPoint::load() {
             target.push_back(id);
         }
     }
-
-    __END_CATCH
 }
 
 DWORD GQuestCheckPoint::getCheckPointID(MonsterCorpse* pCheckPoint) {

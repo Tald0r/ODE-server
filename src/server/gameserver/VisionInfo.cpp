@@ -27,11 +27,7 @@ VisionInfoManager::~VisionInfoManager()
 //--------------------------------------------------------------------------------
 void VisionInfoManager::init()
 
-    {
-
-        __BEGIN_TRY
-
-            __END_CATCH}
+{}
 
 
 //--------------------------------------------------------------------------------
@@ -40,9 +36,5 @@ void VisionInfoManager::init()
 string VisionInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     return "VisionInfoManager()";
-
-    __END_CATCH
 }

@@ -26,8 +26,6 @@
 #include "war/WarSystem.h"
 
 void RegenZoneInfo::putTryingPosition() {
-    __BEGIN_TRY
-
     Zone* pZone = m_pRegenZoneTower->getZone();
     ZoneCoord_t X = m_pRegenZoneTower->getX() - 2;
     ZoneCoord_t Y = m_pRegenZoneTower->getY() + 2;
@@ -48,13 +46,9 @@ void RegenZoneInfo::putTryingPosition() {
     pZone->broadcastPacket(X, Y, &gcAddEffectToTile);
 
     __LEAVE_CRITICAL_SECTION((*pZone));
-
-    __END_CATCH
 }
 
 void RegenZoneInfo::deleteTryingPosition() {
-    __BEGIN_TRY
-
     Zone* pZone = m_pRegenZoneTower->getZone();
     ZoneCoord_t X = m_pRegenZoneTower->getX() - 2;
     ZoneCoord_t Y = m_pRegenZoneTower->getY() + 2;
@@ -67,8 +61,6 @@ void RegenZoneInfo::deleteTryingPosition() {
         pEffect->setDeadline(0);
 
     __LEAVE_CRITICAL_SECTION((*pZone));
-
-    __END_CATCH
 }
 
 RegenZoneManager::RegenZoneManager() {}
@@ -86,8 +78,6 @@ RegenZoneManager::~RegenZoneManager() {
 // and tells the holy land. The table of regen zones itself is loaded once and
 // never changes, so the zone threads may look a regen zone up in it.
 void RegenZoneManager::reload() {
-    __BEGIN_TRY
-
     vector<RegenZoneRow> rows = defaultRegenZoneRepository().loadPositions();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -102,8 +92,6 @@ void RegenZoneManager::reload() {
             RegenZoneManager::getInstance()->reloadOwner(zone, ID, ZoneX, ZoneY, Owner);
         });
     }
-
-    __END_CATCH
 }
 
 void RegenZoneManager::reloadOwner(Zone& zone, uint ID, ZoneCoord_t ZoneX, ZoneCoord_t ZoneY, uint Owner) {
@@ -153,8 +141,6 @@ RegenZoneInfo* RegenZoneManager::getRegenZoneInfo(uint ID) const {
 }
 
 void RegenZoneManager::load() {
-    __BEGIN_TRY
-
     vector<RegenZoneRow> rows = defaultRegenZoneRepository().loadPositions();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -189,8 +175,6 @@ void RegenZoneManager::load() {
         std::lock_guard<std::mutex> lock(m_StatusMutex);
         m_Status.setStatus(ID, Owner);
     }
-
-    __END_CATCH
 }
 
 void RegenZoneManager::putTryingPosition() {

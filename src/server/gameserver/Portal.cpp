@@ -59,11 +59,7 @@ private:
 PrivatePortal::PrivatePortal(ObjectID_t objectID)
 
     : Portal(objectID) {
-    __BEGIN_TRY
-
     m_pTarget = new PortalTargetInfo();
-
-    __END_CATCH
 }
 
 PrivatePortal::~PrivatePortal()
@@ -79,75 +75,50 @@ PrivatePortal::~PrivatePortal()
 ZoneID_t PrivatePortal::getZoneID() const
 
 {
-    __BEGIN_TRY
-
     Assert(m_pTarget != NULL);
     return m_pTarget->getZoneID();
-
-    __END_CATCH
 }
 
 void PrivatePortal::setZoneID(ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
-
     Assert(m_pTarget != NULL);
     m_pTarget->setZoneID(zoneID);
-
-    __END_CATCH
 }
 
 
 ZoneCoord_t PrivatePortal::getX() const
 
 {
-    __BEGIN_TRY
-
     Assert(m_pTarget != NULL);
     return m_pTarget->getX();
-
-    __END_CATCH
 }
 
 void PrivatePortal::setX(ZoneCoord_t x)
 
 {
-    __BEGIN_TRY
-
     Assert(m_pTarget != NULL);
     m_pTarget->setX(x);
-
-    __END_CATCH
 }
 
 ZoneCoord_t PrivatePortal::getY() const
 
 {
-    __BEGIN_TRY
-
     Assert(m_pTarget != NULL);
     return m_pTarget->getY();
-
-    __END_CATCH
 }
 
 void PrivatePortal::setY(ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     Assert(m_pTarget != NULL);
     m_pTarget->setY(y);
-
-    __END_CATCH
 }
 
 
 bool PrivatePortal::activate(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -159,7 +130,6 @@ bool PrivatePortal::activate(Creature* pCreature)
     return true;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string PrivatePortal::toString() const
@@ -183,7 +153,6 @@ string PrivatePortal::toString() const
 bool NormalPortal::activate(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -216,7 +185,6 @@ bool NormalPortal::activate(Creature* pCreature)
     return true;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string NormalPortal::toString() const
@@ -240,7 +208,6 @@ string NormalPortal::toString() const
 bool GuildPortal::activate(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -279,7 +246,6 @@ bool GuildPortal::activate(Creature* pCreature)
     return true;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string GuildPortal::toString() const
@@ -303,7 +269,6 @@ string GuildPortal::toString() const
 bool MultiPortal::activate(Creature* pCreature, ZoneID_t ZoneID)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature->isPC());
@@ -325,7 +290,6 @@ bool MultiPortal::activate(Creature* pCreature, ZoneID_t ZoneID)
     return true;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string MultiPortal::toString() const
@@ -352,8 +316,6 @@ string MultiPortal::toString() const
 bool TriggeredPortal::activate(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     list<Trigger*>& triggers = m_TriggerManager.getTriggers();
     list<Trigger*>::iterator itr = triggers.begin();
 
@@ -375,25 +337,15 @@ bool TriggeredPortal::activate(Creature* pCreature)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 void TriggeredPortal::load(ZoneID_t zoneid, int left, int top, int right, int bottom)
 
 {
-    __BEGIN_TRY
-
     m_TriggerManager.load(zoneid, left, top, right, bottom);
-
-    __END_CATCH
 }
 
 string TriggeredPortal::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     return msg.toString();
-
-    __END_CATCH
 }

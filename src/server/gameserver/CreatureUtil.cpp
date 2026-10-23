@@ -76,14 +76,10 @@
 bool isSameRace(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
 
     return (pCreature1->getCreatureClass() == pCreature2->getCreatureClass() ? true : false);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,30 +90,20 @@ bool isSameRace(Creature* pCreature1, Creature* pCreature2)
 Item* findItemOID(Creature* pCreature, ObjectID_t id)
 
 {
-    __BEGIN_TRY
-
     int storage, x, y;
     return findItemOID(pCreature, id, storage, x, y);
-
-    __END_CATCH
 }
 
 Item* findItemOID(Creature* pCreature, ObjectID_t id, Item::ItemClass IClass)
 
 {
-    __BEGIN_TRY
-
     int storage, x, y;
     return findItemOID(pCreature, id, IClass, storage, x, y);
-
-    __END_CATCH
 }
 
 Item* findItemOID(Creature* pCreature, ObjectID_t id, int& storage, int& x, int& y)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return NULL;
 
@@ -194,15 +180,11 @@ Item* findItemOID(Creature* pCreature, ObjectID_t id, int& storage, int& x, int&
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 Item* findItemOID(Creature* pCreature, ObjectID_t id, Item::ItemClass IClass, int& storage, int& x, int& y)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return NULL;
 
@@ -279,8 +261,6 @@ Item* findItemOID(Creature* pCreature, ObjectID_t id, Item::ItemClass IClass, in
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -292,30 +272,20 @@ Item* findItemOID(Creature* pCreature, ObjectID_t id, Item::ItemClass IClass, in
 Item* findItemIID(Creature* pCreature, ItemID_t id)
 
 {
-    __BEGIN_TRY
-
     int storage, x, y;
     return findItemIID(pCreature, id, storage, x, y);
-
-    __END_CATCH
 }
 
 Item* findItemIID(Creature* pCreature, ItemID_t id, Item::ItemClass IClass)
 
 {
-    __BEGIN_TRY
-
     int storage, x, y;
     return findItemIID(pCreature, id, IClass, storage, x, y);
-
-    __END_CATCH
 }
 
 Item* findItemIID(Creature* pCreature, ItemID_t id, int& storage, int& x, int& y)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return NULL;
 
@@ -392,15 +362,11 @@ Item* findItemIID(Creature* pCreature, ItemID_t id, int& storage, int& x, int& y
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 Item* findItemIID(Creature* pCreature, ItemID_t id, Item::ItemClass IClass, int& storage, int& x, int& y)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return NULL;
 
@@ -477,8 +443,6 @@ Item* findItemIID(Creature* pCreature, ItemID_t id, Item::ItemClass IClass, int&
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -489,8 +453,6 @@ Item* findItemIID(Creature* pCreature, ItemID_t id, Item::ItemClass IClass, int&
 int computeCreatureExp(Creature* pCreature, int percent, Ousters* pOusters)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(percent >= 0 && percent <= 100);
 
@@ -572,8 +534,6 @@ int computeCreatureExp(Creature* pCreature, int percent, Ousters* pOusters)
     exp = getPercentValue(exp, de::gameContext().variables().getVariable(MONSTER_EXP_RATIO));
 
     return exp;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -583,8 +543,6 @@ int computeCreatureExp(Creature* pCreature, int percent, Ousters* pOusters)
 int computeBloodDrainHealPoint(Creature* pCreature, int percent)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(percent >= 0 && percent <= 100);
 
@@ -635,8 +593,6 @@ int computeBloodDrainHealPoint(Creature* pCreature, int percent)
     exp = getPercentValue(exp, percent);
 
     return exp;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -645,8 +601,6 @@ int computeBloodDrainHealPoint(Creature* pCreature, int percent)
 bool isEventMonster(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     if (!pCreature->isMonster())
@@ -665,8 +619,6 @@ bool isEventMonster(Creature* pCreature)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1408,8 +1360,6 @@ bool canDropToZone(Creature* pCreature, Item* pItem) {
 bool getRaceFromDB(const string& Name, Race_t& race)
 
 {
-    __BEGIN_TRY
-
     {
         string Race;
 
@@ -1426,15 +1376,11 @@ bool getRaceFromDB(const string& Name, Race_t& race)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool getGuildIDFromDB(const string& Name, Race_t race, GuildID_t& guildID)
 
 {
-    __BEGIN_TRY
-
     {
         CharacterRace table;
         if (race == RACE_SLAYER)
@@ -1458,8 +1404,6 @@ bool getGuildIDFromDB(const string& Name, Race_t race, GuildID_t& guildID)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool canSee(const Creature* pSource, Creature* pTarget, EffectObservingEye* pEffectObservingEye,
@@ -1863,8 +1807,6 @@ void sendPetInfo(GamePlayer* pGamePlayer, bool bBroadcast, bool bSummon) {
 }
 
 void giveGoldMedal(PlayerCreature* pPC) {
-    __BEGIN_TRY
-
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPC->getPlayer());
     Assert(pGamePlayer != NULL);
 
@@ -1879,13 +1821,9 @@ void giveGoldMedal(PlayerCreature* pPC) {
         // sent it back as GCNoticeEvent NOTICE_EVENT_GOLD_MEDALS; the
         // lotto counter below (addLotto) has that shape.
     }
-
-    __END_CATCH
 }
 
 void giveLotto(PlayerCreature* pPC, BYTE type, uint num) {
-    __BEGIN_TRY
-
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPC->getPlayer());
     Assert(pGamePlayer != NULL);
 
@@ -1901,28 +1839,19 @@ void giveLotto(PlayerCreature* pPC, BYTE type, uint num) {
             pGamePlayer->sendPacket(&gcSM);
         }
     }
-
-    __END_CATCH
 }
 
 void addOlympicStat(PlayerCreature* pPC, BYTE type, uint num) {
-    __BEGIN_TRY
-
     // Records nothing: the olympic event's OlympicStat counters are not kept.
-    __END_CATCH
 }
 
 void deletePC(PlayerCreature* pPC) {
-    __BEGIN_TRY
-
     // The 109 statements that retire a character's rows -- the three race
     // tables' Active='INACTIVE' updates, the skill saves and rank bonus, the
     // 81 item-object tables, GQuestSave, CoupleInfo, the persisted effects,
     // FlagSet, TimeLimitItems and EventQuestAdvance -- run in that order on one
     // Statement in CharacterPurgeRepository::purgeCharacter.
     defaultCharacterPurgeRepository().purgeCharacter(pPC->getName());
-
-    __END_CATCH
 }
 
 bool isAffectExp2X() {

@@ -14,19 +14,15 @@
 // class RankBonusInfo member methods
 //////////////////////////////////////////////////////////////////////////////
 
-RankBonusInfo::RankBonusInfo(){__BEGIN_TRY __END_CATCH}
+RankBonusInfo::RankBonusInfo() {}
 
 RankBonusInfo::~RankBonusInfo(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
 
 string RankBonusInfo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "RankBonusInfo (" << "Type:" << (int)m_Type << ",Name:" << m_Name << ",Rank:" << m_Rank
         << ",Point:" << m_Point << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -37,12 +33,8 @@ string RankBonusInfo::toString() const {
 RankBonusInfoManager::RankBonusInfoManager()
 
 {
-    __BEGIN_TRY
-
     m_Count = 0;
     m_RankBonusInfoList = NULL;
-
-    __END_CATCH
 }
 
 RankBonusInfoManager::~RankBonusInfoManager()
@@ -58,18 +50,12 @@ RankBonusInfoManager::~RankBonusInfoManager()
 void RankBonusInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void RankBonusInfoManager::clear()
 
 {
-    __BEGIN_TRY
-
     if (m_RankBonusInfoList != NULL) {
         for (uint i = 0; i < m_Count; i++) {
             if (m_RankBonusInfoList[i] != NULL)
@@ -77,14 +63,11 @@ void RankBonusInfoManager::clear()
         }
     }
     SAFE_DELETE_ARRAY(m_RankBonusInfoList);
-
-    __END_CATCH
 }
 
 void RankBonusInfoManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     clear();
@@ -118,22 +101,15 @@ void RankBonusInfoManager::load()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void RankBonusInfoManager::save()
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 RankBonusInfo* RankBonusInfoManager::getRankBonusInfo(DWORD rankBonusType) const {
-    __BEGIN_TRY
-
     if (rankBonusType >= m_Count) {
         cerr << "RankBonusInfoManager::getRankBonusInfo() : out of bound" << endl;
         throw OutOfBoundException();
@@ -145,30 +121,22 @@ RankBonusInfo* RankBonusInfoManager::getRankBonusInfo(DWORD rankBonusType) const
     }
 
     return m_RankBonusInfoList[rankBonusType];
-
-    __END_CATCH
 }
 
 void RankBonusInfoManager::addRankBonusInfo(RankBonusInfo* pRankBonusInfo)
 
 {
-    __BEGIN_TRY
-
     Assert(pRankBonusInfo != NULL);
 
     if (m_RankBonusInfoList[pRankBonusInfo->getType()] != NULL)
         throw DuplicatedException();
 
     m_RankBonusInfoList[pRankBonusInfo->getType()] = pRankBonusInfo;
-
-    __END_CATCH
 }
 
 string RankBonusInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "RankBonusInfoManager(\n";
@@ -183,6 +151,4 @@ string RankBonusInfoManager::toString() const
     }
 
     return msg.toString();
-
-    __END_CATCH
 }

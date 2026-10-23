@@ -111,8 +111,6 @@
 ItemFactoryManager::ItemFactoryManager()
 
     : m_Factories(NULL), m_Size(Item::ITEM_CLASS_MAX) {
-    __BEGIN_TRY
-
     Assert(m_Size > 0);
 
     // Create the item factory array.
@@ -121,8 +119,6 @@ ItemFactoryManager::ItemFactoryManager()
     // Initialize the factory pointers to NULL.
     for (int i = 0; i < m_Size; i++)
         m_Factories[i] = NULL;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -156,8 +152,6 @@ ItemFactoryManager::~ItemFactoryManager()
 void ItemFactoryManager::init()
 
 {
-    __BEGIN_TRY
-
     m_Factories[Item::ITEM_CLASS_MOTORCYCLE] = new MotorcycleFactory();
     m_ItemClassMap[m_Factories[Item::ITEM_CLASS_MOTORCYCLE]->getItemClassName()] = Item::ITEM_CLASS_MOTORCYCLE;
 
@@ -435,8 +429,6 @@ void ItemFactoryManager::init()
 
     m_Factories[Item::ITEM_CLASS_MITTEN] = new MittenFactory();
     m_ItemClassMap[m_Factories[Item::ITEM_CLASS_MITTEN]->getItemClassName()] = Item::ITEM_CLASS_MITTEN;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -447,8 +439,6 @@ void ItemFactoryManager::init()
 Item* ItemFactoryManager::createItem(Item::ItemClass IClass, ItemType_t ItemType, const list<OptionType_t>& OptionType)
 
 {
-    __BEGIN_TRY
-
     // Guard against a Seg.Fault caused by an item id out of range. The
     // caller gets the exception: there is no item to hand back, and almost
     // none of the callers check the pointer they are given.
@@ -466,8 +456,6 @@ Item* ItemFactoryManager::createItem(Item::ItemClass IClass, ItemType_t ItemType
     pItem->setUnique(de::gameContext().itemInfos().getItemInfo(IClass, ItemType)->isUnique());
 
     return pItem;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -478,8 +466,6 @@ Item* ItemFactoryManager::createItem(Item::ItemClass IClass, ItemType_t ItemType
 string ItemFactoryManager::getItemName(Item::ItemClass IClass)
 
 {
-    __BEGIN_TRY
-
     // Guard against a Seg.Fault caused by an item id out of range. There is
     // no name to answer with, so the caller gets the exception.
     if (IClass >= m_Size || m_Factories[IClass] == NULL) {
@@ -489,15 +475,11 @@ string ItemFactoryManager::getItemName(Item::ItemClass IClass)
     }
 
     return m_Factories[IClass]->getItemClassName();
-
-    __END_CATCH
 }
 
 Item::ItemClass ItemFactoryManager::getItemClassByName(const string& ClassName)
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, Item::ItemClass>::const_iterator itr = m_ItemClassMap.begin();
     for (; itr != m_ItemClassMap.end(); itr++) {
         // Compare ignoring case.
@@ -507,8 +489,6 @@ Item::ItemClass ItemFactoryManager::getItemClassByName(const string& ClassName)
     }
 
     return Item::ITEM_CLASS_MAX;
-
-    __END_CATCH
 }
 
 
@@ -518,8 +498,6 @@ Item::ItemClass ItemFactoryManager::getItemClassByName(const string& ClassName)
 string ItemFactoryManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ItemFactoryManager(\n";
@@ -533,6 +511,4 @@ string ItemFactoryManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -24,8 +24,6 @@ SMSAddressBook::~SMSAddressBook() {
 }
 
 void SMSAddressBook::load() {
-    __BEGIN_TRY
-
     m_Addresses.clear();
     Assert(m_pOwner != NULL);
 
@@ -43,8 +41,6 @@ void SMSAddressBook::load() {
         if (m_NextEID <= pElement->getID())
             m_NextEID = pElement->getID() + 1;
     }
-
-    __END_CATCH
 }
 
 GCSMSAddressList* SMSAddressBook::getGCSMSAddressList() const {

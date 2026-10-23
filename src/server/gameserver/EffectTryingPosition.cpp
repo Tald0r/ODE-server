@@ -17,20 +17,14 @@
 #include "war/WarSystem.h"
 
 EffectTryingPosition::EffectTryingPosition(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y, MonsterCorpse* pTower) {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     setXY(X, Y);
     m_pTower = pTower;
 
     m_LastEffect = Effect::EFFECT_CLASS_TRYING_POSITION;
-
-    __END_CATCH
 }
 
 void EffectTryingPosition::affect(Creature* pCreature) {
-    __BEGIN_TRY
-
     if (!pCreature->isPC())
         return;
     if (!de::gameContext().warSystem().hasActiveRaceWar())
@@ -114,15 +108,11 @@ void EffectTryingPosition::affect(Creature* pCreature) {
     gcAddEffect.setDuration(200);
 
     m_pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
-
-    __END_CATCH
 }
 
 void EffectTryingPosition::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (m_LastEffect < EFFECT_CLASS_SLAYER_TRYING_1 || m_LastEffect > EFFECT_CLASS_OUSTERS_TRYING_3)
         return;
     Effect* pEffect = m_pTower->getEffectManager().findEffect(m_LastEffect);
@@ -131,13 +121,9 @@ void EffectTryingPosition::unaffect(Creature* pCreature)
     pEffect = pCreature->findEffect(Effect::EFFECT_CLASS_TRYING);
     if (pEffect != NULL)
         pEffect->setDeadline(0);
-
-    __END_CATCH
 }
 
 void EffectTryingPosition::unaffect() {
-    __BEGIN_TRY
-
     m_pZone->getTile(getX(), getY()).deleteEffect(getObjectID());
 
     GCDeleteEffectFromTile gcDeleteEffect;
@@ -146,8 +132,6 @@ void EffectTryingPosition::unaffect() {
     gcDeleteEffect.setEffectID(getSendEffectClass());
 
     m_pZone->broadcastPacket(getX(), getY(), &gcDeleteEffect);
-
-    __END_CATCH
 }
 
 string EffectTryingPosition::toString() const {

@@ -24,8 +24,6 @@
 EffectContinualGroundAttack::EffectContinualGroundAttack(Zone* pZone, EffectClass attackEffect, Turn_t delay)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     m_pZone = pZone;
@@ -42,8 +40,6 @@ EffectContinualGroundAttack::EffectContinualGroundAttack(Zone* pZone, EffectClas
 
     // Server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 
@@ -60,8 +56,6 @@ EffectContinualGroundAttack::~EffectContinualGroundAttack()
 void EffectContinualGroundAttack::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     int creatureNum = m_pZone->getPCManager()->getSize() + m_pZone->getMonsterManager()->getSize();
@@ -161,8 +155,6 @@ void EffectContinualGroundAttack::affect()
     }
 
     setNextTime(m_Delay);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -170,9 +162,7 @@ void EffectContinualGroundAttack::affect()
 //--------------------------------------------------------------------
 void EffectContinualGroundAttack::unaffect()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 //----------------------------------------------------------------------
 // get debug string

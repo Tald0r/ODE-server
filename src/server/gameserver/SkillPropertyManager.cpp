@@ -36,13 +36,11 @@ const int DefaultSkill[DefaultSkillMax][4] = {
     {SKILL_ACID_STORM_WIDE, 0, 1, 0},
 };
 
-SkillProperty::SkillProperty(){__BEGIN_TRY __END_CATCH}
+SkillProperty::SkillProperty() {}
 
 SkillProperty::~SkillProperty(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
 
 string SkillProperty::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "(" << (int)m_SkillType << ":";
     for (int i = 0; i < SKILL_PROPERTY_TYPE_MAX; i++) {
@@ -50,8 +48,6 @@ string SkillProperty::toString() const {
     }
     msg << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -61,9 +57,7 @@ string SkillProperty::toString() const {
 
 SkillPropertyManager::SkillPropertyManager()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 SkillPropertyManager::~SkillPropertyManager()
 
@@ -78,8 +72,6 @@ SkillPropertyManager::~SkillPropertyManager()
 void SkillPropertyManager::init()
 
 {
-    __BEGIN_TRY
-
     m_SkillProperties.reserve(SKILL_MAX);
 
     for (int i = 0; i < SKILL_MAX; i++) {
@@ -87,29 +79,21 @@ void SkillPropertyManager::init()
     }
 
     initDefaultSkillProperty();
-
-    __END_CATCH
 }
 
 void SkillPropertyManager::clear()
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < SKILL_MAX; i++) {
         SAFE_DELETE(m_SkillProperties[i]);
     }
 
     m_SkillProperties.clear();
-
-    __END_CATCH
 }
 
 void SkillPropertyManager::initDefaultSkillProperty()
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < DefaultSkillMax; i++) {
         SkillProperty* pSkillProperty = new SkillProperty();
         pSkillProperty->setType(DefaultSkill[i][0]);
@@ -119,13 +103,9 @@ void SkillPropertyManager::initDefaultSkillProperty()
 
         addSkillProperty(pSkillProperty);
     }
-
-    __END_CATCH
 }
 
 SkillProperty* SkillPropertyManager::getSkillProperty(SkillType_t SkillType) const {
-    __BEGIN_TRY
-
     if (SkillType >= SKILL_MAX) {
         cerr << "SkillPropertyManager::getSkillProperty() : out of bounds" << endl;
         throw OutOfBoundException();
@@ -137,13 +117,9 @@ SkillProperty* SkillPropertyManager::getSkillProperty(SkillType_t SkillType) con
     }
 
     return m_SkillProperties[SkillType];
-
-    __END_CATCH
 }
 
 void SkillPropertyManager::addSkillProperty(SkillProperty* pSkillProperty) {
-    __BEGIN_TRY
-
     if (pSkillProperty->getType() >= SKILL_MAX) {
         cerr << "SkillPropertyManager::getSkillProperty() : out of bounds" << endl;
         throw OutOfBoundException();
@@ -155,16 +131,12 @@ void SkillPropertyManager::addSkillProperty(SkillProperty* pSkillProperty) {
     }
 
     m_SkillProperties[pSkillProperty->getType()] = pSkillProperty;
-
-    __END_CATCH
 }
 
 // SkillPropertyManager:: toString()
 string SkillPropertyManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "SkillPropertyManager(\n";
@@ -176,6 +148,4 @@ string SkillPropertyManager::toString() const
     msg << "\n)";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -43,9 +43,9 @@
 
 EventMorph::EventMorph(GamePlayer* pGamePlayer)
 
-    : Event(pGamePlayer){__BEGIN_TRY __END_CATCH}
+    : Event(pGamePlayer) {}
 
-      EventMorph::~EventMorph()
+EventMorph::~EventMorph()
 
 {
     __BEGIN_TRY
@@ -55,7 +55,6 @@ EventMorph::EventMorph(GamePlayer* pGamePlayer)
 void EventMorph::activate()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(m_pGamePlayer != NULL);
@@ -420,7 +419,6 @@ void EventMorph::activate()
     SAFE_DELETE(pFromCreature);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EventMorph::toString() const

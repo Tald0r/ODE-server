@@ -16,8 +16,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 CombatInfoManager::CombatInfoManager() {
-    __BEGIN_TRY
-
     for (int i = 0; i < maxRelic; i++) {
         m_RelicOwner[i] = RELIC_OWNER_NULL;
     }
@@ -31,21 +29,13 @@ CombatInfoManager::CombatInfoManager() {
     m_bVampireBonus = false;
 
     m_bCombat = false;
-
-    __END_CATCH
 }
 
 void CombatInfoManager::initModify() {
-    __BEGIN_TRY
-
     // computeModify();
-
-    __END_CATCH
 }
 
 void CombatInfoManager::computeModify() {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
 
     m_SlayerHPModify = 0;
@@ -96,13 +86,9 @@ void CombatInfoManager::computeModify() {
 
     m_bSlayerBonus = bSlayerBonus;
     m_bVampireBonus = bVampireBonus;
-
-    __END_CATCH
 }
 
 void CombatInfoManager::setRelicOwner(int index, RelicOwner relicOwner) {
-    __BEGIN_TRY
-
     if (index < 0 || index >= maxRelic) {
         throw OutOfBoundException();
     }
@@ -110,6 +96,4 @@ void CombatInfoManager::setRelicOwner(int index, RelicOwner relicOwner) {
     m_RelicOwner[index] = relicOwner;
 
     // computeModify();
-
-    __END_CATCH
 }

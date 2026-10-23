@@ -169,8 +169,6 @@ bool isPossibleOptionClass(Item::ItemClass itemClass, OptionClass optionClass) {
 OptionInfo::OptionInfo()
 
 {
-    __BEGIN_TRY
-
     m_OptionType = 0;
     m_Name = "";
     m_HName = "";
@@ -195,8 +193,6 @@ OptionInfo::OptionInfo()
     m_UpgradeSecondRatio = 0;
     m_UpgradeCrashPercent = 0;
     m_NextOptionRatio = 0;
-
-    __END_CATCH
 }
 
 OptionInfo::~OptionInfo()
@@ -209,8 +205,6 @@ OptionInfo::~OptionInfo()
 void OptionInfo::setReqAbility(const string& req)
 
 {
-    __BEGIN_TRY
-
     size_t a = 0, b = 0, c = 0;
 
     do {
@@ -246,8 +240,6 @@ void OptionInfo::setReqAbility(const string& req)
         }
 
     } while (c < req.size() - 1);
-
-    __END_CATCH
 }
 
 // Did the upgrade to the next option stage succeed?
@@ -278,8 +270,6 @@ bool OptionInfo::isUpgradeCrash() const {
 string OptionInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "OptionInfo (" << "Type:" << (int)m_OptionType << "Name:" << m_Name << "HName:" << m_HName
         << "Nickname:" << m_Nickname << "Class:" << (int)m_OptionClass << "PlusPoint:" << (int)m_PlusPoint
@@ -291,8 +281,6 @@ string OptionInfo::toString() const
         << "UpgradeSecondRatio:" << (int)m_UpgradeSecondRatio << "UpgradeCrashPercent:" << (int)m_UpgradeCrashPercent
         << "NextOptionRatio:" << (int)m_NextOptionRatio << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -301,7 +289,7 @@ string OptionInfo::toString() const
 
 OptionInfoSet::OptionInfoSet()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 OptionInfoSet::~OptionInfoSet()
 
@@ -317,8 +305,6 @@ OptionInfoSet::~OptionInfoSet()
 void OptionInfoSet::addOptionType(uint level, OptionType_t type)
 
 {
-    __BEGIN_TRY
-
     unordered_map<uint, OptionType_t>::iterator itr = m_OptionTypes.find(level);
 
     if (itr != m_OptionTypes.end()) {
@@ -329,16 +315,12 @@ void OptionInfoSet::addOptionType(uint level, OptionType_t type)
     }
 
     m_OptionTypes[level] = type;
-
-    __END_CATCH
 }
 
 // Put the options within the given minimum and maximum level range into the vector.
 void OptionInfoSet::getPossibleOptionTypes(uint minLevel, uint maxLevel, vector<OptionType_t>& rOptionVector)
 
 {
-    __BEGIN_TRY
-
     unordered_map<uint, OptionType_t>::iterator itr = m_OptionTypes.begin();
     for (; itr != m_OptionTypes.end(); itr++) {
         uint level = itr->first;
@@ -347,15 +329,11 @@ void OptionInfoSet::getPossibleOptionTypes(uint minLevel, uint maxLevel, vector<
             rOptionVector.push_back(OType);
         }
     }
-
-    __END_CATCH
 }
 
 string OptionInfoSet::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "OptionInfoSet(";
@@ -367,8 +345,6 @@ string OptionInfoSet::toString(void) const
     msg << ")\n";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -379,15 +355,11 @@ string OptionInfoSet::toString(void) const
 OptionInfoManager::OptionInfoManager()
 
 {
-    __BEGIN_TRY
-
     m_nOptionCount = 0;
     m_OptionClassInfos.clear();
     m_OptionClassInfos.reserve((int)OPTION_MAX);
     m_ToTalPetEnchantOption = 0;
     m_PetEnchantOptionList.clear();
-
-    __END_CATCH
 }
 
 OptionInfoManager::~OptionInfoManager()
@@ -403,8 +375,6 @@ OptionInfoManager::~OptionInfoManager()
 void OptionInfoManager::release()
 
 {
-    __BEGIN_TRY
-
     m_nOptionCount = 0;
 
     unordered_map<OptionType_t, OptionInfo*>::iterator itr = m_OptionInfos.begin();
@@ -445,25 +415,17 @@ void OptionInfoManager::release()
     }
     m_PetEnchantOptionList.clear();
     m_ToTalPetEnchantOption = 0;
-
-    __END_CATCH
 }
 
 void OptionInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void OptionInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     release();
 
     try {
@@ -618,15 +580,11 @@ void OptionInfoManager::load()
         cerr << t.toString().c_str() << endl;
         throw;
     }
-
-    __END_CATCH
 }
 
 void OptionInfoManager::addOptionInfo(OptionInfo* pOptionInfo)
 
 {
-    __BEGIN_TRY
-
     // Insert into the hash map keyed by OptionType.
     unordered_map<OptionType_t, OptionInfo*>::iterator itr = m_OptionInfos.find(pOptionInfo->getType());
 
@@ -651,15 +609,11 @@ void OptionInfoManager::addOptionInfo(OptionInfo* pOptionInfo)
     }
 
     m_NicknameOptionInfos[pOptionInfo->getNickname()] = pOptionInfo;
-
-    __END_CATCH
 }
 
 OptionInfo* OptionInfoManager::getOptionInfo(OptionType_t OptionType)
 
 {
-    __BEGIN_TRY
-
     // cout << "getOptionInfo(" << (int)OptionType << ") " << endl;
 
     unordered_map<OptionType_t, OptionInfo*>::iterator itr = m_OptionInfos.find(OptionType);
@@ -672,15 +626,11 @@ OptionInfo* OptionInfoManager::getOptionInfo(OptionType_t OptionType)
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 OptionInfo* OptionInfoManager::getOptionInfo(const string& nickname)
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, OptionInfo*>::iterator itr = m_NicknameOptionInfos.find(nickname);
 
     if (itr == m_NicknameOptionInfos.end()) {
@@ -691,15 +641,11 @@ OptionInfo* OptionInfoManager::getOptionInfo(const string& nickname)
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 OptionType_t OptionInfoManager::getOptionType(const string& nickname)
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, OptionInfo*>::iterator itr = m_NicknameOptionInfos.find(nickname);
 
     if (itr == m_NicknameOptionInfos.end()) {
@@ -709,15 +655,11 @@ OptionType_t OptionInfoManager::getOptionType(const string& nickname)
 
     OptionInfo* pInfo = itr->second;
     return pInfo->getType();
-
-    __END_CATCH
 }
 
 string OptionInfoManager::getOptionName(const list<OptionType_t>& optionTypes)
 
 {
-    __BEGIN_TRY
-
     StringStream optionName;
 
     list<OptionType_t>::const_iterator itr;
@@ -728,16 +670,12 @@ string OptionInfoManager::getOptionName(const list<OptionType_t>& optionTypes)
     }
 
     return optionName.toString();
-
-    __END_CATCH
 }
 
 
 vector<OptionType_t> OptionInfoManager::getPossibleOptionVector(Item::ItemClass IClass, uint minLevel, uint maxLevel)
 
 {
-    __BEGIN_TRY
-
     vector<OptionType_t> temp;
 
     switch (IClass) {
@@ -927,8 +865,6 @@ vector<OptionType_t> OptionInfoManager::getPossibleOptionVector(Item::ItemClass 
     }
 
     return temp;
-
-    __END_CATCH
 }
 
 void OptionInfoManager::addGambleOption(Item::ItemClass itemClass, uint level, OptionType_t optionType)
@@ -956,20 +892,14 @@ int OptionInfoManager::getRareUpgradeRatio(OptionType_t optionType, bool success
 void OptionInfoManager::addPetEnchantOption(PetEnchantOption* pPetEnchantOption)
 
 {
-    __BEGIN_TRY
-
     Assert(pPetEnchantOption != NULL);
     m_PetEnchantOptionList.push_back(pPetEnchantOption);
-
-    __END_CATCH
 }
 
 
 string OptionInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "OptionInfoManager(\n";
 
@@ -978,6 +908,4 @@ string OptionInfoManager::toString() const
 
     msg << "\n)";
     return msg.toString();
-
-    __END_CATCH
 }

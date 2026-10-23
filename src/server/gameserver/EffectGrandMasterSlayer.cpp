@@ -17,11 +17,7 @@
 EffectGrandMasterSlayer::EffectGrandMasterSlayer(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 Effect::EffectClass EffectGrandMasterSlayer::getSendEffectClass() const {
@@ -44,12 +40,8 @@ Effect::EffectClass EffectGrandMasterSlayer::getSendEffectClass() const {
 void EffectGrandMasterSlayer::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,8 +49,6 @@ void EffectGrandMasterSlayer::affect()
 void EffectGrandMasterSlayer::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature->isSlayer());
 
     pCreature->setFlag(Effect::EFFECT_CLASS_GRAND_MASTER_SLAYER);
@@ -69,19 +59,13 @@ void EffectGrandMasterSlayer::affect(Creature* pCreature)
     gcAddEffect.setEffectID(getSendEffectClass());
     gcAddEffect.setDuration(static_cast<Duration_t>(999999));
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
-
-    __END_CATCH
 }
 
 void EffectGrandMasterSlayer::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -89,7 +73,6 @@ void EffectGrandMasterSlayer::unaffect()
 void EffectGrandMasterSlayer::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectGrandMasterSlayer" << "unaffect BEGIN" << endl;
@@ -111,17 +94,12 @@ void EffectGrandMasterSlayer::unaffect(Creature* pCreature)
     // cout << "EffectGrandMasterSlayer" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectGrandMasterSlayer::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectGrandMasterSlayer(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

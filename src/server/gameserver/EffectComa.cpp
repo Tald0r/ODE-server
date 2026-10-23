@@ -36,11 +36,7 @@
 EffectComa::EffectComa(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 EffectComa::~EffectComa()
@@ -53,27 +49,18 @@ EffectComa::~EffectComa()
 void EffectComa::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     affect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectComa::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectComa::unaffect(Creature* pDeadCreature)
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectComa " << "unaffect BEGIN(Creature)" << endl;
 
     Assert(pDeadCreature != NULL);
@@ -94,45 +81,30 @@ void EffectComa::unaffect(Creature* pDeadCreature)
     }
 
     // cout << "EffectComa " << "unaffect END(Creature)" << endl;
-
-    __END_CATCH
 }
 
 void EffectComa::unaffect()
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectComa " << "unaffect BEGIN" << endl;
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
 
     // cout << "EffectComa " << "unaffect END" << endl;
-
-    __END_CATCH
 }
 
 void EffectComa::create(const string& ownerID)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectComa::destroy(const string& ownerID)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectComa::save(const string& ownerID)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 // The start time is when the effect was created, which is when the player died.
 // Adding 5 seconds to it lets canResurrect reject anyone who has been dead for
@@ -154,17 +126,11 @@ bool EffectComa::canResurrect(void) {
 }
 
 string EffectComa::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectComa(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 void EffectComaLoader::load(Creature* pCreature)
 
-{
-    __BEGIN_TRY __END_CATCH
-}
+{}

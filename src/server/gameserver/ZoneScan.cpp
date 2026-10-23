@@ -190,8 +190,6 @@
 // invisible creature it was watching, and the other way round as well.
 //////////////////////////////////////////////////////////////////////////////
 void Zone::updateInvisibleScan(Creature* pCreature) {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL && pCreature->isPC());
 
     Coord_t cx = pCreature->getX();
@@ -293,8 +291,6 @@ void Zone::updateInvisibleScan(Creature* pCreature) {
             } // darkness
         }
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -307,8 +303,6 @@ void Zone::updateInvisibleScan(Creature* pCreature) {
 void Zone::updateHiddenScan(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL && pCreature->isPC());
 
     Coord_t cx = pCreature->getX();
@@ -361,8 +355,6 @@ void Zone::updateHiddenScan(Creature* pCreature)
             } // darkness
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -371,8 +363,6 @@ void Zone::updateHiddenScan(Creature* pCreature)
 // For Ousters.
 //////////////////////////////////////////////////////////////////////////////
 void Zone::updateDetectScan(Creature* pCreature) {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL && pCreature->isPC());
 
     Coord_t cx = pCreature->getX();
@@ -475,8 +465,6 @@ void Zone::updateDetectScan(Creature* pCreature) {
             }
         }
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -485,8 +473,6 @@ void Zone::updateDetectScan(Creature* pCreature) {
 // invisible, GCDeleteObject is sent to pCreature.
 //--------------------------------------------------------------------------------
 void Zone::updateMineScan(Creature* pCreature) {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL && pCreature->isPC());
 
     Coord_t cx = pCreature->getX();
@@ -527,8 +513,6 @@ void Zone::updateMineScan(Creature* pCreature) {
             } // darkness
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -536,8 +520,6 @@ void Zone::updateMineScan(Creature* pCreature) {
 // Collect information on every object within sight of (x,y).
 //////////////////////////////////////////////////////////////////////////////
 void Zone::scan(Creature* pPC, ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket) {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_SCAN")
 
 #ifdef __USE_ENCRYPTER__
@@ -860,8 +842,6 @@ void Zone::scan(Creature* pPC, ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket) 
     } // for
 
     __END_PROFILE_ZONE("Z_SCAN")
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -869,8 +849,6 @@ void Zone::scan(Creature* pPC, ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket) 
 // sight and treat those PCs as potential enemies.
 //////////////////////////////////////////////////////////////////////////////
 void Zone::scanPC(Creature* pCreature) {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_SCAN_PC")
 
     Monster* pMonster = NULL;
@@ -957,8 +935,6 @@ void Zone::scanPC(Creature* pCreature) {
     }
 
     __END_PROFILE_ZONE("Z_SCAN_PC")
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -968,8 +944,6 @@ void Zone::scanPC(Creature* pCreature) {
 list<Creature*> Zone::getWatcherList(ZoneCoord_t x, ZoneCoord_t y, Creature* pTargetCreature)
 
 {
-    __BEGIN_TRY
-
     list<Creature*> cList;
 
     __BEGIN_PROFILE_ZONE("Z_GET_WATCHERLIST")
@@ -1021,16 +995,11 @@ list<Creature*> Zone::getWatcherList(ZoneCoord_t x, ZoneCoord_t y, Creature* pTa
     __END_PROFILE_ZONE("Z_GET_WATCHERLIST")
 
     return cList;
-
-    __END_CATCH
 }
 
 void Zone::monsterScan(Monster* pMonster, ZoneCoord_t x, ZoneCoord_t y, Dir_t dir)
 
 {
-    __BEGIN_TRY
-
-
     // [TEST CODE]
 
     switch (pMonster->getMonsterType()) {
@@ -1114,7 +1083,4 @@ void Zone::monsterScan(Monster* pMonster, ZoneCoord_t x, ZoneCoord_t y, Dir_t di
             } // if (itr != objectList.end())
         } // for iy
     } // for ix
-
-
-    __END_CATCH
 }

@@ -29,7 +29,7 @@
 
 EffectLoaderManager::EffectLoaderManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 EffectLoaderManager::~EffectLoaderManager()
 
@@ -61,8 +61,6 @@ EffectLoaderManager::~EffectLoaderManager()
 void EffectLoaderManager::init()
 
 {
-    __BEGIN_TRY
-
     m_pEffectLoaders[Effect::EFFECT_CLASS_BLOOD_DRAIN] = new EffectBloodDrainLoader();
     m_pEffectLoaders[Effect::EFFECT_CLASS_LIGHT] = new EffectLightLoader();
     m_pEffectLoaders[Effect::EFFECT_CLASS_AFTERMATH] = new EffectAftermathLoader();
@@ -81,15 +79,11 @@ void EffectLoaderManager::init()
 
     m_pEffectLoaders[Effect::EFFECT_CLASS_ON_BRIDGE] = new EffectOnBridgeLoader();
     m_pEffectLoaders[Effect::EFFECT_CLASS_CAN_ENTER_GDR_LAIR] = new EffectCanEnterGDRLairLoader();
-
-    __END_CATCH
 }
 
 void EffectLoaderManager::load(Slayer* pSlayer)
 
 {
-    __BEGIN_TRY
-
     m_pEffectLoaders[Effect::EFFECT_CLASS_BLOOD_DRAIN]->load(pSlayer);
     m_pEffectLoaders[Effect::EFFECT_CLASS_LIGHT]->load(pSlayer);
     m_pEffectLoaders[Effect::EFFECT_CLASS_AFTERMATH]->load(pSlayer);
@@ -98,15 +92,11 @@ void EffectLoaderManager::load(Slayer* pSlayer)
     m_pEffectLoaders[Effect::EFFECT_CLASS_KILL_AFTERMATH]->load(pSlayer);
     m_pEffectLoaders[Effect::EFFECT_CLASS_MUTE]->load(pSlayer);
     m_pEffectLoaders[Effect::EFFECT_CLASS_CAN_ENTER_GDR_LAIR]->load(pSlayer);
-
-    __END_CATCH
 }
 
 void EffectLoaderManager::load(Vampire* pVampire)
 
 {
-    __BEGIN_TRY
-
     m_pEffectLoaders[Effect::EFFECT_CLASS_BLOOD_DRAIN]->load(pVampire);
     m_pEffectLoaders[Effect::EFFECT_CLASS_LIGHT]->load(pVampire);
     m_pEffectLoaders[Effect::EFFECT_CLASS_AFTERMATH]->load(pVampire);
@@ -115,29 +105,21 @@ void EffectLoaderManager::load(Vampire* pVampire)
     m_pEffectLoaders[Effect::EFFECT_CLASS_KILL_AFTERMATH]->load(pVampire);
     m_pEffectLoaders[Effect::EFFECT_CLASS_MUTE]->load(pVampire);
     m_pEffectLoaders[Effect::EFFECT_CLASS_CAN_ENTER_GDR_LAIR]->load(pVampire);
-
-    __END_CATCH
 }
 
 void EffectLoaderManager::load(Ousters* pOusters)
 
 {
-    __BEGIN_TRY
-
     m_pEffectLoaders[Effect::EFFECT_CLASS_BLOOD_DRAIN]->load(pOusters);
     m_pEffectLoaders[Effect::EFFECT_CLASS_AFTERMATH]->load(pOusters);
     m_pEffectLoaders[Effect::EFFECT_CLASS_KILL_AFTERMATH]->load(pOusters);
     m_pEffectLoaders[Effect::EFFECT_CLASS_MUTE]->load(pOusters);
     m_pEffectLoaders[Effect::EFFECT_CLASS_CAN_ENTER_GDR_LAIR]->load(pOusters);
-
-    __END_CATCH
 }
 
 void EffectLoaderManager::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     m_pEffectLoaders[Effect::EFFECT_CLASS_GREEN_POISON]->load(pZone);
     m_pEffectLoaders[Effect::EFFECT_CLASS_YELLOW_POISON]->load(pZone);
     m_pEffectLoaders[Effect::EFFECT_CLASS_DARKNESS]->load(pZone);
@@ -146,16 +128,10 @@ void EffectLoaderManager::load(Zone* pZone)
     m_pEffectLoaders[Effect::EFFECT_CLASS_ICE_FIELD]->load(pZone);
     m_pEffectLoaders[Effect::EFFECT_CLASS_PROMINENCE]->load(pZone);
     m_pEffectLoaders[Effect::EFFECT_CLASS_ON_BRIDGE]->load(pZone);
-
-    __END_CATCH
 }
 
 string EffectLoaderManager::toString() const
 
 {
-    __BEGIN_TRY
-
     return "";
-
-    __END_CATCH
 }

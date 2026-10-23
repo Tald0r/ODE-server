@@ -90,8 +90,6 @@
 #include "war/WarSystem.h"
 
 string correctString(const string& str) {
-    __BEGIN_TRY
-
     string correct = str;
 
     unsigned int i = 0;
@@ -112,8 +110,6 @@ string correctString(const string& str) {
     }
 
     return correct;
-
-    __END_CATCH
 }
 
 
@@ -128,8 +124,6 @@ string correctString(const string& str) {
 TPOINT findSuitablePosition(Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy, Creature::MoveMode MMode)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     int x = cx;
@@ -170,8 +164,6 @@ TPOINT findSuitablePosition(Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy, Creatur
     pt.x = -1;
     pt.y = -1;
     return pt;
-
-    __END_CATCH
 }
 
 
@@ -188,8 +180,6 @@ TPOINT findSuitablePositionForItem(Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy, 
                                    bool bAllowSafeZone, bool bForce)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     int x = cx;
@@ -258,8 +248,6 @@ TPOINT findSuitablePositionForItem(Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy, 
     pt.x = -1;
     pt.y = -1;
     return pt;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -273,8 +261,6 @@ TPOINT findSuitablePositionForItem(Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy, 
 TPOINT findSuitablePositionForEffect(Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy, Effect::EffectClass EClass)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     int x = cx;
@@ -335,8 +321,6 @@ TPOINT findSuitablePositionForEffect(Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy
     pt.y = -1;
 
     return pt;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -350,8 +334,6 @@ TPOINT findSuitablePositionForEffect(Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy
 bool canAddCreature(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Creature::MoveMode MMode)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     if (x > 0 && y > 0 && x < pZone->getWidth() && y < pZone->getHeight()) {
@@ -361,8 +343,6 @@ bool canAddCreature(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Creature::MoveMod
     }
 
     return false;
-
-    __END_CATCH
 }
 
 
@@ -376,13 +356,9 @@ bool canAddCreature(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Creature::MoveMod
 bool canBurrow(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     return canAddCreature(pZone, x, y, Creature::MOVE_MODE_BURROWING);
-
-    __END_CATCH
 }
 
 
@@ -396,13 +372,9 @@ bool canBurrow(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
 bool canUnburrow(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     return canAddCreature(pZone, x, y, Creature::MOVE_MODE_WALKING);
-
-    __END_CATCH
 }
 
 
@@ -415,8 +387,6 @@ bool canUnburrow(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
 // ZoneCoord_t originY   : y coordinate of the opponent pushing pCreature back
 //////////////////////////////////////////////////////////////////////////////
 Dir_t knockbackCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t originX, ZoneCoord_t originY) {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pCreature != NULL);
 
@@ -558,8 +528,6 @@ Dir_t knockbackCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t originX, Z
     }
 
     return dir;
-
-    __END_CATCH
 }
 
 
@@ -572,8 +540,6 @@ Dir_t knockbackCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t originX, Z
 // ZoneCoord_t cy        : the creature's original y coordinate
 //////////////////////////////////////////////////////////////////////////////
 void addBurrowingCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy) {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pCreature != NULL);
     Assert(pCreature->isVampire() || pCreature->isMonster());
@@ -621,8 +587,6 @@ void addBurrowingCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, Zone
         pZone->broadcastPacket(pt.x, pt.y, &gcABC, pCreature);
     } else
         throw EmptyTileNotExistException("addBurrowingCreature() : Tile is not empty.");
-
-    __END_CATCH
 }
 
 
@@ -636,8 +600,6 @@ void addBurrowingCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, Zone
 // Dir_t       dir       : the direction the emerging creature faces
 //////////////////////////////////////////////////////////////////////////////
 void addUnburrowCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir) {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pCreature != NULL);
     Assert(pCreature->isFlag(Effect::EFFECT_CLASS_HIDE));
@@ -715,8 +677,6 @@ void addUnburrowCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, ZoneC
             throw Error("Cannot unburrow monster.");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -729,7 +689,6 @@ void addUnburrowCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, ZoneC
 //                       before the effect's duration expired?
 //////////////////////////////////////////////////////////////////////////////
 void addUntransformCreature(Zone* pZone, Creature* pCreature, bool bForce) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pZone != NULL);
@@ -923,7 +882,6 @@ void addUntransformCreature(Zone* pZone, Creature* pCreature, bool bForce) {
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -938,8 +896,6 @@ void addUntransformCreature(Zone* pZone, Creature* pCreature, bool bForce) {
 void addInvisibleCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pCreature != NULL);
 
@@ -1016,8 +972,6 @@ void addInvisibleCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, Zone
             } // for
         } // for
     } // for
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1030,8 +984,6 @@ void addInvisibleCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, Zone
 void addVisibleCreature(Zone* pZone, Creature* pCreature, bool bForced)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pCreature != NULL);
 
@@ -1187,8 +1139,6 @@ void addVisibleCreature(Zone* pZone, Creature* pCreature, bool bForced)
 
 
     pCreature->removeFlag(Effect::EFFECT_CLASS_INVISIBILITY);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1202,8 +1152,6 @@ void addVisibleCreature(Zone* pZone, Creature* pCreature, bool bForced)
 void addSnipingModeCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pCreature != NULL);
 
@@ -1277,8 +1225,6 @@ void addSnipingModeCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, Zo
             } // for
         } // for
     } // for
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1291,8 +1237,6 @@ void addSnipingModeCreature(Zone* pZone, Creature* pCreature, ZoneCoord_t cx, Zo
 void addUnSnipingModeCreature(Zone* pZone, Creature* pCreature, bool bForced)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pCreature != NULL);
 
@@ -1393,8 +1337,6 @@ void addUnSnipingModeCreature(Zone* pZone, Creature* pCreature, bool bForced)
     }
 
     pCreature->removeFlag(Effect::EFFECT_CLASS_SNIPING_MODE);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1408,8 +1350,6 @@ void addUnSnipingModeCreature(Zone* pZone, Creature* pCreature, bool bForced)
 void addInstalledMine(Zone* pZone, Mine* pMine, ZoneCoord_t cx, ZoneCoord_t cy)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pMine != NULL);
     Assert(pMine->isFlag(Effect::EFFECT_CLASS_INSTALL));
@@ -1462,8 +1402,6 @@ void addInstalledMine(Zone* pZone, Mine* pMine, ZoneCoord_t cx, ZoneCoord_t cy)
             } // for
         } // for
     } // for
-
-    __END_CATCH
 }
 
 
@@ -1478,8 +1416,6 @@ void addInstalledMine(Zone* pZone, Mine* pMine, ZoneCoord_t cx, ZoneCoord_t cy)
 bool checkMine(Zone* pZone, Creature* pCreature, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     static const int serverID = de::kernelContext().config().getPropertyInt("ServerID");
@@ -1618,8 +1554,6 @@ bool checkMine(Zone* pZone, Creature* pCreature, ZoneCoord_t X, ZoneCoord_t Y)
     pZone->broadcastPacket(X, Y, &_GCMineExplosionOK2, cList);
 
     return true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1633,8 +1567,6 @@ bool checkMine(Zone* pZone, Creature* pCreature, ZoneCoord_t X, ZoneCoord_t Y)
 bool checkMine(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     // No explosion in a safe zone.
@@ -1758,8 +1690,6 @@ bool checkMine(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
     pZone->broadcastPacket(X, Y, &_GCMineExplosionOK2, cList);
 
     return true;
-
-    __END_CATCH
 }
 
 bool checkTrap(Zone* pZone, Creature* pCreature) {
@@ -1806,8 +1736,6 @@ bool checkTrap(Zone* pZone, Creature* pCreature) {
 void transportCreature(Creature* pCreature, ZoneID_t TargetZoneID, ZoneCoord_t TX, ZoneCoord_t TY, bool bSendMoveOK)
 
 {
-    __BEGIN_TRY
-
     ResurrectLocationManager& resurrectLocations = de::gameContext().resurrectLocations();
 
     Assert(pCreature->isPC());
@@ -2072,8 +2000,6 @@ void transportCreature(Creature* pCreature, ZoneID_t TargetZoneID, ZoneCoord_t T
     pGamePlayer->setPlayerStatus(GPS_WAITING_FOR_CG_READY);
 
     cout << "ZoneUtil.cpp step 11" << endl;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2083,8 +2009,6 @@ void transportCreature(Creature* pCreature, ZoneID_t TargetZoneID, ZoneCoord_t T
 Zone* getZoneByZoneID(ZoneID_t ZID)
 
 {
-    __BEGIN_TRY
-
     ZoneInfo* pZoneInfo = NULL;
     try {
         pZoneInfo = de::gameContext().zoneInfos().getZoneInfo(ZID);
@@ -2106,8 +2030,6 @@ Zone* getZoneByZoneID(ZoneID_t ZID)
     Assert(pZone != NULL);
 
     return pZone;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2117,8 +2039,6 @@ void addMonstersToZone(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, SpriteType_t S
                        const SUMMON_INFO& summonInfo, list<Monster*>* pSummonedMonsters)
 
 {
-    __BEGIN_TRY
-
     try {
         MonsterManager* pMonsterManager = pZone->getMonsterManager();
         Assert(pMonsterManager != NULL);
@@ -2141,8 +2061,6 @@ void addMonstersToZone(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, SpriteType_t S
     } catch (Throwable& t) {
         cerr << t.toString() << endl;
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2151,8 +2069,6 @@ void addMonstersToZone(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, SpriteType_t S
 void addMonstersToZone(Zone* pZone, const SUMMON_INFO2& summonInfo, list<Monster*>* pSummonedMonsters)
 
 {
-    __BEGIN_TRY
-
     try {
         MonsterCollection* pCollection = summonInfo.pMonsters;
 
@@ -2189,8 +2105,6 @@ void addMonstersToZone(Zone* pZone, const SUMMON_INFO2& summonInfo, list<Monster
     } catch (Throwable& t) {
         cerr << t.toString() << endl;
     }
-
-    __END_CATCH
 }
 
 
@@ -2237,25 +2151,23 @@ bool isValidZoneCoord(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, int offset) {
 bool enterMasterLair(Zone* pZone, Creature* pCreature)
 
 {
-    __BEGIN_TRY
+    {
+        if (pZone == NULL || pCreature == NULL)
+            return false;
 
-    if (pZone == NULL || pCreature == NULL)
-        return false;
+        // Nothing to check when it is not a master lair.
+        if (!pZone->isMasterLair()) {
+            return true;
+        }
 
-    // Nothing to check when it is not a master lair.
-    if (!pZone->isMasterLair()) {
-        return true;
+        MasterLairManager* pMasterLairManager = pZone->getMasterLairManager();
+        Assert(pMasterLairManager != NULL);
+
+        if (pMasterLairManager->enterCreature(pCreature)) {
+            // Entry allowed.
+            return true;
+        }
     }
-
-    MasterLairManager* pMasterLairManager = pZone->getMasterLairManager();
-    Assert(pMasterLairManager != NULL);
-
-    if (pMasterLairManager->enterCreature(pCreature)) {
-        // Entry allowed.
-        return true;
-    }
-
-    __END_CATCH
 
     return false;
 }
@@ -2373,23 +2285,21 @@ void checkNewbieTransportToGuild(Slayer* pSlayer) {
 bool addCorpseToZone(Corpse* pCorpse, Zone* pZone, ZoneCoord_t cx, ZoneCoord_t cy)
 
 {
-    __BEGIN_TRY
+    {
+        Assert(pCorpse != NULL);
+        Assert(pZone != NULL);
 
-    Assert(pCorpse != NULL);
-    Assert(pZone != NULL);
+        // Put the corpse into the zone as an item.
+        TPOINT pt = pZone->addItem(pCorpse, cx, cy);
+        if (pt.x == -1) {
+            SAFE_DELETE(pCorpse);
+            return false;
+        }
 
-    // Put the corpse into the zone as an item.
-    TPOINT pt = pZone->addItem(pCorpse, cx, cy);
-    if (pt.x == -1) {
-        SAFE_DELETE(pCorpse);
-        return false;
+        pCorpse->setX(pt.x);
+        pCorpse->setY(pt.y);
+        pCorpse->setZone(pZone);
     }
-
-    pCorpse->setX(pt.x);
-    pCorpse->setY(pt.y);
-    pCorpse->setZone(pZone);
-
-    __END_CATCH
 
     return true;
 }
@@ -2399,8 +2309,6 @@ bool addCorpseToZone(Corpse* pCorpse, Zone* pZone, ZoneCoord_t cx, ZoneCoord_t c
 bool checkCorpse(Zone* pZone, MonsterType_t MType, ZoneCoord_t x1, ZoneCoord_t y1, ZoneCoord_t x2, ZoneCoord_t y2)
 
 {
-    __BEGIN_TRY
-
     x1 = max(0, (int)x1);
     y1 = max(0, (int)y1);
     x2 = min(pZone->getWidth() - 1, (int)x2);
@@ -2428,16 +2336,12 @@ bool checkCorpse(Zone* pZone, MonsterType_t MType, ZoneCoord_t x1, ZoneCoord_t y
     }
 
     return false;
-
-    __END_CATCH
 }
 
 // A ZoneIDList of the zones belonging to a castle is needed to send a message to only some Zones.
 void makeZoneIDList(const string& zoneIDs, list<ZoneID_t>& zoneIDList)
 
 {
-    __BEGIN_TRY
-
     size_t a = 0, b = 0;
 
     //////////////////////////////////////////////
@@ -2459,8 +2363,6 @@ void makeZoneIDList(const string& zoneIDs, list<ZoneID_t>& zoneIDList)
         a = b + 1;
 
     } while (b != string::npos && b < zoneIDs.size() - 1);
-
-    __END_CATCH
 }
 
 uint getZoneTimeband(Zone* pZone) {
@@ -2473,8 +2375,6 @@ uint getZoneTimeband(Zone* pZone) {
 
 bool createBulletinBoard(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y, MonsterType_t type, const string& msg,
                          const VSDateTime& timeLimit) {
-    __BEGIN_TRY
-
     if (pZone->isMasterLair() || checkCorpse(pZone, type, X - 2, Y - 2, X + 2, Y + 2))
         return false;
 
@@ -2502,13 +2402,9 @@ bool createBulletinBoard(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y, MonsterType_
     }
 
     return true;
-
-    __END_CATCH
 }
 
 void loadBulletinBoard(Zone* pZone) {
-    __BEGIN_TRY
-
     VSDateTime currentDateTime = VSDateTime::currentDateTime();
 
     vector<BulletinBoardRow> rows = defaultBulletinBoardRepository().loadForZone(
@@ -2543,8 +2439,6 @@ void loadBulletinBoard(Zone* pZone) {
                     pZone->getZoneID(), X, Y, type, msg.c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void forbidDarkness(Zone* pZone, ZoneCoord_t tX, ZoneCoord_t tY, int range) {

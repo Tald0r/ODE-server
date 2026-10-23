@@ -24,8 +24,6 @@ EventSave::~EventSave()
 void EventSave::activate()
 
 {
-    __BEGIN_TRY
-
     if (m_pGamePlayer->getPlayerStatus() == GPS_NORMAL) {
         Assert(m_pGamePlayer != NULL); // by sigi
         Creature* pCreature = m_pGamePlayer->getCreature();
@@ -64,6 +62,4 @@ void EventSave::activate()
 
         m_Deadline = m_Deadline + delay;
     }
-
-    __END_CATCH
 }

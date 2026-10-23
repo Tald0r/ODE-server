@@ -23,8 +23,6 @@
 NPC::NPC()
 
 {
-    __BEGIN_TRY
-
     m_pInventory = NULL;
 
     // Set the turn at which it is processed next.
@@ -64,15 +62,11 @@ NPC::NPC()
     m_pRewardClassInfoManager = NULL;
 
     m_TaxingCastleZoneID = 0;
-
-    __END_CATCH
 }
 
 NPC::NPC(const string& name)
 
 {
-    __BEGIN_TRY
-
     m_Name = name;
     m_pInventory = NULL;
 
@@ -99,8 +93,6 @@ NPC::NPC(const string& name)
 
     m_pQuestInfoManager = NULL;
     m_pRewardClassInfoManager = NULL;
-
-    __END_CATCH
 }
 
 NPC::~NPC()
@@ -127,8 +119,6 @@ NPC::~NPC()
 void NPC::registerObject()
 
 {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
 
     ObjectRegistry& OR = getZone()->getObjectRegistry();
@@ -138,8 +128,6 @@ void NPC::registerObject()
     OR.registerObject_NOLOCKED(this);
 
     __LEAVE_CRITICAL_SECTION(OR)
-
-    __END_CATCH
 }
 
 // load()
@@ -148,8 +136,6 @@ void NPC::registerObject()
 bool NPC::load()
 
 {
-    __BEGIN_TRY
-
     // Load the triggers.
     m_TriggerManager.load(m_Name);
 
@@ -169,8 +155,6 @@ bool NPC::load()
     }
 
     return true;
-
-    __END_CATCH
 }
 
 // init()
@@ -178,12 +162,8 @@ bool NPC::load()
 void NPC::init()
 
 {
-    __BEGIN_TRY
-
     load();
     // registerObject();
-
-    __END_CATCH
 }
 
 // act()
@@ -192,7 +172,6 @@ void NPC::init()
 void NPC::act(const Timeval& currentTime)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // Do nothing until the next turn time has been reached.
@@ -227,7 +206,6 @@ void NPC::act(const Timeval& currentTime)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 // getShopVersion()
@@ -323,13 +301,9 @@ int NPC::getTaxRatio(PlayerCreature* pPC) const {
 string NPC::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "NPC(" << "ObjectID:" << (int)m_ObjectID << ",SpriteType:" << (int)m_SpriteType << ",Name:" << m_Name
         << ",MainColor:" << (int)m_MainColor << ",SubColor:" << (int)m_SubColor << ",X:" << (int)m_X
         << ",Y:" << (int)m_Y << ",Sight:" << (int)m_Sight << m_TriggerManager.toString() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

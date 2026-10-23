@@ -66,8 +66,6 @@ WayPointManager::~WayPointManager() {
 void WayPointManager::load(void)
 
 {
-    __BEGIN_TRY
-
     vector<WayPointRow> rows = defaultZoneInfoRepository().loadAllWayPoints();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -92,16 +90,12 @@ void WayPointManager::load(void)
             rTile.setBlocked(Creature::MOVE_MODE_BURROWING);
         }
     }
-
-    __END_CATCH
 }
 
 // if there's right waypoint, return true, else return false
 bool WayPointManager::isValidWayPoint(ZoneID_t id, ZoneCoord_t x, ZoneCoord_t y, Race_t race)
 
 {
-    __BEGIN_TRY
-
     ulonglong key = WayPoint::getKey(id, x, y);
     WayPointMap::const_iterator itr = find(key);
 
@@ -109,16 +103,12 @@ bool WayPointManager::isValidWayPoint(ZoneID_t id, ZoneCoord_t x, ZoneCoord_t y,
         return true;
 
     return false;
-
-    __END_CATCH
 }
 
 // add waypoint data into waypoint map
 void WayPointManager::addWayPoint(WayPoint* pWayPoint)
 
 {
-    __BEGIN_TRY
-
     Assert(pWayPoint != NULL);
 
     ulonglong key = pWayPoint->getKey();
@@ -132,6 +122,4 @@ void WayPointManager::addWayPoint(WayPoint* pWayPoint)
     }
 
     insert(WayPointMap::value_type(key, pWayPoint));
-
-    __END_CATCH
 }

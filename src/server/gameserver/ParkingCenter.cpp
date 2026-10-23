@@ -14,15 +14,11 @@
 MotorcycleBox::MotorcycleBox(Motorcycle* pMotorcycle, Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     m_pMotorcycle = pMotorcycle;
     m_pZone = pZone;
     m_X = X;
     m_Y = Y;
     m_bTransport = false;
-
-    __END_CATCH
 }
 
 MotorcycleBox::~MotorcycleBox()
@@ -48,12 +44,8 @@ MotorcycleBox::~MotorcycleBox()
 ParkingCenter::ParkingCenter()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("ParkingCenter");
     m_MutexRemove.setName("ParkingCenterRemove");
-
-    __END_CATCH
 }
 
 ParkingCenter::~ParkingCenter()
@@ -80,8 +72,6 @@ ParkingCenter::~ParkingCenter()
 void ParkingCenter::addMotorcycleBox(MotorcycleBox* pMotorcycleBox)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pMotorcycleBox != NULL);
@@ -95,16 +85,12 @@ void ParkingCenter::addMotorcycleBox(MotorcycleBox* pMotorcycleBox)
     m_Motorcycles[pMotorcycleBox->getItemID()] = pMotorcycleBox;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 // Removes the motorcycle matching the key's TargetID from the unordered_map.
 // This deletes the whole motorcycle, so remove the motorcycle from the zone first
 // and call this function last.
 void ParkingCenter::deleteMotorcycleBox(ItemID_t keyTargetID) {
-    __BEGIN_TRY
-
     MotorcycleBox* pMotorcycleBox = NULL;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -135,15 +121,10 @@ void ParkingCenter::deleteMotorcycleBox(ItemID_t keyTargetID) {
 
         __LEAVE_CRITICAL_SECTION(m_MutexRemove)
     }
-
-
-    __END_CATCH
 }
 
 // Checks whether a MotorcycleBox with the given KeyID exists.
 bool ParkingCenter::hasMotorcycleBox(ItemID_t keyTargetID) {
-    __BEGIN_TRY
-
     bool hasMotor = true;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -157,14 +138,10 @@ bool ParkingCenter::hasMotorcycleBox(ItemID_t keyTargetID) {
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return hasMotor;
-
-    __END_CATCH
 }
 
 // Finds and returns the motorcycle by the key's TargetID.
 MotorcycleBox* ParkingCenter::getMotorcycleBox(ItemID_t keyTargetID) const {
-    __BEGIN_TRY
-
     MotorcycleBox* pTempBox = NULL;
 
     try {
@@ -188,16 +165,12 @@ MotorcycleBox* ParkingCenter::getMotorcycleBox(ItemID_t keyTargetID) const {
         // cerr << "Not found yet, or the key does not match this motorcycle." << endl;
         return NULL;
     }
-
-    __END_CATCH
 }
 
 // This runs on the ClientManager thread.
 void ParkingCenter::heartbeat()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_MutexRemove)
 
     list<MotorcycleBox*>::iterator itr = m_RemoveMotorcycles.begin();
@@ -211,6 +184,4 @@ void ParkingCenter::heartbeat()
     m_RemoveMotorcycles.clear();
 
     __LEAVE_CRITICAL_SECTION(m_MutexRemove)
-
-    __END_CATCH
 }

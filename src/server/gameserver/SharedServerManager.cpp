@@ -31,13 +31,9 @@
 SharedServerManager::SharedServerManager()
 
 {
-    __BEGIN_TRY
-
     m_pSharedServerClient = NULL;
 
     m_Mutex.setName("SharedServerManager");
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -61,11 +57,7 @@ SharedServerManager::~SharedServerManager() noexcept
 void SharedServerManager::stop()
 
 {
-    __BEGIN_TRY
-
     ManagedThread::stop();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////

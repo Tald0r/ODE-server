@@ -100,7 +100,6 @@ const Color_t QUEST_COLOR = 0xFFFE;
 void Slayer::wearItem(WearPart Part, Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pItem != NULL);
@@ -304,7 +303,6 @@ void Slayer::wearItem(WearPart Part, Item* pItem)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 // Slayer::wearItem()
@@ -312,7 +310,6 @@ void Slayer::wearItem(WearPart Part, Item* pItem)
 void Slayer::wearItem(WearPart Part)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // Take the item queued for equipping.
@@ -526,7 +523,6 @@ void Slayer::wearItem(WearPart Part)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 // Slayer::takeOffItem()
@@ -535,7 +531,6 @@ void Slayer::wearItem(WearPart Part)
 void Slayer::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     SLAYER_RECORD prev;
@@ -664,7 +659,6 @@ void Slayer::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 // destroyGears
@@ -695,8 +689,6 @@ void Slayer::destroyGears()
 bool Slayer::isRealWearing(WearPart part) const
 
 {
-    __BEGIN_TRY
-
     if (part >= WEAR_MAX)
         throw Error("Slayer::isRealWearing() : invalid wear point!");
     if (m_pWearItem[part] == NULL)
@@ -708,15 +700,11 @@ bool Slayer::isRealWearing(WearPart part) const
     }
 
     return isRealWearing(m_pWearItem[part]);
-
-    __END_CATCH
 }
 
 bool Slayer::isRealWearing(Item* pItem) const
 
 {
-    __BEGIN_TRY
-
     if (pItem == NULL)
         return false;
 
@@ -758,8 +746,6 @@ bool Slayer::isRealWearing(Item* pItem) const
     const decore::EquipRequirement required = computeEquipRequirement(decore::EquipRace::Slayer, pItem, pItemInfo);
     const decore::EquipStats current = {m_STR[ATTR_CURRENT], m_DEX[ATTR_CURRENT], m_INT[ATTR_CURRENT], 0, m_Sex};
     return decore::meetsRequirement(decore::EquipRace::Slayer, required, current);
-
-    __END_CATCH
 }
 
 bool Slayer::isRealWearingEx(WearPart part) const {
@@ -771,8 +757,6 @@ bool Slayer::isRealWearingEx(WearPart part) const {
 DWORD Slayer::sendRealWearingInfo(void) const
 
 {
-    __BEGIN_TRY
-
     DWORD info = 0;
     DWORD flag = 1;
 
@@ -787,6 +771,4 @@ DWORD Slayer::sendRealWearingInfo(void) const
     m_pPlayer->sendPacket(&pkt);
 
     return info;
-
-    __END_CATCH
 }

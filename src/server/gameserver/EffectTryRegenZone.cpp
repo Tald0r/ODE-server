@@ -13,8 +13,6 @@ EffectTryRegenZone::EffectTryRegenZone(MonsterCorpse* pTower) {
 void EffectTryRegenZone::affect()
 
 {
-    __BEGIN_TRY
-
     MonsterCorpse* pTower = dynamic_cast<MonsterCorpse*>(m_pTarget);
     Assert(pTower != NULL);
 
@@ -38,15 +36,11 @@ void EffectTryRegenZone::affect()
         pTower->getZone()->broadcastPacket(pTower->getX(), pTower->getY(), &gcAddEffect);
         setNextTime(50);
     }
-
-    __END_CATCH
 }
 
 void EffectTryRegenZone::unaffect()
 
 {
-    __BEGIN_TRY
-
     MonsterCorpse* pTower = dynamic_cast<MonsterCorpse*>(m_pTarget);
     Assert(pTower != NULL);
 
@@ -57,6 +51,4 @@ void EffectTryRegenZone::unaffect()
     pTower->getZone()->broadcastPacket(pTower->getX(), pTower->getY(), &gcRemoveEffect);
 
     pTower->removeFlag(getEffectClass());
-
-    __END_CATCH
 }

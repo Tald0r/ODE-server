@@ -10,9 +10,7 @@
 
 StringPool::StringPool()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 StringPool::~StringPool()
 
@@ -24,8 +22,6 @@ StringPool::~StringPool()
 void StringPool::load()
 
 {
-    __BEGIN_TRY
-
     vector<StringPoolRow> rows = defaultGameInfoRepository().loadStrings();
 
     // Build the whole table before publishing it: a reader must never see a
@@ -51,13 +47,9 @@ void StringPool::load()
     m_Strings.update([&next](StringHashMap& table) { table = std::move(next); });
 
     m_RetainedStrings.push_back(std::move(replaced));
-
-    __END_CATCH
 }
 
 string StringPool::getString(uint strID) const {
-    __BEGIN_TRY
-
     std::shared_ptr<const StringHashMap> strings = m_Strings.load();
 
     StringHashMapConstItor itr = strings->find(strID);
@@ -67,13 +59,9 @@ string StringPool::getString(uint strID) const {
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 const char* StringPool::c_str(uint strID) const {
-    __BEGIN_TRY
-
     std::shared_ptr<const StringHashMap> strings = m_Strings.load();
 
     StringHashMapConstItor itr = strings->find(strID);
@@ -83,6 +71,4 @@ const char* StringPool::c_str(uint strID) const {
     }
 
     return itr->second.c_str();
-
-    __END_CATCH
 }

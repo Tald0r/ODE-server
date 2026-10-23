@@ -39,7 +39,6 @@ EventHeadCount::~EventHeadCount()
 void EventHeadCount::activate()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(m_pGamePlayer != NULL);
@@ -67,7 +66,6 @@ void EventHeadCount::activate()
     m_Count = 0;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EventHeadCount::toString() const

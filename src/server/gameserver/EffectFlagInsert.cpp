@@ -26,52 +26,33 @@
 //////////////////////////////////////////////////////////////////////////////
 EffectFlagInsert::EffectFlagInsert(Creature* pCreature)
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 EffectFlagInsert::EffectFlagInsert(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     setTarget(pItem);
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectFlagInsert::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-
-
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectFlagInsert::affect(Item* pItem)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 void EffectFlagInsert::unaffect()
 
 {
-    __BEGIN_TRY
-
     Item* pItem = dynamic_cast<Item*>(m_pTarget);
     unaffect(pItem);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -79,11 +60,9 @@ void EffectFlagInsert::unaffect()
 void EffectFlagInsert::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -91,7 +70,6 @@ void EffectFlagInsert::unaffect(Creature* pCreature)
 void EffectFlagInsert::unaffect(Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pItem != NULL);
@@ -113,18 +91,13 @@ void EffectFlagInsert::unaffect(Item* pItem)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectFlagInsert::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectFlagInsert(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

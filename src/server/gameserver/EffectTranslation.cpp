@@ -17,32 +17,21 @@
 EffectTranslation::EffectTranslation(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
     setBroadcastingEffect();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectTranslation::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectTranslation::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,7 +39,6 @@ void EffectTranslation::unaffect()
 void EffectTranslation::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectTranslation" << "unaffect BEGIN" << endl;
@@ -72,17 +60,12 @@ void EffectTranslation::unaffect(Creature* pCreature)
     // cout << "EffectTranslation" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectTranslation::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectTranslation(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

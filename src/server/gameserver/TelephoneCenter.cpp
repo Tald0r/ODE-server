@@ -15,8 +15,6 @@
 void TelephoneCenter::addSlayer(Slayer* pSlayer)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pSlayer != NULL);
@@ -30,8 +28,6 @@ void TelephoneCenter::addSlayer(Slayer* pSlayer)
     m_PCs[pSlayer->getPhoneNumber()] = pSlayer;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -40,8 +36,6 @@ void TelephoneCenter::addSlayer(Slayer* pSlayer)
 // execute just once at PC's logout
 //--------------------------------------------------------------------------------
 void TelephoneCenter::deleteSlayer(PhoneNumber_t PhoneNumber) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     unordered_map<PhoneNumber_t, const Slayer*>::iterator itr = m_PCs.find(PhoneNumber);
@@ -53,8 +47,6 @@ void TelephoneCenter::deleteSlayer(PhoneNumber_t PhoneNumber) {
     m_PCs.erase(itr);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -62,8 +54,6 @@ void TelephoneCenter::deleteSlayer(PhoneNumber_t PhoneNumber) {
 // get creature with PC-name
 //--------------------------------------------------------------------------------
 Slayer* TelephoneCenter::getSlayer(PhoneNumber_t PhoneNumber) const {
-    __BEGIN_TRY
-
     unordered_map<PhoneNumber_t, const Slayer*>::const_iterator itr = m_PCs.find(PhoneNumber);
 
     if (itr == m_PCs.end()) {
@@ -72,6 +62,4 @@ Slayer* TelephoneCenter::getSlayer(PhoneNumber_t PhoneNumber) const {
     }
 
     return (Slayer*)itr->second;
-
-    __END_CATCH
 }

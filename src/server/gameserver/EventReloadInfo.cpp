@@ -50,7 +50,6 @@ EventReloadInfo::~EventReloadInfo()
 void EventReloadInfo::activate()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     StringPool& strings = de::gameContext().strings();
@@ -203,7 +202,6 @@ void EventReloadInfo::activate()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EventReloadInfo::toString() const

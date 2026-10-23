@@ -51,21 +51,13 @@ ItemInfo::~ItemInfo()
 VolumeWidth_t ItemInfo::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().volumeInfos().getVolumeInfo(m_VolumeType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t ItemInfo::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().volumeInfos().getVolumeInfo(m_VolumeType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 void ItemInfo::setReqAbility(const string& req)

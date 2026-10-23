@@ -27,39 +27,27 @@
 EffectMute::EffectMute(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMute::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMute::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMute::unaffect(Creature* pFromCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pFromCreature != NULL);
 
     pFromCreature->removeFlag(Effect::EFFECT_CLASS_MUTE);
@@ -70,8 +58,6 @@ void EffectMute::unaffect(Creature* pFromCreature)
     pFromCreature->getPlayer()->sendPacket(&gcRemoveEffect);
 
     destroy(pFromCreature->getName());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -79,16 +65,12 @@ void EffectMute::unaffect(Creature* pFromCreature)
 void EffectMute::unaffect()
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectMute" << "unaffect BEGIN" << endl;
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
 
     // cout << "EffectMute" << "unaffect END" << endl;
-
-    __END_CATCH
 }
 
 
@@ -96,25 +78,18 @@ void EffectMute::unaffect()
 //////////////////////////////////////////////////////////////////////////////
 void EffectMute::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMute::create(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().insertDeadline(EFFECT_TABLE_MUTE, ownerID, currentYearTime, m_Deadline.tv_sec);
-
-    __END_CATCH
 }
 
 
@@ -123,11 +98,7 @@ void EffectMute::create(const string& ownerID)
 void EffectMute::destroy(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     defaultEffectSaveRepository().deleteDeadline(EFFECT_TABLE_MUTE, ownerID);
-
-    __END_CATCH
 }
 
 
@@ -136,30 +107,22 @@ void EffectMute::destroy(const string& ownerID)
 void EffectMute::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().updateDeadline(EFFECT_TABLE_MUTE, ownerID, currentYearTime, m_Deadline.tv_sec);
-
-    __END_CATCH
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectMute::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectMute(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -167,8 +130,6 @@ string EffectMute::toString() const {
 void EffectMuteLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<DWORD> dayTimes = defaultEffectSaveRepository().loadDeadlines(EFFECT_TABLE_MUTE, pCreature->getName());
@@ -190,6 +151,4 @@ void EffectMuteLoader::load(Creature* pCreature)
             pEffectMute->destroy(pCreature->getName());
         }
     }
-
-    __END_CATCH
 }

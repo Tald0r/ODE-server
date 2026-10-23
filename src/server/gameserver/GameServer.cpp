@@ -45,8 +45,6 @@
 GameServer::GameServer()
 
 {
-    __BEGIN_TRY
-
     try {
         // The configuration is loaded before the server object exists, so it
         // is registered first; every manager below registers as it is created.
@@ -95,8 +93,6 @@ GameServer::GameServer()
         // cout << t.toString() << endl;
         throw;
     }
-
-    __END_CATCH
 }
 
 
@@ -137,8 +133,6 @@ GameServer::~GameServer()
 void GameServer::init()
 
 {
-    __BEGIN_TRY
-
     de::initializeGameProcess();
     cout << "GameServer::init() : System Initialization Success..." << endl;
 
@@ -201,8 +195,6 @@ void GameServer::init()
 
     // When initialization is done, stop the console output and go to the background.
     // goBackground();
-
-    __END_CATCH
 }
 
 
@@ -213,8 +205,6 @@ void GameServer::init()
 void GameServer::start()
 
 {
-    __BEGIN_TRY
-
     const de::ServerStartAction backgroundStarts[] = {
         [this] {
             cout << ">>> STARTING THREAD MANAGER..." << endl;
@@ -248,8 +238,6 @@ void GameServer::start()
             throw;
         }
     });
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -267,37 +255,35 @@ void GameServer::stop()
 {
     if (m_Stopped)
         return;
-    __BEGIN_TRY
-
-    //
-    // stop client manager
-    //
-    // Destroy the client manager first so that no new connections are
-    // accepted any more.
-    //
-    ServerShutdown::request();
-    m_pClientManager->stop();
-    // Auxiliary workers and the zone pool drain while their shared dependencies
-    // remain alive. Ask every auxiliary worker to stop before draining zones.
-    const de::ServerWorker workers[] = {
-        {*m_pLoginServerManager},
-        {*m_pSharedServerManager},
-        {GDRLairManager::Instance()},
+    {
+        //
+        // stop client manager
+        //
+        // Destroy the client manager first so that no new connections are
+        // accepted any more.
+        //
+        ServerShutdown::request();
+        m_pClientManager->stop();
+        // Auxiliary workers and the zone pool drain while their shared dependencies
+        // remain alive. Ask every auxiliary worker to stop before draining zones.
+        const de::ServerWorker workers[] = {
+            {*m_pLoginServerManager},
+            {*m_pSharedServerManager},
+            {GDRLairManager::Instance()},
 #ifdef __MOFUS__
-        {*m_pMPlayerManager},
+            {*m_pMPlayerManager},
 #endif
-    };
-    de::stopServerWorkers(workers, cerr, [&] { m_pThreadManager->stop(); });
-    m_Stopped = true;
+        };
+        de::stopServerWorkers(workers, cerr, [&] { m_pThreadManager->stop(); });
+        m_Stopped = true;
 
-    // stop object manager
-    //
-    // Now that every user connection is closed, save the remaining zones and
-    // the various game settings to the database.
-    //
-    // m_pObjectManager->save();
-
-    __END_CATCH
+        // stop object manager
+        //
+        // Now that every user connection is closed, save the remaining zones and
+        // the various game settings to the database.
+        //
+        // m_pObjectManager->save();
+    }
 }
 
 
@@ -309,8 +295,6 @@ void GameServer::stop()
 void GameServer::goBackground()
 
 {
-    __BEGIN_TRY
-
     int forkres = SystemAPI::fork_ex();
 
     if (forkres == 0) {
@@ -322,6 +306,4 @@ void GameServer::goBackground()
         // case of parent process
         exit(0);
     }
-
-    __END_CATCH
 }

@@ -194,25 +194,17 @@
 void Zone::broadcastPacket(Packet* pPacket, Creature* owner)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_BC_PCMANAGER")
     m_pPCManager->broadcastPacket(pPacket, owner);
     __END_PROFILE_ZONE("Z_BC_PCMANAGER")
-
-    __END_CATCH
 }
 
 void Zone::broadcastDarkLightPacket(Packet* pPacket1, Packet* pPacket2, Creature* owner)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_BC_DARKLIGHT")
     m_pPCManager->broadcastDarkLightPacket(pPacket1, pPacket2, owner);
     __END_PROFILE_ZONE("Z_BC_DARKLIGHT")
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -224,8 +216,6 @@ void Zone::broadcastDarkLightPacket(Packet* pPacket1, Packet* pPacket2, Creature
 void Zone::broadcastSayPacket(ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket, Creature* owner, bool isVampire)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_BC_SAY")
 
     ZoneCoord_t ix = 0;
@@ -307,8 +297,6 @@ void Zone::broadcastSayPacket(ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket, C
     }
 
     __END_PROFILE_ZONE("Z_BC_SAY")
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -325,8 +313,6 @@ void Zone::broadcastSayPacket(ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket, C
 void Zone::broadcastPacket(ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket, Creature* owner, bool Plus, Range_t Range)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_BC_NORMAL")
 
 #ifdef __USE_ENCRYPTER__
@@ -392,20 +378,14 @@ void Zone::broadcastPacket(ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket, Crea
     }
 
     __END_PROFILE_ZONE("Z_BC_NORMAL")
-
-    __END_CATCH
 }
 
 void Zone::broadcastLevelWarBonusPacket(Packet* pPacket, Creature* owner)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_BC_PCMANAGER")
     m_pPCManager->broadcastLevelWarBonusPacket(pPacket, owner);
     __END_PROFILE_ZONE("Z_BC_PCMANAGER")
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -420,8 +400,6 @@ list<Creature*> Zone::broadcastSkillPacket(ZoneCoord_t x1, ZoneCoord_t y1, ZoneC
                                            Packet* pPacket, list<Creature*> creatureList, bool bConcernDarkness)
 
 {
-    __BEGIN_TRY
-
 #ifdef __USE_ENCRYPTER__
     SocketEncryptOutputStream outputStream(NULL, szPacketHeader + pPacket->getPacketSize() + 2);
     outputStream.setEncryptCode(m_EncryptCode);
@@ -500,8 +478,6 @@ list<Creature*> Zone::broadcastSkillPacket(ZoneCoord_t x1, ZoneCoord_t y1, ZoneC
     __END_PROFILE_ZONE("Z_BC_SKILL")
 
     return cList;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -521,8 +497,6 @@ void Zone::broadcastPacket(ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket, cons
                            bool Plus, Range_t Range)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_BC_EXCLIST")
 
 #ifdef __USE_ENCRYPTER__
@@ -588,8 +562,6 @@ void Zone::broadcastPacket(ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket, cons
     } // for
 
     __END_PROFILE_ZONE("Z_BC_EXCLIST")
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -603,8 +575,6 @@ void Zone::broadcastPacket(ZoneCoord_t cx, ZoneCoord_t cy, Packet* pPacket, cons
 //////////////////////////////////////////////////////////////////////////////
 void Zone::movePCBroadcast(Creature* pPC, ZoneCoord_t x1, ZoneCoord_t y1, ZoneCoord_t x2, ZoneCoord_t y2,
                            bool bSendMove, bool bKnockback) {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_BC_MOVEPC");
 
     try {
@@ -1112,8 +1082,6 @@ void Zone::movePCBroadcast(Creature* pPC, ZoneCoord_t x1, ZoneCoord_t y1, ZoneCo
     }
 
     __END_PROFILE_ZONE("Z_BC_MOVEPC");
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1128,8 +1096,6 @@ void Zone::moveCreatureBroadcast(Creature* pCreature, ZoneCoord_t x1, ZoneCoord_
                                  bool bSendMove, bool bKnockback)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_BC_MOVE_CREATURE")
 
     try {
@@ -1275,6 +1241,4 @@ void Zone::moveCreatureBroadcast(Creature* pCreature, ZoneCoord_t x1, ZoneCoord_
     }
 
     __END_PROFILE_ZONE("Z_BC_MOVE_CREATURE")
-
-    __END_CATCH
 }

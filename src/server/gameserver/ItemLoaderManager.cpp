@@ -103,7 +103,7 @@
 //////////////////////////////////////////////////////////////////////////////
 ItemLoaderManager::ItemLoaderManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -119,8 +119,6 @@ ItemLoaderManager::~ItemLoaderManager()
 void ItemLoaderManager::init()
 
 {
-    __BEGIN_TRY
-
     m_pItemLoaders[Item::ITEM_CLASS_AR] = new ARLoader();
     m_pItemLoaders[Item::ITEM_CLASS_BELT] = new BeltLoader();
     m_pItemLoaders[Item::ITEM_CLASS_BLADE] = new BladeLoader();
@@ -208,8 +206,6 @@ void ItemLoaderManager::init()
     m_pItemLoaders[Item::ITEM_CLASS_PERSONA] = new PersonaLoader();
     m_pItemLoaders[Item::ITEM_CLASS_FASCIA] = new FasciaLoader();
     m_pItemLoaders[Item::ITEM_CLASS_MITTEN] = new MittenLoader();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -217,8 +213,6 @@ void ItemLoaderManager::init()
 void ItemLoaderManager::load(Slayer* pSlayer)
 
 {
-    __BEGIN_TRY
-
     // The motorcycle has to be loaded first: it carries the items below.
     m_pItemLoaders[Item::ITEM_CLASS_MOTORCYCLE]->load(pSlayer);
 
@@ -294,8 +288,6 @@ void ItemLoaderManager::load(Slayer* pSlayer)
     m_pItemLoaders[Item::ITEM_CLASS_SHOULDER_ARMOR]->load(pSlayer);
     m_pItemLoaders[Item::ITEM_CLASS_DERMIS]->load(pSlayer);
     m_pItemLoaders[Item::ITEM_CLASS_PERSONA]->load(pSlayer);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -303,8 +295,6 @@ void ItemLoaderManager::load(Slayer* pSlayer)
 void ItemLoaderManager::load(Vampire* pVampire)
 
 {
-    __BEGIN_TRY
-
     // A vampire has no motorcycle, so there is none to load.
     // The belt still has to be loaded first.
     m_pItemLoaders[Item::ITEM_CLASS_BELT]->load(pVampire);
@@ -378,8 +368,6 @@ void ItemLoaderManager::load(Vampire* pVampire)
     m_pItemLoaders[Item::ITEM_CLASS_SHOULDER_ARMOR]->load(pVampire);
     m_pItemLoaders[Item::ITEM_CLASS_DERMIS]->load(pVampire);
     m_pItemLoaders[Item::ITEM_CLASS_PERSONA]->load(pVampire);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -387,8 +375,6 @@ void ItemLoaderManager::load(Vampire* pVampire)
 void ItemLoaderManager::load(Ousters* pOusters)
 
 {
-    __BEGIN_TRY
-
     // The armsband is the ousters' belt, so it is loaded first: a larva, a
     // pupa or a compos mei goes into it.
     m_pItemLoaders[Item::ITEM_CLASS_OUSTERS_ARMSBAND]->load(pOusters);
@@ -428,24 +414,19 @@ void ItemLoaderManager::load(Ousters* pOusters)
     m_pItemLoaders[Item::ITEM_CLASS_WAR_ITEM]->load(pOusters);
     m_pItemLoaders[Item::ITEM_CLASS_FASCIA]->load(pOusters);
     m_pItemLoaders[Item::ITEM_CLASS_MITTEN]->load(pOusters);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void ItemLoaderManager::load(Zone* pZone)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string ItemLoaderManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ItemLoaderManager(";
@@ -461,6 +442,4 @@ string ItemLoaderManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

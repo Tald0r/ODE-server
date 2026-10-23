@@ -111,8 +111,6 @@ void saveTreasure(const string& filename, TreasureList* pTreasureList) {
 MonsterInfo::MonsterInfo()
 
 {
-    __BEGIN_TRY
-
     m_MonsterType = 0;
     m_SpriteType = 0;
     m_HName = "";
@@ -158,8 +156,6 @@ MonsterInfo::MonsterInfo()
 
     // 2002.10.16 by sigi
     m_bNormalRegen = true;
-
-    __END_CATCH
 }
 
 MonsterInfo::~MonsterInfo()
@@ -213,8 +209,6 @@ RegenType MonsterInfo::selectRegenType() const {
 void MonsterInfo::setMoveMode(const string& moveMode)
 
 {
-    __BEGIN_TRY
-
     if (moveMode == "WALK")
         m_MoveMode = Creature::MOVE_MODE_WALKING;
     else if (moveMode == "FLY")
@@ -223,8 +217,6 @@ void MonsterInfo::setMoveMode(const string& moveMode)
         m_MoveMode = Creature::MOVE_MODE_BURROWING;
     else
         throw Error("invalid move mode");
-
-    __END_CATCH
 }
 
 void MonsterInfo::parseEnhanceAttr(const string& enhance)
@@ -277,73 +269,49 @@ void MonsterInfo::parseEnhanceAttr(const string& enhance)
 void MonsterInfo::parseSlayerTreasureString(const string& text)
 
 {
-    __BEGIN_TRY
-
     string newtext = trim(text);
 
     m_pSlayerTreasureList->parseString(newtext);
-
-    __END_CATCH
 }
 
 void MonsterInfo::setSlayerTreasureList(TreasureList* pTreasureList)
 
 {
-    __BEGIN_TRY
-
     Assert(pTreasureList != NULL);
     // SAFE_DELETE(m_pSlayerTreasureList);
     m_pSlayerTreasureList = pTreasureList;
-
-    __END_CATCH
 }
 
 void MonsterInfo::parseVampireTreasureString(const string& text)
 
 {
-    __BEGIN_TRY
-
     string newtext = trim(text);
 
     m_pVampireTreasureList->parseString(newtext);
-
-    __END_CATCH
 }
 
 void MonsterInfo::setVampireTreasureList(TreasureList* pTreasureList)
 
 {
-    __BEGIN_TRY
-
     Assert(pTreasureList != NULL);
     // SAFE_DELETE(m_pVampireTreasureList);
     m_pVampireTreasureList = pTreasureList;
-
-    __END_CATCH
 }
 
 void MonsterInfo::parseOustersTreasureString(const string& text)
 
 {
-    __BEGIN_TRY
-
     string newtext = trim(text);
 
     m_pOustersTreasureList->parseString(newtext);
-
-    __END_CATCH
 }
 
 void MonsterInfo::setOustersTreasureList(TreasureList* pTreasureList)
 
 {
-    __BEGIN_TRY
-
     Assert(pTreasureList != NULL);
 
     m_pOustersTreasureList = pTreasureList;
-
-    __END_CATCH
 }
 
 void MonsterInfo::setMonsterSummonInfo(const string& text) {
@@ -435,8 +403,6 @@ void MonsterInfo::addDefaultEffects(Creature* pCreature) const {
 string MonsterInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "MonsterInfo(" << "MonsterType:" << m_MonsterType << ",SpriteType:" << m_SpriteType << ",HName:" << m_HName
@@ -450,8 +416,6 @@ string MonsterInfo::toString() const
         << ",UnburrowChance:" << m_UnburrowChance << ",HasTreasure:" << (int)m_bHasTreasure << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -461,11 +425,7 @@ string MonsterInfo::toString() const
 MonsterInfoManager::MonsterInfoManager()
 
 {
-    __BEGIN_TRY
-
     m_MonsterInfos = NULL;
-
-    __END_CATCH
 }
 
 MonsterInfoManager::~MonsterInfoManager()
@@ -481,11 +441,7 @@ MonsterInfoManager::~MonsterInfoManager()
 void MonsterInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void MonsterInfoManager::clearTreasures() {
@@ -497,7 +453,6 @@ void MonsterInfoManager::clearTreasures() {
 void MonsterInfoManager::load()
 
 {
-    __BEGIN_TRY
     Properties& config = de::kernelContext().config();
 
     __BEGIN_DEBUG
@@ -655,14 +610,12 @@ void MonsterInfoManager::load()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
 void MonsterInfoManager::reload(MonsterType_t monsterType)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     bool bLoadAll = (monsterType == 0);
@@ -722,12 +675,9 @@ void MonsterInfoManager::reload(MonsterType_t monsterType)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void MonsterInfoManager::addMonsterInfo(MonsterType_t monsterType, MonsterInfo* pMonsterInfo) {
-    __BEGIN_TRY
-
     if (monsterType >= m_MaxMonsterType) {
         cerr << "MonsterInfoManager::addMonsterInfo() : Out of bounds" << endl;
         throw OutOfBoundException();
@@ -756,13 +706,9 @@ void MonsterInfoManager::addMonsterInfo(MonsterType_t monsterType, MonsterInfo* 
         if (itr == mList.end() || *itr != pMonsterInfo->getSpriteType())
             mList.insert(itr, pMonsterInfo->getSpriteType());
     }
-
-    __END_CATCH
 }
 
 const MonsterInfo* MonsterInfoManager::getMonsterInfo(MonsterType_t monsterType) const {
-    __BEGIN_TRY
-
     if (monsterType >= m_MaxMonsterType) {
         cerr << "MonsterInfoManager::getMonsterInfo() : Out of bounds" << endl;
         throw OutOfBoundException();
@@ -775,13 +721,9 @@ const MonsterInfo* MonsterInfoManager::getMonsterInfo(MonsterType_t monsterType)
 
     // Once it has been checked above, [] may be used.
     return m_MonsterInfos[monsterType];
-
-    __END_CATCH
 }
 
 const vector<MonsterType_t>& MonsterInfoManager::getMonsterTypeBySprite(SpriteType_t spriteType) const {
-    __BEGIN_TRY
-
     if (m_MonsterSpriteSet[spriteType].empty()) {
         cerr << "MonsterInfoManager::getMonsterTypeBySprite() : no such element exception" << (int)spriteType << endl;
         throw NoSuchElementException();
@@ -793,13 +735,9 @@ const vector<MonsterType_t>& MonsterInfoManager::getMonsterTypeBySprite(SpriteTy
     }
 
     return m_MonsterSpriteSet[spriteType];
-
-    __END_CATCH
 }
 
 string MonsterInfoManager::getNameBySpriteType(SpriteType_t spriteType) const {
-    __BEGIN_TRY
-
     if (m_MonsterSpriteSet[spriteType].empty()) {
         cerr << "MonsterInfoManager::getMonsterTypeBySprite() : no such element exception" << (int)spriteType << endl;
         throw NoSuchElementException();
@@ -811,13 +749,9 @@ string MonsterInfoManager::getNameBySpriteType(SpriteType_t spriteType) const {
     }
 
     return m_MonsterInfos[m_MonsterSpriteSet[spriteType].front()]->getHName();
-
-    __END_CATCH
 }
 
 SpriteType_t MonsterInfoManager::getSpriteTypeByName(const string& monsterName) const {
-    __BEGIN_TRY
-
     unordered_map<string, SpriteType_t>::const_iterator itr = m_MonsterSpriteTypes.find(monsterName);
 
     if (itr == m_MonsterSpriteTypes.end()) {
@@ -828,13 +762,9 @@ SpriteType_t MonsterInfoManager::getSpriteTypeByName(const string& monsterName) 
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 MonsterType_t MonsterInfoManager::getChiefMonsterTypeByName(const string& monsterName) const {
-    __BEGIN_TRY
-
     unordered_map<string, SpriteType_t>::const_iterator itr = m_ChiefMonster.find(monsterName);
 
     if (itr == m_ChiefMonster.end()) {
@@ -845,8 +775,6 @@ MonsterType_t MonsterInfoManager::getChiefMonsterTypeByName(const string& monste
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 MonsterType_t MonsterInfoManager::getRandomMonsterByClass(int minClass, int maxClass) {
@@ -876,8 +804,6 @@ MonsterType_t MonsterInfoManager::getRandomMonsterByClass(int minClass, int maxC
 string MonsterInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "MonsterInfoManager(";
 
@@ -890,6 +816,4 @@ string MonsterInfoManager::toString() const
 
     msg << ")";
     return msg.toString();
-
-    __END_CATCH
 }

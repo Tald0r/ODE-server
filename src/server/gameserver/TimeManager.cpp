@@ -16,8 +16,6 @@
 void TimeManager::init()
 
 {
-    __BEGIN_TRY
-
     try {
         // Read the base game time and the base real time from the config file.
         string strBaseGameTime = de::kernelContext().config().getProperty("BaseGameTime");
@@ -79,8 +77,6 @@ void TimeManager::init()
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -90,7 +86,6 @@ void TimeManager::init()
 GameTime TimeManager::getGameTime() const
 
 {
-    __BEGIN_TRY
     // Get the current real time.
     time_t currentTime = time(0);
 
@@ -122,7 +117,6 @@ GameTime TimeManager::getGameTime() const
     result.setSecond(ltm.tm_sec);
 
     return result;
-    __END_CATCH
 }
 
 
@@ -132,7 +126,6 @@ GameTime TimeManager::getGameTime() const
 time_t TimeManager::getgametime() const
 
 {
-    __BEGIN_TRY
     //
     // Game time runs 24 times faster than real time; use that ratio to
     // derive the game time.
@@ -142,7 +135,6 @@ time_t TimeManager::getgametime() const
     return m_BaseGameTime + (time(0) - m_BaseRealTime) * 24;
     // Alternative ITV rate.
     //	return m_BaseGameTime + (time(0) - m_BaseRealTime)* 1440;
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -150,13 +142,9 @@ time_t TimeManager::getgametime() const
 bool TimeManager::isDawnTime() const
 
 {
-    __BEGIN_TRY
-
     if (getTimeband() == TIME_DAWN)
         return true;
     return false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -164,39 +152,27 @@ bool TimeManager::isDawnTime() const
 bool TimeManager::isDayTime() const
 
 {
-    __BEGIN_TRY
-
     if (getTimeband() == TIME_DAY)
         return true;
     return false;
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 bool TimeManager::isDuskTime() const
 
 {
-    __BEGIN_TRY
-
     if (getTimeband() == TIME_DUSK)
         return true;
     return false;
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 bool TimeManager::isNightTime() const
 
 {
-    __BEGIN_TRY
-
     if (getTimeband() == TIME_NIGHT)
         return true;
     return false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -204,8 +180,6 @@ bool TimeManager::isNightTime() const
 uint TimeManager::getTimeband(void) const
 
 {
-    __BEGIN_TRY
-
     GameTime gameTime = getGameTime();
     BYTE hour = gameTime.getHour();
 
@@ -217,8 +191,6 @@ uint TimeManager::getTimeband(void) const
         return TIME_DUSK;
     } else
         return TIME_NIGHT;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -227,12 +199,10 @@ uint TimeManager::getTimeband(void) const
 string TimeManager::toString() const
 
 {
-    __BEGIN_TRY
     StringStream msg;
 
     msg << "TimeManager:(" << "BaseGameTime:" << ctime(&m_BaseGameTime) << "BaseRealTime:" << ctime(&m_BaseRealTime)
         << ")";
 
     return msg.toString();
-    __END_CATCH
 }

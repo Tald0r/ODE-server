@@ -24,13 +24,9 @@
 EffectShrineHoly::EffectShrineHoly(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_ShrineID = 0;
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -38,39 +34,24 @@ EffectShrineHoly::EffectShrineHoly(Creature* pCreature)
 EffectShrineHoly::EffectShrineHoly(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     setTarget(pItem);
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectShrineHoly::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectShrineHoly::affect(Item* pItem)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 void EffectShrineHoly::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     switch (m_pTarget->getObjectClass()) {
     case OBJECT_CLASS_CREATURE: {
         Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
@@ -85,8 +66,6 @@ void EffectShrineHoly::unaffect()
     default:
         throw Error("Wrong Object Class");
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -94,7 +73,6 @@ void EffectShrineHoly::unaffect()
 void EffectShrineHoly::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectShrineHoly" << "unaffect BEGIN" << endl;
@@ -116,7 +94,6 @@ void EffectShrineHoly::unaffect(Creature* pCreature)
     // cout << "EffectShrineHoly" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -124,7 +101,6 @@ void EffectShrineHoly::unaffect(Creature* pCreature)
 void EffectShrineHoly::unaffect(Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectShrineHoly" << "unaffect BEGIN" << endl;
@@ -149,18 +125,13 @@ void EffectShrineHoly::unaffect(Item* pItem)
     // cout << "EffectShrineHoly" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectShrineHoly::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectShrineHoly(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

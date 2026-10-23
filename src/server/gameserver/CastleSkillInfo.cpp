@@ -14,18 +14,14 @@
 // class CastleSkillInfo member methods
 //////////////////////////////////////////////////////////////////////////////
 
-CastleSkillInfo::CastleSkillInfo(){__BEGIN_TRY __END_CATCH}
+CastleSkillInfo::CastleSkillInfo() {}
 
 CastleSkillInfo::~CastleSkillInfo(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
 
 string CastleSkillInfo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "CastleSkillInfo (" << "SkillType:" << (int)m_SkillType << ",ZoneID:" << (int)m_ZoneID << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -35,9 +31,7 @@ string CastleSkillInfo::toString() const {
 
 CastleSkillInfoManager::CastleSkillInfoManager()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 CastleSkillInfoManager::~CastleSkillInfoManager()
 
@@ -52,8 +46,6 @@ CastleSkillInfoManager::~CastleSkillInfoManager()
 void CastleSkillInfoManager::clear()
 
 {
-    __BEGIN_TRY
-
     HashMapCastleSkillInfoItor itr = m_CastleSkillInfos.begin();
 
     for (; itr != m_CastleSkillInfos.end(); ++itr) {
@@ -61,14 +53,11 @@ void CastleSkillInfoManager::clear()
     }
 
     m_CastleSkillInfos.clear();
-
-    __END_CATCH
 }
 
 void CastleSkillInfoManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     vector<CastleSkillRow> rows = defaultGameInfoRepository().loadCastleSkills();
@@ -83,14 +72,11 @@ void CastleSkillInfoManager::load()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void CastleSkillInfoManager::addCastleSkillInfo(CastleSkillInfo* pCastleSkillInfo)
 
 {
-    __BEGIN_TRY
-
     Assert(pCastleSkillInfo != NULL);
 
     HashMapCastleSkillInfoItor itr = m_CastleSkillInfos.find(pCastleSkillInfo->getSkillType());
@@ -100,8 +86,6 @@ void CastleSkillInfoManager::addCastleSkillInfo(CastleSkillInfo* pCastleSkillInf
     }
 
     m_CastleSkillInfos[pCastleSkillInfo->getSkillType()] = pCastleSkillInfo;
-
-    __END_CATCH
 }
 
 SkillType_t CastleSkillInfoManager::getSkillType(ZoneID_t ZoneID) const {
@@ -132,8 +116,6 @@ ZoneID_t CastleSkillInfoManager::getZoneID(SkillType_t SkillType) const {
 string CastleSkillInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "CastleSkillInfoManager(";
@@ -147,6 +129,4 @@ string CastleSkillInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

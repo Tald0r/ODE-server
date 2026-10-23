@@ -138,8 +138,6 @@
 ObjectManager::ObjectManager()
 
 {
-    __BEGIN_TRY
-
     FlagSet::initialize();
 
     m_pStringPool = new StringPool();
@@ -294,8 +292,6 @@ ObjectManager::ObjectManager()
     context.setDynamicZoneManager(m_pDynamicZoneManager);
     m_pDynamicZoneFactoryManager = new DynamicZoneFactoryManager();
     context.setDynamicZoneFactoryManager(m_pDynamicZoneFactoryManager);
-
-    __END_CATCH
 }
 
 ObjectManager::~ObjectManager()
@@ -387,7 +383,6 @@ ObjectManager::~ObjectManager()
 void ObjectManager::init()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     printf("ObjectManager::load() : SystemAvailabilitiesManager Initialization Start\n");
@@ -542,15 +537,12 @@ void ObjectManager::init()
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
 void ObjectManager::load()
 
 {
-    __BEGIN_TRY
-
     //--------------------------------------------------------------------------------
     // Loading a zone group loads its zones internally.
     // That loads the NPCs belonging to each zone, and the SetPosition action
@@ -733,16 +725,10 @@ void ObjectManager::load()
     printf("ObjectManager::load() : DynamicZoneFactoryManager Initialization Start\n");
     m_pDynamicZoneFactoryManager->init();
     printf("ObjectManager::load() : DynamicZoneFactoryManager Initialization Success\n");
-
-    __END_CATCH
 }
 
 void ObjectManager::save()
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }

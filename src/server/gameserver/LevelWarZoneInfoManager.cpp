@@ -15,18 +15,12 @@ LevelWarZoneInfo::~LevelWarZoneInfo() {}
 void LevelWarZoneInfo::setZoneIDList(const string& zoneIDs)
 
 {
-    __BEGIN_TRY
-
     makeZoneIDList(zoneIDs, m_LevelWarBonusZoneIDList);
-
-    __END_CATCH
 }
 
 bool LevelWarZoneInfo::isBonusZone(ZoneID_t targetZoneID) const
 
 {
-    __BEGIN_TRY
-
     list<ZoneID_t>::const_iterator itr = m_LevelWarBonusZoneIDList.begin();
     list<ZoneID_t>::const_iterator endItr = m_LevelWarBonusZoneIDList.end();
 
@@ -38,15 +32,11 @@ bool LevelWarZoneInfo::isBonusZone(ZoneID_t targetZoneID) const
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool LevelWarZoneInfo::isCreatureThisLevel(Creature* pCreature) const
 
 {
-    __BEGIN_TRY
-
     if (pCreature->isSlayer()) {
         Slayer* pSlayer = dynamic_cast<Slayer*>(pCreature);
 
@@ -62,15 +52,11 @@ bool LevelWarZoneInfo::isCreatureThisLevel(Creature* pCreature) const
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool LevelWarZoneInfo::isZoneThisLevel(ZoneID_t zoneID) const
 
 {
-    __BEGIN_TRY
-
     list<ZoneID_t>::const_iterator itr = m_LevelWarBonusZoneIDList.begin();
     list<ZoneID_t>::const_iterator endItr = m_LevelWarBonusZoneIDList.end();
 
@@ -80,15 +66,11 @@ bool LevelWarZoneInfo::isZoneThisLevel(ZoneID_t zoneID) const
     }
 
     return false;
-
-    __END_CATCH
 }
 
 string LevelWarZoneInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "LevelWarZoneInfo(" << "Grade : " << m_LevelWarGrade << ", ZoneID : " << m_ZoneID
         << ", SweeperTypeMin : " << m_SweeperTypeMin << ", SweeperTypeMax : " << m_SweeperTypeMax
@@ -97,8 +79,6 @@ string LevelWarZoneInfo::toString() const
         << ", OustersLevelMin : " << m_OustersLevelMin << ", OustersLevelMax : " << m_OustersLevelMax << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 LevelWarZoneInfoManager::LevelWarZoneInfoManager() {}
@@ -121,18 +101,12 @@ LevelWarZoneInfoManager::~LevelWarZoneInfoManager() {
 void LevelWarZoneInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void LevelWarZoneInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_LevelWarZoneInfos.clear();
     clearLevelWarZoneIDs();
 
@@ -160,15 +134,11 @@ void LevelWarZoneInfoManager::load()
 
         addLevelWarZoneInfo(pLevelWarZoneInfo);
     }
-
-    __END_CATCH
 }
 
 void LevelWarZoneInfoManager::addLevelWarZoneInfo(LevelWarZoneInfo* pLevelWarZoneInfo)
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, LevelWarZoneInfo*>::iterator itr = m_LevelWarZoneInfos.find(pLevelWarZoneInfo->getZoneID());
 
     if (itr != m_LevelWarZoneInfos.end())
@@ -185,8 +155,6 @@ void LevelWarZoneInfoManager::addLevelWarZoneInfo(LevelWarZoneInfo* pLevelWarZon
         ZoneID_t zoneID = *zitr;
         setLevelWarZoneID(zoneID, pLevelWarZoneInfo->getZoneID());
     }
-
-    __END_CATCH
 }
 
 int LevelWarZoneInfoManager::getCreatureLevelGrade(Creature* pCreature)
@@ -237,17 +205,12 @@ bool LevelWarZoneInfoManager::isCreatureBonusZone(Creature* pCreature, ZoneID_t 
 LevelWarZoneInfo* LevelWarZoneInfoManager::getLevelWarZoneInfo(ZoneID_t zoneID) const
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, LevelWarZoneInfo*>::const_iterator itr = m_LevelWarZoneInfos.find(zoneID);
 
     if (itr != m_LevelWarZoneInfos.end())
         return NULL;
     else
         return itr->second;
-
-
-    __END_CATCH
 }
 
 void LevelWarZoneInfoManager::broadcast(ZoneID_t zoneID, Packet* pPacket) const {
@@ -276,18 +239,12 @@ void LevelWarZoneInfoManager::broadcast(ZoneID_t zoneID, Packet* pPacket) const 
 void LevelWarZoneInfoManager::clearLevelWarZoneIDs()
 
 {
-    __BEGIN_TRY
-
     m_LevelWarZoneIDs.clear();
-
-    __END_CATCH
 }
 
 bool LevelWarZoneInfoManager::getLevelWarZoneID(ZoneID_t zoneID, ZoneID_t& levelWarZoneID) const
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, ZoneID_t>::const_iterator itr = m_LevelWarZoneIDs.find(zoneID);
 
     if (itr != m_LevelWarZoneIDs.end()) {
@@ -296,24 +253,16 @@ bool LevelWarZoneInfoManager::getLevelWarZoneID(ZoneID_t zoneID, ZoneID_t& level
     }
 
     return false;
-
-    __END_CATCH
 }
 void LevelWarZoneInfoManager::setLevelWarZoneID(ZoneID_t zoneID, ZoneID_t levelWarZoneID)
 
 {
-    __BEGIN_TRY
-
     m_LevelWarZoneIDs[zoneID] = levelWarZoneID;
-
-    __END_CATCH
 }
 
 string LevelWarZoneInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "LevelWarZoneInfoManager(";
@@ -331,6 +280,4 @@ string LevelWarZoneInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

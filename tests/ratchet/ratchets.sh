@@ -77,7 +77,7 @@ check_ratchet R4 "packet headers with execute()" 0 "$R4"
 # (5,114 -> 5,119 on 2026-10-23, the widening: four live header sites and one
 # comment line).
 R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' --include='*.h' | grep -vE 'gameserver/(gm|handler|packetfill)/' | wc -l)
-check_ratchet R5 "__BEGIN_TRY sites in gameserver" 1972 "$R5"
+check_ratchet R5 "__BEGIN_TRY sites in gameserver" 151 "$R5"
 
 # --- R6: god-file line counts (task 3.3 files only, so far) -----------------
 # Formula extraction to de-core (src/domain) shrinks these; each delegation
@@ -103,7 +103,7 @@ check_ratchet R6a "SkillUtil.cpp lines" 678 "$R6a"
 # Monster::initAllStat. Under the 2,000-line phase exit criterion, so the
 # ratchet is a pin rather than a god-file baseline now.
 R6b=$(wc -l < src/server/gameserver/InitAllStat.cpp 2>/dev/null || echo missing)
-check_ratchet R6b "InitAllStat.cpp lines" 230 "$R6b"
+check_ratchet R6b "InitAllStat.cpp lines" 225 "$R6b"
 R6c=$(wc -l < src/server/gameserver/skill/HitRoll.cpp 2>/dev/null || echo missing)
 check_ratchet R6c "HitRoll.cpp lines" 642 "$R6c"
 R6d=$(wc -l < src/server/gameserver/skill/SkillFormula.cpp 2>/dev/null || echo missing)
@@ -124,7 +124,7 @@ check_ratchet R6f "ConsoleCommands.cpp lines" 1574 "$R6f"
 # What is left is the zone's own state: tiles, effects, creature lookup, the
 # NPC registry and the heartbeat. Under the 2,000-line phase exit criterion.
 R6g=$(wc -l < src/server/gameserver/Zone.cpp 2>/dev/null || echo missing)
-check_ratchet R6g "Zone.cpp lines" 1265 "$R6g"
+check_ratchet R6g "Zone.cpp lines" 1176 "$R6g"
 
 # R6h-j: the three race classes. Persistence, gold, item-shape, inventory,
 # free-play, skill-slot-table, exps, initial-rank, silver-damage and
@@ -139,11 +139,11 @@ check_ratchet R6g "Zone.cpp lines" 1265 "$R6g"
 # bodies in SlayerShape.cpp, which puts Slayer.cpp under the 2,000-line phase
 # exit criterion with the other two.
 R6h=$(wc -l < src/server/gameserver/Slayer.cpp 2>/dev/null || echo missing)
-check_ratchet R6h "Slayer.cpp lines" 1835 "$R6h"
+check_ratchet R6h "Slayer.cpp lines" 1743 "$R6h"
 R6i=$(wc -l < src/server/gameserver/Vampire.cpp 2>/dev/null || echo missing)
-check_ratchet R6i "Vampire.cpp lines" 1919 "$R6i"
+check_ratchet R6i "Vampire.cpp lines" 1835 "$R6i"
 R6j=$(wc -l < src/server/gameserver/Ousters.cpp 2>/dev/null || echo missing)
-check_ratchet R6j "Ousters.cpp lines" 1848 "$R6j"
+check_ratchet R6j "Ousters.cpp lines" 1752 "$R6j"
 
 # --- R7: pre-C++17 dynamic exception specifications ------------------------
 # The migration also normalized real `throw(expr)` expressions to `throw expr`

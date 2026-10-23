@@ -37,8 +37,6 @@ EventRegeneration::~EventRegeneration()
 void EventRegeneration::activate()
 
 {
-    __BEGIN_TRY
-
     if (m_pGamePlayer->getPlayerStatus() == GPS_NORMAL) {
         Assert(m_pGamePlayer != NULL);
 
@@ -187,6 +185,4 @@ void EventRegeneration::activate()
 
         m_Deadline = m_Deadline + delay;
     }
-
-    __END_CATCH
 }

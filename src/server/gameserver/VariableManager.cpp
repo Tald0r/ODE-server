@@ -16,8 +16,6 @@
 VariableManager::VariableManager()
 
 {
-    __BEGIN_TRY
-
     m_Variables = VARIABLE(VARIABLE_MAX);
 
     m_Variables[STAR_RATIO] = 1000;
@@ -216,8 +214,6 @@ VariableManager::VariableManager()
     m_Variables[EVENT_MUGWORT_RICE_CAKE_SOUP_RATIO] = 80000;
 
     m_Variables[TIME_PERIOD_EXP_2X] = 0;
-
-    __END_CATCH
 }
 
 
@@ -234,8 +230,6 @@ VariableManager::~VariableManager()
 void VariableManager::init()
 
 {
-    __BEGIN_TRY
-
     Properties& config = de::kernelContext().config();
 
     m_VariableNames.clear();
@@ -272,16 +266,12 @@ void VariableManager::init()
 
     if (!SystemAvailabilitiesManager::getInstance()->isAvailable(SystemAvailabilitiesManager::SYSTEM_MASTER_LAIR))
         setVariable(ACTIVE_MASTER_LAIR, 0);
-
-    __END_CATCH
 }
 
 
 void VariableManager::load()
 
 {
-    __BEGIN_TRY
-
     ContentInfoRepository& repository = defaultContentInfoRepository();
 
     int maxAttr = 0;
@@ -316,8 +306,6 @@ void VariableManager::load()
             de::diagnosticTrace(
                 [&](std::ostream& output) { output << toString((VariableType)rows[r].attrID).c_str(); });
     }
-
-    __END_CATCH
 }
 
 VariableType VariableManager::getVariableType(const string& variableName) const {

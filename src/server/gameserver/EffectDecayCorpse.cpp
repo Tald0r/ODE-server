@@ -19,8 +19,6 @@
 EffectDecayCorpse::EffectDecayCorpse(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Corpse* pCorpse, Turn_t delay)
 
     : Effect(pZone, x, y, pCorpse, delay) {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
     Assert(getTarget() != NULL);
 
@@ -28,8 +26,6 @@ EffectDecayCorpse::EffectDecayCorpse(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, 
 
     // Server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectDecayCorpse::~EffectDecayCorpse()
@@ -45,18 +41,12 @@ EffectDecayCorpse::~EffectDecayCorpse()
 void EffectDecayCorpse::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 void EffectDecayCorpse::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     // The coordinates must be valid.
     Assert(isValidZoneCoord(pZone, x, y));
 
@@ -88,20 +78,15 @@ void EffectDecayCorpse::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Obje
     }
 
     pTarget = NULL;
-
-    __END_CATCH
 }
 
 void EffectDecayCorpse::unaffect()
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectDecayCorpse::unaffect(Creature* pCreature)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 string EffectDecayCorpse::toString() const
 

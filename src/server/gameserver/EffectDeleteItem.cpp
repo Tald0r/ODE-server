@@ -21,8 +21,6 @@
 EffectDeleteItem::EffectDeleteItem(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject, Turn_t delay)
 
     : Effect(pZone, x, y, pObject, delay) {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
     Assert(getTarget() != NULL);
 
@@ -31,8 +29,6 @@ EffectDeleteItem::EffectDeleteItem(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Ob
 
     // Server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 
@@ -58,11 +54,7 @@ EffectDeleteItem::~EffectDeleteItem()
 void EffectDeleteItem::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     //	throw UnsupportedError();
-
-    __END_CATCH
 }
 
 
@@ -72,8 +64,6 @@ void EffectDeleteItem::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object*
 void EffectDeleteItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     // The coordinates must be valid.
     // Assert(pTarget!=NULL);
     Assert(isValidZoneCoord(pZone, x, y));
@@ -101,8 +91,6 @@ void EffectDeleteItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Objec
             }
         }
     }
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -110,17 +98,14 @@ void EffectDeleteItem::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Objec
 //----------------------------------------------------------------------
 void EffectDeleteItem::unaffect()
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //----------------------------------------------------------------------
 // unaffect()
 //----------------------------------------------------------------------
 void EffectDeleteItem::unaffect(Creature* pCreature)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //----------------------------------------------------------------------
 // get debug string

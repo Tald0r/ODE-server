@@ -140,8 +140,6 @@ const string& MasterLairInfo::getRandomMasterNotDeadSay() const
 }
 
 string MasterLairInfo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "MasterLairInfo(" << "ZoneID:" << (int)m_ZoneID
         << ",MasterNotReadyMonsterType:" << (int)m_MasterNotReadyMonsterType
@@ -159,8 +157,6 @@ string MasterLairInfo::toString() const {
         << ",LairAttackMaxNumber:" << (int)m_LairAttackMaxNumber << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -168,7 +164,7 @@ string MasterLairInfo::toString() const {
 //////////////////////////////////////////////////////////////////////////////
 MasterLairInfoManager::MasterLairInfoManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -198,12 +194,8 @@ MasterLairInfoManager::~MasterLairInfoManager()
 void MasterLairInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     // init == load
     load();
-
-    __END_CATCH
 }
 
 
@@ -215,8 +207,6 @@ void MasterLairInfoManager::init()
 void MasterLairInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<MasterLairRow> rows = defaultWarInfoRepository().loadMasterLairs();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -285,8 +275,6 @@ void MasterLairInfoManager::load()
             throw Error("No monster info for the master.");
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -295,8 +283,6 @@ void MasterLairInfoManager::load()
 void MasterLairInfoManager::reload()
 
 {
-    __BEGIN_TRY
-
     // cout << "MasterLairInfoManager::reload()" << endl;
 
     vector<MasterLairRow> rows = defaultWarInfoRepository().loadMasterLairs();
@@ -361,8 +347,6 @@ void MasterLairInfoManager::reload()
             }
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -372,8 +356,6 @@ void MasterLairInfoManager::reload()
 void MasterLairInfoManager::addMasterLairInfo(MasterLairInfo* pMasterLairInfo)
 
 {
-    __BEGIN_TRY
-
     // First check whether a zone with the same id already exists.
     unordered_map<ZoneID_t, MasterLairInfo*>::iterator itr = m_MasterLairInfos.find(pMasterLairInfo->getZoneID());
 
@@ -382,8 +364,6 @@ void MasterLairInfoManager::addMasterLairInfo(MasterLairInfo* pMasterLairInfo)
         throw Error("duplicated zone id");
 
     m_MasterLairInfos[pMasterLairInfo->getZoneID()] = pMasterLairInfo;
-
-    __END_CATCH
 }
 
 
@@ -391,8 +371,6 @@ void MasterLairInfoManager::addMasterLairInfo(MasterLairInfo* pMasterLairInfo)
 // Delete zone info from zone info manager
 //////////////////////////////////////////////////////////////////////////////
 void MasterLairInfoManager::deleteMasterLairInfo(ZoneID_t zoneID) {
-    __BEGIN_TRY
-
     unordered_map<ZoneID_t, MasterLairInfo*>::iterator itr = m_MasterLairInfos.find(zoneID);
 
     if (itr != m_MasterLairInfos.end()) {
@@ -407,8 +385,6 @@ void MasterLairInfoManager::deleteMasterLairInfo(ZoneID_t zoneID) {
         msg << "ZoneID : " << zoneID;
         throw NoSuchElementException(msg.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -416,8 +392,6 @@ void MasterLairInfoManager::deleteMasterLairInfo(ZoneID_t zoneID) {
 // get zone from zone info manager
 //////////////////////////////////////////////////////////////////////////////
 MasterLairInfo* MasterLairInfoManager::getMasterLairInfo(ZoneID_t zoneID) {
-    __BEGIN_TRY
-
     MasterLairInfo* pMasterLairInfo = NULL;
 
     unordered_map<ZoneID_t, MasterLairInfo*>::iterator itr = m_MasterLairInfos.find(zoneID);
@@ -432,8 +406,6 @@ MasterLairInfo* MasterLairInfoManager::getMasterLairInfo(ZoneID_t zoneID) {
     }
 
     return pMasterLairInfo;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -442,8 +414,6 @@ MasterLairInfo* MasterLairInfoManager::getMasterLairInfo(ZoneID_t zoneID) {
 string MasterLairInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "MasterLairInfoManager(";
@@ -460,6 +430,4 @@ string MasterLairInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

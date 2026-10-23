@@ -25,20 +25,14 @@
 EffectAlignmentRecovery::EffectAlignmentRecovery()
 
 {
-    __BEGIN_TRY
-
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectAlignmentRecovery::EffectAlignmentRecovery(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Creature* pCreature,
                                                  Turn_t delay)
 
     : Effect(pZone, x, y, pCreature, delay) {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pCreature != NULL);
 
@@ -47,8 +41,6 @@ EffectAlignmentRecovery::EffectAlignmentRecovery(Zone* pZone, ZoneCoord_t x, Zon
 
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectAlignmentRecovery::~EffectAlignmentRecovery()
@@ -61,23 +53,17 @@ EffectAlignmentRecovery::~EffectAlignmentRecovery()
 void EffectAlignmentRecovery::affect()
 
 {
-    __BEGIN_TRY
-
     setNextTime(m_Delay);
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     Assert(pCreature != NULL);
 
     affect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectAlignmentRecovery::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isPC());
 
@@ -204,37 +190,25 @@ void EffectAlignmentRecovery::affect(Creature* pCreature)
 
         pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcOtherModifyInfo, pCreature);
     }
-
-    __END_CATCH
 }
 
 void EffectAlignmentRecovery::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 void EffectAlignmentRecovery::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     Assert(pCreature != NULL);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectAlignmentRecovery::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     if (pCreature->isSlayer()) {
@@ -336,19 +310,15 @@ void EffectAlignmentRecovery::unaffect(Creature* pCreature)
         // And to nearby players.
         pOusters->removeFlag(Effect::EFFECT_CLASS_ALIGNMENT_RECOVERY);
     }
-
-    __END_CATCH
 }
 
 void EffectAlignmentRecovery::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 string EffectAlignmentRecovery::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     if (m_pZone) {
@@ -365,6 +335,4 @@ string EffectAlignmentRecovery::toString() const
     msg << ",Deadline:" << (int)m_Deadline.tv_sec << "." << (int)m_Deadline.tv_usec << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -4,8 +4,6 @@
 #include "repository/GameInfoRepository.h"
 
 void ItemGradeManager::load() {
-    __BEGIN_TRY
-
     vector<ItemGradeRatioRow> rows = defaultGameInfoRepository().loadItemGradeRatios();
 
     Assert(rows.size() == 10);
@@ -24,8 +22,6 @@ void ItemGradeManager::load() {
         m_GradeBeadRatios[Grade - 1] = BeadRatio;
         cout << Grade << " grade : " << Ratio << ", " << GambleRatio << ", " << BeadRatio << endl;
     }
-
-    __END_CATCH
 }
 
 Grade_t ItemGradeManager::getRandomGrade() const {

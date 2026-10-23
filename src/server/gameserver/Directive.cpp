@@ -26,14 +26,10 @@
 Directive::Directive()
 
 {
-    __BEGIN_TRY
-
     m_Action = 0;
     m_Parameter = 0;
     m_Ratio = 0;
     m_Weight = 0;
-
-    __END_CATCH
 }
 
 Directive::~Directive()
@@ -49,8 +45,6 @@ Directive::~Directive()
 void Directive::addCondition(int condition)
 
 {
-    __BEGIN_TRY
-
     // Check that the same condition is not already present.
     list<int>::iterator itr = m_Conditions.begin();
     for (; itr != m_Conditions.end(); itr++) {
@@ -59,15 +53,11 @@ void Directive::addCondition(int condition)
     }
 
     m_Conditions.push_back(condition);
-
-    __END_CATCH
 }
 
 string Directive::toString()
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     // header
@@ -95,8 +85,6 @@ string Directive::toString()
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -105,9 +93,7 @@ string Directive::toString()
 
 DirectiveSet::DirectiveSet()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 DirectiveSet::~DirectiveSet()
 
@@ -129,8 +115,6 @@ DirectiveSet::~DirectiveSet()
 void DirectiveSet::clear()
 
 {
-    __BEGIN_TRY
-
     // Walk the list and delete the Directive objects.
     list<Directive*>::iterator itr = m_Directives.begin();
     for (; itr != m_Directives.end(); itr++) {
@@ -139,8 +123,6 @@ void DirectiveSet::clear()
     }
 
     m_Directives.clear();
-
-    __END_CATCH
 }
 
 bool DirectiveSet::hasCondition(int condition) const {
@@ -158,21 +140,13 @@ bool DirectiveSet::hasCondition(int condition) const {
 void DirectiveSet::addDirective(Directive* pDirective)
 
 {
-    __BEGIN_TRY
-
     m_Directives.push_back(pDirective);
-
-    __END_CATCH
 }
 
 void DirectiveSet::addDeadDirective(Directive* pDirective)
 
 {
-    __BEGIN_TRY
-
     m_DeadDirectives.push_back(pDirective);
-
-    __END_CATCH
 }
 
 
@@ -182,12 +156,8 @@ void DirectiveSet::addDeadDirective(Directive* pDirective)
 DirectiveSetManager::DirectiveSetManager()
 
 {
-    __BEGIN_TRY
-
     m_nSetCount = 0;
     m_ppSet = NULL;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -216,11 +186,7 @@ DirectiveSetManager::~DirectiveSetManager()
 void DirectiveSetManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 
@@ -232,8 +198,6 @@ void DirectiveSetManager::init()
 void DirectiveSetManager::load()
 
 {
-    __BEGIN_TRY
-
     ContentInfoRepository& repository = defaultContentInfoRepository();
 
     // The number of sets.
@@ -272,8 +236,6 @@ void DirectiveSetManager::load()
 
         printf("Loading End\n");
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -283,16 +245,12 @@ void DirectiveSetManager::load()
 DirectiveSet* DirectiveSetManager::getDirectiveSet(uint index)
 
 {
-    __BEGIN_TRY
-
     if (index >= m_nSetCount) {
         cerr << "DirectiveSetManager::getDirectiveSet() : Out of bounds, value = [" << index << "]" << endl;
         throw Error("DirectiveSetManager::getDirectiveSet() : Out of bounds!");
     }
 
     return m_ppSet[index];
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -302,8 +260,6 @@ DirectiveSet* DirectiveSetManager::getDirectiveSet(uint index)
 void DirectiveSetManager::createDirectiveSet(uint index, const string& name, const string& text, const string& deadtext)
 
 {
-    __BEGIN_TRY
-
     if (index >= m_nSetCount) {
         cerr << "DirectiveSetManager::createDirectiveSet() : Out of bounds!" << endl;
         throw Error("DirectiveSetManager::createDirectiveSet() : Out of bounds!");
@@ -455,8 +411,6 @@ void DirectiveSetManager::createDirectiveSet(uint index, const string& name, con
 
     if (m_ppSet[index]->canSeeSafeZone())
         cout << index << " : can see safe zone" << endl;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -466,8 +420,6 @@ void DirectiveSetManager::createDirectiveSet(uint index, const string& name, con
 void DirectiveSetManager::parseDirectiveParameter(Directive* pDirective, const string& text, int mode)
 
 {
-    __BEGIN_TRY
-
     size_t oldpos = 0;
     size_t pos = 0;
     size_t paramCount = 0;
@@ -532,8 +484,6 @@ void DirectiveSetManager::parseDirectiveParameter(Directive* pDirective, const s
         }
         paramCount++;
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -543,8 +493,6 @@ void DirectiveSetManager::parseDirectiveParameter(Directive* pDirective, const s
 int DirectiveSetManager::getCondition(const string& token)
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < DIRECTIVE_COND_MAX; i++)
         if (DirectiveCondition2String[i] == token)
             return i;
@@ -555,8 +503,6 @@ int DirectiveSetManager::getCondition(const string& token)
     cerr << msg.toString() << endl;
     throw msg.toString();
     return DIRECTIVE_COND_MAX;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -566,8 +512,6 @@ int DirectiveSetManager::getCondition(const string& token)
 int DirectiveSetManager::getAction(const string& token)
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < DIRECTIVE_ACTION_MAX; i++)
         if (DirectiveAction2String[i] == token)
             return i;
@@ -575,8 +519,6 @@ int DirectiveSetManager::getAction(const string& token)
     cerr << "DirectiveSetManager::getAction() : Invalid action[" << token << "]" << endl;
     throw Error("DirectiveSetManager::getAction() : Invalid action");
     return DIRECTIVE_COND_MAX;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -587,8 +529,6 @@ int DirectiveSetManager::getAction(const string& token)
 int DirectiveSetManager::getParameter(const string& token)
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < SKILL_MAX; i++) {
         if (strcasecmp(token.c_str(), SkillTypes2String[i].c_str()) == 0)
             return i;
@@ -598,8 +538,6 @@ int DirectiveSetManager::getParameter(const string& token)
     throw Error("DirectiveSetManager::getParameter() : Invalid parameter");
 
     return 0;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -609,8 +547,6 @@ int DirectiveSetManager::getParameter(const string& token)
 int DirectiveSetManager::getRatio(const string& token)
 
 {
-    __BEGIN_TRY
-
     int rValue = atoi(token.c_str());
 
     if (rValue < 0 || rValue > 100) {
@@ -619,6 +555,4 @@ int DirectiveSetManager::getRatio(const string& token)
     }
 
     return rValue;
-
-    __END_CATCH
 }
