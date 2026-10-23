@@ -123,17 +123,8 @@ void CGWhisperHandler::execute(CGWhisper* pPacket, Player* pPlayer)
 
                     if (bServerFind) // when it was found
                     {
-                        /*	Build a GGServerChat packet
-                         *	and send it... to the game server..
-                         *  pCreature->getName() = the name of the sending creature
-                         *	pPacket->getName() = the name of the receiving creature
-                         *	PlayerID	= the account of the receiving creature
-                         *	pPacket->getColor()	= the text color
-                         *	pPacket->getMessage() = the message
-                         *  pCreature->getRace() = the race of the sending creature
-                         * */
-
-
+                        // Relay the whisper to the receiver's game server: the sender's name and race, the
+                        // receiver's name, and the text with its color.
                         GameServerInfo* pGameServerInfo = de::serverContext().serverInfos().getGameServerInfo(
                             1, CurrentServerGroupID, de::kernelContext().config().getPropertyInt("WorldID"));
                         if (pGameServerInfo != NULL) {

@@ -20,6 +20,22 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## A slayer's shoulder armour leaving its shape is broadcast as the trousers (2026-10-23)
+
+`Slayer::removeShape` (`SlayerShape.cpp`) clears the shoulder shape for
+`ITEM_CLASS_SHOULDER_ARMOR` but, when it sends the zone a `GCTakeOff`, sets
+the slot to `ADDON_TROUSER`, the value the trousers case sends, where
+`Slayer::takeOffItem` sends `ADDON_SHOULDER` for the same item class. It
+runs when a newly worn item does not apply (`changeShape`), when the all-stat
+recalculation finds a worn item no longer applies (`SlayerStat.cpp`) and when
+a dead slayer drops a worn item, a unique or a random one (`PCManager.cpp`),
+so whenever it sends the packet the zone is told the trousers came off rather
+than the shoulder armor. Found while moving the body out of `Slayer.cpp`; the
+move kept it as it was. A fix changes what the zone is sent, so it wants a
+test that pins the slot `removeShape` sends for each item class.
+
+> **Status:** recorded, not fixed (refactor/slayer-split-r18)
+
 ## Diagnostic files grow without retention and failures escape gameplay (2026-10-04)
 
 > **Status:** fixed for reviewed diagnostic destinations — explicit

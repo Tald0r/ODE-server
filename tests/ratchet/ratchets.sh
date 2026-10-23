@@ -124,14 +124,17 @@ check_ratchet R6g "Zone.cpp lines" 1265 "$R6g"
 # R6h-j: the three race classes. Persistence, gold, item-shape, inventory,
 # free-play, skill-slot-table, exps, initial-rank, silver-damage and
 # connect-time item-loading bodies now live once on PlayerCreature; what is
-# left in each file is its own wear code, its load/save record code, and the
-# two skill-slot bodies whose content really is per-race (addSkill). The wear
+# left per race is its own wear code (Slayer's in SlayerWear.cpp), its
+# load/save record code, and the two skill-slot bodies whose content really
+# is per-race (addSkill). The wear
 # bodies are still identical in Vampire and Ousters, but only after
 # substituting the class-scoped WearPart enum, whose values are the slot ids
 # the client sends, so reconciling them is a protocol change rather than a
-# refactor.
+# refactor. Slayer's wear bodies live in SlayerWear.cpp and its outfit-shape
+# bodies in SlayerShape.cpp, which puts Slayer.cpp under the 2,000-line phase
+# exit criterion with the other two.
 R6h=$(wc -l < src/server/gameserver/Slayer.cpp 2>/dev/null || echo missing)
-check_ratchet R6h "Slayer.cpp lines" 2953 "$R6h"
+check_ratchet R6h "Slayer.cpp lines" 1835 "$R6h"
 R6i=$(wc -l < src/server/gameserver/Vampire.cpp 2>/dev/null || echo missing)
 check_ratchet R6i "Vampire.cpp lines" 1919 "$R6i"
 R6j=$(wc -l < src/server/gameserver/Ousters.cpp 2>/dev/null || echo missing)
@@ -472,10 +475,10 @@ check_ratchet R17 "source lines carrying non-ASCII bytes" 0 "$R17"
 # open a block. The first and last lines of a block carry the delimiters
 # and are left out by the same test that skips a bare "/*" or "*/".
 #
-# The five lines the count still holds are not switched-off code: they are
-# the two block comments in handler/CGWhisperHandler.cpp that name, field by
-# field, what the relay puts into a GGServerChat packet, and the scan reads
-# a line like "pPacket->getColor() = the text color" as a call.
+# A block comment that lists calls beside their meaning reads as code to
+# this scan ("pPacket->getColor() = the text color" opens with an identifier
+# and a "("), so say what such code does in a sentence rather than call by
+# call.
 r18_raw=$(find src \( -name '*.cpp' -o -name '*.h' \) -print0 | perl -0 -ne '
     BEGIN { $files = 0; $count = 0 }
     chomp; my $f = $_;
@@ -528,7 +531,7 @@ if ! [[ "$r18_files" =~ ^[0-9]+$ ]] || [ "$r18_files" -lt 3000 ]; then
     echo "[FAIL] R18 commented-out code: only '$r18_files' files scanned (find or perl broken?)"
     fail=1
 else
-    check_ratchet R18 "commented-out code lines in /* */ blocks" 5 "$R18"
+    check_ratchet R18 "commented-out code lines in /* */ blocks" 0 "$R18"
 fi
 
 # --- Removed dead services must not return --------------------------------

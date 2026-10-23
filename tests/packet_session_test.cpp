@@ -19,9 +19,10 @@
 //               CGCrashReportHandler, CGLotterySelectHandler,
 //               CGPetGambleHandler, CGTypeStringListHandler) and the
 //               senders outside handler/: quest/ActionTakeOutGoods.cpp,
-//               quest/ActionGiveLotto.cpp, Slayer.cpp, Vampire.cpp,
-//               Ousters.cpp and EventAuth.cpp. Eighteen packets, each
-//               with the reason it is here:
+//               quest/ActionGiveLotto.cpp, SlayerWear.cpp,
+//               SlayerShape.cpp, Vampire.cpp, Ousters.cpp and
+//               EventAuth.cpp. Eighteen packets, each with the reason
+//               it is here:
 //
 //               CGTakeOutGood    the client asks for one of the goods
 //                                a quest left in the stash, and
