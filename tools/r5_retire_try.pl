@@ -25,11 +25,16 @@
 # file whose stack does not match up is refused whole. So is a file where
 # an #if group opens or closes a brace its other branches might not. A
 # pair that closes with __END_CATCH_NO_RETHROW swallows exceptions, which
-# is control flow: it is left alone, as are __BEGIN_DEBUG / __END_DEBUG
-# and their _EX forms. A site written inside a #define is reported and
-# left alone. Comments, string and character literals and preprocessor
-# lines are tokens of their own, so a macro name inside one is never a
-# site.
+# is control flow: the default mode leaves it alone, and --explicit-swallow
+# writes it out as the catch it expands to, `try {` ... `} catch
+# (Throwable&) {` with one fixed comment and `}`, in the macros' places, so
+# again no scope changes; the t.addStack() it drops only touched the
+# exception being discarded. An empty one, with no code between its
+# macros, can throw nothing and goes. __BEGIN_DEBUG / __END_DEBUG and
+# their _EX forms are left alone. A site written inside a #define is
+# reported and left alone. Comments, string and character literals and
+# preprocessor lines are tokens of their own, so a macro name inside one is
+# never a site.
 #
 # Usage (from the repository root, whose src/ holds the macro table):
 #   perl tools/r5_retire_try.pl [--brace FILE:LINE]... FILE...
@@ -38,10 +43,13 @@
 #       line) as braces, and one that names no pair writes nothing.
 #       Prints one line per changed file and a SKIP or REFUSE line for
 #       each site or file it leaves alone.
+#   perl tools/r5_retire_try.pl --explicit-swallow FILE...
+#       rewrite the swallowing pairs instead, as above.
 #   perl tools/r5_retire_try.pl --check REV | REV..REV | REV...REV
 #       prove that every C++ file the range modifies differs from its old
 #       version only by rethrowing pairs that were removed (wrapper sites
-#       only) or turned into braces; REV alone compares with the working
+#       only) or turned into braces, and swallowing pairs written out as
+#       above or, when empty, removed; REV alone compares with the working
 #       tree, REV...REV starts from the merge base. Other files are
 #       reported and skipped; a git error, an added or deleted C++ file, a
 #       failing file or a range that modifies no C++ file exits non-zero.
@@ -70,6 +78,11 @@ my %CLOSE = (
     '__LEAVE_CRITICAL_SECTION' => 'CS',
     'endProfileEx' => 'PROFILE',
 );
+
+# What --explicit-swallow writes for __END_CATCH_NO_RETHROW, and the tokens
+# --check accepts in its place.
+my $SWALLOW_COMMENT = '// A Throwable from the try block is dropped here and goes no further.';
+my @EXPLICIT_CATCH = ('}', 'catch', '(', 'Throwable', '&', ')', '{', $SWALLOW_COMMENT, '}');
 
 #----------------------------------------------------------------------
 # tokenizer: [type, text, start, end, line]; type is c (comment), p
@@ -263,7 +276,13 @@ sub analyse {
         return { tokens => $toks, refused => "$text_ at line $line closes the $toks->[ $open->[1] ][1] at line $toks->[ $open->[1] ][4]" }
             if '/' . $open->[0] ne $kind;
         next unless $open->[0] eq 'TRY' && $toks->[ $open->[1] ][1] eq '__BEGIN_TRY';
-        $swallow++ if $text_ eq '__END_CATCH_NO_RETHROW';
+        if ($text_ eq '__END_CATCH_NO_RETHROW') {
+            # empty: no code token between the two macros.
+            push @pairs, { begin => $open->[1], end => $i, swallow => 1, empty => $open->[2] == @code - 2,
+                           wrapper => 0, endCode => scalar @code - 1 };
+            $swallow++;
+            next;
+        }
         next unless $text_ eq '__END_CATCH';
         # wrapper: the code token before __BEGIN_TRY is a `{` and the one
         # after __END_CATCH is a `}` (which then closes that same `{`).
@@ -282,19 +301,40 @@ sub analyse {
 }
 
 #----------------------------------------------------------------------
-# rewrite(text, macros, braceLines)
+# rewrite(text, macros, braceLines, swallowMode)
 #     -> (newText, removed, braced, skipped, refused, swallowing, pairLines)
+# In swallowMode only the swallowing pairs change: removed counts the empty
+# ones deleted, braced the ones written out as an explicit catch.
 #----------------------------------------------------------------------
 sub rewrite {
-    my ($text, $macros, $braceLines) = @_;
+    my ($text, $macros, $braceLines, $swallowMode) = @_;
     my $an = analyse($text, $macros);
     return ($text, 0, 0, [], $an->{refused}) if $an->{refused};
     my $toks = $an->{tokens};
+    my $nl = $text =~ /\r\n/ ? "\r\n" : "\n";
     my @edits;    # [start, end, replacement]
     my ($removed, $braced) = (0, 0);
     for my $p (@{ $an->{pairs} }) {
+        next unless $swallowMode ? $p->{swallow} : !$p->{swallow};
         my $line = $toks->[ $p->{begin} ][4];
-        if ($p->{wrapper} && !$braceLines->{$line}) {
+        if ($p->{swallow} && $p->{empty}) {
+            push @edits, [ @{ $toks->[ $p->{begin} ] }[2, 3], '' ], [ @{ $toks->[ $p->{end} ] }[2, 3], '' ];
+            $removed++;
+        } elsif ($p->{swallow}) {
+            my ($s, $t) = @{ $toks->[ $p->{end} ] }[2, 3];
+            my $lineStart = rindex($text, "\n", $s) + 1;
+            my ($indent) = substr($text, $lineStart) =~ /^([ \t]*)/;
+            my $at = '';
+            # A closer that opens its line takes the blank lines above it
+            # along: clang-format drops those after a `{`, not before a `}`.
+            if ($lineStart + length $indent == $s) {
+                ($s, $at) = ($lineStart, $indent);
+                $s -= length $1 while substr($text, 0, $s) =~ /\n([ \t]*\r?\n)\z/;
+            }
+            push @edits, [ @{ $toks->[ $p->{begin} ] }[2, 3], 'try {' ],
+                [ $s, $t, "$at} catch (Throwable&) {$nl$indent    $SWALLOW_COMMENT$nl$indent}" ];
+            $braced++;
+        } elsif ($p->{wrapper} && !$braceLines->{$line}) {
             push @edits, [ @{ $toks->[ $p->{begin} ] }[2, 3], '' ], [ @{ $toks->[ $p->{end} ] }[2, 3], '' ];
             $removed++;
         } else {
@@ -351,14 +391,16 @@ sub rewrite {
         }
     }
     $out = join '', map { $kill[$_] ? () : $lines[$_] } 0 .. $#lines;
-    my @pairLines = map { $toks->[ $_->{begin} ][4] } @{ $an->{pairs} };
+    my @pairLines = map { $toks->[ $_->{begin} ][4] } grep { !$_->{swallow} } @{ $an->{pairs} };
     return ($out, $removed, $braced, $an->{skipped}, undef, $an->{swallow}, \@pairLines);
 }
 
 #----------------------------------------------------------------------
 # check(oldText, newText, macros) -> undef on success, else the reason.
 # Every token must match, except that each rethrowing pair of the old text
-# may be kept, turned into `{` `}`, or (a wrapper site only) removed.
+# may be kept, turned into `{` `}`, or (a wrapper site only) removed, and
+# each swallowing pair kept, written out as `try {` ... @EXPLICIT_CATCH, or
+# (an empty one only) removed.
 #----------------------------------------------------------------------
 sub check {
     my ($oldText, $newText, $macros) = @_;
@@ -382,10 +424,16 @@ sub check {
         while ($i < @old) {
             $far = $i if $i > $far;
             if (defined(my $k = $beginOf{$i})) {
+                my $p = $an->{pairs}[$k];
                 my @options;
                 push @options, ['keep', 1] if $j < @new && $new[$j] eq '__BEGIN_TRY';
-                push @options, ['brace', 1] if $j < @new && $new[$j] eq '{';
-                push @options, ['remove', 0] if $wrapper[$k];
+                if ($p->{swallow}) {
+                    push @options, ['explicit', 2] if $j + 1 < @new && $new[$j] eq 'try' && $new[ $j + 1 ] eq '{';
+                    push @options, ['remove', 0] if $p->{empty};
+                } else {
+                    push @options, ['brace', 1] if $j < @new && $new[$j] eq '{';
+                    push @options, ['remove', 0] if $wrapper[$k];
+                }
                 return 0 unless @options;
                 if (@options == 1) {
                     $fate->{$k} = $options[0][0];
@@ -400,11 +448,12 @@ sub check {
             }
             if (defined(my $k = $endOf{$i})) {
                 my $f = $fate->{$k};
-                if ($f eq 'remove') { $i++; next; }
-                my $want = $f eq 'keep' ? '__END_CATCH' : '}';
-                return 0 unless $j < @new && $new[$j] eq $want;
+                my @want = $f eq 'remove' ? () : $f eq 'keep' ? ($old[$i]) : $f eq 'brace' ? ('}') : @EXPLICIT_CATCH;
+                for my $w (@want) {
+                    return 0 unless $j < @new && $new[$j] eq $w;
+                    $j++;
+                }
                 $i++;
-                $j++;
                 next;
             }
             return 0 unless $j < @new && $new[$j] eq $old[$i];
@@ -415,7 +464,7 @@ sub check {
     };
     return undef if $align->(0, 0, {});
     my $at = $an->{tokens}[$far] ? $an->{tokens}[$far][4] : 'end';
-    return "differs by more than rethrowing pairs (old line $at)";
+    return "differs by more than retired try pairs (old line $at)";
 }
 
 #----------------------------------------------------------------------
@@ -485,14 +534,16 @@ sub runCheck {
         return 1;
     }
     $say->("check: $files C++ file(s), $skipped other(s) skipped, "
-        . ($bad ? "$bad FAILED" : 'all only retire rethrowing pairs') . "\n");
+        . ($bad ? "$bad FAILED" : 'all only retire try pairs') . "\n");
     return $bad ? 1 : 0;
 }
 
 # Every --brace must name a rethrowing pair's __BEGIN_TRY line in one of the
 # files, or nothing is written.
 sub runRewrite {
-    my ($macros, $braces, @files) = @_;
+    my ($macros, $braces, $swallowMode, @files) = @_;
+    my ($removedWhat, $bracedWhat) = $swallowMode ? ('empty swallowing pair(s) deleted', 'made explicit catches')
+                                                  : ('wrapper site(s) removed', 'inner site(s) braced');
     my %brace;    # path => { line => 1 }
     for my $b (@$braces) {
         die "--brace wants FILE:LINE, not '$b'\n" unless $b =~ /^(.+):(\d+)$/;
@@ -503,7 +554,7 @@ sub runRewrite {
     for my $path (@files) {
         my $text = slurp($path);
         my %lines = %{ $brace{$path} || {} };
-        my ($out, $r, $b, $skips, $why, $sw, $pairLines) = rewrite($text, $macros, \%lines);
+        my ($out, $r, $b, $skips, $why, $sw, $pairLines) = rewrite($text, $macros, \%lines, $swallowMode);
         delete $brace{$path}{$_} for @{ $pairLines || [] };
         $files++;
         if ($why) {
@@ -516,8 +567,8 @@ sub runRewrite {
         $skipped += @$skips;
         $removed += $r;
         $braced += $b;
-        $swallow += $sw;
-        push @writes, [$path, $out, "$path: $r removed, $b braced\n"] if $out ne $text;
+        $swallow += $sw unless $swallowMode;
+        push @writes, [$path, $out, "$path: $r $removedWhat, $b $bracedWhat\n"] if $out ne $text;
     }
     my @unmatched = map { my $p = $_; map { "$p:$_" } sort { $a <=> $b } keys %{ $brace{$p} } } sort keys %brace;
     if (@unmatched) {
@@ -530,7 +581,7 @@ sub runRewrite {
         close $fh;
         print $w->[2];
     }
-    print "total: $files file(s), $removed wrapper site(s) removed, $braced inner site(s) braced, "
+    print "total: $files file(s), $removed $removedWhat, $braced $bracedWhat, "
         . "$swallow swallowing pair(s) left, $skipped site(s) skipped, $refused file(s) refused\n";
     return $refused || $skipped ? 1 : 0;
 }
@@ -596,9 +647,44 @@ sub selfTest {
         print "brace override: got:\n$out";
         $failed++;
     }
+    # --explicit-swallow writes a swallowing pair out as its catch where the
+    # macros stood, deletes an empty one and leaves a rethrowing pair alone;
+    # the checker accepts each result.
+    my $C = $SWALLOW_COMMENT;
+    my $swallowed = "void f() {\n    __BEGIN_TRY\n    b();\n    __END_CATCH_NO_RETHROW\n}\n";
+    my @swallowCases = (
+        [$swallowed, "void f() {\n    try {\n    b();\n    } catch (Throwable&) {\n        $C\n    }\n}\n"],
+        ["void f() {\n    __BEGIN_TRY\n\n    b();\n\n  \n    __END_CATCH_NO_RETHROW\n}\n",
+         "void f() {\n    try {\n\n    b();\n    } catch (Throwable&) {\n        $C\n    }\n}\n"],
+        ["X::~X(){__BEGIN_TRY __END_CATCH_NO_RETHROW}\n", "X::~X(){ }\n"],
+        ["X::~X()\n{\n    __BEGIN_TRY\n    // nothing\n    __END_CATCH_NO_RETHROW\n}\n", "X::~X()\n{\n    // nothing\n}\n"],
+        ["void f() {\n    __BEGIN_TRY\n    if (x) {\n        __BEGIN_TRY\n        y();\n        __END_CATCH\n    }\n    __END_CATCH_NO_RETHROW\n}\n",
+         "void f() {\n    try {\n    if (x) {\n        __BEGIN_TRY\n        y();\n        __END_CATCH\n    }\n    } catch (Throwable&) {\n        $C\n    }\n}\n"],
+        ["void f() {\r\n\t__BEGIN_TRY g(); __END_CATCH_NO_RETHROW\r\n}\r\n",
+         "void f() {\r\n\ttry { g(); } catch (Throwable&) {\r\n\t    $C\r\n\t}\r\n}\r\n"],
+    );
+    for my $n (0 .. $#swallowCases) {
+        my ($in, $want) = @{ $swallowCases[$n] };
+        my ($out, undef, undef, undef, $why) = rewrite($in, \%none, {}, 1);
+        my $c = $why ? undef : check($in, $out, \%none);
+        if ($why || $out ne $want || $c) {
+            print "swallow case $n: ", ($why ? "refused: $why\n" : $c ? "check rejected the rewrite: $c\n" : "got:\n$out---- want:\n$want");
+            $failed++;
+        }
+    }
     # The checker refuses anything else: a removed inner site, a removed
-    # swallowing pair, a moved statement, a changed comment.
+    # swallowing pair, a moved statement, a changed comment; and of an
+    # explicit catch another comment, a named exception, a statement in it,
+    # another type, one made from a rethrowing pair, one that moved.
     my @rejects = (
+        [$swallowed, "void f() {\n    try {\n    b();\n    } catch (Throwable&) {\n        // ignore\n    }\n}\n"],
+        [$swallowed, "void f() {\n    try {\n    b();\n    } catch (Throwable& t) {\n        $C\n    }\n}\n"],
+        [$swallowed, "void f() {\n    try {\n    b();\n    } catch (Throwable&) {\n        $C\n        c();\n    }\n}\n"],
+        [$swallowed, "void f() {\n    try {\n    b();\n    } catch (...) {\n        $C\n    }\n}\n"],
+        ["void f() {\n    __BEGIN_TRY\n    b();\n    __END_CATCH\n}\n",
+         "void f() {\n    try {\n    b();\n    } catch (Throwable&) {\n        $C\n    }\n}\n"],
+        ["void f() {\n    __BEGIN_TRY\n    b();\n    __END_CATCH_NO_RETHROW\n    c();\n}\n",
+         "void f() {\n    try {\n    b();\n    c();\n    } catch (Throwable&) {\n        $C\n    }\n}\n"],
         ["void f() {\n    a();\n    __BEGIN_TRY\n    b();\n    __END_CATCH\n}\n", "void f() {\n    a();\n    b();\n}\n"],
         ["void f() {\n    __BEGIN_TRY\n    b();\n    __END_CATCH_NO_RETHROW\n}\n", "void f() {\n    b();\n}\n"],
         ["void f() {\n    __BEGIN_TRY\n    b();\n    c();\n    __END_CATCH\n}\n", "void f() {\n    c();\n    b();\n}\n"],
@@ -681,7 +767,7 @@ sub selfTest {
     my $sink = '';
     open(my $quiet, '>', \$sink) or die;
     my $previous = select $quiet;
-    my $got = runRewrite(\%none, ["$file:3"], $file);
+    my $got = runRewrite(\%none, ["$file:3"], 0, $file);
     select $previous;
     if ($got != 1 || slurp($file) ne $before) {
         print "--brace on a line with no pair: exit $got, file " . (slurp($file) eq $before ? 'unchanged' : 'rewritten') . "\n";
@@ -701,10 +787,11 @@ sub selfTest {
 }
 
 #----------------------------------------------------------------------
-my (@braces, @files, $check, $selfTest);
+my (@braces, @files, $check, $selfTest, $swallowMode);
 while (@ARGV) {
     my $arg = shift @ARGV;
     if ($arg eq '--brace') { push @braces, shift(@ARGV) // die "--brace wants FILE:LINE\n"; }
+    elsif ($arg eq '--explicit-swallow') { $swallowMode = 1; }
     elsif ($arg eq '--check') { $check = shift(@ARGV) // die "--check wants a revision range\n"; }
     elsif ($arg eq '--self-test') { $selfTest = 1; }
     elsif ($arg =~ /^-/) { die "unknown option $arg\n"; }
@@ -712,6 +799,6 @@ while (@ARGV) {
 }
 exit selfTest() if $selfTest;
 exit runCheck($check, loadBraceMacros(), \&git, sub { -f $_[0] ? slurp($_[0]) : undef }, sub { print @_ }) if defined $check;
-die "usage: perl tools/r5_retire_try.pl [--brace FILE:LINE]... FILE... | --check REV[..REV] | --self-test\n"
-    unless @files;
-exit runRewrite(loadBraceMacros(), \@braces, @files);
+die "usage: perl tools/r5_retire_try.pl [--brace FILE:LINE]... FILE... | --explicit-swallow FILE... | --check REV[..REV] | --self-test\n"
+    unless @files && !(@braces && $swallowMode);
+exit runRewrite(loadBraceMacros(), \@braces, $swallowMode, @files);
