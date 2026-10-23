@@ -29,8 +29,8 @@
 # writes it out as the catch it expands to, `try {` ... `} catch
 # (Throwable&) {` with one fixed comment and `}`, in the macros' places, so
 # again no scope changes; the t.addStack() it drops only touched the
-# exception being discarded. An empty one, with no code between its
-# macros, can throw nothing and goes. __BEGIN_DEBUG / __END_DEBUG and
+# exception being discarded. An empty one, with no code and no
+# preprocessor line between its macros, can throw nothing and goes. __BEGIN_DEBUG / __END_DEBUG and
 # their _EX forms are left alone. A site written inside a #define is
 # reported and left alone. Comments, string and character literals and
 # preprocessor lines are tokens of their own, so a macro name inside one is

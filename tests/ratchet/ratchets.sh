@@ -544,12 +544,12 @@ else
 fi
 
 # --- R19: catch (Throwable&) clauses that drop the exception ---------------
-# A catch whose body is empty, comments aside, ends the Throwable there: the
-# caller never learns the block failed, and whatever the block had not done
-# yet stays undone. That is control flow nobody has judged yet -- most of
-# these were swallowing try macros, written out unchanged -- so each one that
-# goes is a decision made test first: let the exception reach a caller that
-# handles it, or handle it here, with a test that pins which.
+# A catch whose body is empty, comments and `;` aside, ends the Throwable
+# there: the caller never learns the block failed, and whatever the block
+# had not done yet stays undone. That is control flow nobody has judged yet
+# -- most of these were swallowing try macros, written out unchanged -- so
+# each one that goes is a decision made test first: let the exception reach
+# a caller that handles it, or handle it here, with a test that pins which.
 #
 # R5's scope: the gameserver's .cpp and .h files outside gm/, handler/ and
 # packetfill/. A perl match over each file's text: `Throwable&`,

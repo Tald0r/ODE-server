@@ -2183,68 +2183,66 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
     `src/domain`, `tests/tools/decore_client_diff.sh <client-root>`.
 
 - [x] **3.7 Retire the try-rethrow macros in the gameserver.** R5 counts the
-  `__BEGIN_TRY` lines of the gameserver's sources and headers outside
-  `gm/`, `handler/` and `packetfill/`. A pair closed by `__END_CATCH`
-  pushes the enclosing function onto the `Throwable`'s stack trace and
-  rethrows, and every worker loop catches `Throwable` itself, so in a
-  running server only the logged function chain depends on it. On a crash
-  path, where nothing up the stack catches the exception or a `noexcept`
-  function (a destructor) stops it, it does more: the catch made the
-  runtime unwind the stack that far before the rethrow ended in
-  `std::terminate`, and without it the runtime may terminate without
-  unwinding, so destructors that ran on that path may not. A pair
-  closed by `__END_CATCH_NO_RETHROW` swallows the exception, which is
-  control flow. Decisions: the throw site every `Throwable` records (file,
-  line and function, from a defaulted `std::source_location` in each
-  constructor of `src/Core/Exception.h`), which `toString()` prints after
-  the message, replaces the function chain in the logs; the rethrowing
-  pairs go mechanically, `tools/r5_retire_try.pl` removing both macros
-  where the pair wraps a whole block and turning them into `{` `}`
-  everywhere else, so no scope changes; each swallowing site becomes an
-  explicit `try { ... } catch (Throwable&) { }` that keeps its behaviour
-  (or, where no code sits between its macros, goes), judged in 3.8; the task ends at R5 = 0 in the gameserver, and the
-  macros stay defined for `src/Core`, the loginserver, the sharedserver
-  and `gm/`, `handler/` and `packetfill/`. Slices: (0) the throw site and
-  the tool; (1) `skill/` (1,645 lines); (2) `item/` (827); (3) `quest/`,
-  `war/`, `mission/`, `couple/`, `repository/`, `mofus/`, `ctf/` and
-  `exchange/` (682); (4) the gameserver root (1,965); (5) the 151
-  swallowing sites, with R19 counting the explicit catches they
-  become; R5 → 0. A dry run of slices 1-4 over the `.cpp` files
-  removed 4,903 wrapper sites and braced 39: skill/ 1,643 and 2, item/
-  819 and 6, slice 3 650 and 16, the root 1,791 and 15. Every production
-  target compiled without an error and the suite passed but for the
-  ratchets it moved (R5, R6b, R6g-R6j), so no merged scope clashes and no
-  site needs `--brace`.
-  > **Status:** done (this commit) — R5 is 0: no `__BEGIN_TRY` is left
-  > in the gameserver outside `gm/`, `handler/` and `packetfill/`, and a
-  > new one fails the suite. Slices 1-4 removed 4,920 rethrowing pairs and
+  `__BEGIN_TRY` lines of the gameserver's sources and headers outside `gm/`,
+  `handler/` and `packetfill/`. A pair closed by `__END_CATCH` pushes the
+  enclosing function onto the `Throwable`'s stack trace and rethrows, and
+  every worker loop catches `Throwable` itself, so in a running server only
+  the logged function chain depends on it. On a crash path, where nothing up
+  the stack catches the exception or a `noexcept` function (a destructor)
+  stops it, it does more: the catch made the runtime unwind the stack that
+  far before the rethrow ended in `std::terminate`, and without it the
+  runtime may terminate without unwinding, so destructors that ran on that
+  path may not. A pair closed by `__END_CATCH_NO_RETHROW` swallows the
+  exception, which is control flow. Decisions: the throw site every
+  `Throwable` records (file, line and function, from a defaulted
+  `std::source_location` in each constructor of `src/Core/Exception.h`),
+  which `toString()` prints after the message, replaces the function chain
+  in the logs; the rethrowing pairs go mechanically,
+  `tools/r5_retire_try.pl` removing both macros where the pair wraps a whole
+  block and turning them into `{` `}` everywhere else, so no scope changes;
+  each swallowing site becomes an explicit `try { ... } catch (Throwable&) {
+  }` that keeps its behaviour (or, where no code sits between its macros,
+  goes), judged in 3.8; the task ends at R5 = 0 in the gameserver, and the
+  macros stay defined for `src/Core`, the loginserver, the sharedserver and
+  `gm/`, `handler/` and `packetfill/`. Slices: (0) the throw site and the
+  tool; (1) `skill/` (1,645 lines); (2) `item/` (827); (3) `quest/`, `war/`,
+  `mission/`, `couple/`, `repository/`, `mofus/`, `ctf/` and `exchange/`
+  (682); (4) the gameserver root (1,965); (5) the 151 swallowing sites, with
+  R19 counting the explicit catches they become; R5 → 0. A dry run of
+  slices 1-4 over the `.cpp` files removed 4,903 wrapper sites and braced
+  39: skill/ 1,643 and 2, item/ 819 and 6, slice 3 650 and 16, the root
+  1,791 and 15. Every production target compiled without an error and the
+  suite passed but for the ratchets it moved (R5, R6b, R6g-R6j), so no
+  merged scope clashes and no site needs `--brace`.
+  > **Status:** done (this commit) — R5 is 0: no `__BEGIN_TRY` is left in
+  > the gameserver outside `gm/`, `handler/` and `packetfill/`, and a new
+  > one fails the suite. Slices 1-4 removed 4,920 rethrowing pairs and
   > braced the 39 whose block is not a whole body, and hand edits dropped
-  > the pairs the tool leaves alone: the one in the `ITEMIDREGISTRY`
-  > macro and the ones whose macro names crossed in
-  > `EffectManager::heartbeat` and `UniqueItemManager.cpp`. Slice 5 wrote the 151 swallowing pairs out
-  > with `--explicit-swallow`: 89, every one in a destructor, are explicit
-  > `try { ... } catch (Throwable&) { }` blocks carrying one fixed
-  > comment, and the 62 with no code between their macros, which could
-  > throw nothing, are gone. Each slice's rewrite commit passes
-  > `perl tools/r5_retire_try.pl --check <commit>~..<commit>`. Judging the
-  > swallowing catches is not part of this task: 3.8 does it, and R19
-  > counts what is left.
+  > the pairs the tool leaves alone: the one in the `ITEMIDREGISTRY` macro
+  > and the ones whose macro names crossed in `EffectManager::heartbeat` and
+  > `UniqueItemManager.cpp`. Slice 5 wrote the 151 swallowing pairs out with
+  > `--explicit-swallow`: 89, every one in a destructor, are explicit `try {
+  > ... } catch (Throwable&) { }` blocks carrying one fixed comment, and the
+  > 62 with no code between their macros, which could throw nothing, are
+  > gone. Each slice's rewrite commit passes `perl tools/r5_retire_try.pl
+  > --check <commit>~..<commit>`. Judging the swallowing catches is not part
+  > of this task: 3.8 does it, and R19 counts what is left.
   - Owner: R5 and R19 in `tests/ratchet/ratchets.sh`;
     `r5_retire_try_selftest` while the tool is in the tree.
 
-- [ ] **3.8 Judge the swallowing catches in the gameserver.** R19 counts
-  the `catch (Throwable&)` clauses in R5's scope whose body is empty,
-  comments aside: 107, the 89 that 3.7 wrote out from the swallowing try
+- [ ] **3.8 Judge the swallowing catches in the gameserver.** R19 counts the
+  `catch (Throwable&)` clauses in R5's scope whose body is empty, comments
+  and `;` aside: 107, the 89 that 3.7 wrote out from the swallowing try
   macros and 18 written by hand. Each drops a `Throwable` its caller never
   sees, and whatever its block had not done yet stays undone; nobody has
-  decided that this is right. Each is judged on its own, test first: a
-  test drives the block into the throw and pins what should happen, then
-  the catch either goes, so the exception reaches a caller that handles
-  it, or handles it where it is (logs, cleans up, answers). The 89 all sit
-  in destructors, which are `noexcept`, so there a removed catch turns a
+  decided that this is right. Each is judged on its own, test first: a test
+  drives the block into the throw and pins what should happen, then the
+  catch either goes, so the exception reaches a caller that handles it, or
+  handles it where it is (logs, cleans up, answers). The 89 all sit in
+  destructors, which are `noexcept`, so there a removed catch turns a
   swallowed exception into `std::terminate`: the decision is what the
   destructor does instead.
-  > **Status:** not started (R19 = 107).
+  > **Status:** not started.
   - Owner: R19 in `tests/ratchet/ratchets.sh`.
 
 **Phase exit criteria:** no hard gate — this phase *is* the ratchets trending

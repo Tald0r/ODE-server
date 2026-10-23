@@ -22,7 +22,7 @@ repository with no database, the way `decideLogin()` is tested in `login_decisio
 Exceptions are for programming and configuration errors.
 
 **A catch that drops a `Throwable` is control flow.** A `catch (Throwable&)` whose body is empty,
-comments aside, ends the exception there: the caller never learns its block failed. The
+comments and `;` aside, ends the exception there: the caller never learns its block failed. The
 gameserver's swallowing try macros became such catches unchanged and are still to be judged, each
 test first; R19 counts them in R5's scope (the gameserver outside `gm/`, `handler/` and
 `packetfill/`), so a new one fails the suite, and R5 holds the try macros there at zero.
