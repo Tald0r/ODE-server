@@ -1920,7 +1920,7 @@ TEST(StoreConstructorTest, theStoreInfoPointerStartsEmptyAndIsRefused) {
 }
 
 // An out-of-range index is refused with an InvalidProtocolException a caller
-// can catch, so no accessor reads or writes past its array.
+// can catch, so none of these four reads or writes past its array.
 TEST(ShopBoundsTest, anOutOfRangeIndexIsRefusedWithACatchableException) {
     GCShopList list;
     EXPECT_THROW(list.getShopItem((BYTE)SHOP_RACK_INDEX_MAX), InvalidProtocolException);

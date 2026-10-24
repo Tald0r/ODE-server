@@ -2185,10 +2185,11 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
 - [x] **3.7 Retire the try-rethrow macros in the gameserver.** R5 counted
   the `__BEGIN_TRY` lines of the gameserver's sources and headers outside
   `gm/`, `handler/` and `packetfill/` (3.9 took those in). A pair closed by
-  `__END_CATCH` pushes the enclosing function onto the `Throwable`'s stack trace and rethrows, and
-  every worker loop catches `Throwable` itself, so in a running server only
-  the logged function chain depends on it. On a crash path, where nothing up
-  the stack catches the exception or a `noexcept` function (a destructor)
+  `__END_CATCH` pushes the enclosing function onto the `Throwable`'s stack
+  trace and rethrows, and every worker loop catches `Throwable` itself, so
+  in a running server only the logged function chain depends on it. On a
+  crash path, where nothing up the stack catches the exception or a
+  `noexcept` function (a destructor)
   stops it, it does more: the catch made the runtime unwind the stack that
   far before the rethrow ended in `std::terminate`, and without it the
   runtime may terminate without unwinding, so destructors that ran on that

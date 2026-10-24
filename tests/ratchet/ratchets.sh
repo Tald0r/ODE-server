@@ -558,8 +558,9 @@ fi
 # (`;`). Textual, so a commented-out clause or one in a string literal
 # counts too. A body that does anything is not counted, so it cannot tell
 # handling from a swallow spelled another way (a body that only calls
-# addStack()), and it cannot see a `catch (...)`, a catch of a Throwable subclass, or the
-# __END_CATCH_NO_RETHROW macro, which R5 keeps out of the gameserver.
+# addStack()), and it cannot see a `catch (...)`, a catch of a Throwable
+# subclass, or the __END_CATCH_NO_RETHROW macro, which R5 keeps out of the
+# gameserver.
 r19_raw=$(find src/server/gameserver \( -name '*.cpp' -o -name '*.h' \) -print0 | perl -0 -ne '
     BEGIN { $files = 0; $count = 0 }
     chomp; next if m{gameserver/(?:gm|handler|packetfill)/};
