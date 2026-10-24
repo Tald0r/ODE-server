@@ -147,11 +147,11 @@ void applyAddItem(CGTradeAddItem* pPacket, Player* pPlayer, bool consultGreenGif
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGTradeAddItemHandler::execute(CGTradeAddItem* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -187,62 +187,62 @@ void CGTradeAddItemHandler::execute(CGTradeAddItem* pPacket, Player* pPlayer) {
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGTradeAddItemHandler::executeSlayer(CGTradeAddItem* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        applyAddItem(pPacket, pPlayer, true);
+    applyAddItem(pPacket, pPlayer, true);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGTradeAddItemHandler::executeVampire(CGTradeAddItem* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        applyAddItem(pPacket, pPlayer, false);
+    applyAddItem(pPacket, pPlayer, false);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGTradeAddItemHandler::executeOusters(CGTradeAddItem* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        applyAddItem(pPacket, pPlayer, false);
+    applyAddItem(pPacket, pPlayer, false);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGTradeAddItemHandler::makeGCTradeAddItemPacket(GCTradeAddItem* pPacket, ObjectID_t Sender, Item* pItem,
                                                      CoordInven_t X, CoordInven_t Y) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        // The item information the receiver is given.
-        pPacket->setTargetObjectID(Sender);
+    // The item information the receiver is given.
+    pPacket->setTargetObjectID(Sender);
     pPacket->setItemObjectID(pItem->getObjectID());
     pPacket->setX(X);
     pPacket->setY(Y);
@@ -332,22 +332,22 @@ void CGTradeAddItemHandler::makeGCTradeAddItemPacket(GCTradeAddItem* pPacket, Ob
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGTradeAddItemHandler::executeError(CGTradeAddItem* pPacket, Player* pPlayer, BYTE ErrorCode) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

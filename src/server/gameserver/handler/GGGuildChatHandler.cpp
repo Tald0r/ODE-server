@@ -54,7 +54,7 @@ static void broadcastGuild(Guild* pGuild, Packet* pPacket) {
 void GGGuildChatHandler::execute(GGGuildChat* pPacket)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX __BEGIN_DEBUG
+    __BEGIN_DEBUG_EX __BEGIN_DEBUG
 
         GuildManager& guilds = de::gameContext().guilds();
 
@@ -101,5 +101,5 @@ void GGGuildChatHandler::execute(GGGuildChat* pPacket)
 #endif
 
     __END_DEBUG
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

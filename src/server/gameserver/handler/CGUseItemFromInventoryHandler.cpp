@@ -98,11 +98,11 @@ inline bool sendCannotUse(CGUseItemFromInventory* pPacket, Player* pPlayer);
 void CGUseItemFromInventoryHandler::execute(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -267,7 +267,7 @@ void CGUseItemFromInventoryHandler::execute(CGUseItemFromInventory* pPacket, Pla
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -275,11 +275,11 @@ void CGUseItemFromInventoryHandler::execute(CGUseItemFromInventory* pPacket, Pla
 void CGUseItemFromInventoryHandler::executePotion(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -528,7 +528,7 @@ void CGUseItemFromInventoryHandler::executePotion(CGUseItemFromInventory* pPacke
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -536,11 +536,11 @@ void CGUseItemFromInventoryHandler::executePotion(CGUseItemFromInventory* pPacke
 void CGUseItemFromInventoryHandler::executeMagazine(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -598,7 +598,7 @@ void CGUseItemFromInventoryHandler::executeMagazine(CGUseItemFromInventory* pPac
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -606,11 +606,11 @@ void CGUseItemFromInventoryHandler::executeMagazine(CGUseItemFromInventory* pPac
 void CGUseItemFromInventoryHandler::executeETC(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -636,7 +636,7 @@ void CGUseItemFromInventoryHandler::executeETC(CGUseItemFromInventory* pPacket, 
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -644,12 +644,12 @@ void CGUseItemFromInventoryHandler::executeETC(CGUseItemFromInventory* pPacket, 
 void CGUseItemFromInventoryHandler::executeSerum(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -776,7 +776,7 @@ void CGUseItemFromInventoryHandler::executeSerum(CGUseItemFromInventory* pPacket
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
@@ -785,17 +785,17 @@ void CGUseItemFromInventoryHandler::executeSerum(CGUseItemFromInventory* pPacket
 void CGUseItemFromInventoryHandler::executeVampireETC(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -803,11 +803,11 @@ void CGUseItemFromInventoryHandler::executeVampireETC(CGUseItemFromInventory* pP
 void CGUseItemFromInventoryHandler::executeSlayerPortalItem(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -880,17 +880,17 @@ void CGUseItemFromInventoryHandler::executeSlayerPortalItem(CGUseItemFromInvento
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGUseItemFromInventoryHandler::executeOustersSummonItem(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_DEBUG_EX __BEGIN_TRY
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -999,19 +999,19 @@ void CGUseItemFromInventoryHandler::executeOustersSummonItem(CGUseItemFromInvent
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
 void CGUseItemFromInventoryHandler::executeKeyItem(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     ParkingCenter& parking = de::gameContext().parking();
@@ -1188,7 +1188,7 @@ void CGUseItemFromInventoryHandler::executeKeyItem(CGUseItemFromInventory* pPack
         pGamePlayer->sendPacket(&_GCCannotUse);
     }
 #endif
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 #ifdef __GAME_SERVER__
@@ -1215,12 +1215,12 @@ static const Effect::EffectClass FirecrackerEffects[] = {
 void CGUseItemFromInventoryHandler::executeFirecraker(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -1350,17 +1350,17 @@ void CGUseItemFromInventoryHandler::executeFirecraker(CGUseItemFromInventory* pP
     pGamePlayer->sendPacket(&gcUseOK);
 
 #endif
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGUseItemFromInventoryHandler::executeDyePotion(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -1563,7 +1563,7 @@ void CGUseItemFromInventoryHandler::executeDyePotion(CGUseItemFromInventory* pPa
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 #ifdef __GAME_SERVER__
@@ -1696,11 +1696,11 @@ bool sendCannotUse(CGUseItemFromInventory* pPacket, Player* pPlayer) {
 #endif
 
 void CGUseItemFromInventoryHandler::executeResurrectItem(CGUseItemFromInventory* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -1868,16 +1868,16 @@ void CGUseItemFromInventoryHandler::executeResurrectItem(CGUseItemFromInventory*
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
 void CGUseItemFromInventoryHandler::executeTranslator(CGUseItemFromInventory* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -1925,15 +1925,15 @@ void CGUseItemFromInventoryHandler::executeTranslator(CGUseItemFromInventory* pP
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGUseItemFromInventoryHandler::executeEffectItem(CGUseItemFromInventory* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -1982,14 +1982,12 @@ void CGUseItemFromInventoryHandler::executeEffectItem(CGUseItemFromInventory* pP
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGUseItemFromInventoryHandler::executePetItem(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
     Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
@@ -2054,15 +2052,11 @@ void CGUseItemFromInventoryHandler::executePetItem(CGUseItemFromInventory* pPack
         pGamePlayer->sendPacket(&gcUseOK);
     }
 #endif
-
-    __END_CATCH
 }
 
 void CGUseItemFromInventoryHandler::executePetFood(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
     Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
@@ -2114,8 +2108,6 @@ void CGUseItemFromInventoryHandler::executePetFood(CGUseItemFromInventory* pPack
         }
     }
 #endif
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2123,11 +2115,11 @@ void CGUseItemFromInventoryHandler::executePetFood(CGUseItemFromInventory* pPack
 void CGUseItemFromInventoryHandler::executeEventGiftBox(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -2356,7 +2348,7 @@ void CGUseItemFromInventoryHandler::executeEventGiftBox(CGUseItemFromInventory* 
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGUseItemFromInventoryHandler::executeTrapItem(CGUseItemFromInventory* pPacket, Player* pPlayer)

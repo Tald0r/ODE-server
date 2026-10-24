@@ -38,11 +38,11 @@
 void SGModifyGuildOKHandler::execute(SGModifyGuildOK* pPacket)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Guild* pGuild = de::gameContext().guilds().getGuild(pPacket->getGuildID());
+    Guild* pGuild = de::gameContext().guilds().getGuild(pPacket->getGuildID());
     Assert(pGuild != NULL);
 
     if (pGuild->getState() == Guild::GUILD_STATE_WAIT && pPacket->getGuildState() == Guild::GUILD_STATE_ACTIVE) {
@@ -104,5 +104,5 @@ void SGModifyGuildOKHandler::execute(SGModifyGuildOK* pPacket)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

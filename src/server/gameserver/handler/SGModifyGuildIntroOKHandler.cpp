@@ -29,12 +29,12 @@
 void SGModifyGuildIntroOKHandler::execute(SGModifyGuildIntroOK* pPacket)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
 
     // Get the guild.
     Guild* pGuild = de::gameContext().guilds().getGuild(pPacket->getGuildID());
@@ -48,5 +48,5 @@ void SGModifyGuildIntroOKHandler::execute(SGModifyGuildIntroOK* pPacket)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

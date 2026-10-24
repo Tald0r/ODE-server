@@ -71,11 +71,11 @@ bool isMounted(Creature* pCreature) {
 void CGTradePrepareHandler::execute(CGTradePrepare* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -164,7 +164,7 @@ void CGTradePrepareHandler::execute(CGTradePrepare* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -172,16 +172,16 @@ void CGTradePrepareHandler::execute(CGTradePrepare* pPacket, Player* pPlayer)
 void CGTradePrepareHandler::executeError(CGTradePrepare* pPacket, Player* pPlayer, BYTE ErrorCode)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

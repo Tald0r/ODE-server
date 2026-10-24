@@ -40,11 +40,11 @@
 // branch into the ordinary item and the motorcycle handling.
 //////////////////////////////////////////////////////////////////////////////
 void CGShopRequestSellHandler::execute(CGShopRequestSell* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     ObjectID_t ITEMOID = pPacket->getItemObjectID();
@@ -95,7 +95,7 @@ void CGShopRequestSellHandler::execute(CGShopRequestSell* pPacket, Player* pPlay
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
@@ -105,11 +105,11 @@ void CGShopRequestSellHandler::execute(CGShopRequestSell* pPacket, Player* pPlay
 //
 //////////////////////////////////////////////////////////////////////////////
 void CGShopRequestSellHandler::executeNormal(CGShopRequestSell* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        ObjectID_t NPCID = pPacket->getObjectID();
+    ObjectID_t NPCID = pPacket->getObjectID();
     ObjectID_t ITEMOID = pPacket->getItemObjectID();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pCreature = pGamePlayer->getCreature();
@@ -303,7 +303,7 @@ void CGShopRequestSellHandler::executeNormal(CGShopRequestSell* pPacket, Player*
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
@@ -313,12 +313,12 @@ void CGShopRequestSellHandler::executeNormal(CGShopRequestSell* pPacket, Player*
 //
 //////////////////////////////////////////////////////////////////////////////
 void CGShopRequestSellHandler::executeMotorcycle(CGShopRequestSell* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        // Pull the packet information out.
-        ObjectID_t NPCID = pPacket->getObjectID();
+    // Pull the packet information out.
+    ObjectID_t NPCID = pPacket->getObjectID();
     ObjectID_t ITEMOID = pPacket->getItemObjectID();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pCreature = pGamePlayer->getCreature();
@@ -417,7 +417,7 @@ void CGShopRequestSellHandler::executeMotorcycle(CGShopRequestSell* pPacket, Pla
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -426,11 +426,11 @@ void CGShopRequestSellHandler::executeMotorcycle(CGShopRequestSell* pPacket, Pla
 //
 //////////////////////////////////////////////////////////////////////////////
 void CGShopRequestSellHandler::executeOpAllSkull(CGShopRequestSell* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        ObjectID_t NPCID = pPacket->getObjectID();
+    ObjectID_t NPCID = pPacket->getObjectID();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pCreature = pGamePlayer->getCreature();
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
@@ -490,12 +490,10 @@ void CGShopRequestSellHandler::executeOpAllSkull(CGShopRequestSell* pPacket, Pla
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGShopRequestSellHandler::executeOpSwapAdvancementItem(CGShopRequestSell* pPacket, Player* pPlayer) {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     ObjectID_t NPCID = pPacket->getObjectID();
@@ -884,8 +882,6 @@ void CGShopRequestSellHandler::executeOpSwapAdvancementItem(CGShopRequestSell* p
     pGamePlayer->sendPacket(&gcCI);
 
 #endif
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -893,15 +889,15 @@ void CGShopRequestSellHandler::executeOpSwapAdvancementItem(CGShopRequestSell* p
 //
 //////////////////////////////////////////////////////////////////////////////
 void CGShopRequestSellHandler::sendFailPacket(CGShopRequestSell* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        GCShopSellFail failpkt;
+    GCShopSellFail failpkt;
     failpkt.setObjectID(pPacket->getObjectID());
     pPlayer->sendPacket(&failpkt);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

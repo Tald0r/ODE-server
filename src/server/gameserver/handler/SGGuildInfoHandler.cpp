@@ -29,9 +29,9 @@
 void SGGuildInfoHandler::execute(SGGuildInfo* pPacket)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
-        GuildManager& guilds = de::gameContext().guilds();
+    GuildManager& guilds = de::gameContext().guilds();
 
 #ifdef __GAME_SERVER__
 
@@ -83,5 +83,5 @@ void SGGuildInfoHandler::execute(SGGuildInfo* pPacket)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

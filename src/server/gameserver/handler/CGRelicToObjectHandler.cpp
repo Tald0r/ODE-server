@@ -55,12 +55,12 @@
 void CGRelicToObjectHandler::execute(CGRelicToObject* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // When a relic is put into the matching relic table..
@@ -168,14 +168,12 @@ void CGRelicToObjectHandler::execute(CGRelicToObject* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGRelicToObjectHandler::executeRelic(CGRelicToObject* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
 
 #ifdef __GAME_SERVER__
@@ -432,15 +430,11 @@ void CGRelicToObjectHandler::executeRelic(CGRelicToObject* pPacket, Player* pPla
     }
 
 #endif // __GAME_SERVER__
-
-    __END_CATCH
 }
 
 void CGRelicToObjectHandler::executeBloodBible(CGRelicToObject* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -493,15 +487,11 @@ void CGRelicToObjectHandler::executeBloodBible(CGRelicToObject* pPacket, Player*
     }
 
 #endif
-
-    __END_CATCH
 }
 
 void CGRelicToObjectHandler::executeCastleSymbol(CGRelicToObject* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -555,15 +545,11 @@ void CGRelicToObjectHandler::executeCastleSymbol(CGRelicToObject* pPacket, Playe
     return;
 
 #endif
-
-    __END_CATCH
 }
 
 void CGRelicToObjectHandler::executeFlag(CGRelicToObject* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     if (!de::gameContext().flags().hasFlagWar())
@@ -623,15 +609,11 @@ void CGRelicToObjectHandler::executeFlag(CGRelicToObject* pPacket, Player* pPlay
     }
 
 #endif
-
-    __END_CATCH
 }
 
 void CGRelicToObjectHandler::executeSweeper(CGRelicToObject* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
 
 #ifdef __GAME_SERVER__
@@ -725,6 +707,4 @@ void CGRelicToObjectHandler::executeSweeper(CGRelicToObject* pPacket, Player* pP
     }
 
 #endif
-
-    __END_CATCH
 }

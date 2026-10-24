@@ -39,11 +39,11 @@
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGUseMessageItemFromInventoryHandler::execute(CGUseMessageItemFromInventory* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -123,16 +123,16 @@ void CGUseMessageItemFromInventoryHandler::execute(CGUseMessageItemFromInventory
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
 void CGUseMessageItemFromInventoryHandler::executeEventTree(CGUseMessageItemFromInventory* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -227,16 +227,16 @@ void CGUseMessageItemFromInventoryHandler::executeEventTree(CGUseMessageItemFrom
 
 
 #endif
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGUseMessageItemFromInventoryHandler::executeEventFromMessage(CGUseMessageItemFromInventory* pPacket,
                                                                    Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
 
@@ -286,5 +286,5 @@ void CGUseMessageItemFromInventoryHandler::executeEventFromMessage(CGUseMessageI
 
 
 #endif
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

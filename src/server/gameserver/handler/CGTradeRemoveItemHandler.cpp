@@ -125,11 +125,11 @@ void applyRemoveItem(CGTradeRemoveItem* pPacket, Player* pPlayer, bool delayOK) 
 void CGTradeRemoveItemHandler::execute(CGTradeRemoveItem* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -165,7 +165,7 @@ void CGTradeRemoveItemHandler::execute(CGTradeRemoveItem* pPacket, Player* pPlay
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -173,15 +173,15 @@ void CGTradeRemoveItemHandler::execute(CGTradeRemoveItem* pPacket, Player* pPlay
 void CGTradeRemoveItemHandler::executeSlayer(CGTradeRemoveItem* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        applyRemoveItem(pPacket, pPlayer, true);
+    applyRemoveItem(pPacket, pPlayer, true);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -189,15 +189,15 @@ void CGTradeRemoveItemHandler::executeSlayer(CGTradeRemoveItem* pPacket, Player*
 void CGTradeRemoveItemHandler::executeVampire(CGTradeRemoveItem* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        applyRemoveItem(pPacket, pPlayer, false);
+    applyRemoveItem(pPacket, pPlayer, false);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
@@ -206,31 +206,31 @@ void CGTradeRemoveItemHandler::executeVampire(CGTradeRemoveItem* pPacket, Player
 void CGTradeRemoveItemHandler::executeOusters(CGTradeRemoveItem* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        applyRemoveItem(pPacket, pPlayer, false);
+    applyRemoveItem(pPacket, pPlayer, false);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGTradeRemoveItemHandler::executeError(CGTradeRemoveItem* pPacket, Player* pPlayer, BYTE ErrorCode)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

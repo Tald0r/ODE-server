@@ -41,11 +41,11 @@
 void CGShopRequestBuyHandler::execute(CGShopRequestBuy* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // Pull the packet information out.
@@ -154,7 +154,7 @@ void CGShopRequestBuyHandler::execute(CGShopRequestBuy* pPacket, Player* pPlayer
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
@@ -164,11 +164,11 @@ void CGShopRequestBuyHandler::execute(CGShopRequestBuy* pPacket, Player* pPlayer
 void CGShopRequestBuyHandler::executeNormal(CGShopRequestBuy* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        ObjectID_t NPCID = pPacket->getObjectID();
+    ObjectID_t NPCID = pPacket->getObjectID();
     ShopRackType_t shopType = pPacket->getShopType();
     BYTE shopIndex = pPacket->getShopIndex();
     ItemNum_t itemNum = pPacket->getItemNum();
@@ -401,7 +401,7 @@ void CGShopRequestBuyHandler::executeNormal(CGShopRequestBuy* pPacket, Player* p
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -410,12 +410,12 @@ void CGShopRequestBuyHandler::executeNormal(CGShopRequestBuy* pPacket, Player* p
 void CGShopRequestBuyHandler::executeMotorcycle(CGShopRequestBuy* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        // Pull the packet information out.
-        ObjectID_t NPCID = pPacket->getObjectID();
+    // Pull the packet information out.
+    ObjectID_t NPCID = pPacket->getObjectID();
     ShopRackType_t shopType = pPacket->getShopType();
     BYTE shopIndex = pPacket->getShopIndex();
     ZoneCoord_t x = pPacket->getX();
@@ -604,7 +604,7 @@ void CGShopRequestBuyHandler::executeMotorcycle(CGShopRequestBuy* pPacket, Playe
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -613,14 +613,14 @@ void CGShopRequestBuyHandler::executeMotorcycle(CGShopRequestBuy* pPacket, Playe
 void CGShopRequestBuyHandler::executeEvent(CGShopRequestBuy* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
 #ifdef __XMAS_EVENT_CODE__
 
 
-        ObjectID_t NPCID = pPacket->getObjectID();
+    ObjectID_t NPCID = pPacket->getObjectID();
     ShopRackType_t shopType = pPacket->getShopType();
     BYTE shopIndex = pPacket->getShopIndex();
     ItemNum_t itemNum = pPacket->getItemNum();
@@ -811,5 +811,5 @@ void CGShopRequestBuyHandler::executeEvent(CGShopRequestBuy* pPacket, Player* pP
 #endif
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

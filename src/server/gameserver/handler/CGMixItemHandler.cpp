@@ -29,11 +29,11 @@ void sendCannotUse(CGMixItem* pPacket, Player* pPlayer);
 void CGMixItemHandler::execute(CGMixItem* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -107,13 +107,11 @@ void CGMixItemHandler::execute(CGMixItem* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 #ifdef __GAME_SERVER__
 void CGMixItemHandler::executeMix(CGMixItem* pPacket, Player* pPlayer, Item* pItem) {
-    __BEGIN_TRY
-
     Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
@@ -316,13 +314,9 @@ void CGMixItemHandler::executeMix(CGMixItem* pPacket, Player* pPlayer, Item* pIt
 
     GCUseOK gcUseOK;
     pPlayer->sendPacket(&gcUseOK);
-
-    __END_CATCH
 }
 
 void CGMixItemHandler::executeDetach(CGMixItem* pPacket, Player* pPlayer, Item* pItem) {
-    __BEGIN_TRY
-
     Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
@@ -476,14 +470,9 @@ void CGMixItemHandler::executeDetach(CGMixItem* pPacket, Player* pPlayer, Item* 
     gcVerify.setParameter(finalOption);
 
     pPlayer->sendPacket(&gcVerify);
-
-
-    __END_CATCH
 }
 
 void CGMixItemHandler::executeClearOption(CGMixItem* pPacket, Player* pPlayer, Item* pItem) {
-    __BEGIN_TRY
-
     Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
@@ -588,8 +577,6 @@ void CGMixItemHandler::executeClearOption(CGMixItem* pPacket, Player* pPlayer, I
     gcVerify.setCode(ADD_ITEM_TO_ITEM_VERIFY_CLEAR_OPTION_OK);
 
     pPlayer->sendPacket(&gcVerify);
-
-    __END_CATCH
 }
 
 void sendCannotUse(CGMixItem* pPacket, Player* pPlayer) {

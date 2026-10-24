@@ -39,8 +39,6 @@
 void CGTameMonsterHandler::execute(CGTameMonster* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -152,6 +150,4 @@ void CGTameMonsterHandler::execute(CGTameMonster* pPacket, Player* pPlayer)
     addOlympicStat(pPC, 9);
 
 #endif
-
-    __END_CATCH
 }

@@ -42,8 +42,6 @@
 void SGDeleteGuildOKHandler::execute(SGDeleteGuildOK* pPacket)
 
 {
-    __BEGIN_TRY
-
     GuildManager& guilds = de::gameContext().guilds();
 
 #ifdef __GAME_SERVER__
@@ -190,6 +188,4 @@ void SGDeleteGuildOKHandler::execute(SGDeleteGuildOK* pPacket)
     }
 
 #endif
-
-    __END_CATCH
 }

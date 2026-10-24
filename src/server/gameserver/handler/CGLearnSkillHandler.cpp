@@ -44,11 +44,11 @@ int getSkillMapID(ElementalDomain domain);
 void CGLearnSkillHandler::execute(CGLearnSkill* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     Assert(pPacket != NULL && pPlayer != NULL);
@@ -492,7 +492,7 @@ void CGLearnSkillHandler::execute(CGLearnSkill* pPacket, Player* pPlayer)
 
 #endif // __GAME_SERVER__
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -501,12 +501,12 @@ void CGLearnSkillHandler::execute(CGLearnSkill* pPacket, Player* pPlayer)
 void CGLearnSkillHandler::executeSlayerSkill(CGLearnSkill* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        // Pull the packet information out.
-        SkillType_t targetSkillType = pPacket->getSkillType();
+    // Pull the packet information out.
+    SkillType_t targetSkillType = pPacket->getSkillType();
     SkillDomainType_t targetDomainType = pPacket->getSkillDomainType();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pPC = pGamePlayer->getCreature();
@@ -596,7 +596,7 @@ void CGLearnSkillHandler::executeSlayerSkill(CGLearnSkill* pPacket, Player* pPla
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -605,12 +605,12 @@ void CGLearnSkillHandler::executeSlayerSkill(CGLearnSkill* pPacket, Player* pPla
 void CGLearnSkillHandler::executeVampireSkill(CGLearnSkill* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        // Pull the packet information out.
-        SkillType_t targetSkillType = pPacket->getSkillType();
+    // Pull the packet information out.
+    SkillType_t targetSkillType = pPacket->getSkillType();
     SkillDomainType_t targetDomainType = pPacket->getSkillDomainType();
 
     // Work on the information pulled out of the packet
@@ -671,17 +671,17 @@ void CGLearnSkillHandler::executeVampireSkill(CGLearnSkill* pPacket, Player* pPl
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGLearnSkillHandler::executeOustersSkill(CGLearnSkill* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_DEBUG_EX __BEGIN_TRY
+    __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
-        // Pull the packet information out.
-        SkillType_t targetSkillType = pPacket->getSkillType();
+    // Pull the packet information out.
+    SkillType_t targetSkillType = pPacket->getSkillType();
     SkillDomainType_t targetDomainType = pPacket->getSkillDomainType();
 
     // Work on the information pulled out of the packet
@@ -821,7 +821,7 @@ void CGLearnSkillHandler::executeOustersSkill(CGLearnSkill* pPacket, Player* pPl
     }
 
 #endif
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 #ifdef __GAME_SERVER__

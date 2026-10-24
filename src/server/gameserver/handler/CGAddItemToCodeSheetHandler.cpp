@@ -30,11 +30,11 @@ bool isComplete(const vector<OptionType_t>& OptionType);
 void CGAddItemToCodeSheetHandler::execute(CGAddItemToCodeSheet* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -100,7 +100,7 @@ void CGAddItemToCodeSheetHandler::execute(CGAddItemToCodeSheet* pPacket, Player*
 
 #endif // __GAME_SERVER__
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 #ifdef __GAME_SERVER__

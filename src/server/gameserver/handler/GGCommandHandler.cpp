@@ -28,7 +28,7 @@
 void GGCommandHandler::execute(GGCommand* pPacket)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX __BEGIN_DEBUG
+    __BEGIN_DEBUG_EX __BEGIN_DEBUG
 
 #ifdef __GAME_SERVER__
 
@@ -46,5 +46,5 @@ void GGCommandHandler::execute(GGCommand* pPacket)
 #endif
 
     __END_DEBUG
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

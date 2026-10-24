@@ -36,9 +36,10 @@ namespace de::gm {
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opcreate(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     Creature* pCreature = pGamePlayer->getCreature();
 
@@ -245,6 +246,6 @@ void opcreate(GamePlayer* pGamePlayer, string msg, int i) {
         }
     }
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 } // namespace de::gm

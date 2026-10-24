@@ -28,11 +28,11 @@
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGAddInventoryToMouseHandler::execute(CGAddInventoryToMouse* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
+    GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Assert(pGamePlayer != NULL);
 
     Creature* pCreature = pGamePlayer->getCreature();
@@ -179,5 +179,5 @@ void CGAddInventoryToMouseHandler::execute(CGAddInventoryToMouse* pPacket, Playe
 
 #endif // __GAME_SERVER__
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

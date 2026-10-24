@@ -42,11 +42,11 @@
 void CGLogoutHandler::execute(CGLogout* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPlayer != NULL);
+    Assert(pPlayer != NULL);
 
     // Under the new login structure, a Logout has to leave into the waiting state.
     // On a Logout packet the player is sent to the IncomingPlayerManager.
@@ -164,5 +164,5 @@ void CGLogoutHandler::execute(CGLogout* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

@@ -56,11 +56,11 @@ private:
 void CGPartyInviteHandler::execute(CGPartyInvite* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     SYSTEM_ASSERT(SYSTEM_PARTY);
@@ -163,7 +163,7 @@ void CGPartyInviteHandler::execute(CGPartyInvite* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -171,16 +171,16 @@ void CGPartyInviteHandler::execute(CGPartyInvite* pPacket, Player* pPlayer)
 void CGPartyInviteHandler::executeError(CGPartyInvite* pPacket, Player* pPlayer, BYTE ErrorCode)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        GCPartyError gcPartyError;
+    GCPartyError gcPartyError;
     gcPartyError.setTargetObjectID(pPacket->getTargetObjectID());
     gcPartyError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcPartyError);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

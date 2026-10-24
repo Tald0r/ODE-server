@@ -30,11 +30,11 @@
 void CGPortCheckHandler::execute(CGPortCheck* pPacket)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        const string& host = pPacket->getHost();
+    const string& host = pPacket->getHost();
     DWORD IP = inet_addr(host.c_str());
     uint port = pPacket->getPort();
 
@@ -48,10 +48,9 @@ void CGPortCheckHandler::execute(CGPortCheck* pPacket)
         // to DBError.log; swallowed.
     }
 #else
-            cout
-        << pPacket->toString() << endl;
+    cout << pPacket->toString() << endl;
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

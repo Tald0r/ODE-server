@@ -23,10 +23,10 @@
 //
 //--------------------------------------------------------------------------------
 void LGIncomingConnectionErrorHandler::execute(LGIncomingConnectionError* pPacket) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
-        const string playerID = pPacket->getPlayerID();
+    const string playerID = pPacket->getPlayerID();
 
     // The login server refused the player's return to it, so the player is
     // cut off. It is logging out through the main thread's
@@ -64,5 +64,5 @@ void LGIncomingConnectionErrorHandler::execute(LGIncomingConnectionError* pPacke
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

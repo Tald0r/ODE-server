@@ -16,8 +16,6 @@
 #endif
 
 void CGExchangeBuyHandler::execute(CGExchangeBuy* pPacket, Player* pPlayer) {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     // Validate player
@@ -52,6 +50,4 @@ void CGExchangeBuyHandler::execute(CGExchangeBuy* pPacket, Player* pPlayer) {
     pPlayer->sendPacket(&gcPacket);
 
 #endif // __GAME_SERVER__
-
-    __END_CATCH
 }

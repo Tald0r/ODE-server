@@ -23,11 +23,11 @@
 void CGTradeFinishHandler::execute(CGTradeFinish* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     ObjectID_t TargetOID = pPacket->getTargetObjectID();
@@ -111,7 +111,7 @@ void CGTradeFinishHandler::execute(CGTradeFinish* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -119,13 +119,13 @@ void CGTradeFinishHandler::execute(CGTradeFinish* pPacket, Player* pPlayer)
 void CGTradeFinishHandler::executeSlayer(CGTradeFinish* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        // Errors were checked in the enclosing function, so
-        // whether the pointer is null is not checked here.
-        ObjectID_t TargetOID = pPacket->getTargetObjectID();
+    // Errors were checked in the enclosing function, so
+    // whether the pointer is null is not checked here.
+    ObjectID_t TargetOID = pPacket->getTargetObjectID();
     BYTE CODE = pPacket->getCode();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pPC = pGamePlayer->getCreature();
@@ -241,7 +241,7 @@ void CGTradeFinishHandler::executeSlayer(CGTradeFinish* pPacket, Player* pPlayer
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -249,13 +249,13 @@ void CGTradeFinishHandler::executeSlayer(CGTradeFinish* pPacket, Player* pPlayer
 void CGTradeFinishHandler::executeVampire(CGTradeFinish* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        // Errors were checked in the enclosing function, so
-        // whether the pointer is null is not checked here.
-        ObjectID_t TargetOID = pPacket->getTargetObjectID();
+    // Errors were checked in the enclosing function, so
+    // whether the pointer is null is not checked here.
+    ObjectID_t TargetOID = pPacket->getTargetObjectID();
     BYTE CODE = pPacket->getCode();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pPC = pGamePlayer->getCreature();
@@ -370,7 +370,7 @@ void CGTradeFinishHandler::executeVampire(CGTradeFinish* pPacket, Player* pPlaye
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -378,13 +378,13 @@ void CGTradeFinishHandler::executeVampire(CGTradeFinish* pPacket, Player* pPlaye
 void CGTradeFinishHandler::executeOusters(CGTradeFinish* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        // Errors were checked in the enclosing function, so
-        // whether the pointer is null is not checked here.
-        ObjectID_t TargetOID = pPacket->getTargetObjectID();
+    // Errors were checked in the enclosing function, so
+    // whether the pointer is null is not checked here.
+    ObjectID_t TargetOID = pPacket->getTargetObjectID();
     BYTE CODE = pPacket->getCode();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pPC = pGamePlayer->getCreature();
@@ -499,7 +499,7 @@ void CGTradeFinishHandler::executeOusters(CGTradeFinish* pPacket, Player* pPlaye
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -507,16 +507,16 @@ void CGTradeFinishHandler::executeOusters(CGTradeFinish* pPacket, Player* pPlaye
 void CGTradeFinishHandler::executeError(CGTradeFinish* pPacket, Player* pPlayer, BYTE ErrorCode)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

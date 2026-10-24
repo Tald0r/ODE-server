@@ -55,8 +55,6 @@
 
 namespace de::gm {
 void opcombat(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
     CombatInfoManager& combatInfo = de::gameContext().combatInfo();
     ZoneGroupManager& zoneGroups = de::gameContext().zoneGroups();
@@ -177,15 +175,11 @@ void opcombat(GamePlayer* pGamePlayer, string msg, int i) {
             pGamePlayer->sendPacket(&gcSystemMessage);
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opset(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
     VariableManager& variables = de::gameContext().variables();
 
@@ -732,15 +726,11 @@ void opset(GamePlayer* pGamePlayer, string msg, int i) {
     if (pGamePlayer != NULL) {
         pGamePlayer->sendPacket(&gcSystemMessage);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opview(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY
-
     if (pGamePlayer == NULL)
         return;
 
@@ -869,15 +859,11 @@ void opview(GamePlayer* pGamePlayer, string msg, int i) {
 
     // Send the system message only to oneself
     pGamePlayer->sendPacket(&gcSystemMessage);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opload(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
 
     GCSystemMessage gcSystemMessage;
@@ -1057,16 +1043,14 @@ void opload(GamePlayer* pGamePlayer, string msg, int i) {
     if (pGamePlayer != NULL) {
         pGamePlayer->sendPacket(&gcSystemMessage);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opsave(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
-        GCSystemMessage gcSystemMessage;
+    GCSystemMessage gcSystemMessage;
 
     gcSystemMessage.setMessage(de::gameContext().strings().getString(STRID_SAVE_YOUR_DATA));
 
@@ -1097,15 +1081,15 @@ void opsave(GamePlayer* pGamePlayer, string msg, int i) {
         pZonePlayerManager->save();
     }
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opwall(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
 
     GCSystemMessage gcSystemMessage;
 
@@ -1119,17 +1103,17 @@ void opwall(GamePlayer* pGamePlayer, string msg, int i) {
 
     de::gameContext().zoneGroups().broadcast(&gcSystemMessage);
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opshutdown(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
-        // Any zone would do..
-        // but it is multithreaded.. the lock has to be taken before the effect is attached.
-        size_t j = msg.find_first_of(' ', i + 1);
+    // Any zone would do..
+    // but it is multithreaded.. the lock has to be taken before the effect is attached.
+    size_t j = msg.find_first_of(' ', i + 1);
     Turn_t dTime = atoi(msg.substr(j + 1, msg.size() - j - 1).c_str());
 
     if (pGamePlayer != NULL) {
@@ -1175,13 +1159,13 @@ void opshutdown(GamePlayer* pGamePlayer, string msg, int i) {
         pZone->addEffect_LOCKING(pEffectShutDown);
     }
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void oplog(GamePlayer* pPlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
     size_t k = msg.find_first_of(' ', j + 1);
     uint sec = 0;
     string name;
@@ -1224,15 +1208,15 @@ void oplog(GamePlayer* pPlayer, string msg, int i) {
 
     __LEAVE_CRITICAL_SECTION(pcFinder)
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opworld(GamePlayer* pGamePlayer, string msg, int i, bool bSameWorldOnly) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
     string command = msg.substr(j + 1, msg.size() - j - 1).c_str();
 
     // packet
@@ -1279,7 +1263,7 @@ void opworld(GamePlayer* pGamePlayer, string msg, int i, bool bSameWorldOnly) {
         }
     }
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void opbugreport(Creature* pCreature, GamePlayer* pGamePlayer, string msg, int i) {

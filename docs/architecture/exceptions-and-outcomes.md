@@ -36,8 +36,8 @@ logs the `Throwable` to `destructorError.log` with the bounded `diagnosticFilelo
 (`Slayer`'s and `Vampire`'s saves keep their own `slayerDestructor.txt` and
 `vampireDestructor.txt`). Outside a destructor, an exception a caller handles propagates, and one no
 caller handles is logged where it is caught. R19 holds empty `catch (Throwable&)` clauses at zero in
-R5's scope (the gameserver outside `gm/`, `handler/` and `packetfill/`), so a new one fails the
-suite, and R5 holds the try macros there at zero.
+the gameserver outside `gm/`, `handler/` and `packetfill/`, so a new one fails the suite, and R5
+holds the try macros at zero in the whole gameserver.
 
 A malformed packet body is the one exception class with a contract of its own: a reader refuses it
 only with a `ProtocolException`, and the fuzz targets abort on anything else

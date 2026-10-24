@@ -125,11 +125,11 @@ void applyMoney(CGTradeMoney* pPacket, Player* pPlayer) {
 void CGTradeMoneyHandler::execute(CGTradeMoney* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -165,7 +165,7 @@ void CGTradeMoneyHandler::execute(CGTradeMoney* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -173,15 +173,15 @@ void CGTradeMoneyHandler::execute(CGTradeMoney* pPacket, Player* pPlayer)
 void CGTradeMoneyHandler::executeSlayer(CGTradeMoney* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        applyMoney(pPacket, pPlayer);
+    applyMoney(pPacket, pPlayer);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -189,15 +189,15 @@ void CGTradeMoneyHandler::executeSlayer(CGTradeMoney* pPacket, Player* pPlayer)
 void CGTradeMoneyHandler::executeVampire(CGTradeMoney* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        applyMoney(pPacket, pPlayer);
+    applyMoney(pPacket, pPlayer);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
@@ -206,15 +206,15 @@ void CGTradeMoneyHandler::executeVampire(CGTradeMoney* pPacket, Player* pPlayer)
 void CGTradeMoneyHandler::executeOusters(CGTradeMoney* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        applyMoney(pPacket, pPlayer);
+    applyMoney(pPacket, pPlayer);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -222,16 +222,16 @@ void CGTradeMoneyHandler::executeOusters(CGTradeMoney* pPacket, Player* pPlayer)
 void CGTradeMoneyHandler::executeError(CGTradeMoney* pPacket, Player* pPlayer, BYTE ErrorCode)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
