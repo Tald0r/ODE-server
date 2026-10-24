@@ -62,11 +62,7 @@ SkillPropertyManager::SkillPropertyManager()
 SkillPropertyManager::~SkillPropertyManager()
 
 {
-    try {
-        clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    clear();
 }
 
 void SkillPropertyManager::init()

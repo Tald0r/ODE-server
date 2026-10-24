@@ -38,11 +38,7 @@ ActionRegenEventShop::ActionRegenEventShop()
 ActionRegenEventShop::~ActionRegenEventShop()
 
 {
-    try {
-        clearList();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    clearList();
 }
 
 

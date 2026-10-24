@@ -13,18 +13,18 @@
 #include "Exception.h"
 #include "Types.h"
 
+namespace {
+
 //--------------------------------------------------------------------------------
 //
-// assertionFailed
-//
-// This function does not need to be wrapped with __BEGIN_TRY / __END_CATCH.
+// Appends a failed check to assertion_failed.log and returns the entry.
 //
 // The message layout is deliberately byte-identical to the pre-source_location
 // version, including the missing separator between the function name and the
 // expression text - existing logs and log readers depend on it.
 //
 //--------------------------------------------------------------------------------
-[[noreturn]] void assertionFailed(const char* expr, const std::source_location& loc) noexcept(false) {
+std::string logAssertionFailure(const char* expr, const std::source_location& loc) {
     StringStream msg;
 
     msg << "\n"
@@ -40,7 +40,24 @@
     ofile << msg.toString() << endl;
     ofile.close();
 
-    throw AssertionError(msg.toString(), loc);
+    return msg.toString();
+}
+
+} // namespace
+
+//--------------------------------------------------------------------------------
+//
+// assertionFailed
+//
+// This function does not need to be wrapped with __BEGIN_TRY / __END_CATCH.
+//
+//--------------------------------------------------------------------------------
+[[noreturn]] void assertionFailed(const char* expr, const std::source_location& loc) noexcept(false) {
+    throw AssertionError(logAssertionFailure(expr, loc), loc);
+}
+
+void assertionLogged(const char* expr, const std::source_location& loc) noexcept {
+    logAssertionFailure(expr, loc);
 }
 
 //--------------------------------------------------------------------------------

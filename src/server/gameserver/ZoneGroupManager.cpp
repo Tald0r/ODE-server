@@ -42,18 +42,14 @@ ZoneGroupManager::ZoneGroupManager()
 ZoneGroupManager::~ZoneGroupManager()
 
 {
-    try {
-        unordered_map<ZoneGroupID_t, ZoneGroup*>::iterator itr = m_ZoneGroups.begin();
-        for (; itr != m_ZoneGroups.end(); itr++) {
-            ZoneGroup* pZoneGroup = itr->second;
-            SAFE_DELETE(pZoneGroup);
-        }
-
-        // Delete every pair held in the hash map.
-        m_ZoneGroups.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    unordered_map<ZoneGroupID_t, ZoneGroup*>::iterator itr = m_ZoneGroups.begin();
+    for (; itr != m_ZoneGroups.end(); itr++) {
+        ZoneGroup* pZoneGroup = itr->second;
+        SAFE_DELETE(pZoneGroup);
     }
+
+    // Delete every pair held in the hash map.
+    m_ZoneGroups.clear();
 }
 
 

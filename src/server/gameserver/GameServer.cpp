@@ -121,8 +121,8 @@ GameServer::~GameServer()
 #endif
         SAFE_DELETE(m_pGameServerInfoManager);
         SAFE_DELETE(m_pDatabaseManager);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    } catch (Throwable& t) {
+        diagnosticFilelog("destructorError.log", "~GameServer: %s", t.toString().c_str());
     }
 }
 

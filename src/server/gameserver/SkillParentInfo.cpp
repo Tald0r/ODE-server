@@ -52,27 +52,22 @@ void SkillParentInfo::init()
 //
 //----------------------------------------------------------------------
 bool SkillParentInfo::hasParent(SkillType_t SkillType) {
-    try {
-        SkillType_t FirstType = m_Parents.front();
+    SkillType_t FirstType = m_Parents.front();
 
-        if (FirstType == 0)
-            return true;
-
-        list<SkillType_t>::iterator itr;
-        for (itr = m_Parents.begin(); itr != m_Parents.end(); itr++) {
-            if (*itr == SkillType) {
-                break;
-            }
-        }
-
-        if (itr == m_Parents.end())
-            return false;
-
+    if (FirstType == 0)
         return true;
-    } catch (Throwable& t) {
-        // cerr << t.toString() << endl;
+
+    list<SkillType_t>::iterator itr;
+    for (itr = m_Parents.begin(); itr != m_Parents.end(); itr++) {
+        if (*itr == SkillType) {
+            break;
+        }
     }
-    return false;
+
+    if (itr == m_Parents.end())
+        return false;
+
+    return true;
 }
 
 
@@ -127,13 +122,9 @@ SkillParentInfoManager::SkillParentInfoManager()
 SkillParentInfoManager::~SkillParentInfoManager()
 
 {
-    try {
-        // Not everything is freed here.
+    // Not everything is freed here.
 
-        SAFE_DELETE_ARRAY(m_SkillParentInfoList);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    SAFE_DELETE_ARRAY(m_SkillParentInfoList);
 }
 
 //--------------------------------------------------------------------

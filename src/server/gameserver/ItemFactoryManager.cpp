@@ -129,18 +129,14 @@ ItemFactoryManager::ItemFactoryManager()
 ItemFactoryManager::~ItemFactoryManager()
 
 {
-    try {
-        Assert(m_Factories != NULL);
+    Assert(m_Factories != NULL);
 
-        // Delete each of the item factories.
-        for (int i = 0; i < m_Size; i++)
-            SAFE_DELETE(m_Factories[i]);
+    // Delete each of the item factories.
+    for (int i = 0; i < m_Size; i++)
+        SAFE_DELETE(m_Factories[i]);
 
-        // Delete the item factory array.
-        SAFE_DELETE_ARRAY(m_Factories);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    // Delete the item factory array.
+    SAFE_DELETE_ARRAY(m_Factories);
 }
 
 

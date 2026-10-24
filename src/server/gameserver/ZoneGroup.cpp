@@ -62,9 +62,9 @@ ZoneGroup::~ZoneGroup()
 // racily -- and that reader is exactly the violation being detected.
 //
 // A violation ABORTS. It must not throw: AssertionError is a Throwable, and
-// the catch(Throwable&) blocks sitting on these very paths (e.g. the empty
-// one in GamePlayer::disconnect) would swallow it, converting a detected
-// cross-thread race into a silently half-applied mutation -- quieter and
+// the catch(Throwable&) blocks sitting on these very paths (e.g. the one in
+// GamePlayer::disconnect, which logs and goes on) would swallow it, converting a detected
+// cross-thread race into a half-applied mutation -- quieter and
 // more destructive than the race itself. abort() cannot be caught, leaves a
 // core, and the filelog line says which group and which threads.
 //////////////////////////////////////////////////////////////////////////////
@@ -155,20 +155,16 @@ void ZoneGroup::processPlayers()
         m_pZonePlayerManager->processCommands();
         endProfileEx("ZPM_COMMAND");
 
-    } catch (Error& er) {
-        diagnosticFilelog("errorLog.txt", "%s", er.toString().c_str());
-
-    } catch (Throwable&) {
+    } catch (Throwable& t) {
+        diagnosticFilelog("errorLog.txt", "%s", t.toString().c_str());
     }
 
     try {
         beginProfileEx("ZPM_HEARTBEAT");
         m_pZonePlayerManager->heartbeat(); // Takes the lock internally.
         endProfileEx("ZPM_HEARTBEAT");
-    } catch (Error& er) {
-        diagnosticFilelog("errorLog.txt", "%s", er.toString().c_str());
-
-    } catch (Throwable&) {
+    } catch (Throwable& t) {
+        diagnosticFilelog("errorLog.txt", "%s", t.toString().c_str());
     }
 
 

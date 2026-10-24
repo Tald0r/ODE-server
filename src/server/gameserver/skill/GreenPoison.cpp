@@ -485,6 +485,7 @@ void GreenPoison::execute(Monster* pMonster)
             }
         }
     } catch (Throwable& t) {
+        diagnosticFilelog("errorLog.txt", "GreenPoison::execute(Monster*) : %s", t.toString().c_str());
     }
 }
 

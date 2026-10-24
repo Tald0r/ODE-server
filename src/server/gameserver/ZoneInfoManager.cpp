@@ -24,17 +24,13 @@ ZoneInfoManager::ZoneInfoManager()
 ZoneInfoManager::~ZoneInfoManager()
 
 {
-    try {
-        // Teardown: free the ZoneInfo objects through the published tables; the
-        // Snapshot member releases the tables themselves with this object.
-        const std::shared_ptr<const Tables> tables = m_Tables.load();
-        for (unordered_map<ZoneID_t, ZoneInfo*>::const_iterator itr = tables->byID.begin(); itr != tables->byID.end();
-             itr++) {
-            ZoneInfo* pInfo = itr->second;
-            SAFE_DELETE(pInfo);
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    // Teardown: free the ZoneInfo objects through the published tables; the
+    // Snapshot member releases the tables themselves with this object.
+    const std::shared_ptr<const Tables> tables = m_Tables.load();
+    for (unordered_map<ZoneID_t, ZoneInfo*>::const_iterator itr = tables->byID.begin(); itr != tables->byID.end();
+         itr++) {
+        ZoneInfo* pInfo = itr->second;
+        SAFE_DELETE(pInfo);
     }
 }
 

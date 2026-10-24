@@ -35,11 +35,7 @@ Directive::Directive()
 Directive::~Directive()
 
 {
-    try {
-        m_Conditions.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    m_Conditions.clear();
 }
 
 void Directive::addCondition(int condition)
@@ -98,18 +94,14 @@ DirectiveSet::DirectiveSet()
 DirectiveSet::~DirectiveSet()
 
 {
-    try {
-        // Walk the list and delete the Directive objects.
-        list<Directive*>::iterator itr = m_Directives.begin();
-        for (; itr != m_Directives.end(); itr++) {
-            Directive* pDirective = *itr;
-            SAFE_DELETE(pDirective);
-        }
-
-        m_Directives.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    // Walk the list and delete the Directive objects.
+    list<Directive*>::iterator itr = m_Directives.begin();
+    for (; itr != m_Directives.end(); itr++) {
+        Directive* pDirective = *itr;
+        SAFE_DELETE(pDirective);
     }
+
+    m_Directives.clear();
 }
 
 void DirectiveSet::clear()
@@ -166,16 +158,12 @@ DirectiveSetManager::DirectiveSetManager()
 DirectiveSetManager::~DirectiveSetManager()
 
 {
-    try {
-        if (m_ppSet) {
-            for (uint i = 0; i < m_nSetCount; i++) {
-                SAFE_DELETE(m_ppSet[i]);
-            }
-
-            SAFE_DELETE_ARRAY(m_ppSet); // This is unlikely ever to be reached.
+    if (m_ppSet) {
+        for (uint i = 0; i < m_nSetCount; i++) {
+            SAFE_DELETE(m_ppSet[i]);
         }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+
+        SAFE_DELETE_ARRAY(m_ppSet); // This is unlikely ever to be reached.
     }
 }
 

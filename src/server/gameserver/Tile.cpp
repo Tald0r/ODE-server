@@ -38,15 +38,11 @@ Tile::Tile(WORD wFlags, WORD wOption)
 Tile::~Tile()
 
 {
-    try {
-        // Delete every object belonging to the tile.
-        while (!m_Objects.empty()) {
-            Object* pObj = m_Objects.front();
-            SAFE_DELETE(pObj);
-            m_Objects.pop_front();
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    // Delete every object belonging to the tile.
+    while (!m_Objects.empty()) {
+        Object* pObj = m_Objects.front();
+        SAFE_DELETE(pObj);
+        m_Objects.pop_front();
     }
 }
 

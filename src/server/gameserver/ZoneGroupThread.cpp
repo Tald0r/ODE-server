@@ -38,12 +38,8 @@ ZoneGroupThread::ZoneGroupThread(ZoneGroup* pZoneGroup)
 ZoneGroupThread::~ZoneGroupThread() noexcept
 
 {
-    try {
-        stop();
-        join();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    stop();
+    join();
 }
 
 //////////////////////////////////////////////////////////////////////////////

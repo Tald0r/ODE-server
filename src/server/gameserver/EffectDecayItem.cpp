@@ -49,8 +49,8 @@ EffectDecayItem::~EffectDecayItem()
 {
     try {
         unaffect(m_pZone, m_X, m_Y, m_pTarget);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    } catch (Throwable& t) {
+        diagnosticFilelog("destructorError.log", "~EffectDecayItem: %s", t.toString().c_str());
     }
 }
 

@@ -62,12 +62,8 @@ DarkLightInfoManager::DarkLightInfoManager()
 DarkLightInfoManager::~DarkLightInfoManager()
 
 {
-    try {
-        for (uint i = 0; i < nDarkLightInfos; i++)
-            SAFE_DELETE(m_DarkLightInfos[i]);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    for (uint i = 0; i < nDarkLightInfos; i++)
+        SAFE_DELETE(m_DarkLightInfos[i]);
 }
 
 void DarkLightInfoManager::init()

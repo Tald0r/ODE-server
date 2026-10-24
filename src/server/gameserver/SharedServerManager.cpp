@@ -44,11 +44,7 @@ SharedServerManager::~SharedServerManager() noexcept
 {
     stop();
     join();
-    try {
-        SAFE_DELETE(m_pSharedServerClient);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    SAFE_DELETE(m_pSharedServerClient);
 }
 
 //////////////////////////////////////////////////////////////////////

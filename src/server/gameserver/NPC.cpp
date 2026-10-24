@@ -98,18 +98,14 @@ NPC::NPC(const string& name)
 NPC::~NPC()
 
 {
-    try {
-        SAFE_DELETE(m_pCoupleUnregisterManager);
-        SAFE_DELETE(m_pCoupleRegisterManager);
+    SAFE_DELETE(m_pCoupleUnregisterManager);
+    SAFE_DELETE(m_pCoupleRegisterManager);
 
-        SAFE_DELETE(m_pQuestInfoManager);
-        SAFE_DELETE(m_pRewardClassInfoManager);
+    SAFE_DELETE(m_pQuestInfoManager);
+    SAFE_DELETE(m_pRewardClassInfoManager);
 
-        SAFE_DELETE(m_pInventory);
-        SAFE_DELETE_ARRAY(m_pRack);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    SAFE_DELETE(m_pInventory);
+    SAFE_DELETE_ARRAY(m_pRack);
 }
 
 // registerObject()

@@ -36,11 +36,7 @@ CastleSkillInfoManager::CastleSkillInfoManager()
 CastleSkillInfoManager::~CastleSkillInfoManager()
 
 {
-    try {
-        clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    clear();
 }
 
 void CastleSkillInfoManager::clear()

@@ -119,18 +119,14 @@ CastleInfoManager::CastleInfoManager() {}
 // destructor
 //////////////////////////////////////////////////////////////////////////////
 CastleInfoManager::~CastleInfoManager() {
-    try {
-        unordered_map<ZoneID_t, CastleInfo*>::iterator itr = m_CastleInfos.begin();
-        for (; itr != m_CastleInfos.end(); itr++) {
-            CastleInfo* pInfo = itr->second;
-            SAFE_DELETE(pInfo);
-        }
-
-        // Remove all pairs from the hashmap.
-        m_CastleInfos.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    unordered_map<ZoneID_t, CastleInfo*>::iterator itr = m_CastleInfos.begin();
+    for (; itr != m_CastleInfos.end(); itr++) {
+        CastleInfo* pInfo = itr->second;
+        SAFE_DELETE(pInfo);
     }
+
+    // Remove all pairs from the hashmap.
+    m_CastleInfos.clear();
 }
 
 

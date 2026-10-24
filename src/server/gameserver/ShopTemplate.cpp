@@ -50,17 +50,13 @@ ShopTemplateManager::ShopTemplateManager()
 ShopTemplateManager::~ShopTemplateManager()
 
 {
-    try {
-        unordered_map<ShopTemplateID_t, ShopTemplate*>::iterator itr = m_Entries.begin();
-        for (; itr != m_Entries.end(); itr++) {
-            ShopTemplate* pTemplate = itr->second;
-            SAFE_DELETE(pTemplate);
-        }
-
-        m_Entries.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    unordered_map<ShopTemplateID_t, ShopTemplate*>::iterator itr = m_Entries.begin();
+    for (; itr != m_Entries.end(); itr++) {
+        ShopTemplate* pTemplate = itr->second;
+        SAFE_DELETE(pTemplate);
     }
+
+    m_Entries.clear();
 }
 
 void ShopTemplateManager::init()

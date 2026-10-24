@@ -720,16 +720,11 @@ bool Zone::addRelicItem(int relicIndex)
 
 
         // Create the MonsterCorpse (the relic table).
-        MonsterCorpse* pMonsterCorpse = NULL;
-        try {
-            pMonsterCorpse = new MonsterCorpse(pMonster);
-            pMonsterCorpse->setDir(2);
-            pMonsterCorpse->setZone(this);
-            pMonsterCorpse->setX(cx);
-            pMonsterCorpse->setY(cy);
-            Assert(pMonsterCorpse != NULL);
-        } catch (Throwable& t) {
-        }
+        MonsterCorpse* pMonsterCorpse = new MonsterCorpse(pMonster);
+        pMonsterCorpse->setDir(2);
+        pMonsterCorpse->setZone(this);
+        pMonsterCorpse->setX(cx);
+        pMonsterCorpse->setY(cy);
 
 
         if (pRelicInfo->relicType == RELIC_TYPE_SLAYER) {

@@ -548,42 +548,38 @@ Zone::Zone(ZoneID_t zoneID, ZoneCoord_t width, ZoneCoord_t height)
 Zone::~Zone()
 
 {
-    try {
-        if (m_pTiles != NULL) {
-            for (uint i = 0; i < m_Width; i++)
-                SAFE_DELETE_ARRAY(m_pTiles[i]);
-            SAFE_DELETE_ARRAY(m_pTiles);
-        }
-
-        if (m_ppLevel != NULL) {
-            for (uint i = 0; i < m_Width; i++)
-                SAFE_DELETE_ARRAY(m_ppLevel[i]);
-            SAFE_DELETE_ARRAY(m_ppLevel);
-        }
-
-        if (m_pSectors != NULL) {
-            for (int i = 0; i < m_SectorWidth; i++)
-                SAFE_DELETE_ARRAY(m_pSectors[i]);
-            SAFE_DELETE_ARRAY(m_pSectors);
-        }
-
-        SAFE_DELETE(m_pPCManager);
-        SAFE_DELETE(m_pNPCManager);
-        SAFE_DELETE(m_pMonsterManager);
-        SAFE_DELETE(m_pMasterLairManager);
-        SAFE_DELETE(m_pWarScheduler);
-
-
-        SAFE_DELETE(m_pWeatherManager);
-        SAFE_DELETE(m_pEffectManager);
-        SAFE_DELETE(m_pLockedEffectManager);
-        SAFE_DELETE(m_pVampirePortalManager);
-        SAFE_DELETE(m_pEffectScheduleManager);
-        SAFE_DELETE(m_pLocalPartyManager);
-        SAFE_DELETE(m_pPartyInviteInfoManager);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    if (m_pTiles != NULL) {
+        for (uint i = 0; i < m_Width; i++)
+            SAFE_DELETE_ARRAY(m_pTiles[i]);
+        SAFE_DELETE_ARRAY(m_pTiles);
     }
+
+    if (m_ppLevel != NULL) {
+        for (uint i = 0; i < m_Width; i++)
+            SAFE_DELETE_ARRAY(m_ppLevel[i]);
+        SAFE_DELETE_ARRAY(m_ppLevel);
+    }
+
+    if (m_pSectors != NULL) {
+        for (int i = 0; i < m_SectorWidth; i++)
+            SAFE_DELETE_ARRAY(m_pSectors[i]);
+        SAFE_DELETE_ARRAY(m_pSectors);
+    }
+
+    SAFE_DELETE(m_pPCManager);
+    SAFE_DELETE(m_pNPCManager);
+    SAFE_DELETE(m_pMonsterManager);
+    SAFE_DELETE(m_pMasterLairManager);
+    SAFE_DELETE(m_pWarScheduler);
+
+
+    SAFE_DELETE(m_pWeatherManager);
+    SAFE_DELETE(m_pEffectManager);
+    SAFE_DELETE(m_pLockedEffectManager);
+    SAFE_DELETE(m_pVampirePortalManager);
+    SAFE_DELETE(m_pEffectScheduleManager);
+    SAFE_DELETE(m_pLocalPartyManager);
+    SAFE_DELETE(m_pPartyInviteInfoManager);
 }
 
 //////////////////////////////////////////////////////////////////////////////

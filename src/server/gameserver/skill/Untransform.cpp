@@ -47,7 +47,8 @@ void Untransform::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CE
             pSlayer->getPlayer()->sendPacket(&gcFail);
         }
     } catch (Throwable& t) {
-        //		The client asks not to be sent this.
+        // No GCSkillFailed1 here: the client asks not to be sent one.
+        diagnosticFilelog("errorLog.txt", "Untransform::execute(Slayer*) : %s", t.toString().c_str());
     }
 }
 
@@ -101,7 +102,8 @@ void Untransform::execute(Ousters* pOusters)
             pOusters->getPlayer()->sendPacket(&gcFail);
         }
     } catch (Throwable& t) {
-        //		The client asks not to be sent this.
+        // No GCSkillFailed1 here: the client asks not to be sent one.
+        diagnosticFilelog("errorLog.txt", "Untransform::execute(Ousters*) : %s", t.toString().c_str());
     }
 }
 
@@ -117,6 +119,7 @@ void Untransform::execute(Monster* pMonster)
         Assert(pZone != NULL);
         addUntransformCreature(pZone, pMonster, true);
     } catch (Throwable& t) {
+        diagnosticFilelog("errorLog.txt", "Untransform::execute(Monster*) : %s", t.toString().c_str());
     }
 }
 

@@ -22,13 +22,9 @@ EventManager::EventManager()
 EventManager::~EventManager()
 
 {
-    try {
-        while (!m_Events.empty()) {
-            SAFE_DELETE(m_Events.front());
-            m_Events.pop_front();
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    while (!m_Events.empty()) {
+        SAFE_DELETE(m_Events.front());
+        m_Events.pop_front();
     }
 }
 

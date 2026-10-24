@@ -40,11 +40,7 @@ RankBonusInfoManager::RankBonusInfoManager()
 RankBonusInfoManager::~RankBonusInfoManager()
 
 {
-    try {
-        SAFE_DELETE_ARRAY(m_RankBonusInfoList);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    SAFE_DELETE_ARRAY(m_RankBonusInfoList);
 }
 
 void RankBonusInfoManager::init()

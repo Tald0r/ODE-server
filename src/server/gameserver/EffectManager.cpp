@@ -53,17 +53,13 @@ EffectManager::EffectManager()
 EffectManager::~EffectManager()
 
 {
-    try {
-        // If deleteEffects() was not called properly,
-        // there is no need to call unaffect() on each effect.
-        // Deleting the objects is enough.
-        while (!m_Effects.empty()) {
-            // Delete the effect object.
-            SAFE_DELETE(m_Effects.front());
-            m_Effects.pop_front();
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    // If deleteEffects() was not called properly,
+    // there is no need to call unaffect() on each effect.
+    // Deleting the objects is enough.
+    while (!m_Effects.empty()) {
+        // Delete the effect object.
+        SAFE_DELETE(m_Effects.front());
+        m_Effects.pop_front();
     }
 }
 

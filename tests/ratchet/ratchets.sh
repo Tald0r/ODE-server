@@ -128,7 +128,7 @@ check_ratchet R6f "ConsoleCommands.cpp lines" 1574 "$R6f"
 # What is left is the zone's own state: tiles, effects, creature lookup, the
 # NPC registry and the heartbeat. Under the 2,000-line phase exit criterion.
 R6g=$(wc -l < src/server/gameserver/Zone.cpp 2>/dev/null || echo missing)
-check_ratchet R6g "Zone.cpp lines" 1176 "$R6g"
+check_ratchet R6g "Zone.cpp lines" 1172 "$R6g"
 
 # R6h-j: the three race classes. Persistence, gold, item-shape, inventory,
 # free-play, skill-slot-table, exps, initial-rank, silver-damage and
@@ -143,9 +143,9 @@ check_ratchet R6g "Zone.cpp lines" 1176 "$R6g"
 # bodies in SlayerShape.cpp, which puts Slayer.cpp under the 2,000-line phase
 # exit criterion with the other two.
 R6h=$(wc -l < src/server/gameserver/Slayer.cpp 2>/dev/null || echo missing)
-check_ratchet R6h "Slayer.cpp lines" 1743 "$R6h"
+check_ratchet R6h "Slayer.cpp lines" 1737 "$R6h"
 R6i=$(wc -l < src/server/gameserver/Vampire.cpp 2>/dev/null || echo missing)
-check_ratchet R6i "Vampire.cpp lines" 1835 "$R6i"
+check_ratchet R6i "Vampire.cpp lines" 1831 "$R6i"
 R6j=$(wc -l < src/server/gameserver/Ousters.cpp 2>/dev/null || echo missing)
 check_ratchet R6j "Ousters.cpp lines" 1752 "$R6j"
 
@@ -546,19 +546,22 @@ fi
 # --- R19: catch (Throwable&) clauses that drop the exception ---------------
 # A catch whose body is empty, comments and `;` aside, ends the Throwable
 # there: the caller never learns the block failed, and whatever the block
-# had not done yet stays undone. That is control flow nobody has judged yet
-# -- most of these were swallowing try macros, written out unchanged -- so
-# each one that goes is a decision made test first: let the exception reach
-# a caller that handles it, or handle it here, with a test that pins which.
+# had not done yet stays undone. That is control flow, so the count holds
+# at zero: a new empty catch (Throwable&) in this scope fails the suite.
+# Write instead what should happen, with a test that pins it: let the
+# exception reach a caller that handles it, or handle it here (log, clean
+# up, answer). A catch whose block cannot throw a Throwable is dead: leave
+# it out.
 #
 # R5's scope: the gameserver's .cpp and .h files outside gm/, handler/ and
 # packetfill/. A perl match over each file's text: `Throwable&`,
 # `Throwable &`, `const Throwable&` and a named variable all count, and the
 # body may hold only blanks, comments and empty statements (`;`). Textual,
-# so a commented-out clause or one in a string literal counts too. It cannot
-# see a swallow spelled another way: a body that only
-# logs or calls addStack(), a `catch (...)`, a catch of a Throwable subclass,
-# or the __END_CATCH_NO_RETHROW macro, which R5 keeps out of this scope.
+# so a commented-out clause or one in a string literal counts too. A body
+# that does anything is not counted, so it cannot tell handling from a
+# swallow spelled another way (a body that only calls addStack()), and it
+# cannot see a `catch (...)`, a catch of a Throwable subclass, or the
+# __END_CATCH_NO_RETHROW macro, which R5 keeps out of this scope.
 r19_raw=$(find src/server/gameserver \( -name '*.cpp' -o -name '*.h' \) -print0 | perl -0 -ne '
     BEGIN { $files = 0; $count = 0 }
     chomp; next if m{gameserver/(?:gm|handler|packetfill)/};
@@ -575,7 +578,7 @@ if ! [[ "$r19_files" =~ ^[0-9]+$ ]] || [ "$r19_files" -lt 2000 ]; then
     echo "[FAIL] R19 swallowing catches: only '$r19_files' files scanned (find or perl broken?)"
     fail=1
 else
-    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 107 "$R19"
+    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 0 "$R19"
 fi
 
 # --- Removed dead services must not return --------------------------------

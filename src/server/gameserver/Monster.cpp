@@ -376,11 +376,7 @@ Monster::Monster(MonsterType_t monsterType) : m_MonsterType(monsterType) {
 Monster::~Monster()
 
 {
-    try {
-        SAFE_DELETE(m_pBrain);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    SAFE_DELETE(m_pBrain);
 }
 
 SpriteType_t Monster::getSpriteType() const
@@ -1000,7 +996,7 @@ void Monster::addEnemy(Creature* pCreature)
             // throw Error("illegal attack order");
         }
     } catch (Throwable& t) {
-        // cerr << t.toString() << endl;
+        filelog("monsterAIBug.txt", "Monster::addEnemy : %s", t.toString().c_str());
     }
 
     __END_DEBUG

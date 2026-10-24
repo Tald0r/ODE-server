@@ -118,7 +118,7 @@ GamePlayer::~GamePlayer() noexcept {
 
         // Whatever deletes a player object, its status has to be logged out.
         // So ending a player session means putting it in the logged-out state.
-        Assert(m_PlayerStatus == GPS_END_SESSION);
+        AssertNoThrow(m_PlayerStatus == GPS_END_SESSION);
 
         try {
             // Delete creature
@@ -246,8 +246,8 @@ GamePlayer::~GamePlayer() noexcept {
         SAFE_DELETE(m_pReconnectPacket);
 
         //__LEAVE_CRITICAL_SECTION(m_Mutex)
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    } catch (Throwable& t) {
+        diagnosticFilelog("destructorError.log", "~GamePlayer: %s", t.toString().c_str());
     }
 }
 //////////////////////////////////////////////////////////////////////
@@ -538,6 +538,8 @@ void GamePlayer::disconnect(bool bDisconnected) {
                 m_pCreature->save();
             }
         } catch (Throwable& t) {
+            filelog("GamePlayer.txt", "disconnect could not take %s out of its zone and save it: %s",
+                    CreatureName.c_str(), t.toString().c_str());
         }
     }
 
@@ -565,7 +567,7 @@ void GamePlayer::disconnect(bool bDisconnected) {
             // Send whatever is left in the output buffer.
             m_pOutputStream->flush();
         } catch (Throwable& t) {
-            // Ignore
+            filelog("GamePlayer.txt", "disconnect could not send the reconnect packet: %s", t.toString().c_str());
         }
 
         SAFE_DELETE(m_pReconnectPacket);
@@ -583,8 +585,7 @@ void GamePlayer::disconnect(bool bDisconnected) {
             // Send whatever is left in the output buffer.
             m_pOutputStream->flush();
         } catch (Throwable& t) {
-            // cerr << "GamePlayer::disconnect() : GamePlayer::disconnect Exception Check!!" << endl;
-            // cerr << t.toString() << endl;
+            filelog("GamePlayer.txt", "disconnect could not flush the output: %s", t.toString().c_str());
         }
     }
 

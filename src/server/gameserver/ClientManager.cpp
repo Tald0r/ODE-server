@@ -60,8 +60,8 @@ ClientManager::~ClientManager()
     try {
         // Delete incoming player manager
         SAFE_DELETE(m_pIncomingPlayerManager);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    } catch (Throwable& t) {
+        diagnosticFilelog("destructorError.log", "~ClientManager: %s", t.toString().c_str());
     }
 }
 
