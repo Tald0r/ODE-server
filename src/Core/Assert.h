@@ -35,6 +35,14 @@
 
 //--------------------------------------------------------------------------------
 //
+// AssertNoThrow is Assert for a destructor, which must not throw: a failing
+// check appends the same entry to assertion_failed.log and returns.
+//
+//--------------------------------------------------------------------------------
+void assertionLogged(const char* expr, const std::source_location& loc = std::source_location::current()) noexcept;
+
+//--------------------------------------------------------------------------------
+//
 // ProtocolAssert lets the server react when a hacked or broken client sends
 // invalid data: it appends to protocol_assertion_failed.log and throws
 // InvalidProtocolException, which the packet layer turns into a disconnect.
@@ -63,5 +71,6 @@ protocolAssertionFailed(const char* expr,
 // referenced a Windows/MFC port that no longer exists.
 #define Assert(expr) ((void)((expr) ? 0 : (assertionFailed(#expr), 0)))
 #define ProtocolAssert(expr) ((void)((expr) ? 0 : (protocolAssertionFailed(#expr), 0)))
+#define AssertNoThrow(expr) ((void)((expr) ? 0 : (assertionLogged(#expr), 0)))
 
 #endif

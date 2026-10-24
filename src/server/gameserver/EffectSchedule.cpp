@@ -30,19 +30,15 @@ EffectScheduleWork::EffectScheduleWork()
 EffectScheduleWork::~EffectScheduleWork()
 
 {
-    try {
-        // SAFE_DELETE(m_pData);
+    // SAFE_DELETE(m_pData);
 
-        // Depending on the code, void* m_pData must be cast
-        // and deleted appropriately.
-        if (m_Code == WORKCODE_ADD_VAMPIRE_PORTAL) {
-            Assert(m_pData == NULL);
-        } else if (m_Code == WORKCODE_DELETE) {
-            Assert(m_pData == NULL);
-        } else {
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    // Depending on the code, void* m_pData must be cast
+    // and deleted appropriately.
+    if (m_Code == WORKCODE_ADD_VAMPIRE_PORTAL) {
+        AssertNoThrow(m_pData == NULL);
+    } else if (m_Code == WORKCODE_DELETE) {
+        AssertNoThrow(m_pData == NULL);
+    } else {
     }
 }
 

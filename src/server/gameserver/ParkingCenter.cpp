@@ -51,22 +51,15 @@ ParkingCenter::ParkingCenter()
 ParkingCenter::~ParkingCenter()
 
 {
-    try {
-        __ENTER_CRITICAL_SECTION(m_Mutex)
+    // No lock: nothing else may use the parking center while it is destroyed.
+    unordered_map<ItemID_t, MotorcycleBox*>::iterator itr = m_Motorcycles.begin();
 
-        unordered_map<ItemID_t, MotorcycleBox*>::iterator itr = m_Motorcycles.begin();
-
-        for (; itr != m_Motorcycles.end(); itr++) {
-            MotorcycleBox* pBox = itr->second;
-            SAFE_DELETE(pBox);
-        }
-
-        m_Motorcycles.clear();
-
-        __LEAVE_CRITICAL_SECTION(m_Mutex)
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    for (; itr != m_Motorcycles.end(); itr++) {
+        MotorcycleBox* pBox = itr->second;
+        SAFE_DELETE(pBox);
     }
+
+    m_Motorcycles.clear();
 }
 
 void ParkingCenter::addMotorcycleBox(MotorcycleBox* pMotorcycleBox)

@@ -284,15 +284,8 @@ Party::Party(Creature::CreatureClass CClass)
 Party::~Party()
 
 {
-    try {
-        __ENTER_CRITICAL_SECTION(m_Mutex)
-
-        m_MemberMap.clear();
-
-        __LEAVE_CRITICAL_SECTION(m_Mutex)
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    // No lock: nothing else may use a party while it is destroyed.
+    m_MemberMap.clear();
 }
 
 // Find a party member by name and return it.

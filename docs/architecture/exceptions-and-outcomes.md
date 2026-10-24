@@ -26,9 +26,12 @@ comments and `;` aside, ends the exception there: the caller never learns its bl
 gameserver's swallowing try macros became such catches unchanged and are still to be judged, each
 test first; a catch whose block cannot throw a `Throwable` (it only clears standard containers,
 deletes objects whose destructors are `noexcept` and calls code that throws no `Throwable`) is dead
-and goes without a test, since nothing can drive it. R19 counts what is left in R5's scope (the
-gameserver outside `gm/`, `handler/` and `packetfill/`), so a new one fails the suite, and R5 holds
-the try macros there at zero.
+and goes without a test, since nothing can drive it. A destructor cannot let the exception out, so
+there the decision is what it does instead: it takes no lock of its own object ([critical
+sections](../threading/critical-sections.md)), and it checks an invariant with `AssertNoThrow`
+(`src/Core/Assert.h`), which appends the entry a failed `Assert` writes to `assertion_failed.log`
+and returns. R19 counts what is left in R5's scope (the gameserver outside `gm/`, `handler/` and
+`packetfill/`), so a new one fails the suite, and R5 holds the try macros there at zero.
 
 A malformed packet body is the one exception class with a contract of its own: a reader refuses it
 only with a `ProtocolException`, and the fuzz targets abort on anything else
