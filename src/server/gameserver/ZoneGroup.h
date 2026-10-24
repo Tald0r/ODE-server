@@ -158,9 +158,9 @@ public:
     // lock()/unlock() record the holding thread and assertOwned() ABORTS
     // on a violation. abort(), not a throw: an AssertionError is a
     // Throwable, and the legacy catch(Throwable&) blocks on exactly these
-    // paths would swallow it -- turning a detected race into a silently
-    // half-applied mutation (e.g. GamePlayer::disconnect's empty catch
-    // would skip the character save). The check is armed by the
+    // paths would swallow it -- turning a detected race into a
+    // half-applied mutation (e.g. GamePlayer::disconnect's catch, which
+    // logs and goes on, would skip the character save). The check is armed by the
     // ZoneGroupThread when it starts; before that, single-threaded
     // startup/loading passes vacuously.
     //

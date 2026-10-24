@@ -546,22 +546,22 @@ fi
 # --- R19: catch (Throwable&) clauses that drop the exception ---------------
 # A catch whose body is empty, comments and `;` aside, ends the Throwable
 # there: the caller never learns the block failed, and whatever the block
-# had not done yet stays undone. That is control flow nobody has judged yet
-# -- most of these were swallowing try macros, written out unchanged -- so
-# each one that goes is a decision made test first: let the exception reach
-# a caller that handles it, or handle it here, with a test that pins which.
-# A catch whose block cannot throw a Throwable is dead and goes without a
-# test, since nothing can drive it. The count holds at zero: a new empty
-# catch (Throwable&) in this scope fails the suite.
+# had not done yet stays undone. That is control flow, so the count holds
+# at zero: a new empty catch (Throwable&) in this scope fails the suite.
+# Write instead what should happen, with a test that pins it: let the
+# exception reach a caller that handles it, or handle it here (log, clean
+# up, answer). A catch whose block cannot throw a Throwable is dead: leave
+# it out.
 #
 # R5's scope: the gameserver's .cpp and .h files outside gm/, handler/ and
 # packetfill/. A perl match over each file's text: `Throwable&`,
 # `Throwable &`, `const Throwable&` and a named variable all count, and the
 # body may hold only blanks, comments and empty statements (`;`). Textual,
-# so a commented-out clause or one in a string literal counts too. It cannot
-# see a swallow spelled another way: a body that only
-# logs or calls addStack(), a `catch (...)`, a catch of a Throwable subclass,
-# or the __END_CATCH_NO_RETHROW macro, which R5 keeps out of this scope.
+# so a commented-out clause or one in a string literal counts too. A body
+# that does anything is not counted, so it cannot tell handling from a
+# swallow spelled another way (a body that only calls addStack()), and it
+# cannot see a `catch (...)`, a catch of a Throwable subclass, or the
+# __END_CATCH_NO_RETHROW macro, which R5 keeps out of this scope.
 r19_raw=$(find src/server/gameserver \( -name '*.cpp' -o -name '*.h' \) -print0 | perl -0 -ne '
     BEGIN { $files = 0; $count = 0 }
     chomp; next if m{gameserver/(?:gm|handler|packetfill)/};

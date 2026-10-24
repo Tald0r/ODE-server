@@ -996,7 +996,7 @@ void Monster::addEnemy(Creature* pCreature)
             // throw Error("illegal attack order");
         }
     } catch (Throwable& t) {
-        diagnosticFilelog("monsterAIBug.txt", "Monster::addEnemy : %s", t.toString().c_str());
+        filelog("monsterAIBug.txt", "Monster::addEnemy : %s", t.toString().c_str());
     }
 
     __END_DEBUG

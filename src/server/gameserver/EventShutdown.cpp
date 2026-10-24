@@ -37,7 +37,7 @@ void EventShutdown::activate()
 
         de::gameContext().incomingPlayers().clearPlayers();
     } catch (Throwable& t) {
-        filelog("errorLog.txt", "EventShutdown could not clear the players: %s", t.toString().c_str());
+        diagnosticFilelog("errorLog.txt", "EventShutdown could not clear the players: %s", t.toString().c_str());
     }
 
     // Terminate the process.

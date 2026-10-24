@@ -567,8 +567,7 @@ void GamePlayer::disconnect(bool bDisconnected) {
             // Send whatever is left in the output buffer.
             m_pOutputStream->flush();
         } catch (Throwable& t) {
-            diagnosticFilelog("GamePlayer.txt", "disconnect could not send the reconnect packet: %s",
-                              t.toString().c_str());
+            filelog("GamePlayer.txt", "disconnect could not send the reconnect packet: %s", t.toString().c_str());
         }
 
         SAFE_DELETE(m_pReconnectPacket);
@@ -586,7 +585,7 @@ void GamePlayer::disconnect(bool bDisconnected) {
             // Send whatever is left in the output buffer.
             m_pOutputStream->flush();
         } catch (Throwable& t) {
-            diagnosticFilelog("GamePlayer.txt", "disconnect could not flush the output: %s", t.toString().c_str());
+            filelog("GamePlayer.txt", "disconnect could not flush the output: %s", t.toString().c_str());
         }
     }
 
