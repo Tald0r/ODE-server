@@ -23,7 +23,7 @@ void CGAddSMSAddressHandler::execute(CGAddSMSAddress* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);

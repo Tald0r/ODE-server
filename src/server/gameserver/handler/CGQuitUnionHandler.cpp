@@ -37,8 +37,8 @@ void CGQuitUnionHandler::execute(CGQuitUnion* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        //	//cout << "enter cgquitunionhandler::execute" << endl;
-        Assert(pPacket != NULL);
+    //	//cout << "enter cgquitunionhandler::execute" << endl;
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);

@@ -44,7 +44,7 @@ namespace de::gm {
 void opkick(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
     string Name = msg.substr(j + 1, msg.size() - j - 1).c_str();
 
     Creature* pTargetCreature = NULL;
@@ -79,7 +79,7 @@ void opkick(GamePlayer* pGamePlayer, string msg, int i) {
 void opmute(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        uint time = 0;
+    uint time = 0;
     size_t j = msg.find_first_of(' ', i + 1);
     size_t k = msg.find_first_of(' ', j + 1);
     string Name;
@@ -139,7 +139,7 @@ void opmute(GamePlayer* pGamePlayer, string msg, int i) {
 void opdenychat(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        uint level = 0;
+    uint level = 0;
     uint time = 0;
     size_t j = msg.find_first_of(' ', i + 1);
     size_t k = msg.find_first_of(' ', j + 1);
@@ -218,7 +218,7 @@ void opdenychat(GamePlayer* pGamePlayer, string msg, int i) {
 void opfreezing(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
     string Name = msg.substr(j + 1, msg.size() - j - 1).c_str();
 
     Creature* pTargetCreature = NULL;
@@ -247,7 +247,7 @@ void opfreezing(GamePlayer* pGamePlayer, string msg, int i) {
 void opdeny(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
     string Name = msg.substr(j + 1, msg.size() - j - 1).c_str();
 
     // Both statements ran with no BEGIN_DB (see opsave for what that means
@@ -269,7 +269,8 @@ void opdeny(GamePlayer* pGamePlayer, string msg, int i) {
 void opinfo(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     size_t j = msg.find_first_of(' ', i + 1);
     string Name = msg.substr(j + 1, msg.size() - j - 1).c_str();
@@ -337,7 +338,8 @@ void opinfo(GamePlayer* pGamePlayer, string msg, int i) {
 void opfind(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
     size_t j = msg.find_first_of(' ', i + 1);
     string Name = msg.substr(j + 1, msg.size() - j - 1).c_str();
 
@@ -413,7 +415,8 @@ void opcredit(GamePlayer* pGamePlayer, string msg, int i) {
 void opuser(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     // A SQL failure is swallowed here; see opsave.
     int GroupCount = 0;
@@ -439,7 +442,8 @@ void opuser(GamePlayer* pGamePlayer, string msg, int i) {
 void optrace(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     Creature* pCreature = pGamePlayer->getCreature();
 
@@ -497,7 +501,8 @@ void optrace(GamePlayer* pGamePlayer, string msg, int i) {
 void oppay(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     char str[80];
 
@@ -539,7 +544,8 @@ void oppay(GamePlayer* pGamePlayer, string msg, int i) {
 void opfun(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     size_t j = msg.find_first_of(' ', i + 1);
     size_t k = msg.find_first_of(' ', j + 1);
@@ -613,7 +619,8 @@ void opfun(GamePlayer* pGamePlayer, string msg, int i) {
 void opgrant(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     Creature* pCreature = pGamePlayer->getCreature();
 
@@ -651,7 +658,7 @@ void opgrant(GamePlayer* pGamePlayer, string msg, int i) {
 void opsoulchain(GamePlayer* pPlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
 
     string Name = msg.substr(j + 1, msg.size() - j - 1).c_str();
 

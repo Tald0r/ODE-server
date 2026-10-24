@@ -60,7 +60,7 @@ void CGRelicToObjectHandler::execute(CGRelicToObject* pPacket, Player* pPlayer)
 #ifdef __GAME_SERVER__
 
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // When a relic is put into the matching relic table..

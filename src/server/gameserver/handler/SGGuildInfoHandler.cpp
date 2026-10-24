@@ -31,7 +31,7 @@ void SGGuildInfoHandler::execute(SGGuildInfo* pPacket)
 {
     __BEGIN_DEBUG_EX
 
-        GuildManager& guilds = de::gameContext().guilds();
+    GuildManager& guilds = de::gameContext().guilds();
 
 #ifdef __GAME_SERVER__
 

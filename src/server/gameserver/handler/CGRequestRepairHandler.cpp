@@ -34,7 +34,7 @@ void CGRequestRepairHandler::execute(CGRequestRepair* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     ObjectID_t ITEMOID = pPacket->getObjectID();
@@ -97,7 +97,7 @@ void CGRequestRepairHandler::executeNormal(CGRequestRepair* pPacket, Player* pPl
 
 #ifdef __GAME_SERVER__
 
-        ObjectID_t ITEMOID = pPacket->getObjectID();
+    ObjectID_t ITEMOID = pPacket->getObjectID();
     Creature* pPC = dynamic_cast<GamePlayer*>(pPlayer)->getCreature();
     bool bSlayer = false;
     bool bVampire = false;
@@ -228,8 +228,8 @@ void CGRequestRepairHandler::executeMotorcycle(CGRequestRepair* pPacket, Player*
 
 #ifdef __GAME_SERVER__
 
-        // Pull the packet information out.
-        ObjectID_t ITEMOID = pPacket->getObjectID();
+    // Pull the packet information out.
+    ObjectID_t ITEMOID = pPacket->getObjectID();
     Creature* pPC = dynamic_cast<GamePlayer*>(pPlayer)->getCreature();
     Zone* pZone = pPC->getZone();
     Gold_t playerMoney = 0;
@@ -335,7 +335,7 @@ void CGRequestRepairHandler::executeAll(CGRequestRepair* pPacket, Player* pPlaye
 
 #ifdef __GAME_SERVER__
 
-        Creature* pPC = dynamic_cast<GamePlayer*>(pPlayer)->getCreature();
+    Creature* pPC = dynamic_cast<GamePlayer*>(pPlayer)->getCreature();
     Price_t repairPrice = 0;
     GCNPCResponse response;
 

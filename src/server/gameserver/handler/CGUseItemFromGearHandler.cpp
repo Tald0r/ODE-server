@@ -44,7 +44,7 @@ void CGUseItemFromGearHandler::execute(CGUseItemFromGear* pPacket, Player* pPlay
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -123,7 +123,7 @@ void CGUseItemFromGearHandler::executeCoupleRing(CGUseItemFromGear* pPacket, Gam
 #ifdef __GAME_SERVER__
 
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pGamePlayer != NULL);
 
     // The enclosing function checked plenty of errors, so

@@ -151,7 +151,7 @@ void CGTradeAddItemHandler::execute(CGTradeAddItem* pPacket, Player* pPlayer) {
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -198,7 +198,7 @@ void CGTradeAddItemHandler::executeSlayer(CGTradeAddItem* pPacket, Player* pPlay
 
 #ifdef __GAME_SERVER__
 
-        applyAddItem(pPacket, pPlayer, true);
+    applyAddItem(pPacket, pPlayer, true);
 
 #endif
 
@@ -213,7 +213,7 @@ void CGTradeAddItemHandler::executeVampire(CGTradeAddItem* pPacket, Player* pPla
 
 #ifdef __GAME_SERVER__
 
-        applyAddItem(pPacket, pPlayer, false);
+    applyAddItem(pPacket, pPlayer, false);
 
 #endif
 
@@ -227,7 +227,7 @@ void CGTradeAddItemHandler::executeOusters(CGTradeAddItem* pPacket, Player* pPla
 
 #ifdef __GAME_SERVER__
 
-        applyAddItem(pPacket, pPlayer, false);
+    applyAddItem(pPacket, pPlayer, false);
 
 #endif
 
@@ -241,8 +241,8 @@ void CGTradeAddItemHandler::makeGCTradeAddItemPacket(GCTradeAddItem* pPacket, Ob
 
 #ifdef __GAME_SERVER__
 
-        // The item information the receiver is given.
-        pPacket->setTargetObjectID(Sender);
+    // The item information the receiver is given.
+    pPacket->setTargetObjectID(Sender);
     pPacket->setItemObjectID(pItem->getObjectID());
     pPacket->setX(X);
     pPacket->setY(Y);
@@ -342,7 +342,7 @@ void CGTradeAddItemHandler::executeError(CGTradeAddItem* pPacket, Player* pPlaye
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);

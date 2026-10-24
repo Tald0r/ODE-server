@@ -27,7 +27,7 @@ void CGTradeFinishHandler::execute(CGTradeFinish* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     ObjectID_t TargetOID = pPacket->getTargetObjectID();
@@ -123,9 +123,9 @@ void CGTradeFinishHandler::executeSlayer(CGTradeFinish* pPacket, Player* pPlayer
 
 #ifdef __GAME_SERVER__
 
-        // Errors were checked in the enclosing function, so
-        // whether the pointer is null is not checked here.
-        ObjectID_t TargetOID = pPacket->getTargetObjectID();
+    // Errors were checked in the enclosing function, so
+    // whether the pointer is null is not checked here.
+    ObjectID_t TargetOID = pPacket->getTargetObjectID();
     BYTE CODE = pPacket->getCode();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pPC = pGamePlayer->getCreature();
@@ -253,9 +253,9 @@ void CGTradeFinishHandler::executeVampire(CGTradeFinish* pPacket, Player* pPlaye
 
 #ifdef __GAME_SERVER__
 
-        // Errors were checked in the enclosing function, so
-        // whether the pointer is null is not checked here.
-        ObjectID_t TargetOID = pPacket->getTargetObjectID();
+    // Errors were checked in the enclosing function, so
+    // whether the pointer is null is not checked here.
+    ObjectID_t TargetOID = pPacket->getTargetObjectID();
     BYTE CODE = pPacket->getCode();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pPC = pGamePlayer->getCreature();
@@ -382,9 +382,9 @@ void CGTradeFinishHandler::executeOusters(CGTradeFinish* pPacket, Player* pPlaye
 
 #ifdef __GAME_SERVER__
 
-        // Errors were checked in the enclosing function, so
-        // whether the pointer is null is not checked here.
-        ObjectID_t TargetOID = pPacket->getTargetObjectID();
+    // Errors were checked in the enclosing function, so
+    // whether the pointer is null is not checked here.
+    ObjectID_t TargetOID = pPacket->getTargetObjectID();
     BYTE CODE = pPacket->getCode();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pPC = pGamePlayer->getCreature();
@@ -511,7 +511,7 @@ void CGTradeFinishHandler::executeError(CGTradeFinish* pPacket, Player* pPlayer,
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);

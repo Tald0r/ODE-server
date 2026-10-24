@@ -27,7 +27,7 @@ void CGShopRequestListHandler::execute(CGShopRequestList* pPacket, Player* pPlay
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // Pull the information out of the packet.

@@ -177,7 +177,7 @@ void opguild(string msg, int i, Creature* pCreature) {
 void opmodifyunioninfo(GamePlayer* pGamePlayer, string msg, int i, bool bSameWorldOnly = true) {
     __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
     uint gID = (uint)atoi(msg.substr(j + 1, msg.size() - j - 1).c_str());
 
 
@@ -192,7 +192,7 @@ void opmodifyunioninfo(GamePlayer* pGamePlayer, string msg, int i, bool bSameWor
 void oprefreshguildunion(GamePlayer* pGamePlayer, string msg, int i, bool bSameWorldOnly = true) {
     __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
     string command = msg.substr(j + 1, msg.size() - j - 1).c_str();
 
     cout << "GuildUnionManager->reload()" << endl;

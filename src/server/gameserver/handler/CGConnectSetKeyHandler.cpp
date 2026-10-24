@@ -16,6 +16,6 @@
 void CGConnectSetKeyHandler::execute(CGConnectSetKey* pPacket, Player* pPlayer) {
     __BEGIN_DEBUG_EX
 
-        pPlayer->setKey(pPacket->getEncryptKey(), pPacket->getHashKey());
+    pPlayer->setKey(pPacket->getEncryptKey(), pPacket->getHashKey());
     __END_DEBUG_EX
 }

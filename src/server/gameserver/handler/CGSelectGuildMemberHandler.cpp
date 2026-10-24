@@ -25,7 +25,7 @@ void CGSelectGuildMemberHandler::execute(CGSelectGuildMember* pPacket, Player* p
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     SYSTEM_ASSERT(SYSTEM_GUILD);

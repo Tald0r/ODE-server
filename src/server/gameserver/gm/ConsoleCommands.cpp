@@ -114,7 +114,7 @@ void answerNothing(bool& bSendPacket) {
 void opcommand(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        size_t j = msg.find_first_of(' ', i + 1);
+    size_t j = msg.find_first_of(' ', i + 1);
     size_t k = msg.find_first_of(' ', j + 1);
     string command = trim(msg.substr(j + 1, k - j - 1));
     string value1 = msg.substr(k + 1, msg.size() - k - 1).c_str();

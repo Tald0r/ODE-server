@@ -44,7 +44,7 @@ void CGShopRequestSellHandler::execute(CGShopRequestSell* pPacket, Player* pPlay
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     ObjectID_t ITEMOID = pPacket->getItemObjectID();
@@ -109,7 +109,7 @@ void CGShopRequestSellHandler::executeNormal(CGShopRequestSell* pPacket, Player*
 
 #ifdef __GAME_SERVER__
 
-        ObjectID_t NPCID = pPacket->getObjectID();
+    ObjectID_t NPCID = pPacket->getObjectID();
     ObjectID_t ITEMOID = pPacket->getItemObjectID();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pCreature = pGamePlayer->getCreature();
@@ -317,8 +317,8 @@ void CGShopRequestSellHandler::executeMotorcycle(CGShopRequestSell* pPacket, Pla
 
 #ifdef __GAME_SERVER__
 
-        // Pull the packet information out.
-        ObjectID_t NPCID = pPacket->getObjectID();
+    // Pull the packet information out.
+    ObjectID_t NPCID = pPacket->getObjectID();
     ObjectID_t ITEMOID = pPacket->getItemObjectID();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pCreature = pGamePlayer->getCreature();
@@ -430,7 +430,7 @@ void CGShopRequestSellHandler::executeOpAllSkull(CGShopRequestSell* pPacket, Pla
 
 #ifdef __GAME_SERVER__
 
-        ObjectID_t NPCID = pPacket->getObjectID();
+    ObjectID_t NPCID = pPacket->getObjectID();
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pCreature = pGamePlayer->getCreature();
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
@@ -893,7 +893,7 @@ void CGShopRequestSellHandler::sendFailPacket(CGShopRequestSell* pPacket, Player
 
 #ifdef __GAME_SERVER__
 
-        GCShopSellFail failpkt;
+    GCShopSellFail failpkt;
     failpkt.setObjectID(pPacket->getObjectID());
     pPlayer->sendPacket(&failpkt);
 

@@ -27,7 +27,7 @@ void CGModifyGuildMemberHandler::execute(CGModifyGuildMember* pPacket, Player* p
 {
     __BEGIN_DEBUG_EX
 
-        GuildManager& guilds = de::gameContext().guilds();
+    GuildManager& guilds = de::gameContext().guilds();
 
     StringPool& strings = de::gameContext().strings();
 

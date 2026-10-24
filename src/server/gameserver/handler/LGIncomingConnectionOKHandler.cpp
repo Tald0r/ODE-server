@@ -33,7 +33,7 @@ void LGIncomingConnectionOKHandler::execute(LGIncomingConnectionOK* pPacket) {
     __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
-        const string loginServerHost = pPacket->getHost();
+    const string loginServerHost = pPacket->getHost();
     const uint loginServerPort = pPacket->getTCPPort();
     const DWORD key = pPacket->getKey();
 

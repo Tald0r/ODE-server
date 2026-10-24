@@ -22,7 +22,7 @@ void CGSkillToInventoryHandler::execute(CGSkillToInventory* pPacket, Player* pPl
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     SkillHandlerManager& skillHandlers = de::gameContext().skillHandlers();

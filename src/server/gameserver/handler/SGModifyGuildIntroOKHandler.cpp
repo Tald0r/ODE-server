@@ -34,7 +34,7 @@ void SGModifyGuildIntroOKHandler::execute(SGModifyGuildIntroOK* pPacket)
 #ifdef __GAME_SERVER__
 
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
 
     // Get the guild.
     Guild* pGuild = de::gameContext().guilds().getGuild(pPacket->getGuildID());

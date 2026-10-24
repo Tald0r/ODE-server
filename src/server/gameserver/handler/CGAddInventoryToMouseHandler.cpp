@@ -32,7 +32,7 @@ void CGAddInventoryToMouseHandler::execute(CGAddInventoryToMouse* pPacket, Playe
 
 #ifdef __GAME_SERVER__
 
-        GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
+    GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Assert(pGamePlayer != NULL);
 
     Creature* pCreature = pGamePlayer->getCreature();

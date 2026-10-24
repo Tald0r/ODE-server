@@ -93,7 +93,7 @@ void CGThrowBombHandler::execute(CGThrowBomb* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // Just return if the game player's state is not normal.

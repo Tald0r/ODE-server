@@ -28,7 +28,7 @@ void CGAddGearToMouseHandler::execute(CGAddGearToMouse* pPacket, Player* pPlayer
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     try {

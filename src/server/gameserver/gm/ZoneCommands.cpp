@@ -46,7 +46,8 @@ void opwarp(GamePlayer* pGamePlayer, string msg, int i) {
 
 #ifdef __GAME_SERVER__
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     Creature* pCreature = pGamePlayer->getCreature();
 
@@ -98,7 +99,8 @@ void opwarp(GamePlayer* pGamePlayer, string msg, int i) {
 void oprecall(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     Creature* pCreature = pGamePlayer->getCreature();
 
@@ -223,7 +225,8 @@ void oprecall(GamePlayer* pGamePlayer, string msg, int i) {
 void opsummon(GamePlayer* pGamePlayer, string msg, int i) {
     __BEGIN_DEBUG_EX
 
-        if (pGamePlayer == NULL) return;
+    if (pGamePlayer == NULL)
+        return;
 
     Creature* pCreature = pGamePlayer->getCreature();
     MonsterInfoManager& monsterInfos = de::gameContext().monsterInfos();

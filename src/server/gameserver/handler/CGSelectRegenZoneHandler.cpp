@@ -21,7 +21,7 @@ void CGSelectRegenZoneHandler::execute(CGSelectRegenZone* pPacket, Player* pPlay
 
 #ifdef __GAME_SERVER__
 
-        GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
+    GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Assert(pGamePlayer != NULL);
 
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pGamePlayer->getCreature());

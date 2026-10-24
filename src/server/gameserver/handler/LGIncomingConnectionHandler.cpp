@@ -40,33 +40,33 @@ void LGIncomingConnectionHandler::execute(LGIncomingConnection* pPacket)
 
 #ifdef __GAME_SERVER__
 
-        //--------------------------------------------------------------------------------
-        //
-        // Generate the authentication key.
-        //
-        // *NOTE*
-        //
-        // The old way had the login server generate the authentication key, send it to the game
-        // server and then to the client. That generates the key in CLSelectPCHandler::execute()
-        // and sends it to the client in GLIncomingConnectionOKHandler::execute(), and since the
-        // handling methods differ the key value has to be kept somewhere. The simplest way is to
-        // store it on the login player object.. which is clumsy. Another way is to send the key
-        // value back from the game server to the login server, which is unnecessary because the
-        // key then crosses the network twice.
-        //
-        // So generating it on the game server and sending it to the login server is far cleaner.
-        //
-        // *TODO*
-        //
-        // In the worst case the local network is sniffed and the key value leaks. (then again, the
-        // root password could leak too.. that is what SSL is for..)
-        // Against that, the GLIncomingConnectionOK packet ought to be encrypted.
-        //
-        // The key value should also be unpredictable. (reading the code makes it predictable anyway.)
-        //
-        //--------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------
+    //
+    // Generate the authentication key.
+    //
+    // *NOTE*
+    //
+    // The old way had the login server generate the authentication key, send it to the game
+    // server and then to the client. That generates the key in CLSelectPCHandler::execute()
+    // and sends it to the client in GLIncomingConnectionOKHandler::execute(), and since the
+    // handling methods differ the key value has to be kept somewhere. The simplest way is to
+    // store it on the login player object.. which is clumsy. Another way is to send the key
+    // value back from the game server to the login server, which is unnecessary because the
+    // key then crosses the network twice.
+    //
+    // So generating it on the game server and sending it to the login server is far cleaner.
+    //
+    // *TODO*
+    //
+    // In the worst case the local network is sniffed and the key value leaks. (then again, the
+    // root password could leak too.. that is what SSL is for..)
+    // Against that, the GLIncomingConnectionOK packet ought to be encrypted.
+    //
+    // The key value should also be unpredictable. (reading the code makes it predictable anyway.)
+    //
+    //--------------------------------------------------------------------------------
 
-        std::random_device entropy;
+    std::random_device entropy;
     const DWORD authKey = std::uniform_int_distribution<DWORD>{}(entropy);
 
     // Create the CI object.

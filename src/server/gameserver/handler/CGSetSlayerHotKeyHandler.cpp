@@ -25,5 +25,5 @@ void CGSetSlayerHotKeyHandler::execute(CGSetSlayerHotKey* pPacket, Player* pPlay
 
 #endif
 
-        __END_DEBUG_EX
+    __END_DEBUG_EX
 }

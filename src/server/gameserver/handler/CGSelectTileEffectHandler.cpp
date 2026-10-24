@@ -34,7 +34,7 @@ void CGSelectTileEffectHandler::execute(CGSelectTileEffect* pPacket, Player* pPl
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     try {
@@ -95,7 +95,7 @@ void CGSelectTileEffectHandler::executeVampirePortal(CGSelectTileEffect* pPacket
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
     Assert(pEffect != NULL);
     Assert(pEffect->getEffectClass() == Effect::EFFECT_CLASS_VAMPIRE_PORTAL);

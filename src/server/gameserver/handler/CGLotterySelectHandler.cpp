@@ -45,7 +45,7 @@ void CGLotterySelectHandler::execute(CGLotterySelect* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        GamePlayer* pGP = dynamic_cast<GamePlayer*>(pPlayer);
+    GamePlayer* pGP = dynamic_cast<GamePlayer*>(pPlayer);
     Assert(pGP != NULL);
 
     Creature* pCreature = pGP->getCreature();

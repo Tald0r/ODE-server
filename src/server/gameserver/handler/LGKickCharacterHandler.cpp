@@ -35,9 +35,9 @@ void LGKickCharacterHandler::execute(LGKickCharacter* pPacket)
     __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
-        // hmm
+    // hmm
 
-        try {
+    try {
         const string pcName = pPacket->getPCName();
         const string host = pPacket->getHost();
         const uint port = pPacket->getPort();

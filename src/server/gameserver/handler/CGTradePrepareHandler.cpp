@@ -75,7 +75,7 @@ void CGTradePrepareHandler::execute(CGTradePrepare* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -176,7 +176,7 @@ void CGTradePrepareHandler::executeError(CGTradePrepare* pPacket, Player* pPlaye
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);

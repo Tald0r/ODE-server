@@ -23,5 +23,5 @@ void CGSetVampireHotKeyHandler::execute(CGSetVampireHotKey* pPacket, Player* pPl
 
 #endif
 
-        __END_DEBUG_EX
+    __END_DEBUG_EX
 }

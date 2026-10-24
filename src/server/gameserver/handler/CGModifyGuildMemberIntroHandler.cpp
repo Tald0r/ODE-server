@@ -24,7 +24,7 @@ void CGModifyGuildMemberIntroHandler::execute(CGModifyGuildMemberIntro* pPacket,
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     SYSTEM_ASSERT(SYSTEM_GUILD);

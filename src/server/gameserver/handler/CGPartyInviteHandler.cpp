@@ -60,7 +60,7 @@ void CGPartyInviteHandler::execute(CGPartyInvite* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     SYSTEM_ASSERT(SYSTEM_PARTY);
@@ -175,7 +175,7 @@ void CGPartyInviteHandler::executeError(CGPartyInvite* pPacket, Player* pPlayer,
 
 #ifdef __GAME_SERVER__
 
-        GCPartyError gcPartyError;
+    GCPartyError gcPartyError;
     gcPartyError.setTargetObjectID(pPacket->getTargetObjectID());
     gcPartyError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcPartyError);

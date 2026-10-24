@@ -129,7 +129,7 @@ void CGTradeRemoveItemHandler::execute(CGTradeRemoveItem* pPacket, Player* pPlay
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -177,7 +177,7 @@ void CGTradeRemoveItemHandler::executeSlayer(CGTradeRemoveItem* pPacket, Player*
 
 #ifdef __GAME_SERVER__
 
-        applyRemoveItem(pPacket, pPlayer, true);
+    applyRemoveItem(pPacket, pPlayer, true);
 
 #endif
 
@@ -193,7 +193,7 @@ void CGTradeRemoveItemHandler::executeVampire(CGTradeRemoveItem* pPacket, Player
 
 #ifdef __GAME_SERVER__
 
-        applyRemoveItem(pPacket, pPlayer, false);
+    applyRemoveItem(pPacket, pPlayer, false);
 
 #endif
 
@@ -210,7 +210,7 @@ void CGTradeRemoveItemHandler::executeOusters(CGTradeRemoveItem* pPacket, Player
 
 #ifdef __GAME_SERVER__
 
-        applyRemoveItem(pPacket, pPlayer, false);
+    applyRemoveItem(pPacket, pPlayer, false);
 
 #endif
 
@@ -225,7 +225,7 @@ void CGTradeRemoveItemHandler::executeError(CGTradeRemoveItem* pPacket, Player* 
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);

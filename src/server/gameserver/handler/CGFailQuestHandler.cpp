@@ -27,7 +27,7 @@ void CGFailQuestHandler::execute(CGFailQuest* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        GamePlayer* pGP = dynamic_cast<GamePlayer*>(pPlayer);
+    GamePlayer* pGP = dynamic_cast<GamePlayer*>(pPlayer);
     Assert(pGP != NULL);
 
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pGP->getCreature());

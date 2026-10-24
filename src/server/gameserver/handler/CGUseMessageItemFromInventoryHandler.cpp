@@ -43,7 +43,7 @@ void CGUseMessageItemFromInventoryHandler::execute(CGUseMessageItemFromInventory
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -132,7 +132,7 @@ void CGUseMessageItemFromInventoryHandler::executeEventTree(CGUseMessageItemFrom
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     // The enclosing function checked plenty of errors, so
@@ -236,7 +236,7 @@ void CGUseMessageItemFromInventoryHandler::executeEventFromMessage(CGUseMessageI
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
 

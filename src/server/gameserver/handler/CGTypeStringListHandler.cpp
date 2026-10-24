@@ -31,7 +31,7 @@ void CGTypeStringListHandler::execute(CGTypeStringList* pPacket, Player* pPlayer
     __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
-        if (pPacket->getSize() < 1) {
+    if (pPacket->getSize() < 1) {
         return;
     }
 
@@ -67,7 +67,7 @@ void CGTypeStringListHandler::executeWaitForMeet(CGTypeStringList* pPacket, Play
     __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
     Assert(pPacket->getSize() != 0);
 
@@ -116,7 +116,7 @@ void CGTypeStringListHandler::executeWaitForApart(CGTypeStringList* pPacket, Pla
     __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
     Assert(pPacket->getSize() != 0);
 
@@ -164,7 +164,7 @@ void CGTypeStringListHandler::executeApartForce(CGTypeStringList* pPacket, Playe
     __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
     Assert(pPacket->getSize() != 0);
 

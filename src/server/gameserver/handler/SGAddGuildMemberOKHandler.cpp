@@ -44,7 +44,7 @@ void SGAddGuildMemberOKHandler::execute(SGAddGuildMemberOK* pPacket)
 {
     __BEGIN_DEBUG_EX
 
-        StringPool& strings = de::gameContext().strings();
+    StringPool& strings = de::gameContext().strings();
 
 #ifdef __GAME_SERVER__
 

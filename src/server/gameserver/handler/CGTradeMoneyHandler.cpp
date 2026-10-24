@@ -129,7 +129,7 @@ void CGTradeMoneyHandler::execute(CGTradeMoney* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        Assert(pPacket != NULL);
+    Assert(pPacket != NULL);
     Assert(pPlayer != NULL);
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -177,7 +177,7 @@ void CGTradeMoneyHandler::executeSlayer(CGTradeMoney* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        applyMoney(pPacket, pPlayer);
+    applyMoney(pPacket, pPlayer);
 
 #endif
 
@@ -193,7 +193,7 @@ void CGTradeMoneyHandler::executeVampire(CGTradeMoney* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        applyMoney(pPacket, pPlayer);
+    applyMoney(pPacket, pPlayer);
 
 #endif
 
@@ -210,7 +210,7 @@ void CGTradeMoneyHandler::executeOusters(CGTradeMoney* pPacket, Player* pPlayer)
 
 #ifdef __GAME_SERVER__
 
-        applyMoney(pPacket, pPlayer);
+    applyMoney(pPacket, pPlayer);
 
 #endif
 
@@ -226,7 +226,7 @@ void CGTradeMoneyHandler::executeError(CGTradeMoney* pPacket, Player* pPlayer, B
 
 #ifdef __GAME_SERVER__
 
-        GCTradeError gcTradeError;
+    GCTradeError gcTradeError;
     gcTradeError.setTargetObjectID(pPacket->getTargetObjectID());
     gcTradeError.setCode(ErrorCode);
     pPlayer->sendPacket(&gcTradeError);
