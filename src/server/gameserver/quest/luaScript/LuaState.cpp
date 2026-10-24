@@ -50,11 +50,7 @@ void LuaState::release() {
 // dofile
 //--------------------------------------------------------------------------------
 int LuaState::dofile(const string& filename) {
-    __BEGIN_TRY
-
     return luaL_dofile(m_pState, filename.c_str());
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------

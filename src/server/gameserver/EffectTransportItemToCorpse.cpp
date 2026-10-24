@@ -23,8 +23,6 @@ EffectTransportItemToCorpse::EffectTransportItemToCorpse(Zone* pZone, Item* pIte
                                                          ObjectID_t corpseObjectID, Turn_t delay)
 
     : Effect(pZone, 0, 0, pItem, delay) {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
     Assert(getTarget() != NULL);
     Assert(pTargetZone != NULL);
@@ -36,8 +34,6 @@ EffectTransportItemToCorpse::EffectTransportItemToCorpse(Zone* pZone, Item* pIte
 
     // Server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 
@@ -47,11 +43,11 @@ EffectTransportItemToCorpse::EffectTransportItemToCorpse(Zone* pZone, Item* pIte
 EffectTransportItemToCorpse::~EffectTransportItemToCorpse()
 
 {
-    __BEGIN_TRY
-
-    unaffect(m_pZone, m_X, m_Y, m_pTarget);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        unaffect(m_pZone, m_X, m_Y, m_pTarget);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 
@@ -63,11 +59,7 @@ EffectTransportItemToCorpse::~EffectTransportItemToCorpse()
 void EffectTransportItemToCorpse::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     //	throw UnsupportedError();
-
-    __END_CATCH
 }
 
 
@@ -77,8 +69,6 @@ void EffectTransportItemToCorpse::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t
 void EffectTransportItemToCorpse::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(m_pTargetZone != NULL);
 
@@ -110,8 +100,6 @@ void EffectTransportItemToCorpse::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord
     }
 
     pTarget = NULL;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -120,11 +108,7 @@ void EffectTransportItemToCorpse::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord
 void EffectTransportItemToCorpse::unaffect()
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectTransportItemToCorpse unaffect" << endl;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -132,7 +116,7 @@ void EffectTransportItemToCorpse::unaffect()
 //----------------------------------------------------------------------
 void EffectTransportItemToCorpse::unaffect(Creature* pCreature)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //----------------------------------------------------------------------
 // get debug string

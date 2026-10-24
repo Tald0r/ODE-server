@@ -26,33 +26,24 @@
 EffectCannonade::EffectCannonade(Creature* pCreature, Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
     m_pZone = pZone;
     m_X = x;
     m_Y = y;
     setBroadcastingEffect(false);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectCannonade::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectCannonade::unaffect(Creature* pCastCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCastCreature != NULL);
 
     VSRect rect(0, 0, m_pZone->getWidth() - 1, m_pZone->getHeight() - 1); // Last valid tile coordinates
@@ -136,8 +127,6 @@ void EffectCannonade::unaffect(Creature* pCastCreature)
             }
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -145,8 +134,6 @@ void EffectCannonade::unaffect(Creature* pCastCreature)
 void EffectCannonade::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget); // by Sequoia
 
     Assert(pCreature != NULL);
@@ -154,20 +141,14 @@ void EffectCannonade::unaffect()
     if (m_pZone != NULL && m_pZone == pCreature->getZone()) {
         unaffect(pCreature);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectCannonade::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectCannonade("
         << "Zone:" << de::gameContext().zoneInfos().getZoneInfo(m_pZone->getZoneID())->getFullName()
         << ",X:" << (int)m_X << ",Y:" << (int)m_Y << ",Damage:" << (int)m_Damage << ")";
     return msg.toString();
-
-    __END_CATCH
 }

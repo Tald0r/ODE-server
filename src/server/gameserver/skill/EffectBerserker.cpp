@@ -17,35 +17,22 @@
 EffectBerserker::EffectBerserker(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBerserker::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBerserker::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -53,7 +40,6 @@ void EffectBerserker::unaffect()
 void EffectBerserker::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -81,18 +67,13 @@ void EffectBerserker::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBerserker::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectBerserker(" << "DefensePenalty:" << m_DefensePenalty << ",ProtectionPenalty:" << m_ProtectionPenalty
         << ",ToHitBonus:" << m_ToHitBonus << ",DamageBonus:" << m_DamageBonus << ")";
     return msg.toString();
-
-    __END_CATCH
 }

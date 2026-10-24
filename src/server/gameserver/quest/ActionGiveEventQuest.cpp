@@ -28,15 +28,11 @@
 void ActionGiveEventQuest::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_QuestLevel = propertyBuffer.getPropertyInt("QuestLevel") - 1;
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -46,8 +42,6 @@ void ActionGiveEventQuest::read(PropertyBuffer& propertyBuffer)
 void ActionGiveEventQuest::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature1->isNPC());
 
@@ -88,8 +82,6 @@ void ActionGiveEventQuest::execute(Creature* pCreature1, Creature* pCreature2)
     GCSelectQuestID gcGiveEventQuestID(quests.begin(), quests.end());
 
     pPlayer->sendPacket(&gcGiveEventQuestID);
-
-    __END_CATCH
 }
 
 
@@ -99,12 +91,8 @@ void ActionGiveEventQuest::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionGiveEventQuest::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionGiveEventQuest(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

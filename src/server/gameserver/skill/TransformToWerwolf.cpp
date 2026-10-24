@@ -25,9 +25,6 @@ void TransformToWerwolf::execute(Vampire* pVampire, ObjectID_t InvenObjectID, Co
                                  CoordInven_t TargetX, CoordInven_t TargetY, VampireSkillSlot* pSkillSlot)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -130,9 +127,6 @@ void TransformToWerwolf::execute(Vampire* pVampire, ObjectID_t InvenObjectID, Co
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -141,9 +135,6 @@ void TransformToWerwolf::execute(Vampire* pVampire, ObjectID_t InvenObjectID, Co
 void TransformToWerwolf::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -191,9 +182,6 @@ void TransformToWerwolf::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 TransformToWerwolf g_TransformToWerwolf;

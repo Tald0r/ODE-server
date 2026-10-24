@@ -22,8 +22,6 @@
 EffectIncreaseAttr::EffectIncreaseAttr(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer());
 
@@ -31,43 +29,31 @@ EffectIncreaseAttr::EffectIncreaseAttr(Creature* pCreature)
 
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIncreaseAttr::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIncreaseAttr::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIncreaseAttr::unaffect()
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectIncreaseAttr" << "unaffect BEGIN" << endl;
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
 
     // cout << "EffectIncreaseAttr" << "unaffect END" << endl;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -75,8 +61,6 @@ void EffectIncreaseAttr::unaffect()
 void EffectIncreaseAttr::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectIncreaseAttr" << "unaffect BEGIN" << endl;
 
     Assert(pCreature != NULL);
@@ -150,24 +134,18 @@ void EffectIncreaseAttr::unaffect(Creature* pCreature)
     }
 
     // cout << "EffectIncreaseAttr" << "unaffect END" << endl;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIncreaseAttr::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectIncreaseAttr::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectIncreaseAttr(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

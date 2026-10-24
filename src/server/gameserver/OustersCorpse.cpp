@@ -12,24 +12,17 @@
 OustersCorpse::OustersCorpse(Ousters* pOusters)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
 
     m_OustersInfo = pOusters->getOustersInfo3();
     setObjectID(m_OustersInfo.getObjectID());
-
-    __END_CATCH
 }
 
 OustersCorpse::~OustersCorpse()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW} string OustersCorpse::toString() const {
-    __BEGIN_TRY
-
+{}
+string OustersCorpse::toString() const {
     StringStream msg;
     msg << "OustersCorpse(" << m_OustersInfo.toString() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

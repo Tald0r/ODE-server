@@ -25,9 +25,6 @@
 void ObservingEye::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -117,9 +114,6 @@ void ObservingEye::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t C
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ObservingEye g_ObservingEye;

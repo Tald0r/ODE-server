@@ -14,8 +14,6 @@
 const int dir_advance[8][2] = {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
 
 void WildTyphoon::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -27,16 +25,11 @@ void WildTyphoon::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot*
     }
 
     execute(pSlayer, pTargetCreature->getX(), pTargetCreature->getY(), pSkillSlot, CEffectID);
-
-    __END_CATCH
 }
 
 void WildTyphoon::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -96,8 +89,6 @@ void WildTyphoon::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSl
             }
         }
     }
-
-    __END_CATCH
 }
 
 WildTyphoon g_WildTyphoon;

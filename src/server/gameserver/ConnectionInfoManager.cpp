@@ -30,8 +30,6 @@
 ConnectionInfoManager::ConnectionInfoManager()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("ConnectionInfoManager");
 
     // Set the time of the next heartbeat.
@@ -40,8 +38,6 @@ ConnectionInfoManager::ConnectionInfoManager()
 
     // The user count goes in after 30 seconds.
     m_UpdateUserStatusTime.tv_sec = m_NextHeartbeat.tv_sec + 20;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,26 +46,24 @@ ConnectionInfoManager::ConnectionInfoManager()
 ConnectionInfoManager::~ConnectionInfoManager()
 
 {
-    __BEGIN_TRY
+    try {
+        // Every ConnectionInfo must be deleted.
+        HashMapConnectionInfo::iterator itr = m_ConnectionInfos.begin();
+        for (; itr != m_ConnectionInfos.end(); itr++) {
+            SAFE_DELETE(itr->second);
+        }
 
-    // Every ConnectionInfo must be deleted.
-    HashMapConnectionInfo::iterator itr = m_ConnectionInfos.begin();
-    for (; itr != m_ConnectionInfos.end(); itr++) {
-        SAFE_DELETE(itr->second);
+        // Delete every pair in the hash map.
+        m_ConnectionInfos.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    // Delete every pair in the hash map.
-    m_ConnectionInfos.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // add connection info to connection info manager
 //////////////////////////////////////////////////////////////////////////////
 void ConnectionInfoManager::addConnectionInfo(ConnectionInfo* pConnectionInfo) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pConnectionInfo != NULL);
@@ -100,16 +94,12 @@ void ConnectionInfoManager::addConnectionInfo(ConnectionInfo* pConnectionInfo) {
     m_ConnectionInfos[pConnectionInfo->getClientIP()] = pConnectionInfo;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // Delete connection info from connection info manager
 //////////////////////////////////////////////////////////////////////////////
 void ConnectionInfoManager::deleteConnectionInfo(const string& clientIP) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     HashMapConnectionInfo::iterator itr = m_ConnectionInfos.find(clientIP);
@@ -127,8 +117,6 @@ void ConnectionInfoManager::deleteConnectionInfo(const string& clientIP) {
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -136,8 +124,6 @@ void ConnectionInfoManager::deleteConnectionInfo(const string& clientIP) {
 // get connection info from connection info manager
 //////////////////////////////////////////////////////////////////////////////
 ConnectionInfo* ConnectionInfoManager::getConnectionInfo(const string& clientIP) {
-    __BEGIN_TRY
-
     ConnectionInfo* pConnectionInfo = NULL;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -153,8 +139,6 @@ ConnectionInfo* ConnectionInfoManager::getConnectionInfo(const string& clientIP)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return pConnectionInfo;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -163,8 +147,6 @@ ConnectionInfo* ConnectionInfoManager::getConnectionInfo(const string& clientIP)
 void ConnectionInfoManager::heartbeat()
 
 {
-    __BEGIN_TRY
-
     Properties& config = de::kernelContext().config();
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -276,8 +258,6 @@ void ConnectionInfoManager::heartbeat()
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////

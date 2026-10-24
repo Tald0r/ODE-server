@@ -1,8 +1,6 @@
 #include "LevelWar.h"
 
 void LevelWar::execute() {
-    __BEGIN_TRY
-
     switch (m_State) {
     case READY:
         executeStart();
@@ -13,8 +11,6 @@ void LevelWar::execute() {
     default:
         Assert(/*level war state is invalid*/ false);
     }
-
-    __END_CATCH
 }
 
 void LevelWar::executeStart() {

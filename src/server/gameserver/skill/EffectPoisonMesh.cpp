@@ -9,29 +9,19 @@
 #include "Zone.h"
 
 EffectPoisonMesh::EffectPoisonMesh(Creature* pCreature) {
-    __BEGIN_TRY
-
     m_pTarget = pCreature;
     m_pZone = pCreature->getZone();
-
-    __END_CATCH
 }
 
 void EffectPoisonMesh::affect() {
-    __BEGIN_TRY
-
     if (m_pTarget != NULL && m_pTarget->getObjectClass() == Object::OBJECT_CLASS_CREATURE) {
         affect(dynamic_cast<Creature*>(m_pTarget));
     }
 
     setNextTime(10);
-
-    __END_CATCH
 }
 
 void EffectPoisonMesh::affect(Creature* pCreature) {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return;
 
@@ -48,23 +38,15 @@ void EffectPoisonMesh::affect(Creature* pCreature) {
             ::setDamage(pCreature, getDamage(), pCastCreature, SKILL_POISON_MESH);
         }
     }
-
-    __END_CATCH
 }
 
 void EffectPoisonMesh::unaffect() {
-    __BEGIN_TRY
-
     if (m_pTarget != NULL && m_pTarget->getObjectClass() == Object::OBJECT_CLASS_CREATURE) {
         unaffect(dynamic_cast<Creature*>(m_pTarget));
     }
-
-    __END_CATCH
 }
 
 void EffectPoisonMesh::unaffect(Creature* pCreature) {
-    __BEGIN_TRY
-
     pCreature->removeFlag(getEffectClass());
 
     Zone* pZone = pCreature->getZone();
@@ -75,14 +57,8 @@ void EffectPoisonMesh::unaffect(Creature* pCreature) {
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(getSendEffectClass());
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-    __END_CATCH
 }
 
 string EffectPoisonMesh::toString() const {
-    __BEGIN_TRY
-
     return "EffectPoisonMesh";
-
-    __END_CATCH
 }

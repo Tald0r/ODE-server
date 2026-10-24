@@ -19,8 +19,6 @@
 void ActionSetPosition::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ZoneID = propertyBuffer.getPropertyInt("ZoneID");
         m_X = propertyBuffer.getPropertyInt("X");
@@ -29,8 +27,6 @@ void ActionSetPosition::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,8 +35,6 @@ void ActionSetPosition::read(PropertyBuffer& propertyBuffer)
 void ActionSetPosition::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     try {
         Assert(pCreature1 != NULL);
         Assert(pCreature2 == NULL);
@@ -78,8 +72,6 @@ void ActionSetPosition::execute(Creature* pCreature1, Creature* pCreature2)
         cout << t.toString() << endl;
         throw; // -_-;
     }
-
-    __END_CATCH
 }
 
 
@@ -89,12 +81,8 @@ void ActionSetPosition::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionSetPosition::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSetPosition(" << "ZoneID:" << (int)m_ZoneID << ",X:" << (int)m_X << ",Y:" << (int)m_Y
         << ",Dir:" << dir2String(m_Dir) << ")";
     return msg.toString();
-
-    __END_CATCH
 }

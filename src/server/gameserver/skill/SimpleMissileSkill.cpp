@@ -24,8 +24,6 @@ void SimpleMissileSkill::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Ski
                                  const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -161,8 +159,6 @@ void SimpleMissileSkill::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Ski
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 void SimpleMissileSkill::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSlot* pVampireSkillSlot,
@@ -170,8 +166,6 @@ void SimpleMissileSkill::execute(Vampire* pVampire, ObjectID_t TargetObjectID, V
                                  int HitBonus)
 
 {
-    __BEGIN_TRY
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -320,8 +314,6 @@ void SimpleMissileSkill::execute(Vampire* pVampire, ObjectID_t TargetObjectID, V
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 void SimpleMissileSkill::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkillSlot* pOustersSkillSlot,
@@ -329,8 +321,6 @@ void SimpleMissileSkill::execute(Ousters* pOusters, ObjectID_t TargetObjectID, O
                                  int HitBonus)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -494,17 +484,12 @@ void SimpleMissileSkill::execute(Ousters* pOusters, ObjectID_t TargetObjectID, O
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, param.SkillType, param.Grade);
     }
-
-
-    __END_CATCH
 }
 
 void SimpleMissileSkill::execute(Monster* pMonster, Creature* pEnemy, const SIMPLE_SKILL_INPUT& param,
                                  SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pMonster != NULL);
     Assert(pEnemy != NULL);
 
@@ -624,6 +609,4 @@ void SimpleMissileSkill::execute(Monster* pMonster, Creature* pEnemy, const SIMP
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, param.SkillType);
     }
-
-    __END_CATCH
 }

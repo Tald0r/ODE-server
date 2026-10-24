@@ -10,22 +10,16 @@
 GlobalItemPosition* GlobalItemPositionLoader::load(Item::ItemClass itemClass, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     ItemPositionRow row;
     if (!defaultItemRepository().loadItemPosition(ItemObjectTableName[(int)itemClass], itemID, row))
         return NULL;
 
     return makeGlobalItemPosition(row);
-
-    __END_CATCH
 }
 
 GlobalItemPosition* GlobalItemPositionLoader::makeGlobalItemPosition(const ItemPositionRow& row)
 
 {
-    __BEGIN_TRY
-
     switch ((Storage)row.storage) {
     case STORAGE_INVENTORY: {
         InventoryItemPosition* pIIP = new InventoryItemPosition();
@@ -60,6 +54,4 @@ GlobalItemPosition* GlobalItemPositionLoader::makeGlobalItemPosition(const ItemP
         return NULL;
         break;
     }
-
-    __END_CATCH
 }

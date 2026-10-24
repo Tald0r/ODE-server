@@ -48,8 +48,6 @@ void OustersSummonItem::create(const string& ownerID, Storage storage, StorageID
                                ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -63,8 +61,6 @@ void OustersSummonItem::create(const string& ownerID, Storage storage, StorageID
 
     defaultItemObjectRepository().insertChargeItem(GEAR_OUSTERS_SUMMON_ITEM, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                    (int)storage, storageID, (int)x, (int)y, m_Charge);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -73,85 +69,57 @@ void OustersSummonItem::create(const string& ownerID, Storage storage, StorageID
 void OustersSummonItem::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_OUSTERS_SUMMON_ITEM, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void OustersSummonItem::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateChargeItem(GEAR_OUSTERS_SUMMON_ITEM, m_ObjectID, m_ItemType, ownerID,
                                                    (int)storage, storageID, (int)x, (int)y, m_Charge, m_ItemID);
-
-    __END_CATCH
 }
 
 VolumeWidth_t OustersSummonItem::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext()
         .itemInfos()
         .getItemInfo(Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM, m_ItemType)
         ->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t OustersSummonItem::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext()
         .itemInfos()
         .getItemInfo(Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM, m_ItemType)
         ->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t OustersSummonItem::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 string OustersSummonItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "OustersSummonItem(" << "ItemID:" << m_ItemID << ",ItemType:" << (int)m_ItemType << ",Charge:" << m_Charge
         << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 int OustersSummonItem::getMaxCharge(void) const
 
 {
-    __BEGIN_TRY
-
     OustersSummonItemInfo* pInfo = dynamic_cast<OustersSummonItemInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_OUSTERS_SUMMON_ITEM, m_ItemType));
     Assert(pInfo != NULL);
     return pInfo->getMaxCharge();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -161,8 +129,6 @@ int OustersSummonItem::getMaxCharge(void) const
 void OustersSummonItemInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_OUSTERS_SUMMON_ITEM);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -186,22 +152,16 @@ void OustersSummonItemInfoManager::load()
 
         addItemInfo(pOustersSummonItemInfo);
     }
-
-    __END_CATCH
 }
 
 string OustersSummonItemInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "OustersSummonItemInfo(" << "ItemType:" << m_ItemType << ",Name:" << m_Name << ",EName:" << m_EName
         << ",Price:" << m_Price << ",VolumeType:" << Volume2String[m_VolumeType] << ",Weight:" << m_Weight
         << ",MaxCharge:" << m_MaxCharge << ",EffectID:" << m_EffectID << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -212,8 +172,6 @@ string OustersSummonItemInfo::toString() const
 void OustersSummonItemLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<ChargeObjectRow> rows =
@@ -292,15 +250,11 @@ void OustersSummonItemLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void OustersSummonItemLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<ChargeObjectRow> rows = defaultItemObjectRepository().loadChargeItemInZone(
@@ -329,13 +283,8 @@ void OustersSummonItemLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void OustersSummonItemLoader::load(StorageID_t storageID, Inventory* pInventory)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}

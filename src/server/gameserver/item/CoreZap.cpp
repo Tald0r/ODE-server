@@ -50,8 +50,6 @@ CoreZap::CoreZap(ItemType_t itemType, const list<OptionType_t>& optionType)
 void CoreZap::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -69,8 +67,6 @@ void CoreZap::create(const string& ownerID, Storage storage, StorageID_t storage
     defaultItemObjectRepository().insertOptionGradeItem(GEAR_CORE_ZAP, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                                         (int)storage, storageID, (int)x, (int)y, optionField,
                                                         getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -80,11 +76,7 @@ void CoreZap::create(const string& ownerID, Storage storage, StorageID_t storage
 void CoreZap::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_CORE_ZAP, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -93,15 +85,11 @@ void CoreZap::tinysave(const char* field) const
 void CoreZap::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateCoreZap(GEAR_CORE_ZAP, m_ObjectID, getItemType(), ownerID, (int)storage,
                                                 storageID, (int)x, (int)y, optionField, getGrade(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -142,8 +130,6 @@ string CoreZapInfo::toString() const
 void CoreZapInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_CORE_ZAP);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -167,8 +153,6 @@ void CoreZapInfoManager::load()
 
         addItemInfo(pCoreZapInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -178,8 +162,6 @@ void CoreZapInfoManager::load()
 void CoreZapLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<CoreZapObjectRow> rows =
@@ -301,8 +283,6 @@ void CoreZapLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -312,8 +292,6 @@ void CoreZapLoader::load(Creature* pCreature)
 void CoreZapLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<CoreZapZoneObjectRow> rows =
@@ -352,8 +330,6 @@ void CoreZapLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -363,12 +339,8 @@ void CoreZapLoader::load(Zone* pZone)
 void CoreZapLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

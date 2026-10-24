@@ -44,8 +44,6 @@ void LearningItem::create(const string& ownerID, Storage storage, StorageID_t st
                           ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -59,8 +57,6 @@ void LearningItem::create(const string& ownerID, Storage storage, StorageID_t st
 
     defaultItemObjectRepository().insertPlainItem(GEAR_LEARNING_ITEM, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                   (int)storage, storageID, (int)x, (int)y);
-
-    __END_CATCH
 }
 
 
@@ -70,11 +66,7 @@ void LearningItem::create(const string& ownerID, Storage storage, StorageID_t st
 void LearningItem::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_LEARNING_ITEM, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -83,12 +75,8 @@ void LearningItem::tinysave(const char* field) const
 void LearningItem::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updatePlainItem(GEAR_LEARNING_ITEM, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                   storageID, (int)x, (int)y, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -112,11 +100,7 @@ string LearningItem::toString() const
 VolumeWidth_t LearningItem::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LEARNINGITEM, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -126,11 +110,7 @@ VolumeWidth_t LearningItem::getVolumeWidth() const
 VolumeHeight_t LearningItem::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LEARNINGITEM, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -140,11 +120,7 @@ VolumeHeight_t LearningItem::getVolumeHeight() const
 Weight_t LearningItem::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LEARNINGITEM, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -170,8 +146,6 @@ string LearningItemInfo::toString() const
 void LearningItemInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_LEARNING_ITEM);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -195,8 +169,6 @@ void LearningItemInfoManager::load()
 
         addItemInfo(pLearningItemInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -206,8 +178,6 @@ void LearningItemInfoManager::load()
 void LearningItemLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<PlainObjectRow> rows =
@@ -291,8 +261,6 @@ void LearningItemLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -302,8 +270,6 @@ void LearningItemLoader::load(Creature* pCreature)
 void LearningItemLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<PlainZoneObjectRow> rows =
@@ -335,8 +301,6 @@ void LearningItemLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -346,12 +310,8 @@ void LearningItemLoader::load(Zone* pZone)
 void LearningItemLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

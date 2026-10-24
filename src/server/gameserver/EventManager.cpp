@@ -13,11 +13,7 @@
 EventManager::EventManager()
 
 {
-    __BEGIN_TRY
-
     Assert(m_Events.empty());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -26,14 +22,14 @@ EventManager::EventManager()
 EventManager::~EventManager()
 
 {
-    __BEGIN_TRY
-
-    while (!m_Events.empty()) {
-        SAFE_DELETE(m_Events.front());
-        m_Events.pop_front();
+    try {
+        while (!m_Events.empty()) {
+            SAFE_DELETE(m_Events.front());
+            m_Events.pop_front();
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -43,7 +39,6 @@ EventManager::~EventManager()
 void EventManager::addEvent(Event* pEvent)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pEvent != NULL);
@@ -59,7 +54,6 @@ void EventManager::addEvent(Event* pEvent)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -67,8 +61,6 @@ void EventManager::addEvent(Event* pEvent)
 Event* EventManager::getEvent(Event::EventClass EClass)
 
 {
-    __BEGIN_TRY
-
     list<Event*>::iterator itr = m_Events.begin();
 
     for (; itr != m_Events.end(); itr++) {
@@ -78,8 +70,6 @@ Event* EventManager::getEvent(Event::EventClass EClass)
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -87,8 +77,6 @@ Event* EventManager::getEvent(Event::EventClass EClass)
 void EventManager::deleteEvent(Event::EventClass EClass)
 
 {
-    __BEGIN_TRY
-
     list<Event*>::iterator current = m_Events.begin();
 
     while (current != m_Events.end()) {
@@ -103,8 +91,6 @@ void EventManager::deleteEvent(Event::EventClass EClass)
 
         current++;
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -112,8 +98,6 @@ void EventManager::deleteEvent(Event::EventClass EClass)
 void EventManager::heartbeat()
 
 {
-    __BEGIN_TRY
-
     // Measure the current time.
     Timeval currentTime;
     getCurrentTime(currentTime);
@@ -165,6 +149,4 @@ void EventManager::heartbeat()
             before = current++;
         }
     }
-
-    __END_CATCH
 }

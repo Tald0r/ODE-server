@@ -61,8 +61,6 @@ GuildWar::~GuildWar() {}
 void GuildWar::executeStart()
 
 {
-    __BEGIN_TRY
-
     sendWarStartMessage();
 
     // This part would be better moved into CastleInfo later.
@@ -92,15 +90,11 @@ void GuildWar::executeStart()
 
     // Record in the GuildWarHistory Table
     recordGuildWarStart();
-
-    __END_CATCH
 }
 
 void GuildWar::recordGuildWarStart()
 
 {
-    __BEGIN_TRY
-
     CastleInfo* pCastleInfo = de::gameContext().castleInfos().getCastleInfo(m_CastleZoneID);
 
     // It cannot be NULL, but just in case
@@ -112,8 +106,6 @@ void GuildWar::recordGuildWarStart()
         pCastleInfo->getName(), (int)pCastleInfo->getGuildID(),
         de::gameContext().guilds().getGuildName(pCastleInfo->getGuildID()), getChallangerGuildID(),
         de::gameContext().guilds().getGuildName(getChallangerGuildID()));
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -126,8 +118,6 @@ void GuildWar::recordGuildWarStart()
 void GuildWar::executeEnd()
 
 {
-    __BEGIN_TRY
-
     CastleInfoManager& castleInfos = de::gameContext().castleInfos();
 
     //----------------------------------------------------------------------------
@@ -178,15 +168,11 @@ void GuildWar::executeEnd()
 
     // Record in the GuildWarHistory Table
     recordGuildWarEnd();
-
-    __END_CATCH
 }
 
 void GuildWar::recordGuildWarEnd()
 
 {
-    __BEGIN_TRY
-
     defaultWarInfoRepository().updateGuildWarWinner(
         (int)m_WinnerGuildID, de::gameContext().guilds().getGuildName(m_WinnerGuildID), (int)getWarID());
 
@@ -198,15 +184,11 @@ void GuildWar::recordGuildWarEnd()
 
     filelog("script.log", cmd);
     system(cmd);
-
-    __END_CATCH
 }
 
 string GuildWar::getWarName() const
 
 {
-    __BEGIN_TRY
-
     ZoneInfo* pZoneInfo = NULL;
     Guild* pGuild = NULL;
 
@@ -229,8 +211,6 @@ string GuildWar::getWarName() const
     msg << pZoneInfo->getFullName() << " (guild war)";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -243,8 +223,6 @@ string GuildWar::getWarName() const
 bool GuildWar::isModifyCastleOwner(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     CastleInfo* pCastleInfo = de::gameContext().castleInfos().getCastleInfo(m_CastleZoneID);
@@ -264,8 +242,6 @@ bool GuildWar::isModifyCastleOwner(PlayerCreature* pPC)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 
@@ -279,8 +255,6 @@ bool GuildWar::isModifyCastleOwner(PlayerCreature* pPC)
 GuildID_t GuildWar::getWinnerGuildID(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     // in a guild war : pPC's GuildID when the applying guild is pPC's guild
@@ -294,15 +268,11 @@ GuildID_t GuildWar::getWinnerGuildID(PlayerCreature* pPC)
     }
 
     return pPC->getCommonGuildID();
-
-    __END_CATCH
 }
 
 bool GuildWar::endWar(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     // < castle owner change >
@@ -315,8 +285,6 @@ bool GuildWar::endWar(PlayerCreature* pPC)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -325,8 +293,6 @@ bool GuildWar::endWar(PlayerCreature* pPC)
 void GuildWar::sendWarEndMessage() const
 
 {
-    __BEGIN_TRY
-
     War::sendWarEndMessage();
 
     // The packet that confirms the safe zone release?
@@ -334,15 +300,11 @@ void GuildWar::sendWarEndMessage() const
     gcNoticeEvent.setCode(NOTICE_EVENT_WAR_OVER);
     gcNoticeEvent.setParameter(m_CastleZoneID);
     de::gameContext().zoneGroups().broadcast(&gcNoticeEvent);
-
-    __END_CATCH
 }
 
 void GuildWar::makeWarScheduleInfo(WarScheduleInfo* pWSI) const
 
 {
-    __BEGIN_TRY
-
     pWSI->warType = getWarType();
     pWSI->challengerGuildID[0] = getChallangerGuildID();
     for (int i = 1; i < 5; ++i)
@@ -350,15 +312,11 @@ void GuildWar::makeWarScheduleInfo(WarScheduleInfo* pWSI) const
     pWSI->reinforceGuildID = 0;
 
     pWSI->challengerGuildName[0] = de::gameContext().guilds().getGuildName(getChallangerGuildID());
-
-    __END_CATCH
 }
 
 void GuildWar::makeWarInfo(WarInfo* pWarInfo) const
 
 {
-    __BEGIN_TRY
-
     Assert(pWarInfo != NULL);
     Assert(pWarInfo->getWarType() == WAR_GUILD);
 
@@ -404,16 +362,12 @@ void GuildWar::makeWarInfo(WarInfo* pWarInfo) const
 
     pGuildWarInfo->setAttackGuildName(attackGuildName);
     pGuildWarInfo->setDefenseGuildName(defenseGuildName);
-
-    __END_CATCH
 }
 
 
 string GuildWar::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "GuildWar(" << "WarID:" << (int)getWarID() << ",State:" << (int)getState()
@@ -421,6 +375,4 @@ string GuildWar::toString() const
         << ",ChallengerGuildID:" << (int)m_ChallangerGuildID << ",RegistrationFee:" << (int)m_RegistrationFee << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

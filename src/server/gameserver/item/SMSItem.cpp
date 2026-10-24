@@ -46,8 +46,6 @@ SMSItem::SMSItem(ItemType_t itemType, const list<OptionType_t>& optionType)
 void SMSItem::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -61,8 +59,6 @@ void SMSItem::create(const string& ownerID, Storage storage, StorageID_t storage
 
     defaultItemObjectRepository().insertFlagItem(GEAR_SMSITEM, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                                  (int)storage, storageID, (int)x, (int)y, (int)m_CreateType);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -71,22 +67,14 @@ void SMSItem::create(const string& ownerID, Storage storage, StorageID_t storage
 void SMSItem::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_SMSITEM, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void SMSItem::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updatePlainItem(GEAR_SMSITEM, m_ObjectID, getItemType(), ownerID, (int)storage,
                                                   storageID, (int)x, (int)y, m_ItemID);
-
-    __END_CATCH
 }
 
 string SMSItem::toString() const
@@ -116,8 +104,6 @@ string SMSItemInfo::toString() const
 void SMSItemInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_SMSITEM);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -141,8 +127,6 @@ void SMSItemInfoManager::load()
 
         addItemInfo(pSMSItemInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -152,8 +136,6 @@ void SMSItemInfoManager::load()
 void SMSItemLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<FlagObjectRow> rows = defaultItemObjectRepository().loadFlagItemOfOwner(GEAR_SMSITEM, pCreature->getName());
@@ -245,15 +227,11 @@ void SMSItemLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void SMSItemLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<FlagZoneObjectRow> rows =
@@ -287,19 +265,13 @@ void SMSItemLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void SMSItemLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

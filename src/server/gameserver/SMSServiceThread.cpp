@@ -42,8 +42,6 @@ void operator++(string& id) {
 }
 
 void SMSServiceThread::run() {
-    __BEGIN_TRY
-
     Properties& config = de::kernelContext().config();
 
     if (de::isNetMarbleDeployment()) {
@@ -153,8 +151,6 @@ void SMSServiceThread::run() {
         // wakes this immediately instead of costing another second.
         pauseFor(std::chrono::seconds(1));
     }
-
-    __END_CATCH
 }
 
 string SMSServiceThread::getDBString(const string& msg) const {

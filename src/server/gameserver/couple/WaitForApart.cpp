@@ -24,8 +24,6 @@
 #include "item/VampireCoupleRing.h"
 
 uint WaitForApart::waitPartner(PlayerCreature* pTargetPC) {
-    __BEGIN_TRY
-
     if (pTargetPC == NULL)
         return COUPLE_MESSAGE_LOGOFF;
 
@@ -46,13 +44,9 @@ uint WaitForApart::waitPartner(PlayerCreature* pTargetPC) {
     pTargetPC->getPlayer()->sendPacket(&gcSystemMessage);
 
     return 0;
-
-    __END_CATCH
 }
 
 uint WaitForApart::acceptPartner(PlayerCreature* pRequestedPC) {
-    __BEGIN_TRY
-
     Assert(pRequestedPC != NULL);
 
     PlayerCreature* pWaitingPC = getWaitingPC();
@@ -89,12 +83,8 @@ uint WaitForApart::acceptPartner(PlayerCreature* pRequestedPC) {
     pWaitingPC->getFlagSet()->save(pWaitingPC->getName());
 
     return 0;
-
-    __END_CATCH
 }
 void WaitForApart::timeExpired() {
-    __BEGIN_TRY
-
     // Report that the parting was refused.
     GCNPCResponse gcNPCResponse;
     gcNPCResponse.setCode(NPC_RESPONSE_APART_WAIT_TIME_EXPIRED);
@@ -102,13 +92,9 @@ void WaitForApart::timeExpired() {
     PlayerCreature* pWaitingPC = getWaitingPC();
     if (pWaitingPC != NULL)
         pWaitingPC->getPlayer()->sendPacket(&gcNPCResponse);
-
-    __END_CATCH
 }
 
 bool WaitForApart::removeCoupleItem(PlayerCreature* pPC) {
-    __BEGIN_TRY
-
     // Search the fourth finger first.
     if (pPC->isSlayer()) {
         Slayer* pSlayer = dynamic_cast<Slayer*>(pPC);
@@ -180,8 +166,6 @@ bool WaitForApart::removeCoupleItem(PlayerCreature* pPC) {
     SAFE_DELETE(pCoupleItem);
 
     return true;
-
-    __END_CATCH
 }
 
 Item* WaitForApart::getCoupleItem(PlayerCreature* pPC) {

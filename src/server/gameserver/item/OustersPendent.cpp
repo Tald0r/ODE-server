@@ -55,8 +55,6 @@ void OustersPendent::create(const string& ownerID, Storage storage, StorageID_t 
                             ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -74,8 +72,6 @@ void OustersPendent::create(const string& ownerID, Storage storage, StorageID_t 
     defaultItemObjectRepository().insertGear(GEAR_OUSTERS_PENDENT, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                              (int)storage, storageID, (int)x, (int)y, optionField, getDurability(),
                                              getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -85,11 +81,7 @@ void OustersPendent::create(const string& ownerID, Storage storage, StorageID_t 
 void OustersPendent::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_OUSTERS_PENDENT, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -98,16 +90,12 @@ void OustersPendent::tinysave(const char* field) const
 void OustersPendent::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_OUSTERS_PENDENT, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -150,8 +138,6 @@ string OustersPendentInfo::toString() const
 void OustersPendentInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_OUSTERS_PENDENT);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -185,8 +171,6 @@ void OustersPendentInfoManager::load()
 
         addItemInfo(pOustersPendentInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -196,8 +180,6 @@ void OustersPendentInfoManager::load()
 void OustersPendentLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows =
@@ -311,8 +293,6 @@ void OustersPendentLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -322,8 +302,6 @@ void OustersPendentLoader::load(Creature* pCreature)
 void OustersPendentLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -364,8 +342,6 @@ void OustersPendentLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -375,12 +351,8 @@ void OustersPendentLoader::load(Zone* pZone)
 void OustersPendentLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

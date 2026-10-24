@@ -13,13 +13,9 @@
 EffectSwordOfThor::EffectSwordOfThor(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = X;
     m_Y = Y;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -27,22 +23,14 @@ EffectSwordOfThor::EffectSwordOfThor(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 void EffectSwordOfThor::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSwordOfThor::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectSwordOfThor(" << "Level:" << (int)m_Level << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -42,8 +42,6 @@ EventTransport::~EventTransport()
 void EventTransport::sendMessage()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pGamePlayer != NULL);
     Creature* pCreature = m_pGamePlayer->getCreature();
 
@@ -67,15 +65,12 @@ void EventTransport::sendMessage()
     pCreature->getPlayer()->sendPacket(&gcSystemMessage);
 
     // setNextTime( m_MessageTick );
-
-    __END_CATCH
 }
 
 
 void EventTransport::activate()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -116,7 +111,6 @@ void EventTransport::activate()
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EventTransport::toString() const

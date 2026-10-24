@@ -49,8 +49,6 @@ Fascia::Fascia(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Fascia::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -68,8 +66,6 @@ void Fascia::create(const string& ownerID, Storage storage, StorageID_t storageI
     defaultItemObjectRepository().insertOptionGradeItem(GEAR_FASCIA, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                                         (int)storage, storageID, (int)x, (int)y, optionField,
                                                         (int)getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -79,11 +75,7 @@ void Fascia::create(const string& ownerID, Storage storage, StorageID_t storageI
 void Fascia::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_FASCIA, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -92,16 +84,12 @@ void Fascia::tinysave(const char* field) const
 void Fascia::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateAmulet(GEAR_FASCIA, m_ObjectID, getItemType(), ownerID, (int)storage, storageID,
                                                (int)x, (int)y, optionField, getGrade(), (int)getEnchantLevel(),
                                                m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -142,8 +130,6 @@ string FasciaInfo::toString() const
 void FasciaInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_FASCIA);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -176,8 +162,6 @@ void FasciaInfoManager::load()
 
         addItemInfo(pFasciaInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -187,8 +171,6 @@ void FasciaInfoManager::load()
 void FasciaLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<OptionGradeObjectRow> rows =
@@ -298,8 +280,6 @@ void FasciaLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -308,11 +288,7 @@ void FasciaLoader::load(Creature* pCreature)
 //--------------------------------------------------------------------------------
 void FasciaLoader::load(Zone* pZone)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 //--------------------------------------------------------------------------------
@@ -320,8 +296,4 @@ void FasciaLoader::load(Zone* pZone)
 //--------------------------------------------------------------------------------
 void FasciaLoader::load(StorageID_t storageID, Inventory* pInventory)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}

@@ -15,11 +15,7 @@
 // Constructor
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
-SelfDestruction::SelfDestruction() {
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+SelfDestruction::SelfDestruction() {}
 
 //////////////////////////////////////////////////////////////////////////////
 // Monster self handler
@@ -27,9 +23,6 @@ SelfDestruction::SelfDestruction() {
 void SelfDestruction::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -82,9 +75,6 @@ void SelfDestruction::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 SelfDestruction g_SelfDestruction;

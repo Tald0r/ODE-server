@@ -14,8 +14,6 @@
 #include "ZoneUtil.h"
 
 void SkyFire::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -27,16 +25,11 @@ void SkyFire::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot* pSk
     }
 
     execute(pSlayer, pTargetCreature->getX(), pTargetCreature->getY(), pSkillSlot, CEffectID);
-
-    __END_CATCH
 }
 
 void SkyFire::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -67,8 +60,6 @@ void SkyFire::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* 
     // The target tile and the area around it.
 
     g_SimpleTileMissileSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-    __END_CATCH
 }
 
 SkyFire g_SkyFire;

@@ -44,8 +44,6 @@ Key::Key(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Key::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -59,8 +57,6 @@ void Key::create(const string& ownerID, Storage storage, StorageID_t storageID, 
 
     defaultItemObjectRepository().insertKey(GEAR_KEY, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                             storageID, (int)x, (int)y, m_Target);
-
-    __END_CATCH
 }
 
 
@@ -70,11 +66,7 @@ void Key::create(const string& ownerID, Storage storage, StorageID_t storageID, 
 void Key::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_KEY, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -83,17 +75,11 @@ void Key::tinysave(const char* field) const
 void Key::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateKey(GEAR_KEY, m_ObjectID, m_ItemType, ownerID, (int)storage, storageID, (int)x,
                                             (int)y, m_Target, m_ItemID);
-
-    __END_CATCH
 }
 
 ItemID_t Key::setNewMotorcycle(Slayer* pSlayer) {
-    __BEGIN_TRY
-
     ItemID_t targetID = 0;
 
     // Even when the target is not 0, a new motorcycle has to be put in if the target is missing.
@@ -132,8 +118,6 @@ ItemID_t Key::setNewMotorcycle(Slayer* pSlayer) {
     SAFE_DELETE(pMotorcycle);
 
     return targetID;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -156,11 +140,7 @@ string Key::toString() const
 VolumeWidth_t Key::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_KEY, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -170,11 +150,7 @@ VolumeWidth_t Key::getVolumeWidth() const
 VolumeHeight_t Key::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_KEY, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -184,11 +160,7 @@ VolumeHeight_t Key::getVolumeHeight() const
 Weight_t Key::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_KEY, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -214,8 +186,6 @@ string KeyInfo::toString() const
 void KeyInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_KEY);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -240,8 +210,6 @@ void KeyInfoManager::load()
 
         addItemInfo(pKeyInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -251,8 +219,6 @@ void KeyInfoManager::load()
 void KeyLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<KeyObjectRow> rows = defaultItemObjectRepository().loadKeyOfOwner(GEAR_KEY, pCreature->getName());
@@ -354,8 +320,6 @@ void KeyLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -365,8 +329,6 @@ void KeyLoader::load(Creature* pCreature)
 void KeyLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<KeyZoneObjectRow> rows =
@@ -400,8 +362,6 @@ void KeyLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -411,12 +371,8 @@ void KeyLoader::load(Zone* pZone)
 void KeyLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

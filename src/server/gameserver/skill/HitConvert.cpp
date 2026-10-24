@@ -17,9 +17,6 @@
 void HitConvert::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Item* pWeapon = pSlayer->getWearItem(Slayer::WEAR_RIGHTHAND);
     if (pWeapon == NULL || pWeapon->getItemClass() != Item::ITEM_CLASS_SWORD) {
         executeSkillFailException(pSlayer, getSkillType());
@@ -71,8 +68,6 @@ void HitConvert::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
             knockbackCreature(pSlayer->getZone(), pTargetCreature, pSlayer->getX(), pSlayer->getY());
         }
     }
-
-    __END_CATCH
 }
 
 HitConvert g_HitConvert;

@@ -74,8 +74,6 @@ string ShrineInfo::toString() const
 ShrineInfo& ShrineSet::getReturnGuardShrine()
 
 {
-    __BEGIN_TRY
-
     switch (m_OwnerRace) {
     case RACE_SLAYER:
         return m_SlayerGuardShrine;
@@ -91,8 +89,6 @@ ShrineInfo& ShrineSet::getReturnGuardShrine()
     // cannot reach here
     Assert(false);
     return m_SlayerGuardShrine;
-
-    __END_CATCH
 }
 
 ShrineSet::ShrineSet() {
@@ -107,8 +103,6 @@ ShrineSet::~ShrineSet() {
 Item* ShrineSet::createBloodBibleInGuardShrine()
 
 {
-    __BEGIN_TRY
-
     ShrineInfo* pShrineInfo = &getReturnGuardShrine();
     Zone* pZone = getZoneByZoneID(pShrineInfo->getZoneID());
     Assert(pZone != NULL);
@@ -129,54 +123,42 @@ Item* ShrineSet::createBloodBibleInGuardShrine()
     pShrine->addTreasure(pItem);
 
     return pItem;
-
-    __END_CATCH
 }
 
 void ShrineSet::setOwnerRace(Race_t race)
 
 {
-    __BEGIN_TRY
-
     de::gameContext().bloodBibleBonuses().setBloodBibleBonusRace(m_ShrineID, race);
 
     m_OwnerRace = race;
     saveBloodBibleOwner();
-
-    __END_CATCH
 }
 
 void ShrineSet::setBloodBibleStatus(GCBloodBibleStatus* pGCBBS)
 
 {
-    __BEGIN_TRY
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     SAFE_DELETE(m_pGCBBS);
     m_pGCBBS = pGCBBS;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-    __END_CATCH
 }
 
 void ShrineSet::sendBloodBibleStatus(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     if (m_pGCBBS != NULL)
         pPC->getPlayer()->sendPacket(m_pGCBBS);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-    __END_CATCH
 }
 
 void ShrineSet::broadcastBloodBibleStatus()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     //	if ( m_pGCBBS != NULL ) g_pHolyLandManager->broadcast( m_pGCBBS );
@@ -184,15 +166,11 @@ void ShrineSet::broadcastBloodBibleStatus()
         de::gameContext().zoneGroups().broadcast(m_pGCBBS);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 string ShrineSet::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ShrineSet(" << "ShrineID:" << (int)m_ShrineID << "," << m_SlayerGuardShrine.toString() << ","
@@ -200,8 +178,6 @@ string ShrineSet::toString() const
         << ",ItemType:" << (int)m_ItemType << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 ShrineInfoManager::~ShrineInfoManager() {
@@ -219,20 +195,14 @@ void ShrineInfoManager::clear() {
 void ShrineInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
 
     addAllShrineToZone();
-
-    __END_CATCH
 }
 
 void ShrineInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<ShrineRow> rows = defaultWarInfoRepository().loadShrines();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -285,16 +255,12 @@ void ShrineInfoManager::load()
 
         addShrineSet(pShrineSet);
     }
-
-    __END_CATCH
 }
 
 // Called on the ClientManager thread. It must not be called from anywhere else.
 void ShrineInfoManager::reloadOwner()
 
 {
-    __BEGIN_TRY
-
     bool bOwnerChanged = false;
 
     vector<ShrineOwnerRow> owners = defaultWarInfoRepository().loadShrineOwners();
@@ -319,16 +285,12 @@ void ShrineInfoManager::reloadOwner()
 
         de::gameContext().clients().addEvent_LOCKED(pEvent);
     }
-
-    __END_CATCH
 }
 
 
 void ShrineInfoManager::addAllShrineToZone()
 
 {
-    __BEGIN_TRY
-
     HashMapShrineSetItor itr = m_ShrineSets.begin();
     for (; itr != m_ShrineSets.end(); itr++) {
         ShrineSet* pShrineSet = itr->second;
@@ -345,15 +307,11 @@ void ShrineInfoManager::addAllShrineToZone()
 
         addShrineToZone(pShrineSet->getHolyShrine(), pShrineSet->getBloodBibleItemType());
     }
-
-    __END_CATCH
 }
 
 void ShrineInfoManager::addShrineToZone(ShrineInfo& shrineInfo, ItemType_t itemType)
 
 {
-    __BEGIN_TRY
-
     // A Holy Shrine is not added to the zone.
     if (shrineInfo.getShrineType() == ShrineInfo::SHRINE_HOLY)
         return;
@@ -404,15 +362,11 @@ void ShrineInfoManager::addShrineToZone(ShrineInfo& shrineInfo, ItemType_t itemT
     // Set the shrine coordinates anew.
     shrineInfo.setX(tp.x);
     shrineInfo.setY(tp.y);
-
-    __END_CATCH
 }
 
 void ShrineInfoManager::addShrineSet(ShrineSet* pShrineSet)
 
 {
-    __BEGIN_TRY
-
     if (pShrineSet == NULL)
         return;
 
@@ -426,30 +380,22 @@ void ShrineInfoManager::addShrineSet(ShrineSet* pShrineSet)
     }
 
     m_ShrineSets[shrineID] = pShrineSet;
-
-    __END_CATCH
 }
 
 void ShrineInfoManager::deleteShrineSet(ShrineID_t shrineID)
 
 {
-    __BEGIN_TRY
-
     HashMapShrineSetItor itr = m_ShrineSets.find(shrineID);
 
     if (itr != m_ShrineSets.end()) {
         SAFE_DELETE(itr->second);
         m_ShrineSets.erase(shrineID);
     }
-
-    __END_CATCH
 }
 
 ShrineSet* ShrineInfoManager::getShrineSet(ShrineID_t shrineID) const
 
 {
-    __BEGIN_TRY
-
     HashMapShrineSetConstItor itr = m_ShrineSets.find(shrineID);
 
     if (itr != m_ShrineSets.end()) {
@@ -457,15 +403,11 @@ ShrineSet* ShrineInfoManager::getShrineSet(ShrineID_t shrineID) const
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 bool ShrineInfoManager::isMatchGuardShrine(Item* pItem, MonsterCorpse* pMonsterCorpse, PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     if (pItem->getItemClass() != Item::ITEM_CLASS_BLOOD_BIBLE)
         return false;
 
@@ -490,16 +432,12 @@ bool ShrineInfoManager::isMatchGuardShrine(Item* pItem, MonsterCorpse* pMonsterC
     }
 
     return false;
-
-    __END_CATCH
 }
 
 
 bool ShrineInfoManager::isMatchHolyShrine(Item* pItem, MonsterCorpse* pMonsterCorpse) const
 
 {
-    __BEGIN_TRY
-
     if (pItem->getItemClass() != Item::ITEM_CLASS_BLOOD_BIBLE)
         return false;
 
@@ -516,15 +454,11 @@ bool ShrineInfoManager::isMatchHolyShrine(Item* pItem, MonsterCorpse* pMonsterCo
     // True when the MonsterType of the holy shrine of the Shrine set for this blood
     // bible equals the MonsterType of the MonsterCorpse passed in.
     return pShrineSet->getHolyShrine().getMonsterType() == pMonsterCorpse->getMonsterType();
-
-    __END_CATCH
 }
 
 bool ShrineInfoManager::isDefenderOfGuardShrine(PlayerCreature* pPC, MonsterCorpse* pShrine) const
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pShrine->getZone();
     Assert(pZone != NULL);
 
@@ -544,27 +478,19 @@ bool ShrineInfoManager::isDefenderOfGuardShrine(PlayerCreature* pPC, MonsterCorp
         return true;
 
     return false;
-
-    __END_CATCH
 }
 
 // Can this race pick up a blood bible fragment?
 bool ShrineInfoManager::canPickupBloodBible(Race_t race, BloodBible* pBloodBible) const
 
 {
-    __BEGIN_TRY
-
     // The blood bible is used only in race wars.
     return true;
-
-    __END_CATCH
 }
 
 bool ShrineInfoManager::getMatchGuardShrinePosition(Item* pItem, ZoneItemPosition& zip) const
 
 {
-    __BEGIN_TRY
-
     if (pItem->getItemClass() != Item::ITEM_CLASS_BLOOD_BIBLE)
         return false;
 
@@ -585,8 +511,6 @@ bool ShrineInfoManager::getMatchGuardShrinePosition(Item* pItem, ZoneItemPositio
     zip.setZoneY(GuardShrine.getY());
 
     return true;
-
-    __END_CATCH
 }
 
 // Called from putBloodBible, on the zone thread of the zone holding the shrine
@@ -594,8 +518,6 @@ bool ShrineInfoManager::getMatchGuardShrinePosition(Item* pItem, ZoneItemPositio
 bool ShrineInfoManager::returnBloodBible(ShrineID_t shrineID) const
 
 {
-    __BEGIN_TRY
-
     // Find the BloodBible related to shrineID using the DB information.
     ShrineSet* pShrineSet = getShrineSet(shrineID);
 
@@ -627,8 +549,6 @@ bool ShrineInfoManager::returnBloodBible(ShrineID_t shrineID) const
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool ShrineInfoManager::postBloodBibleReturn(ShrineID_t shrineID) const {
@@ -652,8 +572,6 @@ bool ShrineInfoManager::postBloodBibleReturn(ShrineID_t shrineID) const {
 bool ShrineInfoManager::returnAllBloodBible() const
 
 {
-    __BEGIN_TRY
-
     bool bReturned = false;
 
     HashMapShrineSetConstItor itr = m_ShrineSets.begin();
@@ -666,16 +584,12 @@ bool ShrineInfoManager::returnAllBloodBible() const
     }
 
     return bReturned;
-
-    __END_CATCH
 }
 
 
 bool ShrineInfoManager::returnBloodBible(Zone* pZone, BloodBible* pBloodBible) const
 
 {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
 
     Assert(pZone != NULL);
@@ -719,15 +633,11 @@ bool ShrineInfoManager::returnBloodBible(Zone* pZone, BloodBible* pBloodBible) c
     de::gameContext().holyLands().broadcast(&msgPkt);
 
     return true;
-
-    __END_CATCH
 }
 
 bool ShrineInfoManager::putBloodBible(PlayerCreature* pPC, Item* pItem, MonsterCorpse* pCorpse) const
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
     Assert(pItem != NULL);
     Assert(pCorpse != NULL);
@@ -773,8 +683,6 @@ bool ShrineInfoManager::putBloodBible(PlayerCreature* pPC, Item* pItem, MonsterC
     returnBloodBible(shrineID);
 
     return false;
-
-    __END_CATCH
 }
 
 // The guard shrines of a shrine set, one per race.
@@ -823,8 +731,6 @@ bool ShrineInfoManager::removeAllShrineShield() {
 bool ShrineInfoManager::removeShrineShield(ShrineInfo* pShrineInfo)
 
 {
-    __BEGIN_TRY
-
     ZoneID_t guardZoneID = pShrineInfo->getZoneID();
 
     Zone* pZone = getZoneByZoneID(guardZoneID);
@@ -864,8 +770,6 @@ bool ShrineInfoManager::removeShrineShield(ShrineInfo* pShrineInfo)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 void ShrineInfoManager::addAllShrineShield() {
@@ -879,8 +783,6 @@ void ShrineInfoManager::addAllShrineShield() {
 bool ShrineInfoManager::addShrineShield(ShrineInfo& shrineInfo)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = getZoneByZoneID(shrineInfo.getZoneID());
     Assert(pZone != NULL);
     pZone->getZoneGroup()->assertOwned();
@@ -911,15 +813,11 @@ bool ShrineInfoManager::addShrineShield(ShrineInfo& shrineInfo)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool ShrineInfoManager::saveBloodBibleOwner()
 
 {
-    __BEGIN_TRY
-
     // The original wrapped this loop in a BEGIN_DB block that created a
     // Statement it never used; each ShrineSet does its own write through
     // the repository.
@@ -932,40 +830,28 @@ bool ShrineInfoManager::saveBloodBibleOwner()
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool ShrineSet::saveBloodBibleOwner()
 
 {
-    __BEGIN_TRY
-
     defaultWarInfoRepository().saveShrineOwner((int)getOwnerRace(), (int)getShrineID());
 
     return true;
-
-    __END_CATCH
 }
 
 void ShrineInfoManager::registerBloodBibleStatus(ItemType_t m_Part, GCBloodBibleStatus* pGCBBS)
 
 {
-    __BEGIN_TRY
-
     ShrineSet* pShrineSet = getShrineSet(m_Part);
     Assert(pShrineSet != NULL);
 
     pShrineSet->setBloodBibleStatus(pGCBBS);
-
-    __END_CATCH
 }
 
 void ShrineInfoManager::sendBloodBibleStatus(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     HashMapShrineSetConstItor itr = m_ShrineSets.begin();
@@ -975,15 +861,11 @@ void ShrineInfoManager::sendBloodBibleStatus(PlayerCreature* pPC)
 
         pShrineSet->sendBloodBibleStatus(pPC);
     }
-
-    __END_CATCH
 }
 
 void ShrineInfoManager::broadcastBloodBibleStatus()
 
 {
-    __BEGIN_TRY
-
     HashMapShrineSetConstItor itr = m_ShrineSets.begin();
 
     for (; itr != m_ShrineSets.end(); itr++) {
@@ -991,15 +873,11 @@ void ShrineInfoManager::broadcastBloodBibleStatus()
 
         pShrineSet->broadcastBloodBibleStatus();
     }
-
-    __END_CATCH
 }
 
 string ShrineInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ShrineInfoManager(" << "Size:" << size() << ",(\n";
@@ -1013,6 +891,4 @@ string ShrineInfoManager::toString() const
     msg << "))";
 
     return msg.toString();
-
-    __END_CATCH
 }

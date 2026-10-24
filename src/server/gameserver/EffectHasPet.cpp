@@ -28,11 +28,7 @@
 EffectHasPet::EffectHasPet(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,12 +36,8 @@ EffectHasPet::EffectHasPet(Creature* pCreature)
 void EffectHasPet::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -53,8 +45,6 @@ void EffectHasPet::affect()
 void EffectHasPet::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL || !pCreature->isPC())
         return;
 
@@ -150,19 +140,13 @@ void EffectHasPet::affect(Creature* pCreature)
                  currentTime.toDateTime().c_str(), pPetInfo->getPetExp());
         pPetInfo->getPetItem()->tinysave(query);
     }
-
-    __END_CATCH
 }
 
 void EffectHasPet::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -170,7 +154,6 @@ void EffectHasPet::unaffect()
 void EffectHasPet::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectHasPet" << "unaffect BEGIN" << endl;
@@ -194,17 +177,12 @@ void EffectHasPet::unaffect(Creature* pCreature)
     // cout << "EffectHasPet" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHasPet::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectHasPet(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

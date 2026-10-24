@@ -25,8 +25,6 @@
 void SatelliteBomb::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     // Validate the arguments.
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
@@ -53,7 +51,6 @@ void SatelliteBomb::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlo
         // Tell the client the skill failed.
         executeSkillFailException(pSlayer, getSkillType());
     }
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -62,8 +59,6 @@ void SatelliteBomb::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlo
 void SatelliteBomb::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     try {
         // Get the Player that owns this Slayer.
         Player* pPlayer = pSlayer->getPlayer();
@@ -213,13 +208,9 @@ void SatelliteBomb::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, Skill
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-    __END_CATCH
 }
 
 void SatelliteBomb::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y) {
-    __BEGIN_TRY
-
     try {
         cout << pMonster->getName() << " use gunshotguiadance" << endl;
         Zone* pZone = pMonster->getZone();
@@ -321,8 +312,6 @@ void SatelliteBomb::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y) {
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-    __END_CATCH
 }
 
 SatelliteBomb g_SatelliteBomb;

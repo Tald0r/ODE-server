@@ -17,11 +17,7 @@
 EffectGrandMasterOusters::EffectGrandMasterOusters(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 Effect::EffectClass EffectGrandMasterOusters::getSendEffectClass() const {
@@ -44,12 +40,8 @@ Effect::EffectClass EffectGrandMasterOusters::getSendEffectClass() const {
 void EffectGrandMasterOusters::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,8 +49,6 @@ void EffectGrandMasterOusters::affect()
 void EffectGrandMasterOusters::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature->isOusters());
 
     pCreature->setFlag(Effect::EFFECT_CLASS_GRAND_MASTER_OUSTERS);
@@ -69,19 +59,13 @@ void EffectGrandMasterOusters::affect(Creature* pCreature)
     gcAddEffect.setEffectID(getSendEffectClass());
     gcAddEffect.setDuration(static_cast<Duration_t>(999999));
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
-
-    __END_CATCH
 }
 
 void EffectGrandMasterOusters::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -89,7 +73,6 @@ void EffectGrandMasterOusters::unaffect()
 void EffectGrandMasterOusters::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -105,17 +88,12 @@ void EffectGrandMasterOusters::unaffect(Creature* pCreature)
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectGrandMasterOusters::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectGrandMasterOusters(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

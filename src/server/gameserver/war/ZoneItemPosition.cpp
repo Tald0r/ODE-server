@@ -20,8 +20,6 @@
 Item* ZoneItemPosition::getItem_LOCKED(bool isDel)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = getZone();
     if (pZone == NULL) {
         filelog("ItemError.log", "ZoneItemPosition:getItem() : Invalid ZoneID.");
@@ -44,15 +42,11 @@ Item* ZoneItemPosition::getItem_LOCKED(bool isDel)
     }
 
     return pItem;
-
-    __END_CATCH
 }
 
 Item* ZoneItemPosition::getItem(bool isDel)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = getZone();
     if (pZone == NULL) {
         filelog("ItemError.log", "ZoneItemPosition:getItem() : Invalid ZoneID.");
@@ -85,27 +79,19 @@ Item* ZoneItemPosition::getItem(bool isDel)
     __LEAVE_CRITICAL_SECTION((*pZone))
 
     return pItem;
-
-    __END_CATCH
 }
 
 Item* ZoneItemPosition::popItem(bool bLock)
 
 {
-    __BEGIN_TRY
-
     if (bLock)
         return getItem(true);
     return getItem_LOCKED(true);
-
-    __END_CATCH
 }
 
 Item* ZoneItemPosition::getItemFromZone(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     VSRect rect(0, 0, pZone->getWidth() - 1, pZone->getHeight() - 1);
 
     if (!rect.ptInRect(m_ZoneX, m_ZoneY)) {
@@ -131,34 +117,24 @@ Item* ZoneItemPosition::getItemFromZone(Zone* pZone)
     }
 
     return pItem;
-
-    __END_CATCH
 }
 
 void ZoneItemPosition::deleteItemFromZone(Zone* pZone, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     pZone->deleteItem(pItem, m_ZoneX, m_ZoneY);
 
     GCDeleteObject gcDeleteObject(pItem->getObjectID());
     pZone->broadcastPacket(m_ZoneX, m_ZoneY, &gcDeleteObject);
-
-    __END_CATCH
 }
 
 string ZoneItemPosition::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ZoneItemPosition(" << "ZoneID:" << (int)m_ZoneID << ",ZoneX:" << (int)m_ZoneX << ",ZoneY:" << (int)m_ZoneY
         << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

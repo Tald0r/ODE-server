@@ -27,10 +27,10 @@
 void AttackArms::execute(Slayer* pSlayer, ObjectID_t TargetObjectID)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG
+    __BEGIN_DEBUG
 
 
-        Assert(pSlayer != NULL);
+    Assert(pSlayer != NULL);
 
     try {
         Player* pPlayer = pSlayer->getPlayer();
@@ -328,7 +328,7 @@ void AttackArms::execute(Slayer* pSlayer, ObjectID_t TargetObjectID)
     }
 
 
-    __END_DEBUG __END_CATCH
+    __END_DEBUG
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -337,9 +337,6 @@ void AttackArms::execute(Slayer* pSlayer, ObjectID_t TargetObjectID)
 void AttackArms::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
     Assert(pEnemy != NULL);
 
@@ -425,9 +422,6 @@ void AttackArms::execute(Monster* pMonster, Creature* pEnemy)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 AttackArms g_AttackArms;

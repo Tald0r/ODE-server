@@ -18,9 +18,6 @@
 void Reflection::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -93,17 +90,11 @@ void Reflection::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEf
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 
 // Does reflection happen?
 bool CheckReflection(Creature* pAttacker, Creature* pTargetCreature, SkillType_t SkillType) {
-    __BEGIN_TRY
-
-
     // Only a Slayer can use this skill.
     if (pAttacker == NULL || pTargetCreature == NULL || pTargetCreature->isSlayer() == false) {
         return false;
@@ -151,8 +142,6 @@ bool CheckReflection(Creature* pAttacker, Creature* pTargetCreature, SkillType_t
     }
 
     return false;
-
-    __END_CATCH
 }
 
 

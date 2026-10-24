@@ -64,8 +64,6 @@ SR::~SR()
 void SR::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -83,8 +81,6 @@ void SR::create(const string& ownerID, Storage storage, StorageID_t storageID, B
     defaultItemObjectRepository().insertGun(GEAR_SR, m_ItemID, m_ObjectID, getItemType(), ownerID, (int)storage,
                                             storageID, (int)x, (int)y, optionField, getDurability(),
                                             (int)getBulletCount(), (int)getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -94,11 +90,7 @@ void SR::create(const string& ownerID, Storage storage, StorageID_t storageID, B
 void SR::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGun(GEAR_SR, field, (int)getBulletCount(), m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -107,27 +99,19 @@ void SR::tinysave(const char* field) const
 void SR::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGun(GEAR_SR, m_ObjectID, getItemType(), ownerID, (int)storage, storageID,
                                             (int)x, (int)y, optionField, getDurability(), (int)getEnchantLevel(),
                                             (int)getBulletCount(), (int)getSilver(), (int)getGrade(), m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
 // save item
 //--------------------------------------------------------------------------------
 void SR::saveBullet() {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().saveGunBullet(GEAR_SR, getBulletCount(), m_ItemID);
-
-    __END_CATCH
 }
 
 void SR::makePCItemInfo(PCItemInfo& result) const {
@@ -175,8 +159,6 @@ string SRInfo::toString() const
 void SRInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_SR);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -214,8 +196,6 @@ void SRInfoManager::load()
 
         addItemInfo(pSRInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -225,8 +205,6 @@ void SRInfoManager::load()
 void SRLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GunObjectRow> rows = defaultItemObjectRepository().loadGunOfOwner(GEAR_SR, pCreature->getName());
@@ -331,8 +309,6 @@ void SRLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -342,8 +318,6 @@ void SRLoader::load(Creature* pCreature)
 void SRLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GunZoneObjectRow> rows =
@@ -386,8 +360,6 @@ void SRLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -397,12 +369,8 @@ void SRLoader::load(Zone* pZone)
 void SRLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

@@ -48,8 +48,6 @@ EventETC::EventETC(ItemType_t itemType, const list<OptionType_t>& optionType, It
 void EventETC::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -63,8 +61,6 @@ void EventETC::create(const string& ownerID, Storage storage, StorageID_t storag
 
     defaultItemObjectRepository().insertNumItem(GEAR_EVENT_ETC, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                 storageID, (int)x, (int)y, (int)m_Num, (int)m_CreateType);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -73,22 +69,14 @@ void EventETC::create(const string& ownerID, Storage storage, StorageID_t storag
 void EventETC::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_EVENT_ETC, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void EventETC::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumItem(GEAR_EVENT_ETC, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                 storageID, (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 string EventETC::toString() const
@@ -104,31 +92,19 @@ string EventETC::toString() const
 VolumeWidth_t EventETC::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_EVENT_ETC, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t EventETC::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_EVENT_ETC, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t EventETC::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_EVENT_ETC, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -148,8 +124,6 @@ string EventETCInfo::toString() const
 void EventETCInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_EVENT_ETC);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -173,8 +147,6 @@ void EventETCInfoManager::load()
 
         addItemInfo(pEventETCInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -184,8 +156,6 @@ void EventETCInfoManager::load()
 void EventETCLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumObjectRow> rows = defaultItemObjectRepository().loadNumItemOfOwner(GEAR_EVENT_ETC, pCreature->getName());
@@ -325,15 +295,11 @@ void EventETCLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void EventETCLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumZoneObjectRow> rows =
@@ -368,19 +334,13 @@ void EventETCLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void EventETCLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

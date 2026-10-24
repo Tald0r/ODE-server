@@ -31,9 +31,6 @@ void TransformToBat::execute(Vampire* pVampire, ObjectID_t InvenObjectID, CoordI
                              CoordInven_t TargetX, CoordInven_t TargetY, VampireSkillSlot* pSkillSlot)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -156,9 +153,6 @@ void TransformToBat::execute(Vampire* pVampire, ObjectID_t InvenObjectID, CoordI
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -167,9 +161,6 @@ void TransformToBat::execute(Vampire* pVampire, ObjectID_t InvenObjectID, CoordI
 void TransformToBat::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -232,9 +223,6 @@ void TransformToBat::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 

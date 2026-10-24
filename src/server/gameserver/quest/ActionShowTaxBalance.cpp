@@ -21,11 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionShowTaxBalance::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,8 +30,6 @@ void ActionShowTaxBalance::read(PropertyBuffer& propertyBuffer)
 void ActionShowTaxBalance::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -99,8 +93,6 @@ void ActionShowTaxBalance::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse quit;
     quit.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
     pPlayer->sendPacket(&quit);
-
-    __END_CATCH
 }
 
 
@@ -110,12 +102,8 @@ void ActionShowTaxBalance::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionShowTaxBalance::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionShowTaxBalance(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

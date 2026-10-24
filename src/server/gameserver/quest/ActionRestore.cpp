@@ -18,10 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionRestore::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Execute the action.
@@ -29,8 +26,6 @@ void ActionRestore::read(PropertyBuffer& propertyBuffer)
 void ActionRestore::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -51,8 +46,6 @@ void ActionRestore::execute(Creature* pCreature1, Creature* pCreature2)
 
     // Perform the restore.
     pRestore->execute(pNPC, pCreature2);
-
-    __END_CATCH
 }
 
 
@@ -62,11 +55,7 @@ void ActionRestore::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionRestore::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionRestore(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -17,11 +17,11 @@
 
 DomainInfo::DomainInfo()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 DomainInfo::~DomainInfo()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW}
+{}
 
 //--------------------------------------------------------------------------------
 // get debug string
@@ -29,7 +29,6 @@ DomainInfo::~DomainInfo()
 string DomainInfo::toString() const
 
 {
-    __BEGIN_TRY
     StringStream msg;
 
     msg << "DomainInfo(" << "DomainType : " << (int)m_Type << "Level : " << (int)m_Level
@@ -37,8 +36,6 @@ string DomainInfo::toString() const
         << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -48,9 +45,7 @@ string DomainInfo::toString() const
 //--------------------------------------------------------------------
 SkillDomainInfoManager::SkillDomainInfoManager()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 //--------------------------------------------------------------------
 //
@@ -60,13 +55,13 @@ SkillDomainInfoManager::SkillDomainInfoManager()
 SkillDomainInfoManager::~SkillDomainInfoManager()
 
 {
-    __BEGIN_TRY
-
-    for (int i = 0; i < SKILL_DOMAIN_MAX; i++)
-        for (int j = 0; j <= 150; j++)
-            SAFE_DELETE(m_DomainInfoLists[i][j]);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        for (int i = 0; i < SKILL_DOMAIN_MAX; i++)
+            for (int j = 0; j <= 150; j++)
+                SAFE_DELETE(m_DomainInfoLists[i][j]);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //--------------------------------------------------------------------
@@ -77,8 +72,6 @@ SkillDomainInfoManager::~SkillDomainInfoManager()
 void SkillDomainInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < SKILL_DOMAIN_MAX; i++) {
         int maxLevel = 0;
         if (!defaultBalanceInfoRepository().loadMaxDomainLevel(i, maxLevel)) {
@@ -109,24 +102,18 @@ void SkillDomainInfoManager::init()
             addDomainInfo(pDomainInfo);
         }
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
 // get item info
 //--------------------------------------------------------------------------------
 DomainInfo* SkillDomainInfoManager::getDomainInfo(SkillDomain DomainType, Level_t Level) const {
-    __BEGIN_TRY
-
     Assert(DomainType < SKILL_DOMAIN_MAX);
     Assert(Level < 151);
     Assert(m_DomainInfoLists[DomainType] != NULL);
     Assert(m_DomainInfoLists[DomainType][Level] != NULL);
 
     return m_DomainInfoLists[DomainType][Level];
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -135,8 +122,6 @@ DomainInfo* SkillDomainInfoManager::getDomainInfo(SkillDomain DomainType, Level_
 void SkillDomainInfoManager::addDomainInfo(DomainInfo* pDomainInfo) const
 
 {
-    __BEGIN_TRY
-
     SkillDomainType_t DomainType = pDomainInfo->getType();
     Level_t Level = pDomainInfo->getLevel();
 
@@ -145,8 +130,6 @@ void SkillDomainInfoManager::addDomainInfo(DomainInfo* pDomainInfo) const
     Assert(m_DomainInfoLists[DomainType][Level] == NULL);
 
     m_DomainInfoLists[DomainType][Level] = pDomainInfo;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -155,7 +138,6 @@ void SkillDomainInfoManager::addDomainInfo(DomainInfo* pDomainInfo) const
 string SkillDomainInfoManager::toString() const
 
 {
-    __BEGIN_TRY
     StringStream msg;
 
     msg << "SkillDomainInfoManager(";
@@ -174,5 +156,4 @@ string SkillDomainInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-    __END_CATCH
 }

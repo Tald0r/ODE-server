@@ -94,9 +94,6 @@ void Halo::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkillSlo
                    CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -140,9 +137,6 @@ void Halo::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkillSlo
             pZone->addEffect(pEffect);
         }
     }
-
-
-    __END_CATCH
 }
 
 Halo g_Halo;

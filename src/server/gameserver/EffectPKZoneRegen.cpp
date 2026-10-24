@@ -25,15 +25,11 @@
 EffectPKZoneRegen::EffectPKZoneRegen(Zone* pZone, ZoneCoord_t left, ZoneCoord_t top, ZoneCoord_t right,
                                      ZoneCoord_t bottom)
     : m_Rect(left, top, right, bottom) {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     Assert(left < right);
     Assert(top < bottom);
 
     m_bSlayer = m_bVampire = m_bOusters = false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -41,8 +37,6 @@ EffectPKZoneRegen::EffectPKZoneRegen(Zone* pZone, ZoneCoord_t left, ZoneCoord_t 
 void EffectPKZoneRegen::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     Assert(isValidZoneCoord(m_pZone, m_Rect.left, m_Rect.top));
@@ -67,8 +61,6 @@ void EffectPKZoneRegen::affect()
     }
 
     setNextTime(m_Turn);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -76,8 +68,6 @@ void EffectPKZoneRegen::affect()
 void EffectPKZoneRegen::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (!pCreature->isPC())
         return;
     if (pCreature->isDead())
@@ -189,15 +179,11 @@ void EffectPKZoneRegen::affect(Creature* pCreature)
             m_pZone->broadcastPacket(pOusters->getX(), pOusters->getY(), &gcHP, pOusters);
         }
     }
-
-    __END_CATCH
 }
 
 void EffectPKZoneRegen::unaffect()
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectPKZoneRegen[" << m_pZone->getZoneID() << "|(" << m_Rect.left << "," << m_Rect.top << ","
@@ -205,24 +191,18 @@ void EffectPKZoneRegen::unaffect()
 
     filelog("PKZone.txt", "EffectPKZoneRegen[%d|(%d,%d,%d,%d)] effect is gone.", m_pZone->getZoneID(), m_Rect.left,
             m_Rect.top, m_Rect.right, m_Rect.bottom);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectPKZoneRegen::unaffect(Creature* pCreature)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectPKZoneRegen::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectPKZoneRegen(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

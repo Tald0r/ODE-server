@@ -7,8 +7,6 @@
 #include "ZoneUtil.h"
 
 void EffectCastingIcicleTrap::affect() {
-    __BEGIN_TRY
-
     for (int i = 0; i < m_Unit; ++i) {
         ZoneCoord_t x, y;
 
@@ -60,13 +58,9 @@ void EffectCastingIcicleTrap::affect() {
     }
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 void EffectCastingSideTrap::affect() {
-    __BEGIN_TRY
-
     for (int i = 0; i < m_Unit; ++i) {
         ZoneCoord_t x, y;
         Dir_t dir180;
@@ -117,13 +111,9 @@ void EffectCastingSideTrap::affect() {
     }
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 void EffectCastingIceWall::affect() {
-    __BEGIN_TRY
-
     int trapCount = m_Length / m_WallLength;
     int pitch = 0;
 
@@ -158,6 +148,4 @@ void EffectCastingIceWall::affect() {
 
     m_State = (m_State + 1) % 2;
     setNextTime(m_Tick);
-
-    __END_CATCH
 }

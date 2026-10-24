@@ -85,8 +85,6 @@
 #include "skill/VampireCastleSkillSlot.h"
 
 void Vampire::initCastleSkill() {
-    __BEGIN_TRY
-
     removeAllCastleSkill();
 
     if (!getZone()->isHolyLand())
@@ -118,15 +116,11 @@ void Vampire::initCastleSkill() {
 
         addSkill(pCastleSkillSlot);
     }
-
-    __END_CATCH
 }
 
 void Vampire::initAllStat(int numPartyMember)
 
 {
-    __BEGIN_TRY
-
     BASIC_ATTR attr;
     Creature::CreatureClass CClass = getCreatureClass();
 
@@ -681,9 +675,6 @@ void Vampire::initAllStat(int numPartyMember)
         m_Resist[MAGIC_DOMAIN_CURSE] = 0;
         m_Resist[MAGIC_DOMAIN_BLOOD] = 0;
     }
-
-
-    __END_CATCH
 }
 
 int Vampire::getBloodBibleSignOpenNum() const {
@@ -725,8 +716,6 @@ int Vampire::getBloodBibleSignOpenNum() const {
 void Vampire::computeStatOffset()
 
 {
-    __BEGIN_TRY
-
     Creature::CreatureClass CClass = getCreatureClass();
     BASIC_ATTR cur_attr;
 
@@ -760,15 +749,11 @@ void Vampire::computeStatOffset()
 
     m_CriticalRatio[ATTR_CURRENT] = computeCriticalRatio(CClass, &cur_attr);
     m_CriticalRatio[ATTR_CURRENT] += m_CriticalRatio[ATTR_MAX];
-
-    __END_CATCH
 }
 
 void Vampire::computeItemStat(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (isVampireWeapon(pItem->getItemClass())) {
         // For a weapon, add the speed parameter the weapon carries.
         ItemInfo* pItemInfo = de::gameContext().itemInfos().getItemInfo(pItem->getItemClass(), pItem->getItemType());
@@ -809,15 +794,11 @@ void Vampire::computeItemStat(Item* pItem)
     for (iOptions = defaultOptions.begin(); iOptions != defaultOptions.end(); iOptions++) {
         computeOptionStat(*iOptions);
     }
-
-    __END_CATCH
 }
 
 void Vampire::computeOptionStat(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     // Fetch the option type.
 
     // Additional options
@@ -834,8 +815,6 @@ void Vampire::computeOptionStat(Item* pItem)
     for (iOptions = defaultOptions.begin(); iOptions != defaultOptions.end(); iOptions++) {
         computeOptionStat(*iOptions);
     }
-
-    __END_CATCH
 }
 
 void Vampire::computeOptionClassStat(OptionClass OClass, int PlusPoint) {
@@ -971,19 +950,13 @@ void Vampire::computeOptionClassStat(OptionClass OClass, int PlusPoint) {
 void Vampire::computeOptionStat(OptionType_t OptionType)
 
 {
-    __BEGIN_TRY
-
     OptionInfo* pOptionInfo = de::gameContext().optionInfos().getOptionInfo(OptionType);
     computeOptionClassStat(pOptionInfo->getClass(), pOptionInfo->getPlusPoint());
-
-    __END_CATCH
 }
 
 void Vampire::addModifyInfo(const VAMPIRE_RECORD& prev, ModifyInfo& pkt) const
 
 {
-    __BEGIN_TRY
-
     if (prev.pSTR[ATTR_CURRENT] != m_STR[ATTR_CURRENT])
         pkt.addShortData(MODIFY_CURRENT_STR, m_STR[ATTR_CURRENT]);
     if (prev.pSTR[ATTR_MAX] != m_STR[ATTR_MAX])
@@ -1029,15 +1002,11 @@ void Vampire::addModifyInfo(const VAMPIRE_RECORD& prev, ModifyInfo& pkt) const
         pkt.addShortData(MODIFY_RANK, getRank());
         pkt.addLongData(MODIFY_RANK_EXP, getRankGoalExp());
     }
-
-    __END_CATCH
 }
 
 void Vampire::sendModifyInfo(const VAMPIRE_RECORD& prev) const
 
 {
-    __BEGIN_TRY
-
     GCModifyInformation gcModifyInformation;
     addModifyInfo(prev, gcModifyInformation);
     m_pPlayer->sendPacket(&gcModifyInformation);
@@ -1046,8 +1015,6 @@ void Vampire::sendModifyInfo(const VAMPIRE_RECORD& prev) const
     GCBloodBibleSignInfo gcInfo;
     gcInfo.setSignInfo(pInfo);
     m_pPlayer->sendPacket(&gcInfo);
-
-    __END_CATCH
 }
 
 void Vampire::initAllStatAndSend() {

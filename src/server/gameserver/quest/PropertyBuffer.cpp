@@ -34,8 +34,6 @@ PropertyBuffer::PropertyBuffer(const string& buffer) {
 PropertyBuffer::~PropertyBuffer() {}
 
 string PropertyBuffer::getProperty(string key) {
-    __BEGIN_TRY
-
     size_t bufferLen = m_Buffer.size();
 
     while (m_Index < bufferLen) {
@@ -61,21 +59,13 @@ string PropertyBuffer::getProperty(string key) {
 
     cout << "PropertyBuffer::getProperty() : thers is no [" << key << "] element." << endl;
     throw NoSuchElementException(key);
-
-    __END_CATCH
 }
 
 int PropertyBuffer::getPropertyInt(string key) {
-    __BEGIN_TRY
-
     return atoi(getProperty(key).c_str());
-
-    __END_CATCH
 }
 
 bool PropertyBuffer::getProperty(string key, string& value) {
-    __BEGIN_TRY
-
     size_t bufferLen = m_Buffer.size();
 
     while (m_Index < bufferLen) {
@@ -101,13 +91,9 @@ bool PropertyBuffer::getProperty(string key, string& value) {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool PropertyBuffer::getPropertyInt(string key, int& value) {
-    __BEGIN_TRY
-
     string rstring;
 
     if (getProperty(key, rstring)) {
@@ -116,21 +102,15 @@ bool PropertyBuffer::getPropertyInt(string key, int& value) {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // get debug string
 ////////////////////////////////////////////////////////////////////////////////
 string PropertyBuffer::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "PropertyBuffer(" << "Index:" << m_Index << ",Buffer:" << m_Buffer << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

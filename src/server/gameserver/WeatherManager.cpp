@@ -29,10 +29,7 @@
 //--------------------------------------------------------------------------------
 WeatherManager::~WeatherManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 
 //--------------------------------------------------------------------------------
@@ -41,8 +38,6 @@ WeatherManager::~WeatherManager()
 void WeatherManager::init()
 
 {
-    __BEGIN_TRY
-
     //--------------------------------------------------------------------------------
     // Set today's weather.
     //--------------------------------------------------------------------------------
@@ -95,8 +90,6 @@ void WeatherManager::init()
     // Compute how many game-time seconds remain until the next ten-minute mark.
     dSec = (9 - ltm.tm_min / 10) * 60 + (60 - ltm.tm_sec);
     m_Next10Min = currentTime + dSec / 5;
-
-    __END_CATCH
 }
 
 

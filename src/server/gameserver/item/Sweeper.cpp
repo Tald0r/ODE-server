@@ -55,8 +55,6 @@ Sweeper::Sweeper(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Sweeper::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -71,8 +69,6 @@ void Sweeper::create(const string& ownerID, Storage storage, StorageID_t storage
     const string sql = defaultItemObjectRepository().insertWarItem(
         GEAR_SWEEPER, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage, storageID, (int)x, (int)y, m_Durability);
     filelog("WarLog.txt", "%s", sql.c_str());
-
-    __END_CATCH
 }
 
 
@@ -82,15 +78,11 @@ void Sweeper::create(const string& ownerID, Storage storage, StorageID_t storage
 void Sweeper::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     char query[255];
 
     snprintf(query, sizeof(query), "UPDATE SweeperObject SET %s WHERE ItemID=%u", field, m_ItemID);
     defaultItemObjectRepository().tinysaveGear(GEAR_SWEEPER, field, m_ItemID);
     filelog("WarLog.txt", "%s", query);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -99,12 +91,8 @@ void Sweeper::tinysave(const char* field) const
 void Sweeper::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateWarItem(GEAR_SWEEPER, m_ObjectID, m_ItemType, ownerID, (int)storage, storageID,
                                                 (int)x, (int)y, m_Durability, (int)m_EnchantLevel, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -129,11 +117,7 @@ string Sweeper::toString() const
 VolumeWidth_t Sweeper::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SWEEPER, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -143,11 +127,7 @@ VolumeWidth_t Sweeper::getVolumeWidth() const
 VolumeHeight_t Sweeper::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SWEEPER, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -157,11 +137,7 @@ VolumeHeight_t Sweeper::getVolumeHeight() const
 Weight_t Sweeper::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SWEEPER, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -171,20 +147,12 @@ Weight_t Sweeper::getWeight() const
 Defense_t Sweeper::getDefenseBonus() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SWEEPER, m_ItemType)->getDefenseBonus();
-
-    __END_CATCH
 }
 Protection_t Sweeper::getProtectionBonus() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SWEEPER, m_ItemType)->getProtectionBonus();
-
-    __END_CATCH
 }
 
 
@@ -211,8 +179,6 @@ string SweeperInfo::toString() const
 void SweeperInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_SWEEPER);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -240,8 +206,6 @@ void SweeperInfoManager::load()
 
         addItemInfo(pSweeperInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -251,16 +215,12 @@ void SweeperInfoManager::load()
 void SweeperLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     // Anything left to load for a Sweeper means, as things stand,
     // that the server went down earlier.
     // So it is deleted.
     defaultItemObjectRepository().deleteWarItemsOfOwner(GEAR_SWEEPER, pCreature->getName());
-
-    __END_CATCH
 }
 
 
@@ -270,8 +230,6 @@ void SweeperLoader::load(Creature* pCreature)
 void SweeperLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<WarItemZoneObjectRow> rows =
@@ -306,8 +264,6 @@ void SweeperLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -317,12 +273,8 @@ void SweeperLoader::load(Zone* pZone)
 void SweeperLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

@@ -23,25 +23,17 @@
 ActionSimpleQuestRegen::ActionSimpleQuestRegen()
 
 {
-    __BEGIN_TRY
-
     m_Period.tv_sec = 0;
     m_Period.tv_usec = 0;
     m_NextRegen.tv_sec = 0;
     m_NextRegen.tv_usec = 0;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ActionSimpleQuestRegen::~ActionSimpleQuestRegen()
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,8 +41,6 @@ ActionSimpleQuestRegen::~ActionSimpleQuestRegen()
 void ActionSimpleQuestRegen::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // Read the shop update period. (in seconds)
         int nSecond = propertyBuffer.getPropertyInt("Period");
@@ -64,8 +54,6 @@ void ActionSimpleQuestRegen::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -75,10 +63,7 @@ void ActionSimpleQuestRegen::read(PropertyBuffer& propertyBuffer)
 ////////////////////////////////////////////////////////////////////////////////
 void ActionSimpleQuestRegen::execute(Creature* pCreature1, Creature* pCreature2)
 
-    {__BEGIN_TRY
-
-
-         __END_CATCH}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,13 +72,9 @@ void ActionSimpleQuestRegen::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionSimpleQuestRegen::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ActionSimpleQuestRegen()";
 
     return msg.toString();
-
-    __END_CATCH
 }

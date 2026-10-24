@@ -14,9 +14,6 @@
 void WindDivider::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -34,9 +31,6 @@ void WindDivider::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot*
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -45,9 +39,6 @@ void WindDivider::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot*
 void WindDivider::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -70,9 +61,6 @@ void WindDivider::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSl
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleLinearMeleeSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 WindDivider g_WindDivider;

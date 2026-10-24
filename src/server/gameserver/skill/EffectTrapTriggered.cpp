@@ -15,37 +15,23 @@
 EffectTrapTriggered::EffectTrapTriggered(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectTrapTriggered::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectTrapTriggered::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 void EffectTrapTriggered::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -65,15 +51,10 @@ void EffectTrapTriggered::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EffectTrapTriggered::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectTrapTriggered(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

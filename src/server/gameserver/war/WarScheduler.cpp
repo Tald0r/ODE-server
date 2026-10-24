@@ -51,39 +51,37 @@ WarScheduler::~WarScheduler()
 bool WarScheduler::makeGCWarScheduleList(GCWarScheduleList* pGCWarScheduleList) const
 
 {
-    __BEGIN_TRY
+    {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        const RecentSchedules::container_type& Schedules = m_RecentSchedules.getSchedules();
+        RecentSchedules::const_iterator itr = Schedules.begin();
 
-    const RecentSchedules::container_type& Schedules = m_RecentSchedules.getSchedules();
-    RecentSchedules::const_iterator itr = Schedules.begin();
+        for (; itr != Schedules.end(); itr++) {
+            const WarSchedule* pWarSchedule = dynamic_cast<WarSchedule*>(*itr);
+            Assert(pWarSchedule != NULL);
 
-    for (; itr != Schedules.end(); itr++) {
-        const WarSchedule* pWarSchedule = dynamic_cast<WarSchedule*>(*itr);
-        Assert(pWarSchedule != NULL);
+            WarScheduleInfo* pWSI = new WarScheduleInfo;
+            pWarSchedule->makeWarScheduleInfo(pWSI);
 
-        WarScheduleInfo* pWSI = new WarScheduleInfo;
-        pWarSchedule->makeWarScheduleInfo(pWSI);
-
-        pGCWarScheduleList->addWarScheduleInfo(pWSI);
-    }
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    // When the automatic start is configured, the race war information always
-    // goes in. It is the war system's, answered under its own mutex, and needs
-    // nothing from this scheduler, so it is asked after this mutex is released
-    // (see the lock order in WarSystem.h).
-    if (de::gameContext().variables().isAutoStartRaceWar()) {
-        WarScheduleInfo* pWSI = new WarScheduleInfo;
-        if (de::gameContext().warSystem().addRaceWarScheduleInfo(pWSI)) {
             pGCWarScheduleList->addWarScheduleInfo(pWSI);
-        } else {
-            SAFE_DELETE(pWSI);
+        }
+
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+
+        // When the automatic start is configured, the race war information always
+        // goes in. It is the war system's, answered under its own mutex, and needs
+        // nothing from this scheduler, so it is asked after this mutex is released
+        // (see the lock order in WarSystem.h).
+        if (de::gameContext().variables().isAutoStartRaceWar()) {
+            WarScheduleInfo* pWSI = new WarScheduleInfo;
+            if (de::gameContext().warSystem().addRaceWarScheduleInfo(pWSI)) {
+                pGCWarScheduleList->addWarScheduleInfo(pWSI);
+            } else {
+                SAFE_DELETE(pWSI);
+            }
         }
     }
-
-    __END_CATCH
 
     return true;
 }
@@ -101,8 +99,6 @@ bool WarScheduler::makeGCWarScheduleList(GCWarScheduleList* pGCWarScheduleList) 
 Work* WarScheduler::heartbeat()
 
 {
-    __BEGIN_TRY
-
     Schedule* pDue = NULL;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -130,15 +126,11 @@ Work* WarScheduler::heartbeat()
     SAFE_DELETE(pDue);
 
     return pWork;
-
-    __END_CATCH
 }
 
 void WarScheduler::load()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     clear();
@@ -228,15 +220,11 @@ void WarScheduler::load()
     // If no race war is set, set one.
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 int WarScheduler::getWarTypeCount(WarType_t warType)
 
 {
-    __BEGIN_TRY
-
     int raceWarCount = 0;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -258,15 +246,11 @@ int WarScheduler::getWarTypeCount(WarType_t warType)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return raceWarCount;
-
-    __END_CATCH
 }
 
 void WarScheduler::tinysave(WarID_t warID, const string& query)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     RecentSchedules::const_iterator itr = m_RecentSchedules.getSchedules().begin();
@@ -283,8 +267,6 @@ void WarScheduler::tinysave(WarID_t warID, const string& query)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     filelog("WarError.log", "WarScheduler::tinySave() no WarSchedule with WarID:%d in the DB.", warID);
-
-    __END_CATCH
 }
 
 VSDateTime WarScheduler::getLastWarDateTime(WarType_t warType) const {
@@ -355,8 +337,6 @@ VSDateTime WarScheduler::getNextWarDateTime(WarType_t warType) const {
 bool WarScheduler::addWar(War* pWar)
 
 {
-    __BEGIN_TRY
-
     WarType_t warType = pWar->getWarType();
     VSDateTime warStartTime = getNextWarDateTime(warType);
     pWar->setWarStartTime(warStartTime);
@@ -385,32 +365,22 @@ bool WarScheduler::addWar(War* pWar)
 
 
     return true;
-
-    __END_CATCH
 }
 
 bool WarScheduler::canAddWar(WarType_t warType)
 
 {
-    __BEGIN_TRY
-
     return getSize() < MaxWarSchedule;
-
-    __END_CATCH
 }
 
 void WarScheduler::cancelGuildSchedules()
 
 {
-    __BEGIN_TRY
-
     defaultWarInfoRepository().cancelGuildWarSchedules(de::kernelContext().config().getPropertyInt("ServerID"),
                                                        m_pZone->getZoneID());
 
     // Load it again.
     load();
-
-    __END_CATCH
 }
 
 void WarScheduler::cancelGuildSchedulesOf(GuildID_t gID) {
@@ -471,8 +441,6 @@ void WarScheduler::cancelGuildSchedulesOf(GuildID_t gID) {
 }
 
 bool WarScheduler::hasSchedule(GuildID_t gID) {
-    __BEGIN_TRY
-
     // The callers are on other threads, so the walk takes the mutex every
     // sibling takes.
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -497,6 +465,4 @@ bool WarScheduler::hasSchedule(GuildID_t gID) {
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return false;
-
-    __END_CATCH
 }

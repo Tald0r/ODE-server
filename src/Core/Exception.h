@@ -23,18 +23,25 @@
 //
 // class Throwable
 //
-// Base interface for exceptions and errors. Stores a message and a
-// stack trace for debugging.
+// Base interface for exceptions and errors. Stores a message, the throw
+// site and a stack trace for debugging.
+//
+// The throw site is the file, line and function where the object was
+// constructed, which for `throw X(...)` is the throw expression: every
+// constructor takes it from a defaulted std::source_location, which is
+// evaluated at the caller. The derived classes inherit the message
+// constructor with `using`, which keeps that default at the caller, and
+// declare their default constructor themselves, because an implicit one
+// would record a line of this header instead.
 //
 //////////////////////////////////////////////////////////////////////
 
 class Throwable : public std::exception {
 public:
-    // constructor
-    Throwable() {}
+    Throwable(const std::source_location& where = std::source_location::current()) : m_ThrowSite(where) {}
 
-    // constructor
-    Throwable(const string& message) : m_Message(message) {}
+    Throwable(const string& message, const std::source_location& where = std::source_location::current())
+        : m_Message(message), m_ThrowSite(where) {}
 
     // destructor
     virtual ~Throwable() {}
@@ -81,10 +88,25 @@ public:
         m_Message = message;
     }
 
+    // where the object was constructed
+    const std::source_location& getThrowSite() const {
+        return m_ThrowSite;
+    }
+
+    // "thrown at <file>:<line> in <function>", newline-terminated: the line
+    // toString() prints between the message and the stack trace
+    string getThrowSiteLine() const {
+        StringStream buf;
+        buf << "thrown at " << m_ThrowSite.file_name() << ':' << (uint)m_ThrowSite.line() << " in "
+            << m_ThrowSite.function_name() << '\n';
+
+        return buf.toString();
+    }
+
     // return debug string - throwable object's detailed information
     virtual string toString() const {
         StringStream buf;
-        buf << getName() << " : " << m_Message << '\n' << getStackTrace();
+        buf << getName() << " : " << m_Message << '\n' << getThrowSiteLine() << getStackTrace();
 
         return string(buf.toString());
     }
@@ -92,6 +114,9 @@ public:
 private:
     // message string
     string m_Message;
+
+    // where the object was constructed
+    std::source_location m_ThrowSite;
 
     // function stack
     list<string> m_Stacks;
@@ -110,9 +135,10 @@ private:
 //--------------------------------------------------------------------------------
 
 // No build defines NDEBUG (see the top-level CMakeLists.txt): these macros
-// have one meaning, and 344 call sites use __END_CATCH_NO_RETHROW to swallow
-// exceptions that would otherwise escape. A translation unit compiled with
-// NDEBUG is refused rather than given a second set.
+// have one meaning, and every call site that closes with
+// __END_CATCH_NO_RETHROW relies on that macro to swallow exceptions that
+// would otherwise escape. A translation unit compiled with NDEBUG is refused
+// rather than given a second set.
 #if defined(NDEBUG)
 #error "NDEBUG must not be defined for DarkEden sources (see the top-level CMakeLists.txt)"
 #endif
@@ -264,8 +290,8 @@ private:
 //////////////////////////////////////////////////////////////////////
 class Exception : public Throwable {
 public:
-    Exception() : Throwable() {}
-    Exception(const string& msg) : Throwable(msg) {}
+    using Throwable::Throwable;
+    Exception(const std::source_location& where = std::source_location::current()) : Throwable(where) {}
     string getName() const {
         return "Exception";
     }
@@ -281,8 +307,8 @@ public:
 // Errors that can occur during read/write or IPC operations.
 class IOException : public Exception {
 public:
-    IOException() : Exception() {}
-    IOException(const string& msg) : Exception(msg) {}
+    using Exception::Exception;
+    IOException(const std::source_location& where = std::source_location::current()) : Exception(where) {}
     string getName() const {
         return "IOException";
     }
@@ -297,8 +323,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class NonBlockingIOException : public IOException {
 public:
-    NonBlockingIOException() : IOException() {}
-    NonBlockingIOException(const string& msg) : IOException(msg) {}
+    using IOException::IOException;
+    NonBlockingIOException(const std::source_location& where = std::source_location::current()) : IOException(where) {}
     string getName() const {
         return "NonBlockingIOException";
     }
@@ -313,8 +339,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class InterruptedIOException : public IOException {
 public:
-    InterruptedIOException() : IOException() {}
-    InterruptedIOException(const string& msg) : IOException(msg) {}
+    using IOException::IOException;
+    InterruptedIOException(const std::source_location& where = std::source_location::current()) : IOException(where) {}
     string getName() const {
         return "InterruptedIOException";
     }
@@ -329,8 +355,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class EOFException : public IOException {
 public:
-    EOFException() : IOException() {}
-    EOFException(const string& msg) : IOException(msg) {}
+    using IOException::IOException;
+    EOFException(const std::source_location& where = std::source_location::current()) : IOException(where) {}
     string getName() const {
         return "EOFException";
     }
@@ -343,8 +369,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class FileNotOpenedException : public IOException {
 public:
-    FileNotOpenedException() : IOException() {}
-    FileNotOpenedException(const string& msg) : IOException(msg) {}
+    using IOException::IOException;
+    FileNotOpenedException(const std::source_location& where = std::source_location::current()) : IOException(where) {}
     string getName() const {
         return "FileNotOpenedException";
     }
@@ -357,8 +383,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class FileAlreadyExistException : public IOException {
 public:
-    FileAlreadyExistException() : IOException() {}
-    FileAlreadyExistException(const string& msg) : IOException(msg) {}
+    using IOException::IOException;
+    FileAlreadyExistException(const std::source_location& where = std::source_location::current())
+        : IOException(where) {}
     string getName() const {
         return "FileAlreadyExistException";
     }
@@ -371,8 +398,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class FileNotExistException : public IOException {
 public:
-    FileNotExistException() : IOException() {}
-    FileNotExistException(const string& msg) : IOException(msg) {}
+    using IOException::IOException;
+    FileNotExistException(const std::source_location& where = std::source_location::current()) : IOException(where) {}
     string getName() const {
         return "FileNotExistException";
     }
@@ -387,8 +414,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class TimeoutException : public IOException {
 public:
-    TimeoutException() : IOException() {}
-    TimeoutException(const string& msg) : IOException(msg) {}
+    using IOException::IOException;
+    TimeoutException(const std::source_location& where = std::source_location::current()) : IOException(where) {}
     string getName() const {
         return "TimeoutException";
     }
@@ -403,8 +430,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class SocketException : public IOException {
 public:
-    SocketException() : IOException() {}
-    SocketException(const string& msg) : IOException(msg) {}
+    using IOException::IOException;
+    SocketException(const std::source_location& where = std::source_location::current()) : IOException(where) {}
     string getName() const {
         return "SocketException";
     }
@@ -419,8 +446,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class BindException : public SocketException {
 public:
-    BindException() : SocketException() {}
-    BindException(const string& msg) : SocketException(msg) {}
+    using SocketException::SocketException;
+    BindException(const std::source_location& where = std::source_location::current()) : SocketException(where) {}
     string getName() const {
         return "BindException";
     }
@@ -435,8 +462,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class ConnectException : public SocketException {
 public:
-    ConnectException() : SocketException() {}
-    ConnectException(const string& msg) : SocketException(msg) {}
+    using SocketException::SocketException;
+    ConnectException(const std::source_location& where = std::source_location::current()) : SocketException(where) {}
     string getName() const {
         return "ConnectException";
     }
@@ -446,7 +473,8 @@ public:
 // Existing connection cleanup still catches this through ConnectException.
 class PeerClosedException : public ConnectException {
 public:
-    PeerClosedException() : ConnectException("connect closed.") {}
+    PeerClosedException(const std::source_location& where = std::source_location::current())
+        : ConnectException("connect closed.", where) {}
     string getName() const override {
         return "PeerClosedException";
     }
@@ -461,8 +489,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class ProtocolException : public IOException {
 public:
-    ProtocolException() : IOException() {}
-    ProtocolException(const string& msg) : IOException(msg) {}
+    using IOException::IOException;
+    ProtocolException(const std::source_location& where = std::source_location::current()) : IOException(where) {}
     string getName() const {
         return "ProtocolException";
     }
@@ -477,8 +505,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class IdleException : public ProtocolException {
 public:
-    IdleException() : ProtocolException() {}
-    IdleException(const string& msg) : ProtocolException(msg) {}
+    using ProtocolException::ProtocolException;
+    IdleException(const std::source_location& where = std::source_location::current()) : ProtocolException(where) {}
     string getName() const {
         return "IdleException";
     }
@@ -494,8 +522,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class InvalidProtocolException : public ProtocolException {
 public:
-    InvalidProtocolException() : ProtocolException() {}
-    InvalidProtocolException(const string& msg) : ProtocolException(msg) {}
+    using ProtocolException::ProtocolException;
+    InvalidProtocolException(const std::source_location& where = std::source_location::current())
+        : ProtocolException(where) {}
     string getName() const {
         return "InvalidProtocolException";
     }
@@ -510,8 +539,11 @@ public:
 //////////////////////////////////////////////////////////////////////
 class InsufficientDataException : public ProtocolException {
 public:
-    InsufficientDataException(uint size = 0) : ProtocolException(), m_Size(size) {}
-    InsufficientDataException(const string& msg, uint size = 0) : ProtocolException(msg), m_Size(size) {}
+    InsufficientDataException(uint size = 0, const std::source_location& where = std::source_location::current())
+        : ProtocolException(where), m_Size(size) {}
+    InsufficientDataException(const string& msg, uint size = 0,
+                              const std::source_location& where = std::source_location::current())
+        : ProtocolException(msg, where), m_Size(size) {}
     string getName() const {
         return "InsufficientDataException";
     }
@@ -522,9 +554,9 @@ public:
         StringStream buf;
         buf << getName() << " : " << getMessage();
         if (m_Size > 0) {
-            buf << " (lack of " << m_Size << " bytes)\n";
+            buf << " (lack of " << m_Size << " bytes)";
         }
-        buf << getStackTrace();
+        buf << '\n' << getThrowSiteLine() << getStackTrace();
 
         return buf.toString();
     }
@@ -540,8 +572,9 @@ private:
 //////////////////////////////////////////////////////////////////////
 class DisconnectException : public ProtocolException {
 public:
-    DisconnectException() : ProtocolException() {}
-    DisconnectException(const string& msg) : ProtocolException(msg) {}
+    using ProtocolException::ProtocolException;
+    DisconnectException(const std::source_location& where = std::source_location::current())
+        : ProtocolException(where) {}
     string getName() const {
         return "DisconnectException";
     }
@@ -554,8 +587,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class IgnorePacketException : public ProtocolException {
 public:
-    IgnorePacketException() : ProtocolException() {}
-    IgnorePacketException(const string& msg) : ProtocolException(msg) {}
+    using ProtocolException::ProtocolException;
+    IgnorePacketException(const std::source_location& where = std::source_location::current())
+        : ProtocolException(where) {}
     string getName() const {
         return "IgnorePacketException";
     }
@@ -571,8 +605,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class ThreadException : public Exception {
 public:
-    ThreadException() : Exception() {}
-    ThreadException(const string& msg) : Exception(msg) {}
+    using Exception::Exception;
+    ThreadException(const std::source_location& where = std::source_location::current()) : Exception(where) {}
     string getName() const {
         return "ThreadException";
     }
@@ -587,8 +621,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class MutexException : public ThreadException {
 public:
-    MutexException() : ThreadException() {}
-    MutexException(const string& msg) : ThreadException(msg) {}
+    using ThreadException::ThreadException;
+    MutexException(const std::source_location& where = std::source_location::current()) : ThreadException(where) {}
     string getName() const {
         return "MutexException";
     }
@@ -603,8 +637,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class MutexAttrException : public MutexException {
 public:
-    MutexAttrException() : MutexException() {}
-    MutexAttrException(const string& msg) : MutexException(msg) {}
+    using MutexException::MutexException;
+    MutexAttrException(const std::source_location& where = std::source_location::current()) : MutexException(where) {}
     string getName() const {
         return "MutexAttrException";
     }
@@ -620,8 +654,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class CondVarException : public ThreadException {
 public:
-    CondVarException() : ThreadException() {}
-    CondVarException(const string& msg) : ThreadException(msg) {}
+    using ThreadException::ThreadException;
+    CondVarException(const std::source_location& where = std::source_location::current()) : ThreadException(where) {}
     string getName() const {
         return "CondVarException";
     }
@@ -636,8 +670,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class SemaphoreException : public ThreadException {
 public:
-    SemaphoreException() : ThreadException() {}
-    SemaphoreException(const string& msg) : ThreadException(msg) {}
+    using ThreadException::ThreadException;
+    SemaphoreException(const std::source_location& where = std::source_location::current()) : ThreadException(where) {}
     string getName() const {
         return "SemaphoreException";
     }
@@ -653,8 +687,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class SQLException : public Exception {
 public:
-    SQLException() : Exception() {}
-    SQLException(const string& msg) : Exception(msg) {}
+    using Exception::Exception;
+    SQLException(const std::source_location& where = std::source_location::current()) : Exception(where) {}
     string getName() const {
         return "SQLException";
     }
@@ -669,8 +703,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class SQLWarning : public SQLException {
 public:
-    SQLWarning() : SQLException() {}
-    SQLWarning(const string& msg) : SQLException(msg) {}
+    using SQLException::SQLException;
+    SQLWarning(const std::source_location& where = std::source_location::current()) : SQLException(where) {}
     string getName() const {
         return "SQLWarning";
     }
@@ -686,8 +720,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class SQLConnectException : public SQLException {
 public:
-    SQLConnectException() : SQLException() {}
-    SQLConnectException(const string& msg) : SQLException(msg) {}
+    using SQLException::SQLException;
+    SQLConnectException(const std::source_location& where = std::source_location::current()) : SQLException(where) {}
     string getName() const {
         return "SQLConnectException";
     }
@@ -700,8 +734,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class SQLQueryException : public SQLException {
 public:
-    SQLQueryException() : SQLException() {}
-    SQLQueryException(const string& msg) : SQLException(msg) {}
+    using SQLException::SQLException;
+    SQLQueryException(const std::source_location& where = std::source_location::current()) : SQLException(where) {}
     string getName() const {
         return "SQLQueryException";
     }
@@ -717,8 +751,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class RuntimeException : public Exception {
 public:
-    RuntimeException() : Exception() {}
-    RuntimeException(const string& msg) : Exception(msg) {}
+    using Exception::Exception;
+    RuntimeException(const std::source_location& where = std::source_location::current()) : Exception(where) {}
     string getName() const {
         return "RuntimeException";
     }
@@ -733,8 +767,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class InvalidArgumentException : public RuntimeException {
 public:
-    InvalidArgumentException() : RuntimeException() {}
-    InvalidArgumentException(const string& msg) : RuntimeException(msg) {}
+    using RuntimeException::RuntimeException;
+    InvalidArgumentException(const std::source_location& where = std::source_location::current())
+        : RuntimeException(where) {}
     string getName() const {
         return "InvalidArgumentException";
     }
@@ -749,8 +784,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class OutOfBoundException : public RuntimeException {
 public:
-    OutOfBoundException() : RuntimeException() {}
-    OutOfBoundException(const string& msg) : RuntimeException(msg) {}
+    using RuntimeException::RuntimeException;
+    OutOfBoundException(const std::source_location& where = std::source_location::current())
+        : RuntimeException(where) {}
     string getName() const {
         return "OutOfBoundException";
     }
@@ -765,8 +801,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class InterruptedException : public RuntimeException {
 public:
-    InterruptedException() : RuntimeException() {}
-    InterruptedException(const string& msg) : RuntimeException(msg) {}
+    using RuntimeException::RuntimeException;
+    InterruptedException(const std::source_location& where = std::source_location::current())
+        : RuntimeException(where) {}
     string getName() const {
         return "InterruptedException";
     }
@@ -781,8 +818,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class NoSuchElementException : public RuntimeException {
 public:
-    NoSuchElementException() : RuntimeException() {}
-    NoSuchElementException(const string& msg) : RuntimeException(msg) {}
+    using RuntimeException::RuntimeException;
+    NoSuchElementException(const std::source_location& where = std::source_location::current())
+        : RuntimeException(where) {}
     string getName() const {
         return "NoSuchElementException";
     }
@@ -797,8 +835,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class DuplicatedException : public RuntimeException {
 public:
-    DuplicatedException() : RuntimeException() {}
-    DuplicatedException(const string& msg) : RuntimeException(msg) {}
+    using RuntimeException::RuntimeException;
+    DuplicatedException(const std::source_location& where = std::source_location::current())
+        : RuntimeException(where) {}
     string getName() const {
         return "DuplicatedException";
     }
@@ -813,8 +852,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class GameException : public Exception {
 public:
-    GameException() : Exception() {}
-    GameException(const string& msg) : Exception(msg) {}
+    using Exception::Exception;
+    GameException(const std::source_location& where = std::source_location::current()) : Exception(where) {}
     string getName() const {
         return "GameException";
     }
@@ -829,8 +868,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class PortalException : public GameException {
 public:
-    PortalException() : GameException() {}
-    PortalException(const string& msg) : GameException(msg) {}
+    using GameException::GameException;
+    PortalException(const std::source_location& where = std::source_location::current()) : GameException(where) {}
     string getName() const {
         return "PortalException";
     }
@@ -843,8 +882,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class EmptyTileNotExistException : public GameException {
 public:
-    EmptyTileNotExistException() : GameException() {}
-    EmptyTileNotExistException(const string& msg) : GameException(msg) {}
+    using GameException::GameException;
+    EmptyTileNotExistException(const std::source_location& where = std::source_location::current())
+        : GameException(where) {}
     string getName() const {
         return "EmptyTileNotExistException";
     }
@@ -857,8 +897,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 class InventoryFullException : public GameException {
 public:
-    InventoryFullException() : GameException() {}
-    InventoryFullException(const string& msg) : GameException(msg) {}
+    using GameException::GameException;
+    InventoryFullException(const std::source_location& where = std::source_location::current())
+        : GameException(where) {}
     string getName() const {
         return "InventoryFullException";
     }
@@ -872,8 +913,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class Error : public Throwable {
 public:
-    Error() : Throwable() {}
-    Error(const string& msg) : Throwable(msg) {}
+    using Throwable::Throwable;
+    Error(const std::source_location& where = std::source_location::current()) : Throwable(where) {}
     string getName() const {
         return "Error";
     }
@@ -885,8 +926,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class GameError : public Error {
 public:
-    GameError() : Error() {}
-    GameError(const string& msg) : Error(msg) {}
+    using Error::Error;
+    GameError(const std::source_location& where = std::source_location::current()) : Error(where) {}
     string getName() const {
         return "GameError";
     }
@@ -900,8 +941,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class AssertionError : public Error {
 public:
-    AssertionError() : Error() {}
-    AssertionError(const string& msg) : Error(msg) {}
+    using Error::Error;
+    AssertionError(const std::source_location& where = std::source_location::current()) : Error(where) {}
     string getName() const {
         return "AssertionError";
     }
@@ -918,8 +959,9 @@ public:
     // the defaulted std::source_location. Under Clang function_name() is the
     // same text __PRETTY_FUNCTION__ produces, so the message reads like the
     // function names in a stack trace.
-    UnsupportedError(const std::source_location& loc = std::source_location::current()) : Error(loc.function_name()) {}
-    UnsupportedError(const string& msg) : Error(msg) {}
+    UnsupportedError(const std::source_location& where = std::source_location::current())
+        : Error(where.function_name(), where) {}
+    using Error::Error;
     string getName() const {
         return "UnsupportedError";
     }
@@ -935,8 +977,8 @@ public:
 //////////////////////////////////////////////////////////////////////
 class LogError : public Error {
 public:
-    LogError() : Error() {}
-    LogError(const string& msg) : Error(msg) {}
+    using Error::Error;
+    LogError(const std::source_location& where = std::source_location::current()) : Error(where) {}
     string getName() const {
         return "LogError";
     }
@@ -949,9 +991,10 @@ public:
 //////////////////////////////////////////////////////////////////////
 class UnknownError : public Error {
 public:
-    UnknownError() : Error() {}
-    UnknownError(const string& msg) : Error(msg) {}
-    UnknownError(const string& msg, uint ErrorCode) : Error(msg), m_ErrorCode(ErrorCode) {}
+    using Error::Error;
+    UnknownError(const std::source_location& where = std::source_location::current()) : Error(where) {}
+    UnknownError(const string& msg, uint ErrorCode, const std::source_location& where = std::source_location::current())
+        : Error(msg, where), m_ErrorCode(ErrorCode) {}
     string getName() const {
         return "UnknownError";
     }
@@ -960,7 +1003,8 @@ public:
     }
     string toString() const {
         StringStream buf;
-        buf << getName() << " : " << getMessage() << " (" << getErrorCode() << ") \n" << getStackTrace();
+        buf << getName() << " : " << getMessage() << " (" << getErrorCode() << ") \n"
+            << getThrowSiteLine() << getStackTrace();
 
         return buf.toString();
     }

@@ -30,25 +30,26 @@
 //////////////////////////////////////////////////////////////////////////////
 ZoneGroupThread::ZoneGroupThread(ZoneGroup* pZoneGroup)
 
-    : m_pZoneGroup(pZoneGroup){__BEGIN_TRY __END_CATCH}
+    : m_pZoneGroup(pZoneGroup) {}
 
-      //////////////////////////////////////////////////////////////////////////////
-      // destructor
-      //////////////////////////////////////////////////////////////////////////////
-      ZoneGroupThread::~ZoneGroupThread() noexcept
+//////////////////////////////////////////////////////////////////////////////
+// destructor
+//////////////////////////////////////////////////////////////////////////////
+ZoneGroupThread::~ZoneGroupThread() noexcept
 
 {
-    __BEGIN_TRY
-
-    stop();
-    join();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        stop();
+        join();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// Thread methods are the outermost frame, so they need no __BEGIN_TRY and
-// __END_CATCH: every exception has to be caught and handled here.
+// run() logs a Throwable to zoneGroupThreadError.log and a std::exception to
+// the console, then rethrows; ManagedThread catches what escapes and fails
+// the server.
 //////////////////////////////////////////////////////////////////////////////
 void ZoneGroupThread::run()
 

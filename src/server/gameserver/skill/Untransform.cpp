@@ -18,9 +18,6 @@
 void Untransform::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
 
     try {
@@ -52,9 +49,6 @@ void Untransform::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CE
     } catch (Throwable& t) {
         //		The client asks not to be sent this.
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -62,9 +56,6 @@ void Untransform::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CE
 void Untransform::execute(Vampire* pVampire)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
 
     try {
@@ -74,9 +65,6 @@ void Untransform::execute(Vampire* pVampire)
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -84,9 +72,6 @@ void Untransform::execute(Vampire* pVampire)
 void Untransform::execute(Ousters* pOusters)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
 
     try {
@@ -118,9 +103,6 @@ void Untransform::execute(Ousters* pOusters)
     } catch (Throwable& t) {
         //		The client asks not to be sent this.
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -128,9 +110,6 @@ void Untransform::execute(Ousters* pOusters)
 void Untransform::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -139,9 +118,6 @@ void Untransform::execute(Monster* pMonster)
         addUntransformCreature(pZone, pMonster, true);
     } catch (Throwable& t) {
     }
-
-
-    __END_CATCH
 }
 
 Untransform g_Untransform;

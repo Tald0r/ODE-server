@@ -12,8 +12,6 @@
 // Constructor. Initializes the tile mask.
 //////////////////////////////////////////////////////////////////////////////
 SwordWave::SwordWave() {
-    __BEGIN_TRY
-
     // Initialize the mask.
     // The order of the three tiles in one direction matches the client effect order.
     //
@@ -55,8 +53,6 @@ SwordWave::SwordWave() {
     m_pSwordWaveMask[RIGHTUP][0].set(0, -1);
     m_pSwordWaveMask[RIGHTUP][1].set(1, 0);
     m_pSwordWaveMask[RIGHTUP][2].set(1, -1);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -65,9 +61,6 @@ SwordWave::SwordWave() {
 void SwordWave::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -87,9 +80,6 @@ void SwordWave::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* p
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -100,9 +90,6 @@ void SwordWave::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* p
 void SwordWave::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -130,9 +117,6 @@ void SwordWave::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot
     }
 
     g_SimpleTileMeleeSkill.execute(pSlayer, myX, myY, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 SwordWave g_SwordWave;

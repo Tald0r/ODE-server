@@ -16,42 +16,29 @@
 EffectDenialMagic::EffectDenialMagic(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer());
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDenialMagic::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDenialMagic::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDenialMagic::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer());
 
@@ -66,9 +53,6 @@ void EffectDenialMagic::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_DENIAL_MAGIC);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -76,28 +60,20 @@ void EffectDenialMagic::unaffect(Creature* pCreature)
 void EffectDenialMagic::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDenialMagic::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDenialMagic::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectDenialMagic(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

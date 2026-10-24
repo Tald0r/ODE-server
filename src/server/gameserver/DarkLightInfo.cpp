@@ -28,35 +28,23 @@ const int DLIndexByTimeband[4] = {
 DarkLightInfo::DarkLightInfo()
 
 {
-    __BEGIN_TRY
-
     m_DarkLevel = 0;
     m_LightLevel = 0;
-
-    __END_CATCH
 }
 
 DarkLightInfo::DarkLightInfo(const DarkLightInfo& dli)
 
 {
-    __BEGIN_TRY
-
     m_DarkLevel = dli.m_DarkLevel;
     m_LightLevel = dli.m_LightLevel;
-
-    __END_CATCH
 }
 
 string DarkLightInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "DarkLightInfo(" << ",DarkLevel:" << (int)m_DarkLevel << ",LightLevel:" << (int)m_LightLevel << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -67,40 +55,30 @@ string DarkLightInfo::toString() const
 DarkLightInfoManager::DarkLightInfoManager()
 
 {
-    __BEGIN_TRY
-
     for (uint i = 0; i < nDarkLightInfos; i++)
         m_DarkLightInfos[i] = NULL;
-
-    __END_CATCH
 }
 
 DarkLightInfoManager::~DarkLightInfoManager()
 
 {
-    __BEGIN_TRY
-
-    for (uint i = 0; i < nDarkLightInfos; i++)
-        SAFE_DELETE(m_DarkLightInfos[i]);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        for (uint i = 0; i < nDarkLightInfos; i++)
+            SAFE_DELETE(m_DarkLightInfos[i]);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void DarkLightInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void DarkLightInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<DarkLightRow> rows = defaultGameInfoRepository().loadDarkLight();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -131,13 +109,9 @@ void DarkLightInfoManager::load()
             m_DarkLightInfos[i] = new DarkLightInfo(*m_DarkLightInfos[i - 1]);
         }
     }
-
-    __END_CATCH
 }
 
 DarkLightInfo* DarkLightInfoManager::getDarkLightInfo(BYTE month, BYTE hour, BYTE minute) {
-    __BEGIN_TRY
-
     if (month == 0 || month > 12)
         throw OutOfBoundException("invalid month");
 
@@ -148,13 +122,9 @@ DarkLightInfo* DarkLightInfoManager::getDarkLightInfo(BYTE month, BYTE hour, BYT
         throw OutOfBoundException("invalid minute");
 
     return m_DarkLightInfos[(month - 1) * (24 * 6) + (hour) * 6 + (minute / 10)];
-
-    __END_CATCH
 }
 
 const DarkLightInfo* DarkLightInfoManager::getDarkLightInfo(BYTE month, BYTE hour, BYTE minute) const {
-    __BEGIN_TRY
-
     if (month == 0 || month > 12)
         throw OutOfBoundException("invalid month");
 
@@ -165,15 +135,11 @@ const DarkLightInfo* DarkLightInfoManager::getDarkLightInfo(BYTE month, BYTE hou
         throw OutOfBoundException("invalid minute");
 
     return m_DarkLightInfos[(month - 1) * (24 * 6) + (hour) * 6 + (minute / 10)];
-
-    __END_CATCH
 }
 
 const DarkLightInfo* DarkLightInfoManager::getCurrentDarkLightInfo(Zone* pZone) const
 
 {
-    __BEGIN_TRY
-
     // If time is stopped in the zone, return the matching DarkLight info.
     if (pZone != NULL && pZone->isTimeStop()) {
         return m_DarkLightInfos[DLIndexByTimeband[pZone->getTimeband()]];
@@ -183,15 +149,11 @@ const DarkLightInfo* DarkLightInfoManager::getCurrentDarkLightInfo(Zone* pZone) 
     GameTime gametime = de::gameContext().worldTime().getGameTime();
 
     return getDarkLightInfo(gametime.getMonth(), gametime.getHour(), gametime.getMinute());
-
-    __END_CATCH
 }
 
 DarkLightInfo* DarkLightInfoManager::getCurrentDarkLightInfo(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     // If time is stopped in the zone, return the matching DarkLight info.
     if (pZone != NULL && pZone->isTimeStop()) {
         return m_DarkLightInfos[DLIndexByTimeband[pZone->getTimeband()]];
@@ -201,14 +163,11 @@ DarkLightInfo* DarkLightInfoManager::getCurrentDarkLightInfo(Zone* pZone)
     GameTime gametime = de::gameContext().worldTime().getGameTime();
 
     return getDarkLightInfo(gametime.getMonth(), gametime.getHour(), gametime.getMinute());
-
-    __END_CATCH
 }
 
 string DarkLightInfoManager::toString() const
 
 {
-    __BEGIN_TRY
     StringStream msg;
 
     msg << "DarkLightInfoManager(";
@@ -224,5 +183,4 @@ string DarkLightInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-    __END_CATCH
 }

@@ -45,8 +45,6 @@ WarItem::WarItem(ItemType_t itemType, const list<OptionType_t>& optionType)
 void WarItem::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -63,8 +61,6 @@ void WarItem::create(const string& ownerID, Storage storage, StorageID_t storage
     const string sql = defaultItemObjectRepository().insertPlainItemLogged(
         GEAR_WAR_ITEM, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage, storageID, (int)x, (int)y);
     filelog("WarLog.txt", "%s", sql.c_str());
-
-    __END_CATCH
 }
 
 
@@ -74,15 +70,11 @@ void WarItem::create(const string& ownerID, Storage storage, StorageID_t storage
 void WarItem::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     char query[255];
 
     snprintf(query, sizeof(query), "UPDATE WarItemObject SET %s WHERE ItemID=%u", field, m_ItemID);
     defaultItemObjectRepository().tinysaveGear(GEAR_WAR_ITEM, field, m_ItemID);
     filelog("WarLog.txt", "%s", query);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -91,14 +83,10 @@ void WarItem::tinysave(const char* field) const
 void WarItem::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     logRelicStorage(this, storage, ownerID);
 
     defaultItemObjectRepository().updatePlainItem(GEAR_WAR_ITEM, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                   storageID, (int)x, (int)y, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -122,11 +110,7 @@ string WarItem::toString() const
 VolumeWidth_t WarItem::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_WAR_ITEM, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -136,11 +120,7 @@ VolumeWidth_t WarItem::getVolumeWidth() const
 VolumeHeight_t WarItem::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_WAR_ITEM, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -150,11 +130,7 @@ VolumeHeight_t WarItem::getVolumeHeight() const
 Weight_t WarItem::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_WAR_ITEM, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -180,8 +156,6 @@ string WarItemInfo::toString() const
 void WarItemInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_WAR_ITEM);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -204,8 +178,6 @@ void WarItemInfoManager::load()
 
         addItemInfo(pWarItemInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -215,11 +187,7 @@ void WarItemInfoManager::load()
 void WarItemLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
-
-    __END_CATCH
 }
 
 
@@ -229,11 +197,7 @@ void WarItemLoader::load(Creature* pCreature)
 void WarItemLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
-
-    __END_CATCH
 }
 
 
@@ -242,8 +206,4 @@ void WarItemLoader::load(Zone* pZone)
 //--------------------------------------------------------------------------------
 void WarItemLoader::load(StorageID_t storageID, Inventory* pInventory)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}

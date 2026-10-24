@@ -12,9 +12,6 @@
 void ThunderStorm::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -49,9 +46,6 @@ void ThunderStorm::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillS
     // not around the caster.
 
     g_SimpleTileMissileSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,8 +54,6 @@ void ThunderStorm::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillS
 void ThunderStorm::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -72,9 +64,6 @@ void ThunderStorm::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot
     } else {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ThunderStorm g_ThunderStorm;

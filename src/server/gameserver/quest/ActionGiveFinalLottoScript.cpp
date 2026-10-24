@@ -24,8 +24,6 @@
 void ActionGiveFinalLottoScript::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_SuccessScriptID = propertyBuffer.getPropertyInt("SuccessScriptID");
@@ -34,8 +32,6 @@ void ActionGiveFinalLottoScript::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -45,8 +41,6 @@ void ActionGiveFinalLottoScript::read(PropertyBuffer& propertyBuffer)
 void ActionGiveFinalLottoScript::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -93,8 +87,6 @@ void ActionGiveFinalLottoScript::execute(Creature* pCreature1, Creature* pCreatu
     }
 
     pPC->getPlayer()->sendPacket(&gcNPCAsk);
-
-    __END_CATCH
 }
 
 
@@ -104,12 +96,8 @@ void ActionGiveFinalLottoScript::execute(Creature* pCreature1, Creature* pCreatu
 string ActionGiveFinalLottoScript::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionGiveFinalLottoScript(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

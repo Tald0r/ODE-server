@@ -34,8 +34,6 @@ WarID_t WarSystem::s_WarIDSuccessor = 0;
 WarSystem::WarSystem()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("WarSystem");
     m_MutexWarQueue.setName("WarSystemQueue");
     m_MutexActiveWars.setName("ActiveWars");
@@ -48,8 +46,6 @@ WarSystem::WarSystem()
 
     m_b5Minutes = false;
     m_b20Minutes = false;
-
-    __END_CATCH
 }
 
 WarSystem::~WarSystem() {
@@ -57,18 +53,12 @@ WarSystem::~WarSystem() {
 }
 
 void WarSystem::init() {
-    __BEGIN_TRY
-
     load();
 
     prepareRaceWar();
-
-    __END_CATCH
 }
 
 void WarSystem::prepareRaceWar() {
-    __BEGIN_TRY
-
     SAFE_DELETE(m_pRaceWarSchedule);
 
     // Prepare the race war.
@@ -90,20 +80,16 @@ void WarSystem::prepareRaceWar() {
         ((DWORD)((DWORD)sendStartTime.date().day()) * 100); //	   + ((DWORD)((DWORD)sendStartTime.time().hour()));
 
     cout << "Race war packet send date : " << m_RaceWarTimeParam.load() << endl;
-
-    __END_CATCH
 }
 
 
 void WarSystem::load()
 
-    {__BEGIN_TRY
+{
+    // There is nothing to load.
 
-         // There is nothing to load.
-
-         // The war in progress has to be loaded.
-
-         __END_CATCH}
+    // The war in progress has to be loaded.
+}
 
 VSDateTime WarSystem::getWarEndTime(WarType_t warType) const {
     int seconds = 0;
@@ -127,8 +113,6 @@ VSDateTime WarSystem::getWarEndTime(WarType_t warType) const {
 bool WarSystem::addWarDelayed(War* pWar)
 
 {
-    __BEGIN_TRY
-
     Assert(pWar != NULL);
 
     if (hasActiveRaceWar() && pWar->getWarType() == WAR_RACE) {
@@ -142,15 +126,11 @@ bool WarSystem::addWarDelayed(War* pWar)
     __LEAVE_CRITICAL_SECTION(m_MutexWarQueue);
 
     return true;
-
-    __END_CATCH
 }
 
 bool WarSystem::addQueuedWar()
 
 {
-    __BEGIN_TRY
-
     // The queue is taken out under its mutex and the wars are added after it
     // is released: adding a war locks zones, and a castle zone's thread hands
     // its starting war to addWarDelayed while its heartbeat holds that zone's
@@ -184,16 +164,12 @@ bool WarSystem::addQueuedWar()
     }
 
     return true;
-
-    __END_CATCH
 }
 
 // Called only inside WarSystem, so no LOCK is needed.
 bool WarSystem::addWar(War* pWar)
 
 {
-    __BEGIN_TRY
-
     Assert(pWar != NULL);
     Assert(pWar->getState() == War::WAR_STATE_CURRENT);
 
@@ -251,16 +227,12 @@ bool WarSystem::addWar(War* pWar)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 
 bool WarSystem::makeGCWarList_LOCKED()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_MutexWarList)
 
     m_GCWarList.clear();
@@ -302,26 +274,22 @@ bool WarSystem::makeGCWarList_LOCKED()
     __LEAVE_CRITICAL_SECTION(m_MutexWarList)
 
     return true;
-
-    __END_CATCH
 }
 
 bool WarSystem::makeGCWarList()
 
 {
-    __BEGIN_TRY
+    {
+        bool ret = false;
 
-    bool ret = false;
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        ret = makeGCWarList_LOCKED();
 
-    ret = makeGCWarList_LOCKED();
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
 
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    return ret;
-
-    __END_CATCH
+        return ret;
+    }
 
     return false;
 }
@@ -329,8 +297,6 @@ bool WarSystem::makeGCWarList()
 void WarSystem::sendGCWarList(Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_MutexWarList)
 
     if (!m_GCWarList.isEmpty()) {
@@ -338,15 +304,11 @@ void WarSystem::sendGCWarList(Player* pPlayer)
     }
 
     __LEAVE_CRITICAL_SECTION(m_MutexWarList)
-
-    __END_CATCH
 }
 
 Work* WarSystem::heartbeat()
 
 {
-    __BEGIN_TRY
-
     Work* pWork = NULL;
 
     ZoneGroupManager& zoneGroups = de::gameContext().zoneGroups();
@@ -449,15 +411,11 @@ Work* WarSystem::heartbeat()
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return pWork;
-
-    __END_CATCH
 }
 
 bool WarSystem::checkStartRaceWar()
 
 {
-    __BEGIN_TRY
-
     if (m_pRaceWarSchedule->heartbeat()) {
         Work* pWork = m_pRaceWarSchedule->popWork();
         Assert(pWork != NULL);
@@ -472,15 +430,11 @@ bool WarSystem::checkStartRaceWar()
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool WarSystem::getAttackGuildID(ZoneID_t zoneID, GuildID_t& guildID) const
 
 {
-    __BEGIN_TRY
-
     bool bHasCastleActiveWar = false;
 
     __ENTER_CRITICAL_SECTION(m_MutexActiveWars)
@@ -495,15 +449,11 @@ bool WarSystem::getAttackGuildID(ZoneID_t zoneID, GuildID_t& guildID) const
     __LEAVE_CRITICAL_SECTION(m_MutexActiveWars)
 
     return bHasCastleActiveWar;
-
-    __END_CATCH
 }
 
 bool WarSystem::hasCastleActiveWar(ZoneID_t zoneID) const
 
 {
-    __BEGIN_TRY
-
     bool bHasCastleActiveWar = false;
 
     // The running wars are answered from m_ActiveWars under its own leaf
@@ -521,15 +471,11 @@ bool WarSystem::hasCastleActiveWar(ZoneID_t zoneID) const
     __LEAVE_CRITICAL_SECTION(m_MutexActiveWars)
 
     return bHasCastleActiveWar;
-
-    __END_CATCH
 }
 
 WarSchedule* WarSystem::getActiveWarSchedule_LOCKED(ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
-
     const RecentSchedules::container_type& schedules = m_RecentSchedules.getSchedules();
     RecentSchedules::const_iterator itr = schedules.begin();
 
@@ -551,8 +497,6 @@ WarSchedule* WarSystem::getActiveWarSchedule_LOCKED(ZoneID_t zoneID)
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 War* WarSystem::getActiveWar_LOCKED(ZoneID_t zoneID) const {
@@ -636,8 +580,6 @@ bool WarSystem::mayModifyShrineOwner(PlayerCreature* pPC) const {
 bool WarSystem::endWar(PlayerCreature* pPC, ZoneID_t castleZoneID)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     bool bEndWar = false;
@@ -667,16 +609,12 @@ bool WarSystem::endWar(PlayerCreature* pPC, ZoneID_t castleZoneID)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return bEndWar;
-
-    __END_CATCH
 }
 
 // Removes the war in progress for castleZoneID.
 bool WarSystem::removeWar(ZoneID_t castleZoneID)
 
 {
-    __BEGIN_TRY
-
     bool bRemoved = false;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -696,16 +634,12 @@ bool WarSystem::removeWar(ZoneID_t castleZoneID)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return bRemoved;
-
-    __END_CATCH
 }
 
 // Removes the war in progress for castleZoneID.
 bool WarSystem::removeRaceWar()
 
 {
-    __BEGIN_TRY
-
     bool bRemoved = false;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -733,16 +667,12 @@ bool WarSystem::removeRaceWar()
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return bRemoved;
-
-    __END_CATCH
 }
 
 // Sends a given player the list of wars in progress.
 void WarSystem::broadcastWarList(GamePlayer* pGamePlayer) const
 
 {
-    __BEGIN_TRY
-
     StringPool& strings = de::gameContext().strings();
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -786,15 +716,11 @@ void WarSystem::broadcastWarList(GamePlayer* pGamePlayer) const
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 bool WarSystem::startRaceWar()
 
 {
-    __BEGIN_TRY
-
     if (hasActiveRaceWar())
         return false;
 
@@ -815,15 +741,11 @@ bool WarSystem::startRaceWar()
     __LEAVE_CRITICAL_SECTION(m_Mutex);
 
     return true;
-
-    __END_CATCH
 }
 
 War* WarSystem::getActiveRaceWarAtSameThread() const
 
 {
-    __BEGIN_TRY
-
     const RecentSchedules::container_type& schedules = m_RecentSchedules.getSchedules();
     RecentSchedules::const_iterator itr = schedules.begin();
 
@@ -837,15 +759,11 @@ War* WarSystem::getActiveRaceWarAtSameThread() const
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 bool WarSystem::addRaceWarScheduleInfo(WarScheduleInfo* pWSI)
 
 {
-    __BEGIN_TRY
-
     if (m_pRaceWarSchedule == NULL)
         return false;
 
@@ -870,6 +788,4 @@ bool WarSystem::addRaceWarScheduleInfo(WarScheduleInfo* pWSI)
     __LEAVE_CRITICAL_SECTION(m_Mutex);
 
     return true;
-
-    __END_CATCH
 }

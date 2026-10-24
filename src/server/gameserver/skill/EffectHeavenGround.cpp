@@ -23,15 +23,12 @@
 EffectHeavenGround::EffectHeavenGround(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = X;
     m_Y = Y;
     m_UserObjectID = 0;
     m_bSlayer = false;
     m_Damage = 0;
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,8 +36,6 @@ EffectHeavenGround::EffectHeavenGround(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y
 void EffectHeavenGround::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
     //  Get the creature that cast the skill.
     Creature* pCastCreature = m_pZone->getCreature(m_UserObjectID);
@@ -134,9 +129,6 @@ void EffectHeavenGround::affect()
     }
 
     setNextTime(m_Tick);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -144,11 +136,7 @@ void EffectHeavenGround::affect()
 void EffectHeavenGround::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -156,8 +144,6 @@ void EffectHeavenGround::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
 void EffectHeavenGround::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
 
@@ -167,18 +153,12 @@ void EffectHeavenGround::unaffect()
     gcDeleteEffect.setEffectID(getSendEffectClass());
 
     m_pZone->broadcastPacket(m_X, m_Y, &gcDeleteEffect);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHeavenGround::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectHeavenGround(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

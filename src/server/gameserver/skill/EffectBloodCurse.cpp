@@ -21,8 +21,6 @@
 EffectBloodCurse::EffectBloodCurse(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY, bool bPlayer)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
@@ -33,8 +31,6 @@ EffectBloodCurse::EffectBloodCurse(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t z
     m_SplashRatio[0] = 100;
     m_SplashRatio[1] = 85;
     m_SplashRatio[2] = 75;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -42,8 +38,6 @@ EffectBloodCurse::EffectBloodCurse(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t z
 void EffectBloodCurse::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     // Gets the creature that cast the effect.
@@ -174,52 +168,35 @@ void EffectBloodCurse::affect()
     }
 
     setDeadline(0);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodCurse::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodCurse::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodCurse::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBloodCurse::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectBloodCurse(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

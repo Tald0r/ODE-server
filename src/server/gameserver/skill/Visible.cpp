@@ -28,9 +28,6 @@
 void Visible::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -165,9 +162,6 @@ void Visible::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* 
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -178,9 +172,6 @@ void Visible::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* 
 void Visible::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -336,9 +327,6 @@ void Visible::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSk
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Visible g_Visible;

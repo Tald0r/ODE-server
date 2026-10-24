@@ -19,13 +19,9 @@ GCQuestStatus* DummyQuestStatus::makeStatusPacket() const {
 }
 
 string DummyQuestStatus::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "DummyQuestStatus(" << ") : " << QuestStatus::toString().c_str();
 
     return msg.toString();
-
-    __END_CATCH
 }

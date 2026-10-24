@@ -39,8 +39,6 @@ void EffectWithWarning::start() {
 }
 
 void EffectWithWarning::affect() {
-    __BEGIN_TRY
-
     //	cout << "hitting" << m_X << ", " << m_Y << endl;
 
     if (!m_State) {
@@ -65,13 +63,9 @@ void EffectWithWarning::affect() {
         //		setDeadline( m_MainDuration );
         m_State = true;
     }
-
-    __END_CATCH
 }
 
 void EffectWithWarning::unaffect() {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
 
@@ -81,13 +75,9 @@ void EffectWithWarning::unaffect() {
     gcDET.setEffectID(m_MainEffect);
 
     m_pZone->broadcastPacket(m_X, m_Y, &gcDET);
-
-    __END_CATCH
 }
 
 void EffectIcicle::affect() {
-    __BEGIN_TRY
-
     EffectWithWarning::affect();
 
     Dir_t dir = 0;
@@ -174,13 +164,9 @@ void EffectIcicle::affect() {
             m_pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
         }
     }
-
-    __END_CATCH
 }
 
 void EffectLargeIcicle::affect() {
-    __BEGIN_TRY
-
     EffectWithWarning::affect();
 
     ZoneCoord_t X = m_X;
@@ -259,13 +245,9 @@ void EffectLargeIcicle::affect() {
                 }
             }
         }
-
-    __END_CATCH
 }
 
 void EffectSideTrap::affect() {
-    __BEGIN_TRY
-
     EffectWithWarning::affect();
 
     ZoneCoord_t X = m_X;
@@ -362,6 +344,4 @@ void EffectSideTrap::affect() {
     }
 
     setNextTime(5);
-
-    __END_CATCH
 }

@@ -31,8 +31,6 @@ void WildWolf::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -145,13 +143,9 @@ void WildWolf::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-    __END_CATCH
 }
 
 void WildWolf::eatCorpse(Vampire* pVampire, Item* pCorpse, VampireSkillSlot* pVampireSkillSlot) {
-    __BEGIN_TRY
-
     if (pCorpse->getItemClass() != Item::ITEM_CLASS_CORPSE || pCorpse->getItemType() == VAMPIRE_CORPSE) {
         executeSkillFailException(pVampire, getSkillType());
         return;
@@ -287,8 +281,6 @@ void WildWolf::eatCorpse(Vampire* pVampire, Item* pCorpse, VampireSkillSlot* pVa
         // The zone does not actually free the pointer, so delete it here.
         SAFE_DELETE(pTargetCorpse);
     }
-
-    __END_CATCH
 }
 
 void WildWolf::eatComaCreature(Vampire* pVampire, Creature* pComaCreature) {

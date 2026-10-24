@@ -53,8 +53,6 @@ VampireCoat::VampireCoat(ItemType_t itemType, const list<OptionType_t>& optionTy
 void VampireCoat::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -72,8 +70,6 @@ void VampireCoat::create(const string& ownerID, Storage storage, StorageID_t sto
     defaultItemObjectRepository().insertGear(GEAR_VAMPIRE_COAT, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                              (int)storage, storageID, (int)x, (int)y, optionField, getDurability(),
                                              getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -83,11 +79,7 @@ void VampireCoat::create(const string& ownerID, Storage storage, StorageID_t sto
 void VampireCoat::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_VAMPIRE_COAT, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -96,16 +88,12 @@ void VampireCoat::tinysave(const char* field) const
 void VampireCoat::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_VAMPIRE_COAT, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -148,8 +136,6 @@ string VampireCoatInfo::toString() const
 void VampireCoatInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_VAMPIRE_COAT);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -181,8 +167,6 @@ void VampireCoatInfoManager::load()
 
         addItemInfo(pVampireCoatInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -192,8 +176,6 @@ void VampireCoatInfoManager::load()
 void VampireCoatLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows = defaultItemObjectRepository().loadGearOfOwner(GEAR_VAMPIRE_COAT, pCreature->getName());
@@ -300,8 +282,6 @@ void VampireCoatLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -311,8 +291,6 @@ void VampireCoatLoader::load(Creature* pCreature)
 void VampireCoatLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -353,8 +331,6 @@ void VampireCoatLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -364,12 +340,8 @@ void VampireCoatLoader::load(Zone* pZone)
 void VampireCoatLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

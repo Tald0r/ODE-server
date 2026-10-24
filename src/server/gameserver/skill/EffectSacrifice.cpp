@@ -20,36 +20,22 @@
 EffectSacrifice::EffectSacrifice(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSacrifice::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSacrifice::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,7 +43,6 @@ void EffectSacrifice::unaffect()
 void EffectSacrifice::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -77,19 +62,14 @@ void EffectSacrifice::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSacrifice::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectSacrifice(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

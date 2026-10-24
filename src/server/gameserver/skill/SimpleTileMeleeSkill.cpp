@@ -22,8 +22,6 @@ SimpleTileMeleeSkill g_SimpleTileMeleeSkill;
 void SimpleTileMeleeSkill::execute(Slayer* pSlayer, int X, int Y, SkillSlot* pSkillSlot,
                                    const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID,
                                    bool bForceKnockback) {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -260,15 +258,11 @@ void SimpleTileMeleeSkill::execute(Slayer* pSlayer, int X, int Y, SkillSlot* pSk
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 void SimpleTileMeleeSkill::execute(Vampire* pVampire, int X, int Y, VampireSkillSlot* pVampireSkillSlot,
                                    const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID,
                                    bool bForceKnockback) {
-    __BEGIN_TRY
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -470,15 +464,11 @@ void SimpleTileMeleeSkill::execute(Vampire* pVampire, int X, int Y, VampireSkill
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 void SimpleTileMeleeSkill::execute(Ousters* pOusters, int X, int Y, OustersSkillSlot* pOustersSkillSlot,
                                    const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID,
                                    bool bForceKnockback) {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -689,14 +679,10 @@ void SimpleTileMeleeSkill::execute(Ousters* pOusters, int X, int Y, OustersSkill
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 void SimpleTileMeleeSkill::execute(Monster* pMonster, int X, int Y, const SIMPLE_SKILL_INPUT& param,
                                    SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID, bool bForceKnockback) {
-    __BEGIN_TRY
-
     Assert(pMonster != NULL);
 
     try {
@@ -855,6 +841,4 @@ void SimpleTileMeleeSkill::execute(Monster* pMonster, int X, int Y, const SIMPLE
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, param.SkillType);
     }
-
-    __END_CATCH
 }

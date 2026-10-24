@@ -26,8 +26,6 @@ void InstallMine::execute(Slayer* pSlayer, ObjectID_t, CoordInven_t X, CoordInve
                           CoordInven_t TargetY, SkillSlot* pSkillSlot)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -132,8 +130,6 @@ void InstallMine::execute(Slayer* pSlayer, ObjectID_t, CoordInven_t X, CoordInve
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-    __END_CATCH
 }
 
 

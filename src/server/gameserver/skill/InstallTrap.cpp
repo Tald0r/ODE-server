@@ -22,9 +22,6 @@
 void InstallTrap::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -107,9 +104,6 @@ void InstallTrap::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CE
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 InstallTrap g_InstallTrap;

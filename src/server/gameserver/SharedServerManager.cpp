@@ -31,13 +31,9 @@
 SharedServerManager::SharedServerManager()
 
 {
-    __BEGIN_TRY
-
     m_pSharedServerClient = NULL;
 
     m_Mutex.setName("SharedServerManager");
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -48,11 +44,11 @@ SharedServerManager::~SharedServerManager() noexcept
 {
     stop();
     join();
-    __BEGIN_TRY
-
-    SAFE_DELETE(m_pSharedServerClient);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        SAFE_DELETE(m_pSharedServerClient);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -61,11 +57,7 @@ SharedServerManager::~SharedServerManager() noexcept
 void SharedServerManager::stop()
 
 {
-    __BEGIN_TRY
-
     ManagedThread::stop();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////

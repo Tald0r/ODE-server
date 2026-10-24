@@ -35,8 +35,6 @@
 void ActionActivateMazeReturn::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ZoneID = pb.getPropertyInt("ZoneID");
         m_X = pb.getPropertyInt("X");
@@ -44,8 +42,6 @@ void ActionActivateMazeReturn::read(PropertyBuffer& pb)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +50,6 @@ void ActionActivateMazeReturn::read(PropertyBuffer& pb)
 void ActionActivateMazeReturn::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -77,7 +72,6 @@ void ActionActivateMazeReturn::execute(Creature* pNPC, Creature* pCreature)
     transportCreature(pCreature, m_ZoneID, m_X, m_Y, true);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -87,11 +81,7 @@ void ActionActivateMazeReturn::execute(Creature* pNPC, Creature* pCreature)
 string ActionActivateMazeReturn::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionActivateMazeReturn(" << "ZoneID:" << (int)m_ZoneID << ",X:" << (int)m_X << ",Y:" << (int)m_Y << ")";
     return msg.toString();
-
-    __END_CATCH
 }

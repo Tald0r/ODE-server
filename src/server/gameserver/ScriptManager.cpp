@@ -17,8 +17,6 @@
 void ScriptManager::load(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     // Every script, whatever the owner: the query never used ownerID.
     vector<ScriptRow> rows = defaultContentInfoRepository().loadScripts();
     //		XMLTree* pTree = new XMLTree("Scripts");
@@ -106,8 +104,6 @@ void ScriptManager::load(const string& ownerID)
 
     //		pTree->SaveToFile( (de::kernelContext().config().getProperty("HomePath") + "/data/Script.xml").c_str() );
     //		SAFE_DELETE( pTree );
-
-    __END_CATCH
 }
 
 
@@ -115,8 +111,6 @@ void ScriptManager::load(const string& ownerID)
 // get script
 //////////////////////////////////////////////////////////////////////////////
 Script* ScriptManager::getScript(ScriptID_t scriptID) const {
-    __BEGIN_TRY
-
     unordered_map<ScriptID_t, Script*>::const_iterator itr = m_Scripts.find(scriptID);
 
     if (itr == m_Scripts.end()) {
@@ -127,8 +121,6 @@ Script* ScriptManager::getScript(ScriptID_t scriptID) const {
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 
@@ -138,8 +130,6 @@ Script* ScriptManager::getScript(ScriptID_t scriptID) const {
 void ScriptManager::setScript(ScriptID_t scriptID, Script* pScript)
 
 {
-    __BEGIN_TRY
-
     unordered_map<ScriptID_t, Script*>::iterator itr = m_Scripts.find(scriptID);
 
     if (itr != m_Scripts.end()) {
@@ -149,8 +139,6 @@ void ScriptManager::setScript(ScriptID_t scriptID, Script* pScript)
     }
 
     m_Scripts[scriptID] = pScript;
-
-    __END_CATCH
 }
 
 
@@ -160,8 +148,6 @@ void ScriptManager::setScript(ScriptID_t scriptID, Script* pScript)
 string ScriptManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ScriptManager(";
@@ -175,6 +161,4 @@ string ScriptManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

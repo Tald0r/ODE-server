@@ -41,8 +41,6 @@ InfoClassManager::~InfoClassManager()
 void InfoClassManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
 
     // Assert(m_InfoCount>0);
@@ -75,8 +73,6 @@ void InfoClassManager::init()
     // Price increment
     m_AveragePrice /= 1000;
     m_AveragePrice *= 100;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -85,13 +81,9 @@ void InfoClassManager::init()
 void InfoClassManager::reload()
 
 {
-    __BEGIN_TRY
-
     removeAllItemInfo();
 
     init();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -100,15 +92,11 @@ void InfoClassManager::reload()
 void InfoClassManager::addItemInfo(ItemInfo* pItemInfo)
 
 {
-    __BEGIN_TRY
-
     Assert(pItemInfo != NULL);
     Assert(pItemInfo->getItemType() < Item::ITEM_CLASS_MAX);
     Assert(m_pItemInfos[pItemInfo->getItemType()] == NULL);
 
     m_pItemInfos[pItemInfo->getItemType()] = pItemInfo;
-
-    __END_CATCH
 }
 
 
@@ -116,14 +104,10 @@ void InfoClassManager::addItemInfo(ItemInfo* pItemInfo)
 // get item info
 //--------------------------------------------------------------------------------
 ItemInfo* InfoClassManager::getItemInfo(ItemType_t itemType) const {
-    __BEGIN_TRY
-
     // Assert(itemType < Item::ITEM_CLASS_MAX);
     Assert(m_pItemInfos[itemType] != NULL);
 
     return m_pItemInfos[itemType];
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -132,14 +116,10 @@ ItemInfo* InfoClassManager::getItemInfo(ItemType_t itemType) const {
 void InfoClassManager::removeAllItemInfo()
 
 {
-    __BEGIN_TRY
-
     if (m_pItemInfos != NULL) {
         for (uint i = 0; i <= m_InfoCount; i++)
             SAFE_DELETE(m_pItemInfos[i]);
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -148,8 +128,6 @@ void InfoClassManager::removeAllItemInfo()
 ItemType_t InfoClassManager::getRandomItemType() const
 
 {
-    __BEGIN_TRY
-
     // The DB may hold wrong values, so this has to be checked.
     if (m_TotalRatio == 0 || m_InfoCount == 0)
         return 0;
@@ -191,8 +169,6 @@ ItemType_t InfoClassManager::getRandomItemType() const
     // Can this happen?
     // It can: getPercentValue may round the total differently from each entry.
     return 0;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------

@@ -17,16 +17,12 @@
 void ActionAsk::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_ScriptID = propertyBuffer.getPropertyInt("ScriptID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -36,8 +32,6 @@ void ActionAsk::read(PropertyBuffer& propertyBuffer)
 void ActionAsk::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -50,8 +44,6 @@ void ActionAsk::execute(Creature* pCreature1, Creature* pCreature2)
 
     Player* pPlayer = pCreature2->getPlayer();
     pPlayer->sendPacket(&gcNPCAsk);
-
-    __END_CATCH
 }
 
 
@@ -61,12 +53,8 @@ void ActionAsk::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionAsk::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionAsk(" << ",ScriptID:" << (int)m_ScriptID << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

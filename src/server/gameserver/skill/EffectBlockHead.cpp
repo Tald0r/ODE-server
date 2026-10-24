@@ -14,13 +14,9 @@
 EffectBlockHead::EffectBlockHead(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -28,9 +24,6 @@ EffectBlockHead::EffectBlockHead(Creature* pCreature)
 void EffectBlockHead::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     // Turns off the flag.
@@ -45,9 +38,6 @@ void EffectBlockHead::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_BLOCK_HEAD);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -55,22 +45,14 @@ void EffectBlockHead::unaffect(Creature* pCreature)
 void EffectBlockHead::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBlockHead::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectBlockHead(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

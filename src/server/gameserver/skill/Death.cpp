@@ -26,9 +26,6 @@
 void Death::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -235,9 +232,6 @@ void Death::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSl
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 
@@ -247,9 +241,6 @@ void Death::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkillSl
 void Death::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -285,16 +276,11 @@ void Death::execute(Monster* pMonster, Creature* pEnemy)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void Death::executeMonster(Zone* pZone, Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     if (!pMonster->isEnemyToAttack(pEnemy)) {
         return;
     }
@@ -442,8 +428,6 @@ void Death::executeMonster(Zone* pZone, Monster* pMonster, Creature* pEnemy)
     } else {
         executeSkillFailNormal(pMonster, getSkillType(), pEnemy);
     }
-
-    __END_CATCH
 }
 
 

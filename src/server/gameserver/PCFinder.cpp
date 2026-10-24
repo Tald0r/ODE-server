@@ -17,21 +17,17 @@
 PCFinder::PCFinder()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("PCFinder");
-
-    __END_CATCH
 }
 
 PCFinder::~PCFinder()
 
 {
-    __BEGIN_TRY
-
-    m_PCs.clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        m_PCs.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 // add creature to unordered_map
@@ -39,8 +35,6 @@ PCFinder::~PCFinder()
 void PCFinder::addCreature(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pCreature != NULL);
@@ -64,8 +58,6 @@ void PCFinder::addCreature(Creature* pCreature)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 // Delete creature from unordered_map
@@ -73,8 +65,6 @@ void PCFinder::addCreature(Creature* pCreature)
 void PCFinder::deleteCreature(const string& name)
 // NoSuchElementException , Error)
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     unordered_map<string, Creature*>::iterator itr = m_PCs.find(name);
@@ -104,16 +94,12 @@ void PCFinder::deleteCreature(const string& name)
     m_PCs.erase(itr);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 // get creature with PC-name
 Creature* PCFinder::getCreature_LOCKED(const string& name) const
 // NoSuchElementException , Error)
 {
-    __BEGIN_TRY
-
     unordered_map<string, Creature*>::const_iterator itr;
 
     //__ENTER_CRITICAL_SECTION(m_Mutex)
@@ -129,17 +115,12 @@ Creature* PCFinder::getCreature_LOCKED(const string& name) const
     //__LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return itr->second;
-
-
-    __END_CATCH
 }
 
 // get creature with PlayerID
 Creature* PCFinder::getCreatureByID_LOCKED(const string& ID) const
 // NoSuchElementException , Error)
 {
-    __BEGIN_TRY
-
     unordered_map<string, Creature*>::const_iterator itr;
 
     //__ENTER_CRITICAL_SECTION(m_Mutex)
@@ -155,9 +136,6 @@ Creature* PCFinder::getCreatureByID_LOCKED(const string& ID) const
     //__LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return itr->second;
-
-
-    __END_CATCH
 }
 
 
@@ -165,8 +143,6 @@ Creature* PCFinder::getCreatureByID_LOCKED(const string& ID) const
 Creature* PCFinder::getCreature(const string& name) const
 // NoSuchElementException , Error)
 {
-    __BEGIN_TRY
-
     unordered_map<string, Creature*>::const_iterator itr;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -185,17 +161,12 @@ Creature* PCFinder::getCreature(const string& name) const
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return itr->second;
-
-
-    __END_CATCH
 }
 
 // get creature with PlayerID
 Creature* PCFinder::getCreatureByID(const string& ID) const
 // NoSuchElementException , Error)
 {
-    __BEGIN_TRY
-
     unordered_map<string, Creature*>::const_iterator itr;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -214,15 +185,10 @@ Creature* PCFinder::getCreatureByID(const string& ID) const
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return itr->second;
-
-
-    __END_CATCH
 }
 
 // get creature's IP address
 IP_t PCFinder::getIP(const string& name) const {
-    __BEGIN_TRY
-
     IP_t IP = 0;
 
     unordered_map<string, Creature*>::const_iterator itr;
@@ -251,8 +217,6 @@ IP_t PCFinder::getIP(const string& name) const {
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return IP;
-
-    __END_CATCH
 }
 
 list<string> PCFinder::getGuildPlayerNames_LOCKED(GuildID_t gID) const {
@@ -268,8 +232,6 @@ list<string> PCFinder::getGuildPlayerNames_LOCKED(GuildID_t gID) const {
 }
 
 void PCFinder::addNPC(NPC* pNPC) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pNPC != NULL);
@@ -286,8 +248,6 @@ void PCFinder::addNPC(NPC* pNPC) {
     m_NPCs[Name] = pNPC;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -295,7 +255,6 @@ void PCFinder::deleteNPC(const string& name)
 
 {
     // Probably never used; it only exists to pair with the add function.
-    __BEGIN_TRY
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -308,16 +267,12 @@ void PCFinder::deleteNPC(const string& name)
     m_NPCs.erase(itr);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 NPC* PCFinder::getNPC(const string& name) const
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, NPC*>::const_iterator itr;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -331,17 +286,12 @@ NPC* PCFinder::getNPC(const string& name) const
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return itr->second;
-
-
-    __END_CATCH
 }
 
 
 NPC* PCFinder::getNPC_LOCKED(const string& name) const
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, NPC*>::const_iterator itr;
 
     itr = m_NPCs.find(name);
@@ -351,6 +301,4 @@ NPC* PCFinder::getNPC_LOCKED(const string& name) const
     }
 
     return itr->second;
-
-    __END_CATCH
 }

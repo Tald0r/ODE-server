@@ -22,9 +22,6 @@
 void XRLMissile::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -154,9 +151,6 @@ void XRLMissile::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
         printf("skill exception!!~1\n");
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 XRLMissile g_XRLMissile;

@@ -24,8 +24,6 @@
 void ActionGiveNewbieItem::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script type
         string ItemType = propertyBuffer.getProperty("Type");
@@ -54,8 +52,6 @@ void ActionGiveNewbieItem::read(PropertyBuffer& propertyBuffer)
         cout << nsee.toString() << endl;
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -65,8 +61,6 @@ void ActionGiveNewbieItem::read(PropertyBuffer& propertyBuffer)
 void ActionGiveNewbieItem::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -261,8 +255,6 @@ void ActionGiveNewbieItem::execute(Creature* pCreature1, Creature* pCreature2)
     }
 
     pFlagSet->save(pSlayer->getName());
-
-    __END_CATCH
 }
 
 
@@ -272,11 +264,7 @@ void ActionGiveNewbieItem::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionGiveNewbieItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionGiveNewbieItem(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

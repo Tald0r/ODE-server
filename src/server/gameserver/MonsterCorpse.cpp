@@ -16,8 +16,6 @@
 MonsterCorpse::MonsterCorpse(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
     Assert(pMonster != NULL);
 
     m_MonsterType = pMonster->getMonsterType();
@@ -30,15 +28,11 @@ MonsterCorpse::MonsterCorpse(Monster* pMonster)
     setObjectID(pMonster->getObjectID());
 
     m_HostPartyID = 0;
-
-    __END_CATCH
 }
 
 MonsterCorpse::MonsterCorpse(MonsterType_t MType, const string& name, Dir_t dir)
 
 {
-    __BEGIN_TRY
-
     m_MonsterType = MType;
     m_Name = name;
     m_Dir = dir;
@@ -47,8 +41,6 @@ MonsterCorpse::MonsterCorpse(MonsterType_t MType, const string& name, Dir_t dir)
     m_bShrine = false;
 
     m_HostPartyID = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -56,20 +48,14 @@ MonsterCorpse::MonsterCorpse(MonsterType_t MType, const string& name, Dir_t dir)
 //////////////////////////////////////////////////////////////////////////////
 MonsterCorpse::~MonsterCorpse()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 // create
 //////////////////////////////////////////////////////////////////////////////
 void MonsterCorpse::create(const string& ownerID, Storage stroage, DWORD storageID, BYTE x, BYTE y, ItemID_t itemID)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -78,11 +64,7 @@ void MonsterCorpse::create(const string& ownerID, Storage stroage, DWORD storage
 bool MonsterCorpse::destroy()
 
 {
-    __BEGIN_TRY
-
     return true;
-
-    __END_CATCH
 }
 
 
@@ -91,18 +73,14 @@ bool MonsterCorpse::destroy()
 //////////////////////////////////////////////////////////////////////////////
 void MonsterCorpse::save(const string& ownerID, Storage stroage, DWORD storageID, BYTE x, BYTE y)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 // get debug string
 //////////////////////////////////////////////////////////////////////////////
 string MonsterCorpse::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "MonsterCorpse(" << "ObjectID:" << (int)m_ObjectID << ",MonsterName:" << m_Name
         << ",MonsterType:" << (int)m_MonsterType << ",m_Dir:" << dir2String(m_Dir) << ")";
     return msg.toString();
-
-    __END_CATCH
 }

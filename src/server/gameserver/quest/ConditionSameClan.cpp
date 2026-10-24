@@ -38,11 +38,7 @@ void ConditionSameClan::read(PropertyBuffer& propertyBuffer)
 string ConditionSameClan::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionSameClan(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

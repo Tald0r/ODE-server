@@ -14,8 +14,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 BloodyBall::BloodyBall() {
-    __BEGIN_TRY
-
     m_pBloodyBallMask[0].set(0, 0);
     m_pBloodyBallMask[1].set(-1, -1);
     m_pBloodyBallMask[2].set(0, -1);
@@ -25,8 +23,6 @@ BloodyBall::BloodyBall() {
     m_pBloodyBallMask[6].set(-1, 1);
     m_pBloodyBallMask[7].set(0, 1);
     m_pBloodyBallMask[8].set(1, 1);
-
-    __END_CATCH
 }
 
 
@@ -37,9 +33,6 @@ void BloodyBall::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -60,9 +53,6 @@ void BloodyBall::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,9 +62,6 @@ void BloodyBall::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampir
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pVampire);
     SkillOutput output;
     computeOutput(input, output);
@@ -107,9 +94,6 @@ void BloodyBall::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampir
     }
 
     g_SimpleTileMissileSkill.execute(pVampire, X, Y, pVampireSkillSlot, param, result, CEffectID, false, HitBonus);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -118,9 +102,6 @@ void BloodyBall::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampir
 void BloodyBall::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -144,9 +125,6 @@ void BloodyBall::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     }
 
     g_SimpleTileMissileSkill.execute(pMonster, X, Y, param, result);
-
-
-    __END_CATCH
 }
 
 BloodyBall g_BloodyBall;

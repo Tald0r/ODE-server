@@ -25,8 +25,6 @@ void SetAfire::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -146,8 +144,6 @@ void SetAfire::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-    __END_CATCH
 }
 
 SetAfire g_SetAfire;

@@ -16,17 +16,15 @@
 
 AlignmentManager::AlignmentManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 AlignmentManager::~AlignmentManager()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW}
+{}
 
 Alignment AlignmentManager::getAlignmentType(Alignment_t Alignment)
 
 {
-    __BEGIN_TRY
-
     if (Alignment <= -10000) {
         return LESS_EVIL;
     }
@@ -43,15 +41,11 @@ Alignment AlignmentManager::getAlignmentType(Alignment_t Alignment)
     } else {
         return MORE_GOOD;
     }
-
-    __END_CATCH
 }
 
 int AlignmentManager::getMultiplier(Alignment_t AttackerAlignment, Alignment_t DefenderAlignment)
 
 {
-    __BEGIN_TRY
-
     Alignment AAlignmentType = getAlignmentType(AttackerAlignment);
     Alignment DAlignmentType = getAlignmentType(DefenderAlignment);
 
@@ -121,15 +115,11 @@ int AlignmentManager::getMultiplier(Alignment_t AttackerAlignment, Alignment_t D
     }
 
     return -300;
-
-    __END_CATCH
 }
 
 BYTE AlignmentManager::getDropItemNum(Alignment_t Alignment, bool isPK)
 
 {
-    __BEGIN_TRY
-
     int Count = 0;
 
     if (Alignment > -10000 && Alignment < -7500) {
@@ -144,14 +134,11 @@ BYTE AlignmentManager::getDropItemNum(Alignment_t Alignment, bool isPK)
     // alone: neither the drop bonus roll nor the isPK reduction is applied.
 
     return (BYTE)Count;
-
-    __END_CATCH
 }
 
 BYTE AlignmentManager::getDropBonusPercentage(Alignment_t Alignment)
 
 {
-    __BEGIN_TRY
     return 0;
 
     int Percent = (10000 - Alignment) / 400;
@@ -160,15 +147,11 @@ BYTE AlignmentManager::getDropBonusPercentage(Alignment_t Alignment)
     Percent = min(50, Percent);
 
     return (BYTE)Percent;
-
-    __END_CATCH
 }
 
 BYTE AlignmentManager::getMoneyDropPenalty(Alignment_t Alignment)
 
 {
-    __BEGIN_TRY
-
     BYTE Penalty = 0;
 
     if (Alignment == 10000) {
@@ -188,18 +171,12 @@ BYTE AlignmentManager::getMoneyDropPenalty(Alignment_t Alignment)
     }
 
     return Penalty;
-
-    __END_CATCH
 }
 
 string AlignmentManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "AlignmentManager (" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

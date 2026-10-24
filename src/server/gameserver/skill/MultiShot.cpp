@@ -20,8 +20,6 @@
 // Constructor - initializes the masks.
 //////////////////////////////////////////////////////////////////////////////
 MultiShot::MultiShot() {
-    __BEGIN_TRY
-
     // The SG mask does not depend on the direction.
     m_pSGMask[0].set(-1, -1);
     m_pSGMask[1].set(0, -1);
@@ -76,8 +74,6 @@ MultiShot::MultiShot() {
     m_pARMask[RIGHTUP][0].set(-1, -1);
     m_pARMask[RIGHTUP][1].set(0, 0);
     m_pARMask[RIGHTUP][2].set(1, 1);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -86,9 +82,6 @@ MultiShot::MultiShot() {
 void MultiShot::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -127,9 +120,6 @@ void MultiShot::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* p
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -138,8 +128,6 @@ void MultiShot::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* p
 void MultiShot::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -170,8 +158,6 @@ void MultiShot::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -180,9 +166,6 @@ void MultiShot::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot
 void MultiShot::SGexecute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -409,9 +392,6 @@ void MultiShot::SGexecute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSl
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -421,9 +401,6 @@ void MultiShot::ARSMGexecute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, Skil
                              CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -647,9 +624,6 @@ void MultiShot::ARSMGexecute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, Skil
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 MultiShot g_MultiShot;

@@ -25,9 +25,6 @@ void AcidStorm::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSki
                         CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     // Vampire Object Assertion
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
@@ -49,9 +46,6 @@ void AcidStorm::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSki
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -61,9 +55,6 @@ void AcidStorm::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampire
                         CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pVampire->getPlayer();
         Zone* pZone = pVampire->getZone();
@@ -289,9 +280,6 @@ void AcidStorm::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampire
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -300,9 +288,6 @@ void AcidStorm::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampire
 void AcidStorm::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Zone* pZone = pMonster->getZone();
 
@@ -473,8 +458,5 @@ void AcidStorm::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 AcidStorm g_AcidStorm;

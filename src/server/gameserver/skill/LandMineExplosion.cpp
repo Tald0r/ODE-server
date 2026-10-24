@@ -15,8 +15,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 LandMineExplosion::LandMineExplosion() {
-    __BEGIN_TRY
-
     int index = 0;
 
     for (int i = -3; i <= 3; ++i)
@@ -27,8 +25,6 @@ LandMineExplosion::LandMineExplosion() {
         }
 
     // The surrounding 8 tiles
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -37,9 +33,6 @@ LandMineExplosion::LandMineExplosion() {
 void LandMineExplosion::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -93,9 +86,6 @@ void LandMineExplosion::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 LandMineExplosion g_LandMineExplosion;

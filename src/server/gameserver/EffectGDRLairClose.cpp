@@ -19,14 +19,10 @@ void EffectGDRLairClose::affect() {
 }
 
 void EffectGDRLairClose::unaffect() {
-    __BEGIN_TRY
-
     cout << "Closing the GDR lair." << endl;
     GDRLairManager::Instance().close();
 
     GCSystemMessage gcSM;
     gcSM.setMessage("The Gilles de Rais Lair is closed.");
     de::gameContext().zoneGroups().broadcast(&gcSM);
-
-    __END_CATCH
 }

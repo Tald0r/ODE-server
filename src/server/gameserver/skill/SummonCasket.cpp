@@ -24,9 +24,6 @@
 void SummonCasket::execute(Vampire* pVampire, VampireSkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -171,9 +168,6 @@ void SummonCasket::execute(Vampire* pVampire, VampireSkillSlot* pSkillSlot, CEff
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -181,11 +175,6 @@ void SummonCasket::execute(Vampire* pVampire, VampireSkillSlot* pSkillSlot, CEff
 //////////////////////////////////////////////////////////////////////////////
 void SummonCasket::execute(Monster* pMonster)
 
-    {__BEGIN_TRY
-
-
-         __END_CATCH
-
-    }
+{}
 
 SummonCasket g_SummonCasket;

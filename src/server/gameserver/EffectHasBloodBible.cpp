@@ -32,26 +32,18 @@
 //////////////////////////////////////////////////////////////////////////////
 EffectHasBloodBible::EffectHasBloodBible(Creature* pCreature)
 
-    : EffectHasRelic(pCreature){__BEGIN_TRY
+    : EffectHasRelic(pCreature) {}
 
-                                    __END_CATCH}
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+EffectHasBloodBible::EffectHasBloodBible(Item* pItem)
 
-      //////////////////////////////////////////////////////////////////////////////
-      //////////////////////////////////////////////////////////////////////////////
-      EffectHasBloodBible::EffectHasBloodBible(Item * pItem)
-
-    : EffectHasRelic(pItem) {
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+    : EffectHasRelic(pItem) {}
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectHasBloodBible::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Get the zone.
     Zone* pZone = pCreature->getZone();
     Assert(pZone != NULL);
@@ -75,8 +67,6 @@ void EffectHasBloodBible::affect(Creature* pCreature)
     de::gameContext().shrines().registerBloodBibleStatus(m_Part, pGCBBS);
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -84,8 +74,6 @@ void EffectHasBloodBible::affect(Creature* pCreature)
 void EffectHasBloodBible::affect(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (m_pZone == NULL)
         return;
 
@@ -110,15 +98,11 @@ void EffectHasBloodBible::affect(Item* pItem)
     de::gameContext().shrines().registerBloodBibleStatus(m_Part, pGCBBS);
 
     setNextTime(999999);
-
-    __END_CATCH
 }
 
 void EffectHasBloodBible::setPart(int part)
 
 {
-    __BEGIN_TRY
-
     const BloodBibleInfo* pBloodBibleInfo = dynamic_cast<const BloodBibleInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BLOOD_BIBLE, part));
 
@@ -126,18 +110,12 @@ void EffectHasBloodBible::setPart(int part)
         m_Part = part;
         m_PartName = pBloodBibleInfo->getName();
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHasBloodBible::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectHasBloodBible(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

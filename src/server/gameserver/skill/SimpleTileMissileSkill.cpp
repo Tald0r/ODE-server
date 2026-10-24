@@ -24,8 +24,6 @@ SimpleTileMissileSkill g_SimpleTileMissileSkill;
 void SimpleTileMissileSkill::execute(Slayer* pSlayer, int X, int Y, SkillSlot* pSkillSlot,
                                      const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result,
                                      CEffectID_t CEffectID, bool bForceKnockback) {
-    __BEGIN_TRY
-
     try {
         Player* pPlayer = pSlayer->getPlayer();
         Zone* pZone = pSlayer->getZone();
@@ -289,15 +287,11 @@ void SimpleTileMissileSkill::execute(Slayer* pSlayer, int X, int Y, SkillSlot* p
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 void SimpleTileMissileSkill::execute(Vampire* pVampire, int X, int Y, VampireSkillSlot* pVampireSkillSlot,
                                      const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result,
                                      CEffectID_t CEffectID, bool bForceKnockback, int HitBonus) {
-    __BEGIN_TRY
-
     try {
         Player* pPlayer = pVampire->getPlayer();
         Zone* pZone = pVampire->getZone();
@@ -516,15 +510,11 @@ void SimpleTileMissileSkill::execute(Vampire* pVampire, int X, int Y, VampireSki
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, param.SkillType);
     }
-
-    __END_CATCH
 }
 
 void SimpleTileMissileSkill::execute(Ousters* pOusters, int X, int Y, OustersSkillSlot* pOustersSkillSlot,
                                      const SIMPLE_SKILL_INPUT& param, SIMPLE_SKILL_OUTPUT& result,
                                      CEffectID_t CEffectID, bool bForceKnockback, int HitBonus) {
-    __BEGIN_TRY
-
     try {
         Player* pPlayer = pOusters->getPlayer();
         Zone* pZone = pOusters->getZone();
@@ -748,14 +738,10 @@ void SimpleTileMissileSkill::execute(Ousters* pOusters, int X, int Y, OustersSki
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, param.SkillType, param.Grade);
     }
-
-    __END_CATCH
 }
 
 void SimpleTileMissileSkill::execute(Monster* pMonster, int X, int Y, const SIMPLE_SKILL_INPUT& param,
                                      SIMPLE_SKILL_OUTPUT& result, CEffectID_t CEffectID, bool bForceKnockback) {
-    __BEGIN_TRY
-
     try {
         Zone* pZone = pMonster->getZone();
         Assert(pZone != NULL);
@@ -929,6 +915,4 @@ void SimpleTileMissileSkill::execute(Monster* pMonster, int X, int Y, const SIMP
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, param.SkillType);
     }
-
-    __END_CATCH
 }

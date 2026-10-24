@@ -21,8 +21,6 @@
 EffectMeteorStrike::EffectMeteorStrike(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY, bool bPlayer)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
@@ -33,8 +31,6 @@ EffectMeteorStrike::EffectMeteorStrike(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord
     m_SplashRatio[0] = 100;
     m_SplashRatio[1] = 85;
     m_SplashRatio[2] = 75;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -42,8 +38,6 @@ EffectMeteorStrike::EffectMeteorStrike(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord
 void EffectMeteorStrike::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     // Gets the creature that cast the effect.
@@ -174,52 +168,35 @@ void EffectMeteorStrike::affect()
     }
 
     setDeadline(0);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMeteorStrike::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMeteorStrike::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectMeteorStrike::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectMeteorStrike::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectMeteorStrike(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

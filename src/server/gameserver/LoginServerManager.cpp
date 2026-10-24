@@ -34,8 +34,6 @@
 // constructor
 //////////////////////////////////////////////////////////////////////
 LoginServerManager::LoginServerManager() : m_pDatagramSocket(NULL) {
-    __BEGIN_TRY
-
     Properties& config = de::kernelContext().config();
 
     m_Mutex.setName("LoginServerManager");
@@ -51,8 +49,6 @@ LoginServerManager::LoginServerManager() : m_pDatagramSocket(NULL) {
             cout << "LoginServerManager(" << port << ") : " << error.toString() << endl;
         },
         "UDP");
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -61,22 +57,18 @@ LoginServerManager::LoginServerManager() : m_pDatagramSocket(NULL) {
 LoginServerManager::~LoginServerManager() noexcept {
     stop();
     join();
-    __BEGIN_TRY
-
-    SAFE_DELETE(m_pDatagramSocket);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        SAFE_DELETE(m_pDatagramSocket);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //////////////////////////////////////////////////////////////////////
 // stop thread
 //////////////////////////////////////////////////////////////////////
 void LoginServerManager::stop() {
-    __BEGIN_TRY
-
     ManagedThread::stop();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -203,18 +195,13 @@ void LoginServerManager::run() {
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 void LoginServerManager::sendDatagram(Datagram* pDatagram) {
-    __BEGIN_TRY
-
     m_pDatagramSocket->send(pDatagram);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
 // send datagram packet to login server
 //////////////////////////////////////////////////////////////////////
 void LoginServerManager::sendPacket(const string& host, uint port, DatagramPacket* pPacket) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     try {
@@ -236,5 +223,4 @@ void LoginServerManager::sendPacket(const string& host, uint port, DatagramPacke
     }
 
     __END_DEBUG
-    __END_CATCH
 }

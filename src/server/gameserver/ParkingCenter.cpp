@@ -14,31 +14,27 @@
 MotorcycleBox::MotorcycleBox(Motorcycle* pMotorcycle, Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     m_pMotorcycle = pMotorcycle;
     m_pZone = pZone;
     m_X = X;
     m_Y = Y;
     m_bTransport = false;
-
-    __END_CATCH
 }
 
 MotorcycleBox::~MotorcycleBox()
 
 {
-    __BEGIN_TRY
+    try {
+        if (m_pMotorcycle != NULL) {
+            // Deleted through m_pZone because of an m_pZone synchronization problem.
+            // by sigi. 2002.5.3
+            m_pZone->deleteMotorcycle(m_X, m_Y, m_pMotorcycle);
+        }
 
-    if (m_pMotorcycle != NULL) {
-        // Deleted through m_pZone because of an m_pZone synchronization problem.
-        // by sigi. 2002.5.3
-        m_pZone->deleteMotorcycle(m_X, m_Y, m_pMotorcycle);
+        m_pZone = NULL;
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_pZone = NULL;
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -48,40 +44,34 @@ MotorcycleBox::~MotorcycleBox()
 ParkingCenter::ParkingCenter()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("ParkingCenter");
     m_MutexRemove.setName("ParkingCenterRemove");
-
-    __END_CATCH
 }
 
 ParkingCenter::~ParkingCenter()
 
 {
-    __BEGIN_TRY
+    try {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        unordered_map<ItemID_t, MotorcycleBox*>::iterator itr = m_Motorcycles.begin();
 
-    unordered_map<ItemID_t, MotorcycleBox*>::iterator itr = m_Motorcycles.begin();
+        for (; itr != m_Motorcycles.end(); itr++) {
+            MotorcycleBox* pBox = itr->second;
+            SAFE_DELETE(pBox);
+        }
 
-    for (; itr != m_Motorcycles.end(); itr++) {
-        MotorcycleBox* pBox = itr->second;
-        SAFE_DELETE(pBox);
+        m_Motorcycles.clear();
+
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_Motorcycles.clear();
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH_NO_RETHROW
 }
 
 void ParkingCenter::addMotorcycleBox(MotorcycleBox* pMotorcycleBox)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pMotorcycleBox != NULL);
@@ -95,16 +85,12 @@ void ParkingCenter::addMotorcycleBox(MotorcycleBox* pMotorcycleBox)
     m_Motorcycles[pMotorcycleBox->getItemID()] = pMotorcycleBox;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 // Removes the motorcycle matching the key's TargetID from the unordered_map.
 // This deletes the whole motorcycle, so remove the motorcycle from the zone first
 // and call this function last.
 void ParkingCenter::deleteMotorcycleBox(ItemID_t keyTargetID) {
-    __BEGIN_TRY
-
     MotorcycleBox* pMotorcycleBox = NULL;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -135,15 +121,10 @@ void ParkingCenter::deleteMotorcycleBox(ItemID_t keyTargetID) {
 
         __LEAVE_CRITICAL_SECTION(m_MutexRemove)
     }
-
-
-    __END_CATCH
 }
 
 // Checks whether a MotorcycleBox with the given KeyID exists.
 bool ParkingCenter::hasMotorcycleBox(ItemID_t keyTargetID) {
-    __BEGIN_TRY
-
     bool hasMotor = true;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -157,14 +138,10 @@ bool ParkingCenter::hasMotorcycleBox(ItemID_t keyTargetID) {
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return hasMotor;
-
-    __END_CATCH
 }
 
 // Finds and returns the motorcycle by the key's TargetID.
 MotorcycleBox* ParkingCenter::getMotorcycleBox(ItemID_t keyTargetID) const {
-    __BEGIN_TRY
-
     MotorcycleBox* pTempBox = NULL;
 
     try {
@@ -188,16 +165,12 @@ MotorcycleBox* ParkingCenter::getMotorcycleBox(ItemID_t keyTargetID) const {
         // cerr << "Not found yet, or the key does not match this motorcycle." << endl;
         return NULL;
     }
-
-    __END_CATCH
 }
 
 // This runs on the ClientManager thread.
 void ParkingCenter::heartbeat()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_MutexRemove)
 
     list<MotorcycleBox*>::iterator itr = m_RemoveMotorcycles.begin();
@@ -211,6 +184,4 @@ void ParkingCenter::heartbeat()
     m_RemoveMotorcycles.clear();
 
     __LEAVE_CRITICAL_SECTION(m_MutexRemove)
-
-    __END_CATCH
 }

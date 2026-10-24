@@ -17,29 +17,19 @@
 EffectEternity::EffectEternity(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
     m_TargetObjectID = pCreature->getObjectID();
 
     m_pZone = pCreature->getZone();
-
-    __END_CATCH
 }
 
 void EffectEternity::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectEternity::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Zone* pZone = m_pZone;
     Assert(pZone != NULL);
 
@@ -47,15 +37,11 @@ void EffectEternity::unaffect()
     if (pCreature == NULL)
         return;
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 void EffectEternity::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -104,15 +90,10 @@ void EffectEternity::unaffect(Creature* pCreature)
     addSimpleCreatureEffect(pSlayer, Effect::EFFECT_CLASS_ETERNITY_PAUSE, 30);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string EffectEternity::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectEternity(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -55,8 +55,6 @@ PetItem::PetItem(ItemType_t itemType, const list<OptionType_t>& optionType)
 void PetItem::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -79,8 +77,6 @@ void PetItem::create(const string& ownerID, Storage storage, StorageID_t storage
             m_pPetInfo->getFoodType(), m_pPetInfo->canGamble(), m_pPetInfo->canCutHead(), m_pPetInfo->canAttack(),
             m_pPetInfo->getLastFeedTime().toDateTime());
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -89,18 +85,12 @@ void PetItem::create(const string& ownerID, Storage storage, StorageID_t storage
 void PetItem::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_PET_ITEM, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void PetItem::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     if (m_pPetInfo == NULL) {
         defaultItemObjectRepository().updatePetItem(GEAR_PET_ITEM, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, m_ItemID);
@@ -112,13 +102,9 @@ void PetItem::save(const string& ownerID, Storage storage, StorageID_t storageID
             m_pPetInfo->canGamble(), m_pPetInfo->canCutHead(), m_pPetInfo->canAttack(),
             m_pPetInfo->getLastFeedTime().toDateTime(), getDBString(m_pPetInfo->getNickname()), m_ItemID);
     }
-
-    __END_CATCH
 }
 
 void PetItem::savePetInfo() const {
-    __BEGIN_TRY
-
     if (m_pPetInfo != NULL) {
         defaultItemObjectRepository().savePetItemInfo(
             GEAR_PET_ITEM, m_pPetInfo->getPetCreatureType(), m_pPetInfo->getPetLevel(), m_pPetInfo->getPetAttr(),
@@ -126,8 +112,6 @@ void PetItem::savePetInfo() const {
             m_pPetInfo->canGamble(), m_pPetInfo->canCutHead(), m_pPetInfo->canAttack(),
             m_pPetInfo->getLastFeedTime().toDateTime(), getDBString(m_pPetInfo->getNickname()), m_ItemID);
     }
-
-    __END_CATCH
 }
 
 void PetItem::makePCItemInfo(PCItemInfo& result) const {
@@ -205,31 +189,19 @@ string PetItem::toString() const
 VolumeWidth_t PetItem::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PET_ITEM, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t PetItem::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PET_ITEM, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t PetItem::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PET_ITEM, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -250,8 +222,6 @@ string PetItemInfo::toString() const
 void PetItemInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_PET_ITEM);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -274,8 +244,6 @@ void PetItemInfoManager::load()
 
         addItemInfo(pPetItemInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -285,8 +253,6 @@ void PetItemInfoManager::load()
 void PetItemLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<PetItemObjectRow> rows =
@@ -436,15 +402,11 @@ void PetItemLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void PetItemLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<FlagZoneObjectRow> rows =
@@ -478,19 +440,13 @@ void PetItemLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void PetItemLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

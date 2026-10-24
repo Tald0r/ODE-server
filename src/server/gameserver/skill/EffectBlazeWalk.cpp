@@ -20,14 +20,10 @@
 EffectBlazeWalk::EffectBlazeWalk(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_UserObjectID = 0;
     m_AttackNum = 0;
     setTarget(pCreature);
     m_SkillType = SKILL_BLAZE_WALK;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,14 +31,8 @@ EffectBlazeWalk::EffectBlazeWalk(Creature* pCreature)
 void EffectBlazeWalk::affect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,8 +40,6 @@ void EffectBlazeWalk::affect()
 void EffectBlazeWalk::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     Zone* pZone = pCreature->getZone();
@@ -97,9 +85,6 @@ void EffectBlazeWalk::affect(Creature* pCreature)
         setNextTime(5);
     } else
         setDeadline(0);
-
-
-    __END_CATCH
 }
 
 
@@ -108,7 +93,6 @@ void EffectBlazeWalk::affect(Creature* pCreature)
 void EffectBlazeWalk::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -116,7 +100,6 @@ void EffectBlazeWalk::unaffect(Creature* pCreature)
     pCreature->removeFlag(Effect::EFFECT_CLASS_BLAZE_WALK);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -124,22 +107,14 @@ void EffectBlazeWalk::unaffect(Creature* pCreature)
 void EffectBlazeWalk::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBlazeWalk::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectBlazeWalk(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -21,11 +21,7 @@
 EffectVigorDropToCreature::EffectVigorDropToCreature(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -33,14 +29,8 @@ EffectVigorDropToCreature::EffectVigorDropToCreature(Creature* pCreature)
 void EffectVigorDropToCreature::affect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -48,9 +38,6 @@ void EffectVigorDropToCreature::affect()
 void EffectVigorDropToCreature::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     Zone* pZone = pCreature->getZone();
@@ -103,9 +90,6 @@ void EffectVigorDropToCreature::affect(Creature* pCreature)
     }
 
     setNextTime(m_Tick);
-
-
-    __END_CATCH
 }
 
 
@@ -113,17 +97,13 @@ void EffectVigorDropToCreature::affect(Creature* pCreature)
 //////////////////////////////////////////////////////////////////////////////
 void EffectVigorDropToCreature::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectVigorDropToCreature::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     pCreature->removeFlag(Effect::EFFECT_CLASS_VIGOR_DROP_TO_CREATURE);
@@ -138,7 +118,6 @@ void EffectVigorDropToCreature::unaffect(Creature* pCreature)
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -146,28 +125,20 @@ void EffectVigorDropToCreature::unaffect(Creature* pCreature)
 void EffectVigorDropToCreature::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectVigorDropToCreature::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectVigorDropToCreature::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectVigorDropToCreature(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

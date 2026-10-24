@@ -39,16 +39,12 @@
 string CastleShrineSet::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ShrineSet(" << "ShrineID:" << (int)m_ShrineID << "," << m_GuardShrine.toString() << ","
         << m_HolyShrine.toString() << ",ItemType:" << (int)m_ItemType << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 CastleShrineInfoManager::~CastleShrineInfoManager() {
@@ -66,20 +62,14 @@ void CastleShrineInfoManager::clear() {
 void CastleShrineInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
 
     addAllShrineToZone();
-
-    __END_CATCH
 }
 
 void CastleShrineInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<CastleShrineRow> rows = defaultGameInfoRepository().loadCastleShrines();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -109,15 +99,11 @@ void CastleShrineInfoManager::load()
 
         addShrineSet(pShrineSet);
     }
-
-    __END_CATCH
 }
 
 ZoneID_t CastleShrineInfoManager::getGuardShrineZoneID(ZoneID_t castleZoneID) const
 
 {
-    __BEGIN_TRY
-
     HashMapShrineSetConstItor itr = m_ShrineSets.begin();
 
     // The shrineID for castleZoneID cannot be looked up, so compare them one by one.
@@ -137,15 +123,11 @@ ZoneID_t CastleShrineInfoManager::getGuardShrineZoneID(ZoneID_t castleZoneID) co
     StringStream msg;
     msg << "No GuardZoneID belongs to CastleZoneID[" << (int)castleZoneID << "]";
     throw Error(msg.toString());
-
-    __END_CATCH
 }
 
 void CastleShrineInfoManager::addAllShrineToZone()
 
 {
-    __BEGIN_TRY
-
     HashMapShrineSetItor itr = m_ShrineSets.begin();
     for (; itr != m_ShrineSets.end(); itr++) {
         CastleShrineSet* pShrineSet = itr->second;
@@ -163,15 +145,11 @@ void CastleShrineInfoManager::addAllShrineToZone()
 
         addShrineToZone(pShrineSet->m_HolyShrine, pShrineSet->m_ItemType);
     }
-
-    __END_CATCH
 }
 
 Item* CastleShrineInfoManager::addShrineToZone(ShrineInfo& shrineInfo, ItemType_t itemType)
 
 {
-    __BEGIN_TRY
-
     // Get the zone the shrine goes into.
     Zone* pZone = getZoneByZoneID(shrineInfo.getZoneID());
     Assert(pZone != NULL);
@@ -232,15 +210,11 @@ Item* CastleShrineInfoManager::addShrineToZone(ShrineInfo& shrineInfo, ItemType_
     shrineInfo.setY(tp.y);
 
     return pItem;
-
-    __END_CATCH
 }
 
 void CastleShrineInfoManager::addShrineSet(CastleShrineSet* pShrineSet)
 
 {
-    __BEGIN_TRY
-
     if (pShrineSet == NULL)
         return;
 
@@ -254,30 +228,22 @@ void CastleShrineInfoManager::addShrineSet(CastleShrineSet* pShrineSet)
     }
 
     m_ShrineSets[shrineID] = pShrineSet;
-
-    __END_CATCH
 }
 
 void CastleShrineInfoManager::deleteShrineSet(ShrineID_t shrineID)
 
 {
-    __BEGIN_TRY
-
     HashMapShrineSetItor itr = m_ShrineSets.find(shrineID);
 
     if (itr != m_ShrineSets.end()) {
         SAFE_DELETE(itr->second);
         m_ShrineSets.erase(shrineID);
     }
-
-    __END_CATCH
 }
 
 CastleShrineSet* CastleShrineInfoManager::getShrineSet(ShrineID_t shrineID) const
 
 {
-    __BEGIN_TRY
-
     HashMapShrineSetConstItor itr = m_ShrineSets.find(shrineID);
 
     if (itr != m_ShrineSets.end()) {
@@ -285,15 +251,11 @@ CastleShrineSet* CastleShrineInfoManager::getShrineSet(ShrineID_t shrineID) cons
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 bool CastleShrineInfoManager::isMatchHolyShrine(Item* pItem, MonsterCorpse* pMonsterCorpse) const
 
 {
-    __BEGIN_TRY
-
     if (pItem->getItemClass() != Item::ITEM_CLASS_CASTLE_SYMBOL)
         return false;
 
@@ -311,16 +273,12 @@ bool CastleShrineInfoManager::isMatchHolyShrine(Item* pItem, MonsterCorpse* pMon
     // symbol equals the MonsterType of the MonsterCorpse passed in and the ObjectID matches too.
     return pShrineSet->m_HolyShrine.getMonsterType() == pMonsterCorpse->getMonsterType() &&
            pShrineSet->m_HolyShrine.getObjectID() == pMonsterCorpse->getObjectID();
-
-    __END_CATCH
 }
 
 // Can this race pick up a castle symbol fragment?
 bool CastleShrineInfoManager::canPickupCastleSymbol(Race_t race, CastleSymbol* pCastleSymbol) const
 
 {
-    __BEGIN_TRY
-
     // First find out which war this castle symbol fragment belongs to.
     CastleShrineSet* pShrineSet = getShrineSet(pCastleSymbol->getItemType());
 
@@ -353,14 +311,11 @@ bool CastleShrineInfoManager::canPickupCastleSymbol(Race_t race, CastleSymbol* p
     }
 
     return (race == pCastleInfo->getRace());
-    __END_CATCH
 }
 
 bool CastleShrineInfoManager::getMatchGuardShrinePosition(Item* pItem, ZoneItemPosition& zip) const
 
 {
-    __BEGIN_TRY
-
     if (pItem->getItemClass() != Item::ITEM_CLASS_CASTLE_SYMBOL)
         return false;
 
@@ -379,8 +334,6 @@ bool CastleShrineInfoManager::getMatchGuardShrinePosition(Item* pItem, ZoneItemP
     zip.setZoneY(pShrineSet->m_GuardShrine.getY());
 
     return true;
-
-    __END_CATCH
 }
 
 // Called from putCastleSymbol, on the zone thread of the zone holding the
@@ -389,8 +342,6 @@ bool CastleShrineInfoManager::getMatchGuardShrinePosition(Item* pItem, ZoneItemP
 bool CastleShrineInfoManager::returnCastleSymbol(ShrineID_t shrineID) const
 
 {
-    __BEGIN_TRY
-
     // Find the CastleSymbol related to shrineID using the DB information.
     CastleShrineSet* pShrineSet = getShrineSet(shrineID);
 
@@ -422,8 +373,6 @@ bool CastleShrineInfoManager::returnCastleSymbol(ShrineID_t shrineID) const
     }
 
     return false;
-
-    __END_CATCH
 }
 
 bool CastleShrineInfoManager::postCastleSymbolReturn(ShrineID_t shrineID) const {
@@ -447,8 +396,6 @@ bool CastleShrineInfoManager::postCastleSymbolReturn(ShrineID_t shrineID) const 
 bool CastleShrineInfoManager::returnAllCastleSymbol(ZoneID_t castleZoneID) const
 
 {
-    __BEGIN_TRY
-
     bool bReturned = false;
 
     HashMapShrineSetConstItor itr = m_ShrineSets.begin();
@@ -468,16 +415,12 @@ bool CastleShrineInfoManager::returnAllCastleSymbol(ZoneID_t castleZoneID) const
     }
 
     return bReturned;
-
-    __END_CATCH
 }
 
 
 bool CastleShrineInfoManager::returnCastleSymbol(Zone* pZone, CastleSymbol* pCastleSymbol) const
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     Assert(pCastleSymbol != NULL);
 
@@ -511,15 +454,11 @@ bool CastleShrineInfoManager::returnCastleSymbol(Zone* pZone, CastleSymbol* pCas
     de::gameContext().castleInfos().broadcastShrinePacket(shrineID, &msgPkt);
 
     return true;
-
-    __END_CATCH
 }
 
 bool CastleShrineInfoManager::putCastleSymbol(PlayerCreature* pPC, Item* pItem, MonsterCorpse* pCorpse) const
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
     Assert(pItem != NULL);
     Assert(pCorpse != NULL);
@@ -569,16 +508,12 @@ bool CastleShrineInfoManager::putCastleSymbol(PlayerCreature* pPC, Item* pItem, 
     returnCastleSymbol(shrineID);
 
     return false;
-
-    __END_CATCH
 }
 
 // pZone is the guardZone.
 bool CastleShrineInfoManager::removeShrineShield(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     pZone->getZoneGroup()->assertOwned();
 
@@ -614,16 +549,12 @@ bool CastleShrineInfoManager::removeShrineShield(Zone* pZone)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 // pZone is the guardZone.
 bool CastleShrineInfoManager::addShrineShield(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     pZone->getZoneGroup()->assertOwned();
 
@@ -664,15 +595,11 @@ bool CastleShrineInfoManager::addShrineShield(Zone* pZone)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 string CastleShrineInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ShrineInfoManager(" << "Size:" << size() << ",(\n";
@@ -686,6 +613,4 @@ string CastleShrineInfoManager::toString() const
     msg << "))";
 
     return msg.toString();
-
-    __END_CATCH
 }

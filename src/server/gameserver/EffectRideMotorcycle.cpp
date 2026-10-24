@@ -25,15 +25,11 @@ EffectRideMotorcycle::EffectRideMotorcycle(Slayer* pOwner, Item* pMotorcycle, Zo
 
     : Effect(pOwner->getZone(), motorX, motorY, pOwner, 0), m_MotorX(motorX), m_MotorY(motorY),
       m_OwnerObjectID(pOwner->getObjectID()), m_pMotorcycle(pMotorcycle) {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
     Assert(getTarget() != NULL);
 
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 
@@ -42,11 +38,7 @@ EffectRideMotorcycle::EffectRideMotorcycle(Slayer* pOwner, Item* pMotorcycle, Zo
 //----------------------------------------------------------------------
 EffectRideMotorcycle::~EffectRideMotorcycle()
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 
 //----------------------------------------------------------------------
@@ -55,8 +47,6 @@ EffectRideMotorcycle::~EffectRideMotorcycle()
 void EffectRideMotorcycle::unaffect()
 
 {
-    __BEGIN_TRY
-
     Slayer* pOwner = dynamic_cast<Slayer*>(m_pTarget);
     if (pOwner == NULL)
         return;
@@ -69,8 +59,6 @@ void EffectRideMotorcycle::unaffect()
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pOwner->getPlayer());
     // synthetic packet straight to the handler (2.3)
     CGRideMotorCycleHandler::execute(&cgRide, pGamePlayer);
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------

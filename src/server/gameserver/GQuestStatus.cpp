@@ -372,9 +372,5 @@ void GQuestStatus::cleanUpMissions() {
 }
 
 void GQuestStatus::save() {
-    __BEGIN_TRY
-
     defaultPlayRecordRepository().replaceSavedQuest(m_QuestID, m_pOwner->getName(), m_Status);
-
-    __END_CATCH
 }

@@ -19,12 +19,8 @@
 EffectDarkBluePoison::EffectDarkBluePoison(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_Level = 0;
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -32,14 +28,8 @@ EffectDarkBluePoison::EffectDarkBluePoison(Creature* pCreature)
 void EffectDarkBluePoison::affect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -47,9 +37,6 @@ void EffectDarkBluePoison::affect()
 void EffectDarkBluePoison::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     if (canAttack(NULL, pCreature)) {
@@ -91,26 +78,19 @@ void EffectDarkBluePoison::affect(Creature* pCreature)
     }
 
     setNextTime(m_Tick);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDarkBluePoison::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDarkBluePoison::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -134,7 +114,6 @@ void EffectDarkBluePoison::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -142,30 +121,20 @@ void EffectDarkBluePoison::unaffect(Creature* pCreature)
 void EffectDarkBluePoison::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDarkBluePoison::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDarkBluePoison::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectDarkBluePoison(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

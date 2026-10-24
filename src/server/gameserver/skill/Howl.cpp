@@ -18,9 +18,6 @@
 void Howl::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
 
     // The skill handler is null because this handler runs
@@ -88,9 +85,6 @@ void Howl::execute(Vampire* pVampire, VampireSkillSlot* pVampireSkillSlot, CEffe
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Howl g_Howl;

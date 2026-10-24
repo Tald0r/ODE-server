@@ -206,7 +206,6 @@ private:
 void Zone::addPC(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (m_pZoneGroup != NULL)
@@ -683,7 +682,6 @@ void Zone::addPC(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir)
     __END_PROFILE_ZONE("Z_ADD_PC")
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -693,8 +691,6 @@ void Zone::addPC(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir)
 void Zone::addCreature(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_t dir)
 
 {
-    __BEGIN_TRY
-
     if (m_pZoneGroup != NULL)
         m_pZoneGroup->assertOwned();
 
@@ -791,8 +787,6 @@ void Zone::addCreature(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_
     }
 
     __END_PROFILE_ZONE("Z_ADD_CREATURE")
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -801,13 +795,8 @@ void Zone::addCreature(Creature* pCreature, ZoneCoord_t cx, ZoneCoord_t cy, Dir_
 void Zone::deletePC(Creature* pCreature)
 // NoSuchElementException, Error)
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     m_pPCManager->deleteCreature(pCreature->getObjectID());
-
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -816,8 +805,6 @@ void Zone::deletePC(Creature* pCreature)
 void Zone::deleteQueuePC(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pCreature != NULL);
@@ -829,8 +816,6 @@ void Zone::deleteQueuePC(Creature* pCreature)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -839,15 +824,11 @@ void Zone::deleteQueuePC(Creature* pCreature)
 void Zone::addPC(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (m_pZoneGroup != NULL)
         m_pZoneGroup->assertOwned();
 
     Assert(pCreature != NULL);
     m_pPCManager->addCreature(pCreature);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -945,8 +926,6 @@ void Zone::deleteCreatureFromTile(Creature* pCreature, ZoneCoord_t x, ZoneCoord_
 void Zone::deleteCreature(Creature* pCreature, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     if (m_pZoneGroup != NULL)
         m_pZoneGroup->assertOwned();
 
@@ -1004,8 +983,6 @@ void Zone::deleteCreature(Creature* pCreature, ZoneCoord_t x, ZoneCoord_t y)
     }
 
     __END_PROFILE_ZONE("Z_DELETE_CREATURE")
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -1014,8 +991,6 @@ void Zone::deleteCreature(Creature* pCreature, ZoneCoord_t x, ZoneCoord_t y)
 void Zone::deleteObject(Object* pObject, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     __BEGIN_PROFILE_ZONE("Z_DELETE_OBJECT")
 
     //--------------------------------------------------
@@ -1031,8 +1006,6 @@ void Zone::deleteObject(Object* pObject, ZoneCoord_t x, ZoneCoord_t y)
     broadcastPacket(x, y, &gcDeleteObject);
 
     __END_PROFILE_ZONE("Z_DELETE_OBJECT")
-
-    __END_CATCH
 }
 
 //-------------------------------------------------------------
@@ -1120,8 +1093,6 @@ Packet* Zone::createMonsterAddPacket(Monster* pMonster, Creature* pPC) const
 bool Zone::deleteNPC(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL || !pCreature->isNPC())
         return false;
 
@@ -1142,15 +1113,11 @@ bool Zone::deleteNPC(Creature* pCreature)
     SAFE_DELETE(pCreature);
 
     return true;
-
-    __END_CATCH
 }
 
 void Zone::deleteNPCs(Race_t race)
 
 {
-    __BEGIN_TRY
-
     const unordered_map<ObjectID_t, Creature*>& NPCs = m_pNPCManager->getCreatures();
     unordered_map<ObjectID_t, Creature*>::const_iterator itr = NPCs.begin();
 
@@ -1180,8 +1147,6 @@ void Zone::deleteNPCs(Race_t race)
     }
 
     sendNPCInfo();
-
-    __END_CATCH
 }
 
 // Sets every monster's HP to 0 for its own AI to finish off. The war work
@@ -1189,8 +1154,6 @@ void Zone::deleteNPCs(Race_t race)
 void Zone::killAllMonsters()
 
 {
-    __BEGIN_TRY
-
     if (m_pZoneGroup != NULL)
         m_pZoneGroup->assertOwned();
 
@@ -1209,15 +1172,11 @@ void Zone::killAllMonsters()
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void Zone::killAllMonsters_UNLOCK()
 
 {
-    __BEGIN_TRY
-
     unordered_map<ObjectID_t, Creature*>& monsters = m_pMonsterManager->getCreatures();
     unordered_map<ObjectID_t, Creature*>::iterator itr = monsters.begin();
 
@@ -1229,13 +1188,9 @@ void Zone::killAllMonsters_UNLOCK()
             pMonster->setHP(0);
         }
     }
-
-    __END_CATCH
 }
 
 void Zone::killAllPCs() {
-    __BEGIN_TRY
-
     unordered_map<ObjectID_t, Creature*>& pcs = m_pPCManager->getCreatures();
     unordered_map<ObjectID_t, Creature*>::iterator itr = pcs.begin();
 
@@ -1250,6 +1205,4 @@ void Zone::killAllPCs() {
             dynamic_cast<Ousters*>(pCreature)->setHP(0);
         }
     }
-
-    __END_CATCH
 }

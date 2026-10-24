@@ -23,16 +23,12 @@
 EffectHellFire::EffectHellFire(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_CasterName = "";
     m_CasterID = 0;
     m_bForce = false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,9 +36,6 @@ EffectHellFire::EffectHellFire(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY
 void EffectHellFire::affect()
 
 {
-    __BEGIN_TRY
-
-
     Assert(m_pZone != NULL);
 
     // Fetches the creature that used the effect.
@@ -103,54 +96,35 @@ void EffectHellFire::affect()
     }
 
     setNextTime(m_Tick);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectHellFire::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectHellFire::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectHellFire::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHellFire::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectHellFire(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

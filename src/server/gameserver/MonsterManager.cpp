@@ -86,8 +86,6 @@ bool isLottoWinning();
 MonsterManager::MonsterManager(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     m_pZone = pZone;
 
@@ -98,8 +96,6 @@ MonsterManager::MonsterManager(Zone* pZone)
     m_pEventMonsterInfo = NULL;
 
     getCurrentTime(m_RegenTime);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,11 +106,11 @@ MonsterManager::MonsterManager(Zone* pZone)
 MonsterManager::~MonsterManager()
 
 {
-    __BEGIN_TRY
-
-    SAFE_DELETE(m_pEventMonsterInfo);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        SAFE_DELETE(m_pEventMonsterInfo);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -123,8 +119,6 @@ MonsterManager::~MonsterManager()
 void MonsterManager::load()
 
 {
-    __BEGIN_TRY
-
     string text, eventText;
 
     m_RICE_CAKE_PROB_RATIO[0] = 100;
@@ -167,8 +161,6 @@ void MonsterManager::load()
 
     parseMonsterList(text, bReload);
     parseEventMonsterList(eventText, bReload);
-
-    __END_CATCH
 }
 
 void MonsterManager::parseMonsterList(const string& text, bool bReload)
@@ -365,8 +357,6 @@ void MonsterManager::parseEventMonsterList(const string& text, bool bReload)
 void MonsterManager::addCreature(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Monster* pMonster = dynamic_cast<Monster*>(pCreature);
 
     // Add it to the creature hash map.
@@ -400,8 +390,6 @@ void MonsterManager::addCreature(Creature* pCreature)
         // Increment the monster counter.
         itr->second->addMonster();
     }
-
-    __END_CATCH
 }
 
 
@@ -410,8 +398,6 @@ void MonsterManager::addCreature(Creature* pCreature)
 void MonsterManager::deleteCreature(ObjectID_t creatureID)
 // NoSuchElementException , Error)
 {
-    __BEGIN_TRY
-
     // Check whether a monster with that OID exists in the creature hash map.
     unordered_map<ObjectID_t, Creature*>::iterator itr = m_Creatures.find(creatureID);
 
@@ -452,9 +438,6 @@ void MonsterManager::deleteCreature(ObjectID_t creatureID)
         // Decrement the monster count.
         itr2->second->deleteMonster();
     }
-
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -464,9 +447,6 @@ void MonsterManager::deleteCreature(ObjectID_t creatureID)
 void MonsterManager::addPotentialEnemy(Monster* pAttackedMonster, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     unordered_map<ObjectID_t, Creature*>::const_iterator itr = m_Creatures.begin();
 
     for (; itr != m_Creatures.end(); itr++) {
@@ -482,9 +462,6 @@ void MonsterManager::addPotentialEnemy(Monster* pAttackedMonster, Creature* pCre
             pMonster->addPotentialEnemy(pCreature);
         }
     }
-
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -494,9 +471,6 @@ void MonsterManager::addPotentialEnemy(Monster* pAttackedMonster, Creature* pCre
 void MonsterManager::addEnemy(Monster* pAttackedMonster, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     unordered_map<ObjectID_t, Creature*>::const_iterator itr = m_Creatures.begin();
 
     for (; itr != m_Creatures.end(); itr++) {
@@ -512,9 +486,6 @@ void MonsterManager::addEnemy(Monster* pAttackedMonster, Creature* pCreature)
             pMonster->addEnemy(pCreature);
         }
     }
-
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -523,9 +494,6 @@ void MonsterManager::addEnemy(Monster* pAttackedMonster, Creature* pCreature)
 void MonsterManager::processCreatures()
 
 {
-    __BEGIN_TRY
-
-
     Timeval currentTime;
     getCurrentTime(currentTime);
 
@@ -618,9 +586,6 @@ void MonsterManager::processCreatures()
     } catch (Throwable& t) {
         filelog("MonsterManagerBug.log", "ProcessCreatureBug : %s", t.toString().c_str());
     }
-
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -629,7 +594,6 @@ void MonsterManager::processCreatures()
 void MonsterManager::regenerateCreatures()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // Prevent monster regeneration during a war.
@@ -736,7 +700,6 @@ void MonsterManager::regenerateCreatures()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -744,8 +707,6 @@ void MonsterManager::regenerateCreatures()
 bool MonsterManager::findPosition(MonsterType_t monsterType, ZoneCoord_t& RX, ZoneCoord_t& RY) const
 
 {
-    __BEGIN_TRY
-
     const MonsterInfo* pMonsterInfo = de::gameContext().monsterInfos().getMonsterInfo(monsterType);
 
     int count = 0;
@@ -775,8 +736,6 @@ bool MonsterManager::findPosition(MonsterType_t monsterType, ZoneCoord_t& RX, Zo
 
     // The loop above never ends, so this should be unreachable.
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -785,7 +744,6 @@ bool MonsterManager::findPosition(MonsterType_t monsterType, ZoneCoord_t& RX, Zo
 void MonsterManager::killCreature(Creature* pDeadCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pDeadCreature->isDead());
@@ -962,7 +920,6 @@ void MonsterManager::killCreature(Creature* pDeadCreature)
     SAFE_DELETE(pDeadMonster);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1071,8 +1028,6 @@ void MonsterManager::addMonsters(ZoneCoord_t x, ZoneCoord_t y, MonsterType_t mon
 void MonsterManager::addItem(Monster* pDeadMonster, MonsterCorpse* pMonsterCorpse)
 
 {
-    __BEGIN_TRY
-
     ItemFactoryManager& itemFactories = de::gameContext().itemFactories();
     VariableManager& variables = de::gameContext().variables();
 
@@ -1623,14 +1578,11 @@ void MonsterManager::addItem(Monster* pDeadMonster, MonsterCorpse* pMonsterCorps
     //   A star can drop from any monster, so it is hardcoded here.
     //   A star item is additionally created with a 1/1500 probability.
     //////////////////////////////////////////////////////////////////////
-    __END_CATCH
 }
 
 int MonsterManager::upgradeItemTypeByLuck(int luckLevel, Creature::CreatureClass ownerCreatureClass, ITEM_TEMPLATE& it)
 
 {
-    __BEGIN_TRY
-
     if (luckLevel == 0 || !isPossibleUpgradeItemType(it.ItemClass))
         return 0;
 
@@ -1677,13 +1629,9 @@ int MonsterManager::upgradeItemTypeByLuck(int luckLevel, Creature::CreatureClass
     }
 
     return 0;
-
-    __END_CATCH
 }
 
 int MonsterManager::upgradeOptionByLuck(int luckLevel, Creature::CreatureClass ownerCreatureClass, ITEM_TEMPLATE& it) {
-    __BEGIN_TRY
-
     if (it.OptionType.empty())
         return 0;
 
@@ -1740,8 +1688,6 @@ int MonsterManager::upgradeOptionByLuck(int luckLevel, Creature::CreatureClass o
     }
 
     return 0;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1750,7 +1696,6 @@ int MonsterManager::upgradeOptionByLuck(int luckLevel, Creature::CreatureClass o
 void MonsterManager::deleteAllMonsters(bool bDeleteFromZone)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     unordered_map<ObjectID_t, Creature*>::iterator current = m_Creatures.begin();
@@ -1793,7 +1738,6 @@ void MonsterManager::deleteAllMonsters(bool bDeleteFromZone)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1802,7 +1746,6 @@ void MonsterManager::deleteAllMonsters(bool bDeleteFromZone)
 void MonsterManager::killAllMonsters(const unordered_map<ObjectID_t, ObjectID_t>& exceptCreatures)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     unordered_map<ObjectID_t, Creature*>::iterator current = m_Creatures.begin();
@@ -1827,7 +1770,6 @@ void MonsterManager::killAllMonsters(const unordered_map<ObjectID_t, ObjectID_t>
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1836,8 +1778,6 @@ void MonsterManager::killAllMonsters(const unordered_map<ObjectID_t, ObjectID_t>
 string MonsterManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "MonsterManager(" << CreatureManager::toString();
 
@@ -1847,8 +1787,6 @@ string MonsterManager::toString() const
 
     msg << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 

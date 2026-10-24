@@ -86,9 +86,6 @@ void SummonGroundElemental::execute(Ousters* pOusters, ObjectID_t TargetObjectID
                                     CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -120,9 +117,6 @@ void SummonGroundElemental::execute(Ousters* pOusters, ObjectID_t TargetObjectID
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), Grade);
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -132,9 +126,6 @@ void SummonGroundElemental::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_
                                     OustersSkillSlot* pOustersSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -341,9 +332,6 @@ void SummonGroundElemental::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), Grade);
     }
-
-
-    __END_CATCH
 }
 
 SummonGroundElemental g_SummonGroundElemental;

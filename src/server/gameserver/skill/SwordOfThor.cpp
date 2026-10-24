@@ -15,8 +15,6 @@
 #include "ZoneUtil.h"
 
 void SwordOfThor::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -28,16 +26,11 @@ void SwordOfThor::execute(Slayer* pSlayer, ObjectID_t targetObjectID, SkillSlot*
     }
 
     execute(pSlayer, pTargetCreature->getX(), pTargetCreature->getY(), pSkillSlot, CEffectID);
-
-    __END_CATCH
 }
 
 void SwordOfThor::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -101,8 +94,6 @@ void SwordOfThor::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSl
                 rTile.addEffect(pEffect);
             }
     }
-
-    __END_CATCH
 }
 
 SwordOfThor g_SwordOfThor;

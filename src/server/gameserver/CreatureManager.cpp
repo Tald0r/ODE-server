@@ -43,11 +43,7 @@ private:
 CreatureManager::CreatureManager()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("CreatureManager");
-
-    __END_CATCH
 }
 
 
@@ -57,18 +53,18 @@ CreatureManager::CreatureManager()
 CreatureManager::~CreatureManager()
 
 {
-    __BEGIN_TRY
+    try {
+        unordered_map<ObjectID_t, Creature*>::iterator itr = m_Creatures.begin();
 
-    unordered_map<ObjectID_t, Creature*>::iterator itr = m_Creatures.begin();
+        for (; itr != m_Creatures.end(); itr++) {
+            Creature* pCreature = itr->second;
+            SAFE_DELETE(pCreature);
+        }
 
-    for (; itr != m_Creatures.end(); itr++) {
-        Creature* pCreature = itr->second;
-        SAFE_DELETE(pCreature);
+        m_Creatures.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_Creatures.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 
@@ -76,8 +72,6 @@ CreatureManager::~CreatureManager()
 // Register a new creature object in the creature manager.
 //////////////////////////////////////////////////////////////////////////////
 void CreatureManager::addCreature(Creature* pCreature) {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     unordered_map<ObjectID_t, Creature*>::iterator itr = m_Creatures.find(pCreature->getObjectID());
@@ -86,8 +80,6 @@ void CreatureManager::addCreature(Creature* pCreature) {
         throw DuplicatedException();
 
     m_Creatures[pCreature->getObjectID()] = pCreature;
-
-    __END_CATCH
 }
 
 
@@ -95,9 +87,7 @@ void CreatureManager::addCreature(Creature* pCreature) {
 // Delete a specific creature object from the creature manager.
 //////////////////////////////////////////////////////////////////////////////
 void CreatureManager::deleteCreature(ObjectID_t objectID){
-    __BEGIN_TRY
-
-        __ENTER_CRITICAL_SECTION(m_Mutex)
+    __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // try
     {unordered_map<ObjectID_t, Creature*>::iterator itr = m_Creatures.find(objectID);
@@ -121,8 +111,6 @@ m_Creatures.erase(itr);
 //}
 
 __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-__END_CATCH
 }
 
 
@@ -130,8 +118,6 @@ __END_CATCH
 // Return a specific creature object from the creature manager.
 //////////////////////////////////////////////////////////////////////////////
 Creature* CreatureManager::getCreature(ObjectID_t objectID) const {
-    __BEGIN_TRY
-
     unordered_map<ObjectID_t, Creature*>::const_iterator itr = m_Creatures.find(objectID);
 
     if (itr == m_Creatures.end()) {
@@ -140,16 +126,12 @@ Creature* CreatureManager::getCreature(ObjectID_t objectID) const {
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // Return a specific creature object from the creature manager.
 //////////////////////////////////////////////////////////////////////////////
 Creature* CreatureManager::getCreature(const string& Name) const {
-    __BEGIN_TRY
-
     unordered_map<ObjectID_t, Creature*>::const_iterator itr =
         find_if(m_Creatures.begin(), m_Creatures.end(), isSameNAME(Name));
 
@@ -159,8 +141,6 @@ Creature* CreatureManager::getCreature(const string& Name) const {
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -169,8 +149,6 @@ Creature* CreatureManager::getCreature(const string& Name) const {
 void CreatureManager::processCreatures()
 
 {
-    __BEGIN_TRY
-
     unordered_map<ObjectID_t, Creature*>::iterator before = m_Creatures.end();
     unordered_map<ObjectID_t, Creature*>::iterator current = m_Creatures.begin();
 
@@ -196,8 +174,6 @@ void CreatureManager::processCreatures()
             }
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -206,11 +182,7 @@ void CreatureManager::processCreatures()
 void CreatureManager::killCreature(Creature* pDeadCreature)
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -219,8 +191,6 @@ void CreatureManager::killCreature(Creature* pDeadCreature)
 void CreatureManager::broadcastPacket(Packet* pPacket, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pPacket != NULL);
 
     unordered_map<ObjectID_t, Creature*>::iterator itr = m_Creatures.begin();
@@ -239,8 +209,6 @@ void CreatureManager::broadcastPacket(Packet* pPacket, Creature* pCreature)
             pPlayer->sendPacket(pPacket);
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -249,8 +217,6 @@ void CreatureManager::broadcastPacket(Packet* pPacket, Creature* pCreature)
 void CreatureManager::broadcastDarkLightPacket(Packet* pPacket1, Packet* pPacket2, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pPacket1 != NULL);
     Assert(pPacket2 != NULL);
 
@@ -291,15 +257,11 @@ void CreatureManager::broadcastDarkLightPacket(Packet* pPacket1, Packet* pPacket
             }
         }
     }
-
-    __END_CATCH
 }
 
 void CreatureManager::broadcastLevelWarBonusPacket(Packet* pPacket, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pPacket != NULL);
 
     unordered_map<ObjectID_t, Creature*>::iterator itr = m_Creatures.begin();
@@ -321,8 +283,6 @@ void CreatureManager::broadcastLevelWarBonusPacket(Packet* pPacket, Creature* pC
             }
         }
     }
-
-    __END_CATCH
 }
 
 

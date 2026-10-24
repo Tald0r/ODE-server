@@ -13,8 +13,6 @@
 void TurretFire::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     if (!pSlayer->isFlag(Effect::EFFECT_CLASS_INSTALL_TURRET)) {
         executeSkillFailException(pSlayer, getSkillType());
     }
@@ -68,8 +66,6 @@ void TurretFire::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlo
     param.addMask(1, 1, 100);
 
     g_SimpleTileMissileSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -78,8 +74,6 @@ void TurretFire::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlo
 void TurretFire::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pSlayer->getZone();
     Assert(pZone != NULL);
 
@@ -90,9 +84,6 @@ void TurretFire::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
     } else {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 TurretFire g_TurretFire;

@@ -24,8 +24,6 @@ void BloodyZenith::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -147,8 +145,6 @@ void BloodyZenith::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -157,8 +153,6 @@ void BloodyZenith::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
 void BloodyZenith::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     Assert(pMonster != NULL);
     Assert(pEnemy != NULL);
 
@@ -225,8 +219,6 @@ void BloodyZenith::execute(Monster* pMonster, Creature* pEnemy)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-    __END_CATCH
 }
 
 BloodyZenith g_BloodyZenith;

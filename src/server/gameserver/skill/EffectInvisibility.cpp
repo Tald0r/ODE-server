@@ -18,22 +18,14 @@
 EffectInvisibility::EffectInvisibility(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectInvisibility::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -41,8 +33,6 @@ void EffectInvisibility::affect()
 void EffectInvisibility::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (!pCreature->isVampire())
         return;
 
@@ -69,27 +59,19 @@ void EffectInvisibility::affect(Creature* pCreature)
     pVampire->getZone()->broadcastPacket(pVampire->getX(), pVampire->getY(), &gcHP);
 
     setNextTime(10);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectInvisibility::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectInvisibility::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     Zone* pZone = pCreature->getZone();
@@ -97,9 +79,6 @@ void EffectInvisibility::unaffect(Creature* pCreature)
 
     // A true argument makes it delete the effect from the effect manager.
     addVisibleCreature(pZone, pCreature, false);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -107,32 +86,22 @@ void EffectInvisibility::unaffect(Creature* pCreature)
 void EffectInvisibility::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectInvisibility::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectInvisibility::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectInvisibility(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

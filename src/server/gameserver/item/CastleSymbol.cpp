@@ -58,8 +58,6 @@ void CastleSymbol::create(const string& ownerID, Storage storage, StorageID_t st
                           ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -77,8 +75,6 @@ void CastleSymbol::create(const string& ownerID, Storage storage, StorageID_t st
         defaultItemObjectRepository().insertWarItem(GEAR_CASTLE_SYMBOL, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                     (int)storage, storageID, (int)x, (int)y, m_Durability);
     filelog("WarLog.txt", "%s", sql.c_str());
-
-    __END_CATCH
 }
 
 
@@ -88,15 +84,11 @@ void CastleSymbol::create(const string& ownerID, Storage storage, StorageID_t st
 void CastleSymbol::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     char query[255];
 
     snprintf(query, sizeof(query), "UPDATE CastleSymbolObject SET %s WHERE ItemID=%u", field, m_ItemID);
     defaultItemObjectRepository().tinysaveGear(GEAR_CASTLE_SYMBOL, field, m_ItemID);
     filelog("WarLog.txt", "%s", query);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -105,14 +97,10 @@ void CastleSymbol::tinysave(const char* field) const
 void CastleSymbol::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     logRelicStorage(this, storage, ownerID);
 
     defaultItemObjectRepository().updateWarItem(GEAR_CASTLE_SYMBOL, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                 storageID, (int)x, (int)y, m_Durability, (int)m_EnchantLevel, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -137,11 +125,7 @@ string CastleSymbol::toString() const
 VolumeWidth_t CastleSymbol::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_CASTLE_SYMBOL, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -151,11 +135,7 @@ VolumeWidth_t CastleSymbol::getVolumeWidth() const
 VolumeHeight_t CastleSymbol::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_CASTLE_SYMBOL, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -165,11 +145,7 @@ VolumeHeight_t CastleSymbol::getVolumeHeight() const
 Weight_t CastleSymbol::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_CASTLE_SYMBOL, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -179,20 +155,12 @@ Weight_t CastleSymbol::getWeight() const
 Defense_t CastleSymbol::getDefenseBonus() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_CASTLE_SYMBOL, m_ItemType)->getDefenseBonus();
-
-    __END_CATCH
 }
 Protection_t CastleSymbol::getProtectionBonus() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_CASTLE_SYMBOL, m_ItemType)->getProtectionBonus();
-
-    __END_CATCH
 }
 
 
@@ -219,8 +187,6 @@ string CastleSymbolInfo::toString() const
 void CastleSymbolInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_CASTLE_SYMBOL);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -248,8 +214,6 @@ void CastleSymbolInfoManager::load()
 
         addItemInfo(pCastleSymbolInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -259,16 +223,12 @@ void CastleSymbolInfoManager::load()
 void CastleSymbolLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     // Anything left to load for a CastleSymbol means, as things stand,
     // that the server went down earlier.
     // So it is deleted.
     defaultItemObjectRepository().deleteWarItemsOfOwner(GEAR_CASTLE_SYMBOL, pCreature->getName());
-
-    __END_CATCH
 }
 
 
@@ -278,8 +238,6 @@ void CastleSymbolLoader::load(Creature* pCreature)
 void CastleSymbolLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<WarItemZoneObjectRow> rows =
@@ -314,8 +272,6 @@ void CastleSymbolLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -325,12 +281,8 @@ void CastleSymbolLoader::load(Zone* pZone)
 void CastleSymbolLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

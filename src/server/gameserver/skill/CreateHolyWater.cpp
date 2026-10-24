@@ -20,9 +20,6 @@ void CreateHolyWater::execute(Slayer* pSlayer, ObjectID_t InvenObjectID, CoordIn
                               CoordInven_t TargetX, CoordInven_t TargetY, SkillSlot* pSkillSlot)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -162,14 +159,9 @@ void CreateHolyWater::execute(Slayer* pSlayer, ObjectID_t InvenObjectID, CoordIn
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 bool CreateHolyWater::canMake(ItemType_t WaterType, int DomainLevel, int SkillLevel) {
-    __BEGIN_TRY
-
     bool rvalue = false;
     SkillGrade Grade = de::gameContext().skillInfos().getGradeByDomainLevel(DomainLevel);
     int ratio = 0;
@@ -198,8 +190,6 @@ bool CreateHolyWater::canMake(ItemType_t WaterType, int DomainLevel, int SkillLe
     }
 
     return false;
-
-    __END_CATCH
 }
 
 CreateHolyWater g_CreateHolyWater;

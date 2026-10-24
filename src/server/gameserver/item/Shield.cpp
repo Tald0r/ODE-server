@@ -54,8 +54,6 @@ Shield::Shield(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Shield::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -73,8 +71,6 @@ void Shield::create(const string& ownerID, Storage storage, StorageID_t storageI
     defaultItemObjectRepository().insertGear(GEAR_SHIELD, m_ItemID, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -84,11 +80,7 @@ void Shield::create(const string& ownerID, Storage storage, StorageID_t storageI
 void Shield::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_SHIELD, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -97,16 +89,12 @@ void Shield::tinysave(const char* field) const
 void Shield::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_SHIELD, m_ObjectID, getItemType(), ownerID, (int)storage, storageID,
                                              (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -149,8 +137,6 @@ string ShieldInfo::toString() const
 void ShieldInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_SHIELD);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -184,8 +170,6 @@ void ShieldInfoManager::load()
 
         addItemInfo(pShieldInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -195,8 +179,6 @@ void ShieldInfoManager::load()
 void ShieldLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows = defaultItemObjectRepository().loadGearOfOwner(GEAR_SHIELD, pCreature->getName());
@@ -299,8 +281,6 @@ void ShieldLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -310,8 +290,6 @@ void ShieldLoader::load(Creature* pCreature)
 void ShieldLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -352,8 +330,6 @@ void ShieldLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -363,12 +339,8 @@ void ShieldLoader::load(Zone* pZone)
 void ShieldLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

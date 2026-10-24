@@ -17,11 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionSystemMessagePerRace::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,8 +26,6 @@ void ActionSystemMessagePerRace::read(PropertyBuffer& propertyBuffer)
 void ActionSystemMessagePerRace::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature2 != NULL);
     Assert(pCreature2->isPC());
 
@@ -46,8 +40,6 @@ void ActionSystemMessagePerRace::execute(Creature* pCreature1, Creature* pCreatu
         gcSystemMessage.setMessage(context().strings().getString(STRID_CANNOT_ENTER_LEVEL_NEWBIE_ZONE));
 
     pPlayer->sendPacket(&gcSystemMessage);
-
-    __END_CATCH
 }
 
 
@@ -57,11 +49,7 @@ void ActionSystemMessagePerRace::execute(Creature* pCreature1, Creature* pCreatu
 string ActionSystemMessagePerRace::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSystemMessagePerRace(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

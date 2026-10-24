@@ -19,8 +19,6 @@
 void ActionEventMeet::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_ScriptID = propertyBuffer.getPropertyInt("ScriptID");
@@ -29,8 +27,6 @@ void ActionEventMeet::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -40,8 +36,6 @@ void ActionEventMeet::read(PropertyBuffer& propertyBuffer)
 void ActionEventMeet::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -76,8 +70,6 @@ void ActionEventMeet::execute(Creature* pCreature1, Creature* pCreature2)
         Player* pPlayer = pCreature2->getPlayer();
         pPlayer->sendPacket(&gcNPCAsk);
     }
-
-    __END_CATCH
 }
 
 
@@ -87,12 +79,8 @@ void ActionEventMeet::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionEventMeet::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionEventMeet(" << ",ScriptID:" << (int)m_ScriptID << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

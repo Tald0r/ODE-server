@@ -8,8 +8,6 @@
 #include "Slayer.h"
 
 RewardInfo* SlayerWeaponRewardClass::selectReward(PlayerCreature* pPC) const {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     if (pPC->isSlayer()) {
@@ -64,20 +62,14 @@ RewardInfo* SlayerWeaponRewardClass::selectReward(PlayerCreature* pPC) const {
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 QuestMessage SlayerWeaponRewardClass::giveReward(PlayerCreature* pPC) const {
-    __BEGIN_TRY
-
     RewardInfo* pRI = selectReward(pPC);
     if (pRI == NULL)
         return COMPLETE_FAIL_NO_INVENTORY_SPACE;
 
     return pRI->giveReward(pPC);
-
-    __END_CATCH
 }
 
 string SlayerWeaponRewardClass::toString() const {

@@ -18,13 +18,9 @@
 EffectDarkness::EffectDarkness(Zone* pZone, ZoneCoord_t ZoneX, ZoneCoord_t ZoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = ZoneX;
     m_Y = ZoneY;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -37,8 +33,6 @@ EffectDarkness::EffectDarkness(Zone* pZone, ZoneCoord_t ZoneX, ZoneCoord_t ZoneY
 bool EffectDarkness::affectObject(Object* pTarget, bool bAffectByMove)
 
 {
-    __BEGIN_TRY
-
     bool bAffected = false;
     if (pTarget->getObjectClass() == Object::OBJECT_CLASS_CREATURE) {
         Creature* pTargetCreature = dynamic_cast<Creature*>(pTarget);
@@ -54,15 +48,11 @@ bool EffectDarkness::affectObject(Object* pTarget, bool bAffectByMove)
     }
 
     return bAffected;
-
-    __END_CATCH
 }
 
 void EffectDarkness::unaffectObject(Object* pTarget, bool bUnaffectByMove)
 
 {
-    __BEGIN_TRY
-
     Assert(pTarget != NULL);
 
     if (pTarget->getObjectClass() == Object::OBJECT_CLASS_CREATURE) {
@@ -72,8 +62,6 @@ void EffectDarkness::unaffectObject(Object* pTarget, bool bUnaffectByMove)
             pTargetCreature->removeFlag(Effect::EFFECT_CLASS_DARKNESS);
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -82,20 +70,14 @@ void EffectDarkness::unaffectObject(Object* pTarget, bool bUnaffectByMove)
 //////////////////////////////////////////////////////////////////////////////
 void EffectDarkness::affect(Creature* pTargetCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 // EffectDarkness::affect()
 //////////////////////////////////////////////////////////////////////////////
 void EffectDarkness::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 // unaffect()
@@ -103,9 +85,6 @@ void EffectDarkness::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* p
 void EffectDarkness::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
 
     // unaffect creatures on tile
@@ -117,30 +96,21 @@ void EffectDarkness::unaffect()
     }
 
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 void EffectDarkness::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 string EffectDarkness::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectDarkness(" << "DayTime:" << m_Deadline.tv_sec << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 void EffectDarknessLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     vector<ZoneEffectBoundsRow> rows =
         defaultZoneInfoRepository().loadZoneEffectBounds(pZone->getZoneID(), Effect::EFFECT_CLASS_DARKNESS);
 
@@ -170,6 +140,4 @@ void EffectDarknessLoader::load(Zone* pZone)
             }
         }
     }
-
-    __END_CATCH
 }

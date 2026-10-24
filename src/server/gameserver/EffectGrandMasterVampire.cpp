@@ -17,11 +17,7 @@
 EffectGrandMasterVampire::EffectGrandMasterVampire(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 Effect::EffectClass EffectGrandMasterVampire::getSendEffectClass() const {
@@ -44,12 +40,8 @@ Effect::EffectClass EffectGrandMasterVampire::getSendEffectClass() const {
 void EffectGrandMasterVampire::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,8 +49,6 @@ void EffectGrandMasterVampire::affect()
 void EffectGrandMasterVampire::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature->isVampire());
 
     pCreature->setFlag(Effect::EFFECT_CLASS_GRAND_MASTER_VAMPIRE);
@@ -69,19 +59,13 @@ void EffectGrandMasterVampire::affect(Creature* pCreature)
     gcAddEffect.setEffectID(getSendEffectClass());
     gcAddEffect.setDuration(static_cast<Duration_t>(999999));
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
-
-    __END_CATCH
 }
 
 void EffectGrandMasterVampire::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -89,7 +73,6 @@ void EffectGrandMasterVampire::unaffect()
 void EffectGrandMasterVampire::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectGrandMasterVampire" << "unaffect BEGIN" << endl;
@@ -111,17 +94,12 @@ void EffectGrandMasterVampire::unaffect(Creature* pCreature)
     // cout << "EffectGrandMasterVampire" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectGrandMasterVampire::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectGrandMasterVampire(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

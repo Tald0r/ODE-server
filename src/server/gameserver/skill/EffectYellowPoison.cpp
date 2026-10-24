@@ -25,34 +25,25 @@
 EffectYellowPoison::EffectYellowPoison(Zone* pZone, ZoneCoord_t ZoneX, ZoneCoord_t ZoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = ZoneX;
     m_Y = ZoneY;
 
     m_bVampire = false;
     m_bForce = false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoison::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 bool EffectYellowPoison::affectCreature(Creature* pTargetCreature, bool bAffectByMove)
 
 {
-    __BEGIN_TRY
-
     Assert(pTargetCreature != NULL);
 
     // Only a Slayer or an Ousters can be affected, unless it is forced.
@@ -141,64 +132,46 @@ bool EffectYellowPoison::affectCreature(Creature* pTargetCreature, bool bAffectB
     }
 
     return false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoison::affect(Creature* pTargetCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoison::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoison::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoison::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectYellowPoison::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectYellowPoison(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 void EffectYellowPoisonLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     vector<ZoneEffectRow> rows =
         defaultZoneInfoRepository().loadZoneEffectRects(pZone->getZoneID(), (int)Effect::EFFECT_CLASS_YELLOW_POISON);
 
@@ -228,6 +201,4 @@ void EffectYellowPoisonLoader::load(Zone* pZone)
                 }
             }
     }
-
-    __END_CATCH
 }

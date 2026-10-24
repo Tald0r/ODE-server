@@ -27,11 +27,7 @@
 EffectReloadTimer::EffectReloadTimer(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,20 +35,14 @@ EffectReloadTimer::EffectReloadTimer(Creature* pCreature)
 //////////////////////////////////////////////////////////////////////////////
 void EffectReloadTimer::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 // EffectReloadTimer::affect()
 //////////////////////////////////////////////////////////////////////////////
 void EffectReloadTimer::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 // EffectReloadTimer::unaffect()
@@ -60,11 +50,7 @@ void EffectReloadTimer::affect(Creature* pCreature)
 void EffectReloadTimer::unaffect()
 
 {
-    __BEGIN_TRY
-
     unaffect((Creature*)m_pTarget);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -73,9 +59,6 @@ void EffectReloadTimer::unaffect()
 void EffectReloadTimer::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer());
 
@@ -166,9 +149,6 @@ void EffectReloadTimer::unaffect(Creature* pCreature)
         ok.setBulletNum(BulletNum);
         pPlayer->sendPacket(&ok);
     }
-
-
-    __END_CATCH
 }
 
 
@@ -176,20 +156,16 @@ void EffectReloadTimer::unaffect(Creature* pCreature)
 //////////////////////////////////////////////////////////////////////////////
 void EffectReloadTimer::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
 // get debug string
 //////////////////////////////////////////////////////////////////////////////
 string EffectReloadTimer::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectReloadTimer(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

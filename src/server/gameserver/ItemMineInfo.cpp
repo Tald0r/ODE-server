@@ -13,58 +13,46 @@
 #include "Utility.h"
 #include "repository/GameInfoRepository.h"
 
-ItemMineInfo::ItemMineInfo()
-    : m_ID(0){__BEGIN_TRY __END_CATCH}
+ItemMineInfo::ItemMineInfo() : m_ID(0) {}
 
-      ItemMineInfo::~ItemMineInfo(){__BEGIN_TRY __END_CATCH_NO_RETHROW}
+ItemMineInfo::~ItemMineInfo() {}
 
-      Item
-      * ItemMineInfo::getItem() {
-    __BEGIN_TRY
-
+Item* ItemMineInfo::getItem() {
     Item* pItem =
         de::gameContext().itemFactories().createItem((Item::ItemClass)getItemClass(), getItemType(), getItemOptions());
 
     return pItem;
-
-    __END_CATCH
 }
 
 
 string ItemMineInfo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ItemMineInfo(" << "m_ID : " << m_ID << "m_ItemClass : " << ItemClass2String[(int)m_ItemClass]
         << "m_ItemType : " << (int)m_ItemType << "m_ItemOptions : " << getOptionTypeToString(m_ItemOptions) << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
-ItemMineInfoManager::ItemMineInfoManager(){__BEGIN_TRY __END_CATCH}
+ItemMineInfoManager::ItemMineInfoManager() {}
 
 ItemMineInfoManager::~ItemMineInfoManager() {
-    __BEGIN_TRY
+    try {
+        HashMapItemMineInfoItor itr = m_ItemMineInfos.begin();
+        HashMapItemMineInfoItor endItr = m_ItemMineInfos.end();
 
-    HashMapItemMineInfoItor itr = m_ItemMineInfos.begin();
-    HashMapItemMineInfoItor endItr = m_ItemMineInfos.end();
+        for (; itr != endItr; itr++) {
+            ItemMineInfo* pInfo = itr->second;
+            SAFE_DELETE(pInfo);
+        }
 
-    for (; itr != endItr; itr++) {
-        ItemMineInfo* pInfo = itr->second;
-        SAFE_DELETE(pInfo);
+        m_ItemMineInfos.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_ItemMineInfos.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 void ItemMineInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<ItemMineRow> rows = defaultGameInfoRepository().loadItemMines();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -85,41 +73,29 @@ void ItemMineInfoManager::load()
 
         addItemMineInfo(pItemMineInfo);
     }
-
-    __END_CATCH
 }
 
 ItemMineInfo* ItemMineInfoManager::getItemMineInfo(int id) const {
-    __BEGIN_TRY
-
     HashMapItemMineInfoConstItor itr = m_ItemMineInfos.find(id);
 
     if (itr == m_ItemMineInfos.end())
         return NULL;
 
     return itr->second;
-
-    __END_CATCH
 }
 
 void ItemMineInfoManager::addItemMineInfo(ItemMineInfo* pItemMineInfo)
 
 {
-    __BEGIN_TRY
-
     HashMapItemMineInfoItor itr = m_ItemMineInfos.find(pItemMineInfo->getID());
 
     if (itr != m_ItemMineInfos.end())
         throw DuplicatedException();
 
     m_ItemMineInfos[pItemMineInfo->getID()] = pItemMineInfo;
-
-    __END_CATCH
 }
 
 string ItemMineInfoManager::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     if (m_ItemMineInfos.empty())
@@ -134,13 +110,9 @@ string ItemMineInfoManager::toString() const {
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 Item* ItemMineInfoManager::getRandomItem(int minID, int maxID) {
-    __BEGIN_TRY
-
     ItemMineInfo* pItemMineInfo = getItemMineInfo(Random(minID, maxID));
 
     // A gap in the rows is a data fault; the caller refuses a null item.
@@ -148,6 +120,4 @@ Item* ItemMineInfoManager::getRandomItem(int minID, int maxID) {
         return NULL;
 
     return pItemMineInfo->getItem();
-
-    __END_CATCH
 }

@@ -4,8 +4,6 @@
 #include "repository/SystemAvailabilityRepository.h"
 
 void SystemAvailabilitiesManager::load() {
-    __BEGIN_TRY
-
     for (int i = 0; i < SYSTEM_MAX; ++i)
         setAvailable((SystemKind)i, true);
 
@@ -15,6 +13,4 @@ void SystemAvailabilitiesManager::load() {
     m_pAvailabilitiesPacket->setOpenDegree(m_ZoneOpenDegree);
     m_pAvailabilitiesPacket->setSkillLimit(m_SkillLevelLimit);
     m_bEdited = false;
-
-    __END_CATCH
 }

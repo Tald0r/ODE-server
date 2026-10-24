@@ -30,7 +30,7 @@ perl tests/tools/check_knowledge_bundle.pl .   # the bundle check alone, before 
 ## Working rules
 
 - Every rule is owned by a test, ratchet or gate that fails, never by a memory; each area's concept holds the table of its rules: the rule, its owner and what fails when it is broken - [testing overview](docs/testing/overview.md).
-- Ratchet numbers only go down: tighten a drop in `tests/ratchet/ratchets.sh` **and** the ratchet table in [docs/reviews/RESTRUCTURING.md](docs/reviews/RESTRUCTURING.md) in the same commit; every baseline comes from running its command - [ratchets](docs/testing/ratchets.md).
+- Ratchet numbers only go down (the one rise is a measure widened to count what it missed, by exactly what the new scope adds, in the commit that widens it): tighten a drop in `tests/ratchet/ratchets.sh` **and** the ratchet table in [docs/reviews/RESTRUCTURING.md](docs/reviews/RESTRUCTURING.md) in the same commit; every baseline comes from running its command - [ratchets](docs/testing/ratchets.md).
 - Each task in `docs/reviews/RESTRUCTURING.md` has a `> **Status:**` line updated in the same commit as the work; a task is `done` only once its owner exists - [fix log and task status](docs/testing/fix-log-and-status.md).
 - A bug found while restructuring goes in `docs/reviews/FIXES.md` with a Status line, never fixed silently - [fix log and task status](docs/testing/fix-log-and-status.md).
 - A change to `src/domain` is done only when `bash tests/tools/decore_client_diff.sh <client-root>` is clean against a resynced client; a changed vector row is a balance change - [de-core parity](docs/protocol/decore-parity.md).
@@ -92,5 +92,5 @@ allocation faults; what each one exercises is in [test coverage](docs/testing/te
 
 ## Records
 
-- [The restructuring plan](docs/reviews/RESTRUCTURING.md): every task with its Status line and the R1-R18 ratchet table.
+- [The restructuring plan](docs/reviews/RESTRUCTURING.md): every task with its Status line and the R1-R19 ratchet table.
 - [The fix log](docs/reviews/FIXES.md): every bug found, newest first, each with its Status.

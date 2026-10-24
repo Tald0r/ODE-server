@@ -45,11 +45,7 @@ private:
 EffectManager::EffectManager()
 
 {
-    __BEGIN_TRY
-
     Assert(m_Effects.empty());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,18 +53,18 @@ EffectManager::EffectManager()
 EffectManager::~EffectManager()
 
 {
-    __BEGIN_TRY
-
-    // If deleteEffects() was not called properly,
-    // there is no need to call unaffect() on each effect.
-    // Deleting the objects is enough.
-    while (!m_Effects.empty()) {
-        // Delete the effect object.
-        SAFE_DELETE(m_Effects.front());
-        m_Effects.pop_front();
+    try {
+        // If deleteEffects() was not called properly,
+        // there is no need to call unaffect() on each effect.
+        // Deleting the objects is enough.
+        while (!m_Effects.empty()) {
+            // Delete the effect object.
+            SAFE_DELETE(m_Effects.front());
+            m_Effects.pop_front();
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -76,13 +72,9 @@ EffectManager::~EffectManager()
 void EffectManager::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     list<Effect*>::const_iterator itr = m_Effects.begin();
     for (; itr != m_Effects.end(); itr++)
         (*itr)->save(ownerID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -90,14 +82,10 @@ void EffectManager::save(const string& ownerID)
 bool EffectManager::isEffect(Effect::EffectClass EClass)
 
 {
-    __BEGIN_TRY
-
     list<Effect*>::const_iterator itr = find_if(m_Effects.begin(), m_Effects.end(), isSameEffectClass(EClass));
     if (itr != m_Effects.end())
         return true;
     return false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -105,7 +93,6 @@ bool EffectManager::isEffect(Effect::EffectClass EClass)
 void EffectManager::deleteEffect(ObjectID_t effectID)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     list<Effect*>::iterator current = m_Effects.begin();
@@ -137,7 +124,6 @@ void EffectManager::deleteEffect(ObjectID_t effectID)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -145,7 +131,6 @@ void EffectManager::deleteEffect(ObjectID_t effectID)
 void EffectManager::deleteEffect(Effect::EffectClass EClass)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     list<Effect*>::iterator itr = find_if(m_Effects.begin(), m_Effects.end(), isSameEffectClass(EClass));
@@ -159,7 +144,6 @@ void EffectManager::deleteEffect(Effect::EffectClass EClass)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -167,7 +151,6 @@ void EffectManager::deleteEffect(Effect::EffectClass EClass)
 void EffectManager::deleteEffect(Creature* pCreature, Effect::EffectClass EClass)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     list<Effect*>::iterator itr = find_if(m_Effects.begin(), m_Effects.end(), isSameEffectClass(EClass));
@@ -190,7 +173,6 @@ void EffectManager::deleteEffect(Creature* pCreature, Effect::EffectClass EClass
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -198,15 +180,11 @@ void EffectManager::deleteEffect(Creature* pCreature, Effect::EffectClass EClass
 Effect* EffectManager::findEffect(Effect::EffectClass EClass) const
 
 {
-    __BEGIN_TRY
-
     list<Effect*>::const_iterator itr = find_if(m_Effects.begin(), m_Effects.end(), isSameEffectClass(EClass));
     if (itr == m_Effects.end()) {
         return NULL;
     }
     return *itr;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -214,8 +192,6 @@ Effect* EffectManager::findEffect(Effect::EffectClass EClass) const
 Effect* EffectManager::findEffect(ObjectID_t ObjectID) const
 
 {
-    __BEGIN_TRY
-
     list<Effect*>::const_iterator itr = m_Effects.begin();
     for (; itr != m_Effects.end(); itr++) {
         Effect* pEffect = *itr;
@@ -224,8 +200,6 @@ Effect* EffectManager::findEffect(ObjectID_t ObjectID) const
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -233,8 +207,6 @@ Effect* EffectManager::findEffect(ObjectID_t ObjectID) const
 Effect* EffectManager::findEffect(Effect::EffectClass EClass, string EnemyName) const
 
 {
-    __BEGIN_TRY
-
     list<Effect*>::const_iterator itr = m_Effects.begin();
 
     for (; itr != m_Effects.end(); itr++) {
@@ -245,8 +217,6 @@ Effect* EffectManager::findEffect(Effect::EffectClass EClass, string EnemyName) 
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -254,7 +224,6 @@ Effect* EffectManager::findEffect(Effect::EffectClass EClass, string EnemyName) 
 EffectInfo* EffectManager::getEffectInfo()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     EffectInfo* pEffectInfo;
@@ -318,7 +287,6 @@ EffectInfo* EffectManager::getEffectInfo()
     return pEffectInfo;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -332,7 +300,6 @@ EffectInfo* EffectManager::getEffectInfo()
 void EffectManager::sendEffectInfo(Creature* pCreature, Zone* pZone, ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     __BEGIN_PROFILE_EM("SEND_EFFECT_INFO");
@@ -377,7 +344,6 @@ void EffectManager::sendEffectInfo(Creature* pCreature, Zone* pZone, ZoneCoord_t
     __END_PROFILE_EM("SEND_EFFECT_INFO");
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -385,12 +351,8 @@ void EffectManager::sendEffectInfo(Creature* pCreature, Zone* pZone, ZoneCoord_t
 void EffectManager::addEffect(Effect* pEffect)
 
 {
-    __BEGIN_TRY
-
     Assert(pEffect != NULL);
     m_Effects.push_back(pEffect);
-
-    __END_CATCH
 }
 
 
@@ -404,9 +366,6 @@ void EffectManager::addEffect(Effect* pEffect)
 int EffectManager::heartbeat(const Timeval& currentTime)
 
 {
-    __BEGIN_TRY
-    __END_DEBUG
-
     int rvalue = 0;
 
     __BEGIN_PROFILE_EM("EM_HEARTBEAT");
@@ -454,16 +413,11 @@ int EffectManager::heartbeat(const Timeval& currentTime)
     __END_PROFILE_EM("EM_HEARTBEAT");
 
     return rvalue;
-
-    __BEGIN_DEBUG
-    __END_CATCH
 }
 
 void EffectManager::setTimeOutAllEffect()
 
 {
-    __BEGIN_TRY
-
     list<Effect*>::iterator itr = m_Effects.begin();
     list<Effect*>::iterator endItr = m_Effects.end();
 
@@ -473,6 +427,4 @@ void EffectManager::setTimeOutAllEffect()
 
         pEffect->setDeadline(0);
     }
-
-    __END_CATCH
 }

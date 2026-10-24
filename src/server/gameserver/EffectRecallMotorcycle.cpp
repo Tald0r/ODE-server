@@ -25,8 +25,6 @@ EffectRecallMotorcycle::EffectRecallMotorcycle(Zone* pZone, ZoneCoord_t sx, Zone
                                                Turn_t delay)
 
     : Effect(pZone, x, y, pItem, delay), m_OwnerOID(ownerOID) {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
     Assert(getTarget() != NULL);
     Assert(pTargetZone != NULL);
@@ -42,8 +40,6 @@ EffectRecallMotorcycle::EffectRecallMotorcycle(Zone* pZone, ZoneCoord_t sx, Zone
 
     // Server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 
@@ -52,11 +48,7 @@ EffectRecallMotorcycle::EffectRecallMotorcycle(Zone* pZone, ZoneCoord_t sx, Zone
 //----------------------------------------------------------------------
 EffectRecallMotorcycle::~EffectRecallMotorcycle()
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 //----------------------------------------------------------------------
 // unaffect()
@@ -64,8 +56,6 @@ EffectRecallMotorcycle::~EffectRecallMotorcycle()
 void EffectRecallMotorcycle::unaffect()
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectRecallMotorcycle unaffect" << endl;
 
     Zone* pZone = m_pZone;
@@ -126,8 +116,6 @@ void EffectRecallMotorcycle::unaffect()
     } else {
         filelog("motorBug.txt", "ZoneID=%d, x=%d, y=%d", (int)pZone->getZoneID(), (int)m_StartX, (int)m_StartY);
     }
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------

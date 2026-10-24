@@ -28,12 +28,8 @@
 Tile::Tile(WORD wFlags, WORD wOption)
 
 {
-    __BEGIN_TRY
-
     m_wFlags = wFlags;
     m_wOption = wOption;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -42,16 +38,16 @@ Tile::Tile(WORD wFlags, WORD wOption)
 Tile::~Tile()
 
 {
-    __BEGIN_TRY
-
-    // Delete every object belonging to the tile.
-    while (!m_Objects.empty()) {
-        Object* pObj = m_Objects.front();
-        SAFE_DELETE(pObj);
-        m_Objects.pop_front();
+    try {
+        // Delete every object belonging to the tile.
+        while (!m_Objects.empty()) {
+            Object* pObj = m_Objects.front();
+            SAFE_DELETE(pObj);
+            m_Objects.pop_front();
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,7 +56,6 @@ Tile::~Tile()
 // The return value says whether this was a plain move (true) or activated a Portal (false).
 //////////////////////////////////////////////////////////////////////////////
 bool Tile::addCreature(Creature* pCreature, bool bCheckEffect, bool bCheckPortal) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -161,7 +156,6 @@ bool Tile::addCreature(Creature* pCreature, bool bCheckEffect, bool bCheckPortal
     return true;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -169,7 +163,6 @@ bool Tile::addCreature(Creature* pCreature, bool bCheckEffect, bool bCheckPortal
 // This needs optimization. (search + delete)
 //////////////////////////////////////////////////////////////
 void Tile::deleteCreature(ObjectID_t creatureID) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     try {
@@ -213,15 +206,12 @@ void Tile::deleteCreature(ObjectID_t creatureID) {
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Delete the creature of the given layer (move mode) from the list.
 //////////////////////////////////////////////////////////////
 void Tile::deleteCreature(Creature::MoveMode mode) {
-    __BEGIN_TRY
-
     // The current creature must be blocking that layer.
     Assert(isBlocked(mode));
 
@@ -245,33 +235,23 @@ void Tile::deleteCreature(Creature::MoveMode mode) {
 
     // Turn off the matching blocking flag.
     FLAG_CLEAR(m_wFlags, TILE_GROUND_BLOCKED + static_cast<int>(mode));
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Return the creature with the given ID.
 //////////////////////////////////////////////////////////////
 Creature* Tile::getCreature(ObjectID_t creatureID) {
-    __BEGIN_TRY
-
     Assert(hasWalkingCreature() || hasFlyingCreature() || hasBurrowingCreature());
 
     return (Creature*)(getObject(creatureID));
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Return the creature of the given layer (move mode).
 //////////////////////////////////////////////////////////////
 Creature* Tile::getCreature(Creature::MoveMode mode) {
-    __BEGIN_TRY
-
     Assert(hasCreature(mode));
     return (Creature*)getObject(ObjectPriority(OBJECT_PRIORITY_WALKING_CREATURE + static_cast<int>(mode)));
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -281,8 +261,6 @@ Creature* Tile::getCreature(Creature::MoveMode mode) {
 void Tile::addItem(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     Assert(!hasItem());
@@ -292,15 +270,12 @@ void Tile::addItem(Item* pItem)
     addObject(pItem);
 
     FLAG_SET(m_wFlags, TILE_ITEM);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Delete the item from the tile. There is only one, so nothing needs to be named.
 //////////////////////////////////////////////////////////////
 void Tile::deleteItem() {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // Assert(hasItem());
@@ -314,22 +289,17 @@ void Tile::deleteItem() {
     FLAG_CLEAR(m_wFlags, TILE_ITEM);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Return the tile's item. There is only one, so nothing needs to be named.
 //////////////////////////////////////////////////////////////
 Item* Tile::getItem() {
-    __BEGIN_TRY
-
     // Assert(hasItem());
     if (!hasItem())
         return NULL;
 
     return (Item*)getObject(OBJECT_PRIORITY_ITEM);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -338,8 +308,6 @@ Item* Tile::getItem() {
 void Tile::addObstacle(Obstacle* pObstacle)
 
 {
-    __BEGIN_TRY
-
     Assert(pObstacle != NULL);
 
     // must be empty tile...
@@ -356,36 +324,26 @@ void Tile::addObstacle(Obstacle* pObstacle)
     FLAG_SET(m_wFlags, TILE_OBSTACLE);
 
     addObject(pObstacle);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Delete the obstacle from the tile. There is only one, so nothing needs to be named.
 //////////////////////////////////////////////////////////////
 void Tile::deleteObstacle() {
-    __BEGIN_TRY
-
     Assert(hasObstacle());
 
     deleteObject(OBJECT_PRIORITY_OBSTACLE);
 
     FLAG_CLEAR(m_wFlags, TILE_OBSTACLE);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Return the tile's obstacle. There is only one, so nothing needs to be named.
 //////////////////////////////////////////////////////////////
 Obstacle* Tile::getObstacle() {
-    __BEGIN_TRY
-
     Assert(hasObstacle());
 
     return (Obstacle*)getObject(OBJECT_PRIORITY_OBSTACLE);
-
-    __END_CATCH
 }
 
 bool Tile::canAddEffect()
@@ -403,8 +361,6 @@ bool Tile::canAddEffect()
 void Tile::addEffect(Effect* pEffect)
 
 {
-    __BEGIN_TRY
-
     Assert(pEffect != NULL);
 
     Assert(!hasObstacle());
@@ -417,8 +373,6 @@ void Tile::addEffect(Effect* pEffect)
     // pEffect->affectTile();
 
     FLAG_SET(m_wFlags, TILE_EFFECT);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -430,8 +384,6 @@ void Tile::addEffect(Effect* pEffect)
 // This needs optimization.. (search - unaffect - flag clear in one pass..)
 //////////////////////////////////////////////////////////////
 void Tile::deleteEffect(ObjectID_t effectID) {
-    __BEGIN_TRY
-
     if (!hasEffect()) {
         diagnosticFilelog("TileEffectBug.txt", "there is no effect with effect id %d", effectID);
         return;
@@ -451,21 +403,15 @@ void Tile::deleteEffect(ObjectID_t effectID) {
     if (getObject(OBJECT_PRIORITY_EFFECT) == NULL) {
         FLAG_CLEAR(m_wFlags, TILE_EFFECT);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Return the magic effect with the given ID.
 //////////////////////////////////////////////////////////////
 Effect* Tile::getEffect(ObjectID_t effectID) {
-    __BEGIN_TRY
-
     if (hasEffect() == false)
         return NULL;
     return (Effect*)getObject(effectID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -474,8 +420,6 @@ Effect* Tile::getEffect(ObjectID_t effectID) {
 Effect* Tile::getEffect(Effect::EffectClass effectClass)
 
 {
-    __BEGIN_TRY
-
     if (hasEffect()) {
         for (forward_list<Object*>::const_iterator itr = m_Objects.begin(); itr != m_Objects.end(); itr++) {
             Effect* pEffect = NULL;
@@ -490,8 +434,6 @@ Effect* Tile::getEffect(Effect::EffectClass effectClass)
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 
@@ -501,8 +443,6 @@ Effect* Tile::getEffect(Effect::EffectClass effectClass)
 void Tile::addBuilding(BuildingID_t buildingID)
 
 {
-    __BEGIN_TRY
-
     Assert(!hasWalkingCreature());
     Assert(!hasFlyingCreature());
     Assert(!hasBurrowingCreature());
@@ -516,8 +456,6 @@ void Tile::addBuilding(BuildingID_t buildingID)
     FLAG_SET(m_wFlags, TILE_BUILDING);
 
     m_wOption = buildingID;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -526,15 +464,11 @@ void Tile::addBuilding(BuildingID_t buildingID)
 void Tile::deleteBuilding()
 
 {
-    __BEGIN_TRY
-
     Assert(hasBuilding());
 
     FLAG_CLEAR(m_wFlags, TILE_BUILDING);
 
     m_wOption = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -543,13 +477,9 @@ void Tile::deleteBuilding()
 BuildingID_t Tile::getBuilding() const
 
 {
-    __BEGIN_TRY
-
     Assert(hasBuilding());
 
     return m_wOption;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -558,8 +488,6 @@ BuildingID_t Tile::getBuilding() const
 void Tile::addPortal(Portal* pPortal)
 
 {
-    __BEGIN_TRY
-
     Assert(pPortal != NULL);
 
     // Should a flying creature or a burrowed creature be affected by a portal or not?
@@ -577,8 +505,6 @@ void Tile::addPortal(Portal* pPortal)
     addObject(pPortal);
 
     FLAG_SET(m_wFlags, TILE_PORTAL);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -587,15 +513,11 @@ void Tile::addPortal(Portal* pPortal)
 void Tile::deletePortal()
 
 {
-    __BEGIN_TRY
-
     Assert(hasPortal());
 
     deleteObject(OBJECT_PRIORITY_PORTAL);
 
     FLAG_CLEAR(m_wFlags, TILE_PORTAL);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -604,13 +526,9 @@ void Tile::deletePortal()
 Portal* Tile::getPortal() const
 
 {
-    __BEGIN_TRY
-
     Assert(hasPortal());
 
     return (Portal*)getObject(OBJECT_PRIORITY_PORTAL);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -619,8 +537,6 @@ Portal* Tile::getPortal() const
 void Tile::addTerrain(TerrainID_t terrainID)
 
 {
-    __BEGIN_TRY
-
     // If the tile already holds an obstacle, building or portal, which
     // also use m_wOption, that is an error; the caller must check.
     Assert(!hasObstacle());
@@ -632,8 +548,6 @@ void Tile::addTerrain(TerrainID_t terrainID)
 
     // Set the option to the Terrain ID.
     m_wOption = terrainID;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -642,8 +556,6 @@ void Tile::addTerrain(TerrainID_t terrainID)
 void Tile::deleteTerrain()
 
 {
-    __BEGIN_TRY
-
     Assert(isTerrain());
 
     // Clear the Terrain flag.
@@ -651,8 +563,6 @@ void Tile::deleteTerrain()
 
     // Clear the option.
     m_wOption = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
@@ -661,13 +571,9 @@ void Tile::deleteTerrain()
 TerrainID_t Tile::getTerrain() const
 
 {
-    __BEGIN_TRY
-
     Assert(isTerrain());
 
     return m_wOption;
-
-    __END_CATCH
 }
 
 
@@ -677,8 +583,6 @@ TerrainID_t Tile::getTerrain() const
 string Tile::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "Tile(";
@@ -693,15 +597,12 @@ string Tile::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // add object into object list
 //////////////////////////////////////////////////////////////
 void Tile::addObject(Object* pObject) {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pObject != NULL);
@@ -759,15 +660,12 @@ void Tile::addObject(Object* pObject) {
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Delete object from object list
 //////////////////////////////////////////////////////////////
 void Tile::deleteObject(ObjectID_t objectID) {
-    __BEGIN_TRY
-
     forward_list<Object*>::iterator before = m_Objects.end();
     forward_list<Object*>::iterator current = m_Objects.begin();
 
@@ -790,16 +688,12 @@ void Tile::deleteObject(ObjectID_t objectID) {
 
     // NoSuchElementException removed.
     // throw NoSuchElementException("invalid object id");
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Delete the object with the given Tile Priority.
 //////////////////////////////////////////////////////////////
 void Tile::deleteObject(ObjectPriority objectPriority) {
-    __BEGIN_TRY
-
     forward_list<Object*>::iterator before = m_Objects.end();
     forward_list<Object*>::iterator current = m_Objects.begin();
 
@@ -826,16 +720,12 @@ void Tile::deleteObject(ObjectPriority objectPriority) {
 
     // NoSuchElementException removed.
     // throw NoSuchElementException("invalid object priority");
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////
 // Return the object with the given ID from the current tile.
 // The whole list has to be searched.
 //////////////////////////////////////////////////////////////
 Object* Tile::getObject(ObjectID_t objectID) const {
-    __BEGIN_TRY
-
     for (forward_list<Object*>::const_iterator itr = m_Objects.begin(); itr != m_Objects.end(); itr++) {
         if (objectID == (*itr)->getObjectID()) {
             // An object with that id was found.
@@ -849,16 +739,12 @@ Object* Tile::getObject(ObjectID_t objectID) const {
 
     // Present only to avoid a warning.
     return NULL;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////
 // Return the object with the given Tile Priority.
 //////////////////////////////////////////////////////////////
 Object* Tile::getObject(ObjectPriority objectPriority) const {
-    __BEGIN_TRY
-
     for (forward_list<Object*>::const_iterator itr = m_Objects.begin(); itr != m_Objects.end(); itr++) {
         if (objectPriority == (*itr)->getObjectPriority()) {
             // An object with that priority was found.
@@ -875,6 +761,4 @@ Object* Tile::getObject(ObjectPriority objectPriority) const {
     // NoSuchElementException removed.
     // throw NoSuchElementException("invalid tile priority");
     return NULL;
-
-    __END_CATCH
 }

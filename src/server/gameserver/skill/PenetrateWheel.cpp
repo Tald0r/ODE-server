@@ -25,9 +25,6 @@ void PenetrateWheel::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouste
                              CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -49,15 +46,10 @@ void PenetrateWheel::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouste
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), 0);
     }
-
-
-    __END_CATCH
 }
 
 void PenetrateWheel::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersSkillSlot* pOustersSkillSlot,
                              CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
     Zone* pZone = pOusters->getZone();
     Assert(pZone != NULL);
 
@@ -142,8 +134,6 @@ void PenetrateWheel::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ou
             }
         }
     }
-
-    __END_CATCH
 }
 
 PenetrateWheel g_PenetrateWheel;

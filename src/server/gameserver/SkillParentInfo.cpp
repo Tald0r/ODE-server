@@ -20,9 +20,7 @@
 SkillParentInfo::SkillParentInfo(SkillType_t SkillType)
 
     : m_SkillType(SkillType) {
-    __BEGIN_TRY
     init();
-    __END_CATCH
 }
 
 
@@ -33,10 +31,7 @@ SkillParentInfo::SkillParentInfo(SkillType_t SkillType)
 //----------------------------------------------------------------------
 SkillParentInfo::~SkillParentInfo()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 
 //----------------------------------------------------------------------
@@ -46,10 +41,7 @@ SkillParentInfo::~SkillParentInfo()
 //----------------------------------------------------------------------
 void SkillParentInfo::init()
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 //----------------------------------------------------------------------
@@ -60,8 +52,6 @@ void SkillParentInfo::init()
 //
 //----------------------------------------------------------------------
 bool SkillParentInfo::hasParent(SkillType_t SkillType) {
-    __BEGIN_TRY
-
     try {
         SkillType_t FirstType = m_Parents.front();
 
@@ -83,8 +73,6 @@ bool SkillParentInfo::hasParent(SkillType_t SkillType) {
         // cerr << t.toString() << endl;
     }
     return false;
-
-    __END_CATCH
 }
 
 
@@ -92,8 +80,6 @@ bool SkillParentInfo::hasParent(SkillType_t SkillType) {
 // Return the parent skill type that matches SkillType.
 //----------------------------------------------------------------------
 SkillType_t SkillParentInfo::getParents(SkillType_t SkillType) const {
-    __BEGIN_TRY
-
     for (list<SkillType_t>::const_iterator itr = m_Parents.begin(); itr != m_Parents.end(); itr++) {
         if (SkillType == (*itr))
             return *itr;
@@ -101,8 +87,6 @@ SkillType_t SkillParentInfo::getParents(SkillType_t SkillType) const {
 
     cerr << "SkillParentInfo::getParents() : NoSuchElementException" << endl;
     throw NoSuchElementException();
-
-    __END_CATCH
 }
 
 
@@ -112,8 +96,6 @@ SkillType_t SkillParentInfo::getParents(SkillType_t SkillType) const {
 string SkillParentInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "SkillParentInfo(" << "SkillType:" << (int)m_SkillType << ",Parents(";
@@ -125,8 +107,6 @@ string SkillParentInfo::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -137,23 +117,23 @@ string SkillParentInfo::toString() const
 //--------------------------------------------------------------------
 SkillParentInfoManager::SkillParentInfoManager()
 
-    : m_SkillCount(0), m_SkillParentInfoList(NULL){__BEGIN_TRY __END_CATCH}
+    : m_SkillCount(0), m_SkillParentInfoList(NULL) {}
 
-      //--------------------------------------------------------------------
-      //
-      // destructor
-      //
-      //--------------------------------------------------------------------
-      SkillParentInfoManager::~SkillParentInfoManager()
+//--------------------------------------------------------------------
+//
+// destructor
+//
+//--------------------------------------------------------------------
+SkillParentInfoManager::~SkillParentInfoManager()
 
 {
-    __BEGIN_TRY
+    try {
+        // Not everything is freed here.
 
-    // Not everything is freed here.
-
-    SAFE_DELETE_ARRAY(m_SkillParentInfoList);
-
-    __END_CATCH_NO_RETHROW
+        SAFE_DELETE_ARRAY(m_SkillParentInfoList);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //--------------------------------------------------------------------
@@ -164,12 +144,8 @@ SkillParentInfoManager::SkillParentInfoManager()
 void SkillParentInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     // Loading from DataBase and addSkillParentInfo
     load();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -180,7 +156,6 @@ void SkillParentInfoManager::init()
 void SkillParentInfoManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     int maxSkillType = 0;
@@ -223,7 +198,6 @@ void SkillParentInfoManager::load()
     // }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -234,11 +208,7 @@ void SkillParentInfoManager::load()
 void SkillParentInfoManager::save()
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 
@@ -250,16 +220,12 @@ void SkillParentInfoManager::save()
 void SkillParentInfoManager::addSkillParentInfo(SkillParentInfo* pSkillParentInfo)
 
 {
-    __BEGIN_TRY
-
     Assert(pSkillParentInfo != NULL);
 
     if (m_SkillParentInfoList[pSkillParentInfo->getSkillType()] != NULL)
         throw DuplicatedException();
 
     m_SkillParentInfoList[pSkillParentInfo->getSkillType()] = pSkillParentInfo;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -268,8 +234,6 @@ void SkillParentInfoManager::addSkillParentInfo(SkillParentInfo* pSkillParentInf
 //
 //--------------------------------------------------------------------
 SkillParentInfo* SkillParentInfoManager::getSkillParentInfo(SkillType_t SkillType) const {
-    __BEGIN_TRY
-
     if (SkillType >= m_SkillCount) {
         cerr << "SkillParentInfoManager::getSkillParentInfo() : out of bounds" << endl;
         throw OutOfBoundException();
@@ -281,8 +245,6 @@ SkillParentInfo* SkillParentInfoManager::getSkillParentInfo(SkillType_t SkillTyp
     }
 
     return m_SkillParentInfoList[SkillType];
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -293,8 +255,6 @@ SkillParentInfo* SkillParentInfoManager::getSkillParentInfo(SkillType_t SkillTyp
 string SkillParentInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "SkillParentInfoManager(";
@@ -310,6 +270,4 @@ string SkillParentInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

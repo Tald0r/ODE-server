@@ -354,8 +354,6 @@ void GuildUnionManager::sendRefreshCommand() {
 
 
 bool GuildUnionManager::addGuild(uint uID, GuildID_t gID) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     if (!m_Unions.addMember(uID, gID))
@@ -368,13 +366,9 @@ bool GuildUnionManager::addGuild(uint uID, GuildID_t gID) {
     sendRefreshCommand();
 
     return true;
-
-    __END_CATCH
 }
 
 bool GuildUnionManager::removeGuildFromUnion(GuildID_t gID) {
-    __BEGIN_TRY
-
     UnionTeardown teardown;
     UnionChanges changes;
 
@@ -469,8 +463,6 @@ bool GuildUnionManager::removeGuildFromUnion(GuildID_t gID) {
     publish(changes);
 
     return teardown.action != UnionTeardown::NOTHING;
-
-    __END_CATCH
 }
 
 void GuildUnionManager::destroyUnion_LOCKED(uint uID) {
@@ -487,8 +479,6 @@ void GuildUnionManager::destroyUnion_LOCKED(uint uID) {
 }
 
 bool GuildUnionManager::removeGuild(uint uID, GuildID_t gID, bool* pDissolved) {
-    __BEGIN_TRY
-
     bool dissolved = false;
     UnionChanges changes;
 
@@ -518,8 +508,6 @@ bool GuildUnionManager::removeGuild(uint uID, GuildID_t gID, bool* pDissolved) {
         *pDissolved = dissolved;
 
     return true;
-
-    __END_CATCH
 }
 
 void GuildUnionManager::reload() {
@@ -535,8 +523,6 @@ void GuildUnionManager::reload() {
 }
 
 void GuildUnionManager::load() {
-    __BEGIN_TRY
-
     UnionChanges changes;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -547,8 +533,6 @@ void GuildUnionManager::load() {
         m_RefreshOwed = true;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void GuildUnionManager::sendOwedRefresh() {
@@ -593,8 +577,6 @@ void GuildUnionManager::load_LOCKED(UnionChanges& changes) {
 }
 
 uint GuildUnionOfferManager::offerJoin(GuildID_t gID, GuildID_t masterGID) {
-    __BEGIN_TRY
-
     // The guild sizes are read here, outside the union manager's lock, which
     // the guild manager's locks may not be taken under.
     Guild* pReqGuild = de::gameContext().guilds().getGuild(gID);
@@ -623,13 +605,9 @@ uint GuildUnionOfferManager::offerJoin(GuildID_t gID, GuildID_t masterGID) {
     }
 
     throw Error("unknown union join offer verdict");
-
-    __END_CATCH
 }
 
 uint GuildUnionOfferManager::offerQuit(GuildID_t gID) {
-    __BEGIN_TRY
-
     GuildUnionManager& unions = GuildUnionManager::Instance();
 
     // A lapsed offer of the guild's does not stand in the way of this one.
@@ -650,8 +628,6 @@ uint GuildUnionOfferManager::offerQuit(GuildID_t gID) {
     defaultGuildRepository().insertQuitOffer(pUnion->getUnionID(), gID);
 
     return OK;
-
-    __END_CATCH
 }
 
 bool GuildUnionOfferManager::makeOfferList(uint uID, GCUnionOfferList& offerList) {
@@ -696,8 +672,6 @@ bool GuildUnionOfferManager::makeOfferList(uint uID, GCUnionOfferList& offerList
 }
 
 uint GuildUnionOfferManager::acceptJoin(GuildID_t gID, uint answeringUnionID) {
-    __BEGIN_TRY
-
     GuildRepository& repository = defaultGuildRepository();
     GuildUnionManager& unions = GuildUnionManager::Instance();
 
@@ -733,13 +707,9 @@ uint GuildUnionOfferManager::acceptJoin(GuildID_t gID, uint answeringUnionID) {
         unions.dissolveIfAbandoned(uID);
 
     return result;
-
-    __END_CATCH
 }
 
 uint GuildUnionOfferManager::acceptQuit(GuildID_t gID, uint answeringUnionID) {
-    __BEGIN_TRY
-
     GuildUnionManager& unions = GuildUnionManager::Instance();
 
     unions.purgeOffers();
@@ -769,13 +739,9 @@ uint GuildUnionOfferManager::acceptQuit(GuildID_t gID, uint answeringUnionID) {
         return NOT_IN_UNION;
 
     return OK;
-
-    __END_CATCH
 }
 
 uint GuildUnionOfferManager::denyJoin(GuildID_t gID, uint answeringUnionID) {
-    __BEGIN_TRY
-
     GuildUnionManager& unions = GuildUnionManager::Instance();
 
     unions.purgeOffers();
@@ -802,13 +768,9 @@ uint GuildUnionOfferManager::denyJoin(GuildID_t gID, uint answeringUnionID) {
     unions.dissolveIfAbandoned(uID);
 
     return result;
-
-    __END_CATCH
 }
 
 uint GuildUnionOfferManager::denyQuit(GuildID_t gID, uint answeringUnionID) {
-    __BEGIN_TRY
-
     GuildUnionManager& unions = GuildUnionManager::Instance();
 
     unions.purgeOffers();
@@ -833,26 +795,16 @@ uint GuildUnionOfferManager::denyQuit(GuildID_t gID, uint answeringUnionID) {
     }
 
     return OK;
-
-    __END_CATCH
 }
 
 void GuildUnionOfferManager::clearOffer(GuildID_t gID) {
-    __BEGIN_TRY
-
     defaultGuildRepository().deleteOffers(gID);
-
-    __END_CATCH
 }
 
 bool GuildUnionOfferManager::hasOffer(GuildID_t gID) {
-    __BEGIN_TRY
-
     if (defaultGuildRepository().countOffers(gID) > 0) {
         return true;
     }
 
     return false;
-
-    __END_CATCH
 }

@@ -47,11 +47,7 @@ void ConditionFlagOff::read(PropertyBuffer& propertyBuffer)
 string ConditionFlagOff::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionFlagOff(" << "Index:" << (int)m_Index << ")";
     return msg.toString();
-
-    __END_CATCH
 }

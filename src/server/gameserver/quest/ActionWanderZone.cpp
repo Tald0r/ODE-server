@@ -28,8 +28,6 @@ static const POINT d[] = {
 void ActionWanderZone::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_MovePercentage = propertyBuffer.getPropertyInt("MovePercentage");
 
@@ -37,8 +35,6 @@ void ActionWanderZone::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,8 +43,6 @@ void ActionWanderZone::read(PropertyBuffer& propertyBuffer)
 void ActionWanderZone::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 == NULL);
 
@@ -120,8 +114,6 @@ void ActionWanderZone::execute(Creature* pCreature1, Creature* pCreature2)
             pZone->moveCreature(pCreature1, nx, ny, nextDir);
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -131,13 +123,9 @@ void ActionWanderZone::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionWanderZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ActionWanderZone(" << "MovePercentage:" << (int)m_MovePercentage << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

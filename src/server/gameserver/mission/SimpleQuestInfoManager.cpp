@@ -9,8 +9,6 @@
 #include "repository/QuestInfoRepository.h"
 
 void SimpleQuestInfoManager::load(const string& name) {
-    __BEGIN_TRY
-
     clear();
 
     vector<MonsterKillQuestRow> rows = defaultQuestInfoRepository().loadMonsterKillQuestsOfNPC(name);
@@ -31,6 +29,4 @@ void SimpleQuestInfoManager::load(const string& name) {
                                                                         rewardClass, monsterSType, isChief, killCount);
         addQuestInfo(pMonsterKillQI);
     }
-
-    __END_CATCH
 }

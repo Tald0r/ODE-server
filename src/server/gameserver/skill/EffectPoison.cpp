@@ -22,12 +22,8 @@
 EffectPoison::EffectPoison(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_UserObjectID = 0;
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,14 +31,8 @@ EffectPoison::EffectPoison(Creature* pCreature)
 void EffectPoison::affect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,9 +40,6 @@ void EffectPoison::affect()
 void EffectPoison::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     Zone* pZone = pCreature->getZone();
@@ -102,9 +89,6 @@ void EffectPoison::affect(Creature* pCreature)
     }
 
     setNextTime(m_Tick);
-
-
-    __END_CATCH
 }
 
 
@@ -112,17 +96,13 @@ void EffectPoison::affect(Creature* pCreature)
 //////////////////////////////////////////////////////////////////////////////
 void EffectPoison::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectPoison::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     pCreature->removeFlag(Effect::EFFECT_CLASS_POISON);
@@ -137,7 +117,6 @@ void EffectPoison::unaffect(Creature* pCreature)
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -145,28 +124,20 @@ void EffectPoison::unaffect(Creature* pCreature)
 void EffectPoison::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectPoison::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectPoison::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectPoison(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

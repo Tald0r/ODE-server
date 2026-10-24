@@ -49,8 +49,6 @@ HolyWater::HolyWater(ItemType_t itemType, const list<OptionType_t>& optionType)
 void HolyWater::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -64,8 +62,6 @@ void HolyWater::create(const string& ownerID, Storage storage, StorageID_t stora
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_HOLY_WATER, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                     (int)storage, storageID, (int)x, (int)y, (int)m_Num);
-
-    __END_CATCH
 }
 
 
@@ -75,11 +71,7 @@ void HolyWater::create(const string& ownerID, Storage storage, StorageID_t stora
 void HolyWater::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_HOLY_WATER, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -88,32 +80,20 @@ void HolyWater::tinysave(const char* field) const
 void HolyWater::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_HOLY_WATER, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 Damage_t HolyWater::getMinDamage() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_HOLYWATER, m_ItemType)->getMinDamage();
-
-    __END_CATCH
 }
 
 Damage_t HolyWater::getMaxDamage() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_HOLYWATER, m_ItemType)->getMaxDamage();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -134,11 +114,7 @@ string HolyWater::toString() const
 VolumeWidth_t HolyWater::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_HOLYWATER, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -148,11 +124,7 @@ VolumeWidth_t HolyWater::getVolumeWidth() const
 VolumeHeight_t HolyWater::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_HOLYWATER, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -162,11 +134,7 @@ VolumeHeight_t HolyWater::getVolumeHeight() const
 Weight_t HolyWater::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_HOLYWATER, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -192,8 +160,6 @@ string HolyWaterInfo::toString() const
 void HolyWaterInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_HOLY_WATER);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -218,8 +184,6 @@ void HolyWaterInfoManager::load()
 
         addItemInfo(pHolyWaterInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -229,8 +193,6 @@ void HolyWaterInfoManager::load()
 void HolyWaterLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -316,8 +278,6 @@ void HolyWaterLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -327,8 +287,6 @@ void HolyWaterLoader::load(Creature* pCreature)
 void HolyWaterLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumOnlyZoneObjectRow> rows =
@@ -362,8 +320,6 @@ void HolyWaterLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -373,12 +329,8 @@ void HolyWaterLoader::load(Zone* pZone)
 void HolyWaterLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

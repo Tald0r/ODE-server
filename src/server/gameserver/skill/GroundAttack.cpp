@@ -23,9 +23,6 @@ void GroundAttack::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -46,9 +43,6 @@ void GroundAttack::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -58,9 +52,6 @@ void GroundAttack::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vamp
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pVampire->getPlayer();
         Zone* pZone = pVampire->getZone();
@@ -225,9 +216,6 @@ void GroundAttack::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vamp
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -236,9 +224,6 @@ void GroundAttack::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vamp
 void GroundAttack::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Zone* pZone = pMonster->getZone();
         Assert(pZone != NULL);
@@ -375,9 +360,6 @@ void GroundAttack::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 GroundAttack g_GroundAttack;

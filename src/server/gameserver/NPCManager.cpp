@@ -20,19 +20,15 @@
 
 NPCManager::NPCManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 NPCManager::~NPCManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void NPCManager::load(ZoneID_t zoneID, int race)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     bool bLoadAllRace = (race == 0xFF);
@@ -84,13 +80,11 @@ void NPCManager::load(ZoneID_t zoneID, int race)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void NPCManager::processCreatures()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Timeval currentTime;
@@ -107,17 +101,12 @@ void NPCManager::processCreatures()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 string NPCManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "NPCManager(" << CreatureManager::toString() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

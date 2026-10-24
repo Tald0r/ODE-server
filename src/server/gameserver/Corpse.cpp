@@ -26,36 +26,30 @@ extern void saveItemInCorpse(Item* pItem, Corpse* pCorpse);
 Corpse::Corpse()
 
 {
-    __BEGIN_TRY
-
     m_TreasureCount = 0;
     m_X = m_Y = 0;
     m_pZone = NULL;
     m_Level = 0;
     m_Exp = 0;
-
-    __END_CATCH
 }
 
 Corpse::~Corpse()
 
 {
-    __BEGIN_TRY
-
-    while (!m_Treasures.empty()) {
-        Item* pItem = m_Treasures.front();
-        SAFE_DELETE(pItem);
-        m_Treasures.pop_front();
+    try {
+        while (!m_Treasures.empty()) {
+            Item* pItem = m_Treasures.front();
+            SAFE_DELETE(pItem);
+            m_Treasures.pop_front();
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 Item* Corpse::getTreasure()
 
 {
-    __BEGIN_TRY
-
     if (!m_Treasures.empty()) {
         Item* pItem = m_Treasures.front();
         Assert(pItem != NULL);
@@ -71,15 +65,11 @@ Item* Corpse::getTreasure()
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 void Corpse::addTreasure(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     if (isRelicItem(pItem)) {
@@ -94,15 +84,11 @@ void Corpse::addTreasure(Item* pItem)
 
     m_Treasures.push_back(pItem);
     m_TreasureCount++;
-
-    __END_CATCH
 }
 
 Item* Corpse::getTreasure(ObjectID_t objectID) const
 
 {
-    __BEGIN_TRY
-
     list<Item*>::const_iterator itr = m_Treasures.begin();
 
     for (; itr != m_Treasures.end(); itr++) {
@@ -111,16 +97,12 @@ Item* Corpse::getTreasure(ObjectID_t objectID) const
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 
 Item* Corpse::popTreasure(ObjectID_t objectID)
 
 {
-    __BEGIN_TRY
-
     list<Item*>::iterator itr = m_Treasures.begin();
 
     for (; itr != m_Treasures.end(); itr++) {
@@ -133,6 +115,4 @@ Item* Corpse::popTreasure(ObjectID_t objectID)
     }
 
     return NULL;
-
-    __END_CATCH
 }

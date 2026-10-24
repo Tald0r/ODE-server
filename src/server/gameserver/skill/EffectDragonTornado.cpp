@@ -22,15 +22,11 @@
 EffectDragonTornado::EffectDragonTornado(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_UserOID = 0;
     m_bCanSplit = true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -38,8 +34,6 @@ EffectDragonTornado::EffectDragonTornado(Zone* pZone, ZoneCoord_t zoneX, ZoneCoo
 void EffectDragonTornado::affect()
 
 {
-    __BEGIN_TRY
-
     setNextTime(10);
 
     if (m_pZone == NULL || !isValidZoneCoord(m_pZone, m_X, m_Y))
@@ -109,8 +103,6 @@ void EffectDragonTornado::affect()
         Creature* pCreature = dynamic_cast<Creature*>(pObject);
         affect(pCreature);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -118,8 +110,6 @@ void EffectDragonTornado::affect()
 void EffectDragonTornado::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     Zone* pZone = pCreature->getZone();
@@ -202,27 +192,19 @@ void EffectDragonTornado::affect(Creature* pCreature)
     gcSkillToObjectOK4.setDuration(0);
 
     m_pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcSkillToObjectOK4, pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDragonTornado::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDragonTornado::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
 
@@ -231,21 +213,14 @@ void EffectDragonTornado::unaffect()
     gcDT.setObjectID(getObjectID());
     gcDT.setEffectID(getSendEffectClass());
     m_pZone->broadcastPacket(m_X, m_Y, &gcDT);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDragonTornado::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectDragonTornado(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

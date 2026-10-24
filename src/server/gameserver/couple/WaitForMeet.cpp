@@ -30,8 +30,6 @@ static const char* CoupleRingOptions[2][4] = {{"STR+4", "DEX+4", "DAM+3", "HP+4"
                                               {"STR+4", "DEX+4", "DAM+3", "ASPD+4"}};
 
 uint WaitForMeet::waitPartner(PlayerCreature* pTargetPC) {
-    __BEGIN_TRY
-
     if (pTargetPC == NULL)
         return COUPLE_MESSAGE_LOGOFF; // just use this message. returning here is unlikely anyway
 
@@ -52,13 +50,9 @@ uint WaitForMeet::waitPartner(PlayerCreature* pTargetPC) {
     pTargetPC->getPlayer()->sendPacket(&gcSystemMessage);
 
     return 0;
-
-    __END_CATCH
 }
 
 uint WaitForMeet::acceptPartner(PlayerCreature* pRequestedPC) {
-    __BEGIN_TRY
-
     Assert(pRequestedPC != NULL);
 
     PlayerCreature* pWaitingPC = getWaitingPC();
@@ -115,13 +109,9 @@ uint WaitForMeet::acceptPartner(PlayerCreature* pRequestedPC) {
     // It is not sent.
 
     return 0;
-
-    __END_CATCH
 }
 
 void WaitForMeet::timeExpired() {
-    __BEGIN_TRY
-
     // Tell the one who was waiting that it did not work out.
     GCNPCResponse gcNPCResponse;
     gcNPCResponse.setCode(NPC_RESPONSE_MEET_WAIT_TIME_EXPIRED);
@@ -129,13 +119,9 @@ void WaitForMeet::timeExpired() {
     PlayerCreature* pPC = getWaitingPC();
     if (pPC != NULL)
         pPC->getPlayer()->sendPacket(&gcNPCResponse);
-
-    __END_CATCH
 }
 
 Gold_t WaitForMeet::getCoupleRegisterFee(PlayerCreature* pPC) {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     Gold_t ret = 0;
@@ -158,21 +144,14 @@ Gold_t WaitForMeet::getCoupleRegisterFee(PlayerCreature* pPC) {
     }
 
     return ret;
-
-    __END_CATCH
 }
 
 void WaitForMeet::receiveCoupleRegisterFee(PlayerCreature* pPC) {
-    __BEGIN_TRY
-
     pPC->decreaseGoldEx(getCoupleRegisterFee(pPC));
     GCModifyInformation gcMI;
 
     gcMI.addLongData(MODIFY_GOLD, pPC->getGold());
     pPC->getPlayer()->sendPacket(&gcMI);
-
-
-    __END_CATCH
 }
 
 uint WaitForMeet::canMakeCouple(PlayerCreature* pPC1, PlayerCreature* pPC2) {
@@ -198,8 +177,6 @@ OptionType_t WaitForMeet::getRandomOptionType(PlayerCreature* pPC) {
 }
 
 CoupleRingBase* WaitForMeet::giveCoupleRing(PlayerCreature* pPC, string partnerName, _TPOINT* pPt) {
-    __BEGIN_TRY
-
     list<OptionType_t> optionList;
     optionList.push_back(getRandomOptionType(pPC));
 
@@ -228,8 +205,6 @@ CoupleRingBase* WaitForMeet::giveCoupleRing(PlayerCreature* pPC, string partnerN
     pPC->getPlayer()->sendPacket(&gcCreateItem);
 
     return pCoupleItem;
-
-    __END_CATCH
 }
 
 bool WaitForMeet::canGetCoupleRing(PlayerCreature* pPC, _TPOINT& pt) {
@@ -239,8 +214,6 @@ bool WaitForMeet::canGetCoupleRing(PlayerCreature* pPC, _TPOINT& pt) {
 }
 
 uint WaitForMeet::canHavePartner(PlayerCreature* pPC) {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     GamePlayer* pGP = dynamic_cast<GamePlayer*>(pPC->getPlayer());
@@ -276,6 +249,4 @@ uint WaitForMeet::canHavePartner(PlayerCreature* pPC) {
     }
 
     return 0;
-
-    __END_CATCH
 }

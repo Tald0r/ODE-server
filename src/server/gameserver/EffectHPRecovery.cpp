@@ -21,52 +21,35 @@
 EffectHPRecovery::EffectHPRecovery()
 
 {
-    __BEGIN_TRY
-
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectHPRecovery::EffectHPRecovery(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Creature* pCreature, Turn_t delay)
 
     : Effect(pZone, x, y, pCreature, delay) {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
     Assert(getTarget() != NULL);
 
     // Server-only Effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectHPRecovery::~EffectHPRecovery()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void EffectHPRecovery::affect()
 
 {
-    __BEGIN_TRY
-
     setNextTime(m_Delay);
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectHPRecovery::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Timeval CurrentTime;
 
     getCurrentTime(CurrentTime);
@@ -179,36 +162,24 @@ void EffectHPRecovery::affect(Creature* pCreature)
 
         m_Period = RecoveryPeriod;
     }
-
-    __END_CATCH
 }
 
 void EffectHPRecovery::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 void EffectHPRecovery::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectHPRecovery::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature->isSlayer()) {
         Slayer* pSlayer = dynamic_cast<Slayer*>(pCreature);
         Zone* pZone = pSlayer->getZone();
@@ -288,13 +259,11 @@ void EffectHPRecovery::unaffect(Creature* pCreature)
 
         pOusters->removeFlag(Effect::EFFECT_CLASS_HP_RECOVERY);
     }
-
-    __END_CATCH
 }
 
 void EffectHPRecovery::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 string EffectHPRecovery::toString() const
 

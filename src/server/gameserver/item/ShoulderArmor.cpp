@@ -51,8 +51,6 @@ void ShoulderArmor::create(const string& ownerID, Storage storage, StorageID_t s
                            ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -70,8 +68,6 @@ void ShoulderArmor::create(const string& ownerID, Storage storage, StorageID_t s
     defaultItemObjectRepository().insertGear(GEAR_SHOULDER_ARMOR, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                              (int)storage, storageID, (int)x, (int)y, optionField, getDurability(),
                                              (int)getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -81,11 +77,7 @@ void ShoulderArmor::create(const string& ownerID, Storage storage, StorageID_t s
 void ShoulderArmor::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_SHOULDER_ARMOR, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -94,16 +86,12 @@ void ShoulderArmor::tinysave(const char* field) const
 void ShoulderArmor::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_SHOULDER_ARMOR, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), (int)getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -146,8 +134,6 @@ string ShoulderArmorInfo::toString() const
 void ShoulderArmorInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_SHOULDER_ARMOR);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -181,8 +167,6 @@ void ShoulderArmorInfoManager::load()
 
         addItemInfo(pShoulderArmorInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -192,8 +176,6 @@ void ShoulderArmorInfoManager::load()
 void ShoulderArmorLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows =
@@ -301,8 +283,6 @@ void ShoulderArmorLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -311,11 +291,7 @@ void ShoulderArmorLoader::load(Creature* pCreature)
 //--------------------------------------------------------------------------------
 void ShoulderArmorLoader::load(Zone* pZone)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 //--------------------------------------------------------------------------------
@@ -323,8 +299,4 @@ void ShoulderArmorLoader::load(Zone* pZone)
 //--------------------------------------------------------------------------------
 void ShoulderArmorLoader::load(StorageID_t storageID, Inventory* pInventory)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}

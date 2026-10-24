@@ -46,8 +46,6 @@ TrapItem::TrapItem(ItemType_t itemType, const list<OptionType_t>& optionType)
 void TrapItem::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -61,8 +59,6 @@ void TrapItem::create(const string& ownerID, Storage storage, StorageID_t storag
 
     defaultItemObjectRepository().insertFlagItem(GEAR_TRAP_ITEM, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                  (int)storage, storageID, (int)x, (int)y, (int)m_CreateType);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -71,22 +67,14 @@ void TrapItem::create(const string& ownerID, Storage storage, StorageID_t storag
 void TrapItem::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_TRAP_ITEM, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void TrapItem::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updatePlainItem(GEAR_TRAP_ITEM, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                   storageID, (int)x, (int)y, m_ItemID);
-
-    __END_CATCH
 }
 
 string TrapItem::toString() const
@@ -102,31 +90,19 @@ string TrapItem::toString() const
 VolumeWidth_t TrapItem::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_TRAP_ITEM, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t TrapItem::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_TRAP_ITEM, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t TrapItem::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_TRAP_ITEM, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -146,8 +122,6 @@ string TrapItemInfo::toString() const
 void TrapItemInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_TRAP_ITEM);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -172,8 +146,6 @@ void TrapItemInfoManager::load()
 
         addItemInfo(pTrapItemInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -183,8 +155,6 @@ void TrapItemInfoManager::load()
 void TrapItemLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<FlagObjectRow> rows =
@@ -277,15 +247,11 @@ void TrapItemLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void TrapItemLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<FlagZoneObjectRow> rows =
@@ -319,19 +285,13 @@ void TrapItemLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void TrapItemLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

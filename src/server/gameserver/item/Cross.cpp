@@ -57,8 +57,6 @@ Cross::Cross(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Cross::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -76,8 +74,6 @@ void Cross::create(const string& ownerID, Storage storage, StorageID_t storageID
     defaultItemObjectRepository().insertGear(GEAR_CROSS, m_ItemID, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), (int)getGrade(),
                                              (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -87,11 +83,7 @@ void Cross::create(const string& ownerID, Storage storage, StorageID_t storageID
 void Cross::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_CROSS, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -100,16 +92,12 @@ void Cross::tinysave(const char* field) const
 void Cross::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateSilverWeapon(
         GEAR_CROSS, m_ObjectID, getItemType(), ownerID, (int)storage, storageID, (int)x, (int)y, optionField,
         getDurability(), (int)getEnchantLevel(), (int)getSilver(), (int)getGrade(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -133,11 +121,7 @@ string Cross::toString() const
 MP_t Cross::getMPBonus() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_CROSS, getItemType())->getMPBonus();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -163,8 +147,6 @@ string CrossInfo::toString() const
 void CrossInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_CROSS);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -202,8 +184,6 @@ void CrossInfoManager::load()
 
         addItemInfo(pCrossInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -213,8 +193,6 @@ void CrossInfoManager::load()
 void CrossLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<SilverWeaponObjectRow> rows =
@@ -320,8 +298,6 @@ void CrossLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -331,8 +307,6 @@ void CrossLoader::load(Creature* pCreature)
 void CrossLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<SilverWeaponZoneObjectRow> rows =
@@ -374,8 +348,6 @@ void CrossLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -385,12 +357,8 @@ void CrossLoader::load(Zone* pZone)
 void CrossLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

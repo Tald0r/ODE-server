@@ -21,30 +21,20 @@
 EffectSeduction::EffectSeduction(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSeduction::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 void EffectSeduction::unaffect()
 
 {
-    __BEGIN_TRY
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -52,7 +42,6 @@ void EffectSeduction::unaffect()
 void EffectSeduction::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -102,20 +91,15 @@ void EffectSeduction::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSeduction::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectSeduction(" << "ObjectID:" << getObjectID() << ",ToHit:" << m_ToHitPenalty
         << ",Damage:" << m_DamagePenalty << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

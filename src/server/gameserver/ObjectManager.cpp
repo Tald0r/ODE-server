@@ -138,8 +138,6 @@
 ObjectManager::ObjectManager()
 
 {
-    __BEGIN_TRY
-
     FlagSet::initialize();
 
     m_pStringPool = new StringPool();
@@ -294,100 +292,97 @@ ObjectManager::ObjectManager()
     context.setDynamicZoneManager(m_pDynamicZoneManager);
     m_pDynamicZoneFactoryManager = new DynamicZoneFactoryManager();
     context.setDynamicZoneFactoryManager(m_pDynamicZoneFactoryManager);
-
-    __END_CATCH
 }
 
 ObjectManager::~ObjectManager()
 
 {
-    __BEGIN_TRY
+    try {
+        SAFE_DELETE(m_pStringPool);
+        SAFE_DELETE(m_pActionFactoryManager);
+        SAFE_DELETE(m_pConditionFactoryManager);
+        SAFE_DELETE(m_pPublicScriptManager);
+        SAFE_DELETE(m_pPCFinder);
+        SAFE_DELETE(m_pParkingCenter);
+        SAFE_DELETE(m_pTelephoneCenter);
+        SAFE_DELETE(m_pItemMineInfoManager);
+        SAFE_DELETE(m_pOptionInfoManager);
+        SAFE_DELETE(m_pSkillInfoManager);
+        SAFE_DELETE(m_pSkillDomainInfoManager);
+        SAFE_DELETE(m_pMonsterInfoManager);
+        SAFE_DELETE(m_pItemInfoManager);
+        SAFE_DELETE(m_pWeatherInfoManager);
+        SAFE_DELETE(m_pVisionInfoManager);
+        SAFE_DELETE(m_pDarkLightInfoManager);
+        SAFE_DELETE(m_pTimeManager);
+        SAFE_DELETE(m_pDirectiveSetManager);
+        SAFE_DELETE(m_pMonsterNameManager);
+        SAFE_DELETE(m_pZoneInfoManager);
+        SAFE_DELETE(m_pZoneGroupManager);
+        // SAFE_DELETE(g_pSkillParentInfoManager);
+        SAFE_DELETE(m_pSkillHandlerManager);
+        SAFE_DELETE(m_pItemFactoryManager);
+        SAFE_DELETE(m_pVolumeInfoManager);
+        SAFE_DELETE(m_pItemLoaderManager);
+        SAFE_DELETE(m_pShopTemplateManager);
+        SAFE_DELETE(m_pEffectLoaderManager);
+        SAFE_DELETE(m_pPriceManager);
+        SAFE_DELETE(m_pVampEXPInfoManager);
+        SAFE_DELETE(m_pOustersEXPInfoManager);
+        SAFE_DELETE(m_pGuildManager);
+        SAFE_DELETE(m_pResurrectLocationManager);
+        SAFE_DELETE(m_pAlignmentManager);
+        SAFE_DELETE(m_pWayPointManager);
+        SAFE_DELETE(m_pGlobalPartyManager);
+        SAFE_DELETE(m_pGameWorldInfoManager);
+        SAFE_DELETE(m_pVariableManager);
+        SAFE_DELETE(m_pCombatInfoManager);
+        SAFE_DELETE(m_pUniqueItemManager);
+        SAFE_DELETE(m_pMasterLairInfoManager);
+        SAFE_DELETE(m_pCastleInfoManager);
+        SAFE_DELETE(m_pRankBonusInfoManager);
+        //	SAFE_DELETE(g_pHolyLandRaceBonus);
+        SAFE_DELETE(m_pWarSystem);
+        SAFE_DELETE(m_pShrineInfoManager);
+        SAFE_DELETE(m_pCastleShrineInfoManager);
 
-    SAFE_DELETE(m_pStringPool);
-    SAFE_DELETE(m_pActionFactoryManager);
-    SAFE_DELETE(m_pConditionFactoryManager);
-    SAFE_DELETE(m_pPublicScriptManager);
-    SAFE_DELETE(m_pPCFinder);
-    SAFE_DELETE(m_pParkingCenter);
-    SAFE_DELETE(m_pTelephoneCenter);
-    SAFE_DELETE(m_pItemMineInfoManager);
-    SAFE_DELETE(m_pOptionInfoManager);
-    SAFE_DELETE(m_pSkillInfoManager);
-    SAFE_DELETE(m_pSkillDomainInfoManager);
-    SAFE_DELETE(m_pMonsterInfoManager);
-    SAFE_DELETE(m_pItemInfoManager);
-    SAFE_DELETE(m_pWeatherInfoManager);
-    SAFE_DELETE(m_pVisionInfoManager);
-    SAFE_DELETE(m_pDarkLightInfoManager);
-    SAFE_DELETE(m_pTimeManager);
-    SAFE_DELETE(m_pDirectiveSetManager);
-    SAFE_DELETE(m_pMonsterNameManager);
-    SAFE_DELETE(m_pZoneInfoManager);
-    SAFE_DELETE(m_pZoneGroupManager);
-    // SAFE_DELETE(g_pSkillParentInfoManager);
-    SAFE_DELETE(m_pSkillHandlerManager);
-    SAFE_DELETE(m_pItemFactoryManager);
-    SAFE_DELETE(m_pVolumeInfoManager);
-    SAFE_DELETE(m_pItemLoaderManager);
-    SAFE_DELETE(m_pShopTemplateManager);
-    SAFE_DELETE(m_pEffectLoaderManager);
-    SAFE_DELETE(m_pPriceManager);
-    SAFE_DELETE(m_pVampEXPInfoManager);
-    SAFE_DELETE(m_pOustersEXPInfoManager);
-    SAFE_DELETE(m_pGuildManager);
-    SAFE_DELETE(m_pResurrectLocationManager);
-    SAFE_DELETE(m_pAlignmentManager);
-    SAFE_DELETE(m_pWayPointManager);
-    SAFE_DELETE(m_pGlobalPartyManager);
-    SAFE_DELETE(m_pGameWorldInfoManager);
-    SAFE_DELETE(m_pVariableManager);
-    SAFE_DELETE(m_pCombatInfoManager);
-    SAFE_DELETE(m_pUniqueItemManager);
-    SAFE_DELETE(m_pMasterLairInfoManager);
-    SAFE_DELETE(m_pCastleInfoManager);
-    SAFE_DELETE(m_pRankBonusInfoManager);
-    //	SAFE_DELETE(g_pHolyLandRaceBonus);
-    SAFE_DELETE(m_pWarSystem);
-    SAFE_DELETE(m_pShrineInfoManager);
-    SAFE_DELETE(m_pCastleShrineInfoManager);
+        SAFE_DELETE(m_pHolyLandManager);
 
-    SAFE_DELETE(m_pHolyLandManager);
+        SAFE_DELETE(m_pBloodBibleBonusManager);
 
-    SAFE_DELETE(m_pBloodBibleBonusManager);
+        SAFE_DELETE(m_pSkillPropertyManager);
 
-    SAFE_DELETE(m_pSkillPropertyManager);
+        SAFE_DELETE(m_pCoupleManager);
+        SAFE_DELETE(m_pPKZoneInfoManager);
+        //	SAFE_DELETE(g_pFameLimitInfoManager);
+        SAFE_DELETE(m_pGameServerGroupInfoManager);
+        SAFE_DELETE(m_pCastleSkillInfoManager);
 
-    SAFE_DELETE(m_pCoupleManager);
-    SAFE_DELETE(m_pPKZoneInfoManager);
-    //	SAFE_DELETE(g_pFameLimitInfoManager);
-    SAFE_DELETE(m_pGameServerGroupInfoManager);
-    SAFE_DELETE(m_pCastleSkillInfoManager);
+        SAFE_DELETE(m_pGoodsInfoManager);
+        SAFE_DELETE(m_pEventQuestLootingManager);
 
-    SAFE_DELETE(m_pGoodsInfoManager);
-    SAFE_DELETE(m_pEventQuestLootingManager);
+        // SAFE_DELETE(g_pQuestInfoManager);
+        // SAFE_DELETE(g_pRewardClassInfoManager);
 
-    // SAFE_DELETE(g_pQuestInfoManager);
-    // SAFE_DELETE(g_pRewardClassInfoManager);
+        SAFE_DELETE(m_pFlagManager);
+        SAFE_DELETE(m_pDefaultOptionSetInfoManager);
 
-    SAFE_DELETE(m_pFlagManager);
-    SAFE_DELETE(m_pDefaultOptionSetInfoManager);
+        SAFE_DELETE(m_pLevelWarZoneInfoManager);
+        SAFE_DELETE(m_pSweeperBonusManager);
+        SAFE_DELETE(m_pDragonEyeManager);
+        SAFE_DELETE(m_pTimeChecker);
 
-    SAFE_DELETE(m_pLevelWarZoneInfoManager);
-    SAFE_DELETE(m_pSweeperBonusManager);
-    SAFE_DELETE(m_pDragonEyeManager);
-    SAFE_DELETE(m_pTimeChecker);
-
-    SAFE_DELETE(m_pDynamicZoneInfoManager);
-    SAFE_DELETE(m_pDynamicZoneManager);
-    SAFE_DELETE(m_pDynamicZoneFactoryManager);
-
-    __END_CATCH_NO_RETHROW
+        SAFE_DELETE(m_pDynamicZoneInfoManager);
+        SAFE_DELETE(m_pDynamicZoneManager);
+        SAFE_DELETE(m_pDynamicZoneFactoryManager);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void ObjectManager::init()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     printf("ObjectManager::load() : SystemAvailabilitiesManager Initialization Start\n");
@@ -542,15 +537,12 @@ void ObjectManager::init()
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
 void ObjectManager::load()
 
 {
-    __BEGIN_TRY
-
     //--------------------------------------------------------------------------------
     // Loading a zone group loads its zones internally.
     // That loads the NPCs belonging to each zone, and the SetPosition action
@@ -733,16 +725,10 @@ void ObjectManager::load()
     printf("ObjectManager::load() : DynamicZoneFactoryManager Initialization Start\n");
     m_pDynamicZoneFactoryManager->init();
     printf("ObjectManager::load() : DynamicZoneFactoryManager Initialization Success\n");
-
-    __END_CATCH
 }
 
 void ObjectManager::save()
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }

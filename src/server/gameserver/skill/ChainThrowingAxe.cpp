@@ -23,8 +23,6 @@
 void ChainThrowingAxe::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     cout << "TID[" << Thread::self() << "]" << getSkillHandlerName() << "begin(monster) " << endl;
 
     try {
@@ -122,9 +120,6 @@ void ChainThrowingAxe::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ChainThrowingAxe g_ChainThrowingAxe;

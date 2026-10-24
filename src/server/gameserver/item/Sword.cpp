@@ -53,8 +53,6 @@ Sword::Sword(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Sword::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -72,8 +70,6 @@ void Sword::create(const string& ownerID, Storage storage, StorageID_t storageID
     defaultItemObjectRepository().insertGear(GEAR_SWORD, m_ItemID, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -83,11 +79,7 @@ void Sword::create(const string& ownerID, Storage storage, StorageID_t storageID
 void Sword::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_SWORD, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -96,16 +88,12 @@ void Sword::tinysave(const char* field) const
 void Sword::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateSilverWeapon(
         GEAR_SWORD, m_ObjectID, getItemType(), ownerID, (int)storage, storageID, (int)x, (int)y, optionField,
         getDurability(), (int)getEnchantLevel(), (int)getSilver(), (int)getGrade(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -154,8 +142,6 @@ string SwordInfo::toString() const
 void SwordInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_SWORD);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -192,8 +178,6 @@ void SwordInfoManager::load()
 
         addItemInfo(pSwordInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -203,8 +187,6 @@ void SwordInfoManager::load()
 void SwordLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<SilverWeaponObjectRow> rows =
@@ -309,8 +291,6 @@ void SwordLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -320,8 +300,6 @@ void SwordLoader::load(Creature* pCreature)
 void SwordLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<SilverWeaponZoneObjectRow> rows =
@@ -363,8 +341,6 @@ void SwordLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -374,12 +350,8 @@ void SwordLoader::load(Zone* pZone)
 void SwordLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

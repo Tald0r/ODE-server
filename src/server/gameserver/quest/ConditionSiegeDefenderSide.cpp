@@ -41,11 +41,7 @@ void ConditionSiegeDefenderSide::read(PropertyBuffer& propertyBuffer)
 string ConditionSiegeDefenderSide::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionSiegeDefenderSide(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

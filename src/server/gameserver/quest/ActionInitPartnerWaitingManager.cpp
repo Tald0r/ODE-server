@@ -18,14 +18,10 @@
 void ActionInitPartnerWaitingManager::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -35,8 +31,6 @@ void ActionInitPartnerWaitingManager::read(PropertyBuffer& propertyBuffer)
 void ActionInitPartnerWaitingManager::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature1->isNPC());
 
@@ -47,8 +41,6 @@ void ActionInitPartnerWaitingManager::execute(Creature* pCreature1, Creature* pC
 
     pNPC->setCoupleRegisterManager(new PartnerWaitingManager(WAIT_FOR_MEET));
     pNPC->setCoupleUnregisterManager(new PartnerWaitingManager(WAIT_FOR_APART));
-
-    __END_CATCH
 }
 
 
@@ -58,12 +50,8 @@ void ActionInitPartnerWaitingManager::execute(Creature* pCreature1, Creature* pC
 string ActionInitPartnerWaitingManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionInitPartnerWaitingManager(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -7,10 +7,6 @@ LuaTradeEventSlayerItem::LuaTradeEventSlayerItem(LuaState* pState) : LuaSelectIt
 void LuaTradeEventSlayerItem::prepare()
 
 {
-    __BEGIN_TRY
-
     lua_pushnumber(m_pState->getState(), m_SUM);
     lua_setglobal(m_pState->getState(), "SUM");
-
-    __END_CATCH
 }

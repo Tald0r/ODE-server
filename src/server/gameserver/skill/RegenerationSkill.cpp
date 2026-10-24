@@ -24,9 +24,6 @@
 //////////////////////////////////////////////////////////////////////
 void RegenerationSkill::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
-    {__BEGIN_TRY
-
-
-         __END_CATCH}
+{}
 
 RegenerationSkill g_RegenerationSkill;

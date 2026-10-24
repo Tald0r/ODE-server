@@ -23,10 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionSell::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,8 +32,6 @@ void ActionSell::read(PropertyBuffer& propertyBuffer)
 void ActionSell::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -65,8 +60,6 @@ void ActionSell::execute(Creature* pCreature1, Creature* pCreature2)
         pkt.setMarketCondSell(pNPC->getMarketCondSell());
 
     pPlayer->sendPacket(&pkt);
-
-    __END_CATCH
 }
 
 
@@ -76,11 +69,7 @@ void ActionSell::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionSell::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSell(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

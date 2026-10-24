@@ -36,8 +36,6 @@
 ClientManager::ClientManager()
 
 {
-    __BEGIN_TRY
-
     // create incoming player manager
     m_pIncomingPlayerManager = new IncomingPlayerManager();
     Assert(m_pIncomingPlayerManager != NULL);
@@ -50,8 +48,6 @@ ClientManager::ClientManager()
     m_bDefaultZoneGroupBalancing = false;
 
     m_Mutex.setName("ClientManager");
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -61,12 +57,12 @@ ClientManager::ClientManager()
 ClientManager::~ClientManager()
 
 {
-    __BEGIN_TRY
-
-    // Delete incoming player manager
-    SAFE_DELETE(m_pIncomingPlayerManager);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        // Delete incoming player manager
+        SAFE_DELETE(m_pIncomingPlayerManager);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -75,12 +71,8 @@ ClientManager::~ClientManager()
 void ClientManager::init()
 
 {
-    __BEGIN_TRY
-
     // initialize incoming player manager
     m_pIncomingPlayerManager->init();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -88,12 +80,8 @@ void ClientManager::init()
 void ClientManager::stop()
 
 {
-    __BEGIN_TRY
-
     // To be implemented later using signals.
     ServerShutdown::request();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -102,7 +90,6 @@ void ClientManager::stop()
 void ClientManager::run()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     VariableManager& variables = de::gameContext().variables();
@@ -231,7 +218,6 @@ void ClientManager::run()
     } // while
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void ClientManager::setBalanceZoneGroup(int afterMinutes, bool bForce, bool bDefault) {
@@ -248,15 +234,11 @@ void ClientManager::setBalanceZoneGroup(int afterMinutes, bool bForce, bool bDef
 void ClientManager::addEvent(Event* pEvent)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     addEvent_LOCKED(pEvent);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -266,14 +248,10 @@ void ClientManager::addEvent(Event* pEvent)
 void ClientManager::addEvent_LOCKED(Event* pEvent)
 
 {
-    __BEGIN_TRY
-
     // Remove existing entry first.
     m_EventManager.deleteEvent(pEvent->getEventClass());
 
     m_EventManager.addEvent(pEvent);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -282,8 +260,6 @@ void ClientManager::addEvent_LOCKED(Event* pEvent)
 bool ClientManager::deleteEvent(Event::EventClass EClass)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     m_EventManager.deleteEvent(EClass);
@@ -291,8 +267,6 @@ bool ClientManager::deleteEvent(Event::EventClass EClass)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -301,11 +275,7 @@ bool ClientManager::deleteEvent(Event::EventClass EClass)
 string ClientManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ClientManager()";
     return msg.toString();
-
-    __END_CATCH
 }

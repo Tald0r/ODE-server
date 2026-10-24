@@ -108,12 +108,8 @@
 ItemInfoManager::ItemInfoManager()
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < Item::ITEM_CLASS_MAX; i++)
         m_InfoClassManagers[i] = NULL;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -122,13 +118,13 @@ ItemInfoManager::ItemInfoManager()
 ItemInfoManager::~ItemInfoManager()
 
 {
-    __BEGIN_TRY
-
-    for (int i = 0; i < Item::ITEM_CLASS_MAX; i++) {
-        SAFE_DELETE(m_InfoClassManagers[i]);
+    try {
+        for (int i = 0; i < Item::ITEM_CLASS_MAX; i++) {
+            SAFE_DELETE(m_InfoClassManagers[i]);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -137,8 +133,6 @@ ItemInfoManager::~ItemInfoManager()
 void ItemInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     // Set ItemIDSuccessor and Base.
     m_ItemIDSuccessor = de::kernelContext().config().getPropertyInt("ServerCount");
     m_ItemIDBase = de::kernelContext().config().getPropertyInt("ServerID");
@@ -405,8 +399,6 @@ void ItemInfoManager::init()
 
     addInfoClassManager(Item::ITEM_CLASS_MITTEN, new MittenInfoManager());
     Mitten::initItemIDRegistry();
-
-    __END_CATCH
 }
 
 
@@ -430,14 +422,10 @@ void ItemInfoManager::addInfoClassManager(Item::ItemClass itemClass, InfoClassMa
 InfoClassManager* ItemInfoManager::getInfoManager(Item::ItemClass Class) const
 
 {
-    __BEGIN_TRY
-
     Assert(Class < Item::ITEM_CLASS_MAX);
     Assert(m_InfoClassManagers[Class] != NULL);
 
     return m_InfoClassManagers[Class];
-
-    __END_CATCH
 }
 
 
@@ -447,14 +435,10 @@ InfoClassManager* ItemInfoManager::getInfoManager(Item::ItemClass Class) const
 ItemInfo* ItemInfoManager::getItemInfo(Item::ItemClass Class, ItemType_t ItemType) const
 
 {
-    __BEGIN_TRY
-
     Assert(Class < Item::ITEM_CLASS_MAX);
     Assert(m_InfoClassManagers[Class] != NULL);
 
     return m_InfoClassManagers[Class]->getItemInfo(ItemType);
-
-    __END_CATCH
 }
 
 
@@ -464,14 +448,10 @@ ItemInfo* ItemInfoManager::getItemInfo(Item::ItemClass Class, ItemType_t ItemTyp
 uint ItemInfoManager::getItemCount(Item::ItemClass Class) const
 
 {
-    __BEGIN_TRY
-
     Assert(Class < Item::ITEM_CLASS_MAX);
     Assert(m_InfoClassManagers[Class] != NULL);
 
     return m_InfoClassManagers[Class]->getInfoCount();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -480,8 +460,6 @@ uint ItemInfoManager::getItemCount(Item::ItemClass Class) const
 vector<ItemType_t> ItemInfoManager::getPossibleItemTypes(Item::ItemClass IClass, uint minLevel, uint maxLevel)
 
 {
-    __BEGIN_TRY
-
     Assert(IClass < Item::ITEM_CLASS_MAX);
     Assert(m_InfoClassManagers[IClass] != NULL);
 
@@ -502,15 +480,11 @@ vector<ItemType_t> ItemInfoManager::getPossibleItemTypes(Item::ItemClass IClass,
     }
 
     return result;
-
-    __END_CATCH
 }
 
 bool ItemInfoManager::isPossibleItem(Item::ItemClass IClass, ItemType_t IType, const list<OptionType_t>& OType)
 
 {
-    __BEGIN_TRY
-
     Assert(IClass < Item::ITEM_CLASS_MAX);
     Assert(m_InfoClassManagers[IClass] != NULL);
 
@@ -537,8 +511,6 @@ bool ItemInfoManager::isPossibleItem(Item::ItemClass IClass, ItemType_t IType, c
     }
 
     return false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -547,8 +519,6 @@ bool ItemInfoManager::isPossibleItem(Item::ItemClass IClass, ItemType_t IType, c
 string ItemInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ItemInfoManager(";
 
@@ -561,6 +531,4 @@ string ItemInfoManager::toString() const
 
     msg << ")";
     return msg.toString();
-
-    __END_CATCH
 }

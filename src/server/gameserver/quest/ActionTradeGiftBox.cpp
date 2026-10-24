@@ -41,13 +41,13 @@ ActionTradeGiftBox::ActionTradeGiftBox() : m_pLuaState(NULL), m_pLuaSlayerItem(N
 //
 ////////////////////////////////////////////////////////////////////////////////
 ActionTradeGiftBox::~ActionTradeGiftBox() {
-    __BEGIN_TRY
-
-    SAFE_DELETE(m_pLuaState);
-    SAFE_DELETE(m_pLuaSlayerItem);
-    SAFE_DELETE(m_pLuaVampireItem);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        SAFE_DELETE(m_pLuaState);
+        SAFE_DELETE(m_pLuaSlayerItem);
+        SAFE_DELETE(m_pLuaVampireItem);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,14 +56,10 @@ ActionTradeGiftBox::~ActionTradeGiftBox() {
 void ActionTradeGiftBox::load()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pLuaState != NULL);
 
     int result = m_pLuaState->dofile(m_CommonFilename);
     LuaState::logError(result);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,8 +68,6 @@ void ActionTradeGiftBox::load()
 void ActionTradeGiftBox::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_CommonFilename = propertyBuffer.getProperty("CommonFilename");
@@ -84,8 +78,6 @@ void ActionTradeGiftBox::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,8 +86,6 @@ void ActionTradeGiftBox::read(PropertyBuffer& propertyBuffer)
 void ActionTradeGiftBox::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -272,8 +262,6 @@ void ActionTradeGiftBox::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse quit;
     quit.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
     pPlayer->sendPacket(&quit);
-
-    __END_CATCH
 }
 
 
@@ -283,11 +271,7 @@ void ActionTradeGiftBox::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionTradeGiftBox::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionTradeGiftBox(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

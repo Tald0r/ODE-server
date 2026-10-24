@@ -19,15 +19,11 @@
 EffectBloodyWallBlocked::EffectBloodyWallBlocked(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_CasterName = "";
     m_PartyID = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,9 +31,6 @@ EffectBloodyWallBlocked::EffectBloodyWallBlocked(Zone* pZone, ZoneCoord_t zoneX,
 void EffectBloodyWallBlocked::affect()
 
 {
-    __BEGIN_TRY
-
-
     Assert(m_pZone != NULL);
 
     // Get the tile this effect is attached to.
@@ -145,68 +138,47 @@ void EffectBloodyWallBlocked::affect()
             }
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodyWallBlocked::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodyWallBlocked::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodyWallBlocked::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodyWallBlocked::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBloodyWallBlocked::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBloodyWallBlocked::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectBloodyWallBlocked(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

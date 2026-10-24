@@ -20,14 +20,10 @@
 void ActionPetDeposit::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -37,8 +33,6 @@ void ActionPetDeposit::read(PropertyBuffer& propertyBuffer)
 void ActionPetDeposit::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -56,8 +50,6 @@ void ActionPetDeposit::execute(Creature* pCreature1, Creature* pCreature2)
     pPC->getPlayer()->sendPacket(&response);
 
     pPC->getPlayer()->sendPacket(&gcPetStashList);
-
-    __END_CATCH
 }
 
 
@@ -67,12 +59,8 @@ void ActionPetDeposit::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionPetDeposit::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionPetDeposit(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

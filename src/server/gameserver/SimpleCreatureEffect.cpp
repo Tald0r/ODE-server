@@ -13,13 +13,9 @@
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 SimpleCreatureEffect::SimpleCreatureEffect(EffectClass eClass, Creature* pCreature) : m_EffectClass(eClass) {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -27,8 +23,6 @@ SimpleCreatureEffect::SimpleCreatureEffect(EffectClass eClass, Creature* pCreatu
 void SimpleCreatureEffect::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     // Clear the flag.
@@ -49,8 +43,6 @@ void SimpleCreatureEffect::unaffect(Creature* pCreature)
         if (pPlayer != NULL)
             pPlayer->sendPacket(&gcRemoveEffect);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -58,22 +50,14 @@ void SimpleCreatureEffect::unaffect(Creature* pCreature)
 void SimpleCreatureEffect::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string SimpleCreatureEffect::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "SimpleCreatureEffect(" << "EffectClass:" << (int)m_EffectClass << ")";
     return msg.toString();
-
-    __END_CATCH
 }

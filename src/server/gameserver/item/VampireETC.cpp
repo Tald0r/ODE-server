@@ -48,8 +48,6 @@ VampireETC::VampireETC(ItemType_t itemType, const list<OptionType_t>& optionType
 void VampireETC::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -63,8 +61,6 @@ void VampireETC::create(const string& ownerID, Storage storage, StorageID_t stor
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_VAMPIRE_ETC, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                     (int)storage, storageID, (int)x, (int)y, (int)m_Num);
-
-    __END_CATCH
 }
 
 
@@ -74,11 +70,7 @@ void VampireETC::create(const string& ownerID, Storage storage, StorageID_t stor
 void VampireETC::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_VAMPIRE_ETC, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -87,12 +79,8 @@ void VampireETC::tinysave(const char* field) const
 void VampireETC::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_VAMPIRE_ETC, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -114,11 +102,7 @@ string VampireETC::toString() const
 VolumeWidth_t VampireETC::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_VAMPIRE_ETC, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -128,11 +112,7 @@ VolumeWidth_t VampireETC::getVolumeWidth() const
 VolumeHeight_t VampireETC::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_VAMPIRE_ETC, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -142,11 +122,7 @@ VolumeHeight_t VampireETC::getVolumeHeight() const
 Weight_t VampireETC::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_VAMPIRE_ETC, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -172,8 +148,6 @@ string VampireETCInfo::toString() const
 void VampireETCInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_VAMPIRE_ETC);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -197,8 +171,6 @@ void VampireETCInfoManager::load()
 
         addItemInfo(pVampireETCInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -208,8 +180,6 @@ void VampireETCInfoManager::load()
 void VampireETCLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -294,8 +264,6 @@ void VampireETCLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -305,8 +273,6 @@ void VampireETCLoader::load(Creature* pCreature)
 void VampireETCLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumOnlyZoneObjectRow> rows =
@@ -340,8 +306,6 @@ void VampireETCLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -351,12 +315,8 @@ void VampireETCLoader::load(Zone* pZone)
 void VampireETCLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

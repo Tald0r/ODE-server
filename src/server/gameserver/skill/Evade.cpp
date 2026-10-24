@@ -18,9 +18,6 @@
 void Evade::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -96,9 +93,6 @@ void Evade::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot, CEff
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Evade g_Evade;

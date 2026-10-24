@@ -9,8 +9,6 @@
 string PKZoneInfo::toString()
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "PKZoneInfo(" << "ZoneID: " << getZoneID() << ",isFree: " << ((isFree()) ? ("true") : ("false"))
@@ -18,15 +16,11 @@ string PKZoneInfo::toString()
         << ",PCLimit: " << getPCLimit() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 void PKZoneInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<PKZoneRow> rows = defaultZoneInfoRepository().loadPKZones();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -41,15 +35,11 @@ void PKZoneInfoManager::load()
         PKZoneInfo* pPKZoneInfo = new PKZoneInfo(zoneID, X, Y, rX, rY, race, pcLimit);
         addPKZoneInfo(pPKZoneInfo);
     }
-
-    __END_CATCH
 }
 
 void PKZoneInfoManager::addPKZoneInfo(PKZoneInfo* pPKZoneInfo)
 
 {
-    __BEGIN_TRY
-
     PKZoneInfoMap::iterator itr = m_PKZoneInfos.find(pPKZoneInfo->getZoneID());
     if (itr != m_PKZoneInfos.end())
         throw Error("Duplicated PK Zone ID");
@@ -66,40 +56,28 @@ void PKZoneInfoManager::addPKZoneInfo(PKZoneInfo* pPKZoneInfo)
     de::diagnosticTrace([&](std::ostream& output) {
         output << "[" << pPKZoneInfo->getZoneID() << "]" << pPKZoneInfo->toString().c_str();
     });
-
-    __END_CATCH
 }
 
 PKZoneInfo* PKZoneInfoManager::getPKZoneInfo(ZoneID_t zoneID) const
 
 {
-    __BEGIN_TRY
-
     PKZoneInfoMap::const_iterator itr = m_PKZoneInfos.find(zoneID);
     if (itr == m_PKZoneInfos.end())
         return NULL;
 
     return itr->second;
-
-    __END_CATCH
 }
 
 bool PKZoneInfoManager::isPKZone(ZoneID_t zoneID) const
 
 {
-    __BEGIN_TRY
-
     PKZoneInfoMap::const_iterator itr = m_PKZoneInfos.find(zoneID);
     return itr != m_PKZoneInfos.end();
-
-    __END_CATCH
 }
 
 bool PKZoneInfoManager::enterPKZone(ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
-
     PKZoneInfo* pPKZoneInfo = getPKZoneInfo(zoneID);
     if (pPKZoneInfo == NULL)
         return true;
@@ -113,15 +91,11 @@ bool PKZoneInfoManager::enterPKZone(ZoneID_t zoneID)
     __LEAVE_CRITICAL_SECTION((*pPKZoneInfo))
 
     return ret;
-
-    __END_CATCH
 }
 
 bool PKZoneInfoManager::leavePKZone(ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
-
     PKZoneInfo* pPKZoneInfo = getPKZoneInfo(zoneID);
     if (pPKZoneInfo == NULL)
         return true;
@@ -135,15 +109,11 @@ bool PKZoneInfoManager::leavePKZone(ZoneID_t zoneID)
     __LEAVE_CRITICAL_SECTION((*pPKZoneInfo))
 
     return ret;
-
-    __END_CATCH
 }
 
 bool PKZoneInfoManager::canEnterPKZone(ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
-
     PKZoneInfo* pPKZoneInfo = getPKZoneInfo(zoneID);
     if (pPKZoneInfo == NULL)
         return true;
@@ -157,16 +127,12 @@ bool PKZoneInfoManager::canEnterPKZone(ZoneID_t zoneID)
     __LEAVE_CRITICAL_SECTION((*pPKZoneInfo))
 
     return ret;
-
-    __END_CATCH
 }
 
 
 bool PKZoneInfoManager::getResurrectPosition(ZoneID_t zoneID, ZONE_COORD& zoneCoord) const
 
 {
-    __BEGIN_TRY
-
     PKZoneInfo* pPKZoneInfo = getPKZoneInfo(zoneID);
     if (pPKZoneInfo == NULL)
         return false;
@@ -174,6 +140,4 @@ bool PKZoneInfoManager::getResurrectPosition(ZoneID_t zoneID, ZONE_COORD& zoneCo
     zoneCoord.set(zoneID, pPKZoneInfo->getResurrectX(), pPKZoneInfo->getResurrectY());
 
     return true;
-
-    __END_CATCH
 }

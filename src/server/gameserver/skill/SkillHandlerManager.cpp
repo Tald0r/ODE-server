@@ -376,8 +376,6 @@ MonsterRangeSkill g_TraslaAttack(SKILL_TRASLA_ATTACK, false), g_PuscaAttack(SKIL
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 SkillHandlerManager::SkillHandlerManager() : m_SkillHandlers(NULL), m_Size(SKILL_MAX) {
-    __BEGIN_TRY
-
     Assert(m_Size > 0);
 
     // Create the skill handler array.
@@ -386,15 +384,11 @@ SkillHandlerManager::SkillHandlerManager() : m_SkillHandlers(NULL), m_Size(SKILL
     // Initialize the skill handler array.
     for (int i = 0; i < m_Size; i++)
         m_SkillHandlers[i] = NULL;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 SkillHandlerManager::~SkillHandlerManager() {
-    __BEGIN_TRY
-
     Assert(m_SkillHandlers != NULL);
 
     // Delete each skill handler.
@@ -404,8 +398,6 @@ SkillHandlerManager::~SkillHandlerManager() {
 
     // Delete the skill handler array.
     SAFE_DELETE_ARRAY(m_SkillHandlers);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -413,8 +405,6 @@ SkillHandlerManager::~SkillHandlerManager() {
 void SkillHandlerManager::init()
 
 {
-    __BEGIN_TRY
-
     // Basic attacks
     addSkillHandler(&g_AttackMelee);
     addSkillHandler(&g_AttackArms);
@@ -787,7 +777,6 @@ void SkillHandlerManager::init()
     addSkillHandler(&g_FireMeteor);
     addSkillHandler(&g_BigRockfall);
     addSkillHandler(&g_RapidFreeze);
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -795,8 +784,6 @@ void SkillHandlerManager::init()
 void SkillHandlerManager::addSkillHandler(SkillHandler* pSkillHandler)
 
 {
-    __BEGIN_TRY
-
     if (m_SkillHandlers[pSkillHandler->getSkillType()] != NULL) {
         StringStream msg;
         msg << "duplicate Skill Handler, " << pSkillHandler->getSkillHandlerName();
@@ -805,8 +792,6 @@ void SkillHandlerManager::addSkillHandler(SkillHandler* pSkillHandler)
 
     // Register the skill handler.
     m_SkillHandlers[pSkillHandler->getSkillType()] = pSkillHandler;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -814,8 +799,6 @@ void SkillHandlerManager::addSkillHandler(SkillHandler* pSkillHandler)
 SkillHandler* SkillHandlerManager::getSkillHandler(SkillType_t SkillType)
 
 {
-    __BEGIN_TRY
-
     if (m_SkillHandlers[SkillType] == NULL) {
         StringStream msg;
         msg << "None Skill Handler (Type : " << (int)SkillType << ")";
@@ -827,15 +810,11 @@ SkillHandler* SkillHandlerManager::getSkillHandler(SkillType_t SkillType)
     }
 
     return m_SkillHandlers[SkillType];
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string SkillHandlerManager::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "SkillHandlerManager(\n";
     for (int i = 0; i < m_Size; i++) {
@@ -845,6 +824,4 @@ string SkillHandlerManager::toString() const {
     }
     msg << ")";
     return msg.toString();
-
-    __END_CATCH
 }

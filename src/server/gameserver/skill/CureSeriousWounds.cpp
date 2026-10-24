@@ -17,9 +17,6 @@ void CureSeriousWounds::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Skil
                                 CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_OTHER;
@@ -37,9 +34,6 @@ void CureSeriousWounds::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Skil
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleTileCureSkill.execute(pSlayer, TargetObjectID, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -48,9 +42,6 @@ void CureSeriousWounds::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Skil
 void CureSeriousWounds::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_SELF;
@@ -68,17 +59,12 @@ void CureSeriousWounds::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectI
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleTileCureSkill.execute(pSlayer, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 void CureSeriousWounds::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot,
                                 CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_SELF;
@@ -96,8 +82,6 @@ void CureSeriousWounds::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, S
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleTileCureSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-    __END_CATCH
 }
 
 CureSeriousWounds g_CureSeriousWounds;

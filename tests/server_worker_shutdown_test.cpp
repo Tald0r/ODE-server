@@ -213,7 +213,8 @@ TEST_F(ServerWorkerShutdownTest, EveryRetainedFailureIsReportedAndRemainingWorke
     ObservedWorker second("second", events);
     ObservedWorker third("third", events);
     ObservedWorker healthy("healthy", events);
-    first.runFailure = std::make_exception_ptr(Error("first failure"));
+    const Error firstFailure("first failure");
+    first.runFailure = std::make_exception_ptr(firstFailure);
     second.runFailure = std::make_exception_ptr(std::runtime_error("second failure"));
     third.runFailure = std::make_exception_ptr(42);
     start(first);
@@ -223,8 +224,7 @@ TEST_F(ServerWorkerShutdownTest, EveryRetainedFailureIsReportedAndRemainingWorke
     const de::ServerWorker workers[] = {{first}, {second}, {third}, {healthy}};
     de::stopServerWorkers(workers, errors);
 
-    EXPECT_EQ("first: " + Error("first failure").toString() +
-                  "\nsecond: second failure\nthird: unknown worker failure\n",
+    EXPECT_EQ("first: " + firstFailure.toString() + "\nsecond: second failure\nthird: unknown worker failure\n",
               errors.str());
     EXPECT_TRUE(first.joined && second.joined && third.joined && healthy.joined);
     EXPECT_TRUE(healthy.finished);
@@ -241,6 +241,7 @@ TEST_F(ServerWorkerShutdownTest, OtherDrainFailureStillJoinsWorkersAndReachesThe
     start(first);
     start(second);
     const de::ServerWorker workers[] = {{first}, {second}};
+    const Error drainFailure("zone drain failed");
     const de::ServerLifecycleActions actions{
         .initialize = [] {},
         .start = [] {},
@@ -248,7 +249,7 @@ TEST_F(ServerWorkerShutdownTest, OtherDrainFailureStillJoinsWorkersAndReachesThe
             [&] {
                 de::stopServerWorkers(workers, errors, [&] {
                     events.emplace_back("zones");
-                    throw Error("zone drain failed");
+                    throw drainFailure;
                 });
             },
     };
@@ -256,7 +257,7 @@ TEST_F(ServerWorkerShutdownTest, OtherDrainFailureStillJoinsWorkersAndReachesThe
     EXPECT_FALSE(result.drained);
     EXPECT_EQ(EXIT_FAILURE, result.exitCode);
     EXPECT_EQ((std::vector<std::string>{"first.stop", "second.stop", "zones", "first.join", "second.join"}), events);
-    EXPECT_NE(std::string::npos, errors.str().find("Shutdown failed: " + Error("zone drain failed").toString()));
+    EXPECT_NE(std::string::npos, errors.str().find("Shutdown failed: " + drainFailure.toString()));
     EXPECT_TRUE(first.joined && second.joined);
     EXPECT_TRUE(first.finished && second.finished);
     EXPECT_TRUE(ServerShutdown::failed.load());
@@ -451,10 +452,12 @@ TEST_P(WorkerFailureTest, TheLifecyclePreservesWorkerFailureEvenAfterAllJoinsSuc
     ObservedWorker healthy("healthy", events);
     std::string expected;
     switch (GetParam()) {
-    case 0:
-        failed.runFailure = std::make_exception_ptr(Error("worker failed"));
-        expected = Error("worker failed").toString();
+    case 0: {
+        const Error failure("worker failed");
+        failed.runFailure = std::make_exception_ptr(failure);
+        expected = failure.toString();
         break;
+    }
     case 1:
         failed.runFailure = std::make_exception_ptr(std::runtime_error("worker failed"));
         expected = "worker failed";

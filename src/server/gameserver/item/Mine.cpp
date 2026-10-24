@@ -52,8 +52,6 @@ Mine::Mine(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Mine::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -67,8 +65,6 @@ void Mine::create(const string& ownerID, Storage storage, StorageID_t storageID,
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_MINE, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)m_Num);
-
-    __END_CATCH
 }
 
 
@@ -78,11 +74,7 @@ void Mine::create(const string& ownerID, Storage storage, StorageID_t storageID,
 void Mine::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_MINE, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -91,12 +83,8 @@ void Mine::tinysave(const char* field) const
 void Mine::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_MINE, m_ObjectID, m_ItemType, ownerID, (int)storage, storageID,
                                                     (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -120,11 +108,7 @@ string Mine::toString() const
 VolumeWidth_t Mine::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MINE, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -134,11 +118,7 @@ VolumeWidth_t Mine::getVolumeWidth() const
 VolumeHeight_t Mine::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MINE, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -148,31 +128,19 @@ VolumeHeight_t Mine::getVolumeHeight() const
 Weight_t Mine::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MINE, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 Damage_t Mine::getMinDamage() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MINE, m_ItemType)->getMinDamage();
-
-    __END_CATCH
 }
 
 Damage_t Mine::getMaxDamage() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MINE, m_ItemType)->getMaxDamage();
-
-    __END_CATCH
 }
 
 
@@ -198,8 +166,6 @@ string MineInfo::toString() const
 void MineInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_MINE);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -224,8 +190,6 @@ void MineInfoManager::load()
 
         addItemInfo(pMineInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -235,8 +199,6 @@ void MineInfoManager::load()
 void MineLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -322,8 +284,6 @@ void MineLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -333,8 +293,6 @@ void MineLoader::load(Creature* pCreature)
 void MineLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<BombZoneObjectRow> rows =
@@ -366,8 +324,6 @@ void MineLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -377,12 +333,8 @@ void MineLoader::load(Zone* pZone)
 void MineLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

@@ -40,11 +40,7 @@ void ConditionCanEnterLevelWarZone::read(PropertyBuffer& propertyBuffer)
 string ConditionCanEnterLevelWarZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionCanEnterLevelWarZone(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

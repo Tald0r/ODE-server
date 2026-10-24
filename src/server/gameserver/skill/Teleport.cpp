@@ -19,8 +19,6 @@ void Teleport::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersS
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -89,9 +87,6 @@ void Teleport::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersS
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 // Vampire object handler
@@ -100,9 +95,6 @@ void Teleport::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkil
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -126,9 +118,6 @@ void Teleport::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkil
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Teleport g_Teleport;

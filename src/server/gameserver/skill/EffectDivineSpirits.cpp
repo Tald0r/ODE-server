@@ -14,14 +14,10 @@
 EffectDivineSpirits::EffectDivineSpirits(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -29,9 +25,6 @@ EffectDivineSpirits::EffectDivineSpirits(Creature* pCreature)
 void EffectDivineSpirits::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
@@ -50,9 +43,6 @@ void EffectDivineSpirits::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_DIVINE_SPIRITS);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,22 +50,14 @@ void EffectDivineSpirits::unaffect(Creature* pCreature)
 void EffectDivineSpirits::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDivineSpirits::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectDivineSpirits(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

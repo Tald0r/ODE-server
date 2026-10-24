@@ -23,20 +23,14 @@
 Item* InventoryItemPosition::popItem(bool bLock)
 
 {
-    __BEGIN_TRY
-
     if (bLock)
         return popItem_UNLOCKED();
     return popItem_LOCKED();
-
-    __END_CATCH
 }
 
 Item* InventoryItemPosition::popItem_LOCKED()
 
 {
-    __BEGIN_TRY
-
     Creature* pTargetCreature = findCreature();
     Zone* pZone = getZoneByCreature(pTargetCreature);
     if (pZone == NULL)
@@ -46,15 +40,11 @@ Item* InventoryItemPosition::popItem_LOCKED()
     Assert(pPC != NULL);
 
     return popItem_CORE(pPC);
-
-    __END_CATCH
 }
 
 Item* InventoryItemPosition::popItem_UNLOCKED()
 
 {
-    __BEGIN_TRY
-
     Creature* pTargetCreature = findCreature();
 
     if (pTargetCreature == NULL || !pTargetCreature->isPC())
@@ -77,8 +67,6 @@ Item* InventoryItemPosition::popItem_UNLOCKED()
     __LEAVE_CRITICAL_SECTION((*pZone))
 
     return pItem;
-
-    __END_CATCH
 }
 
 Item* InventoryItemPosition::popItemFrom(PlayerCreature& pc) {
@@ -91,8 +79,6 @@ Item* InventoryItemPosition::popItemFrom(PlayerCreature& pc) {
 Zone* InventoryItemPosition::getZone()
 
 {
-    __BEGIN_TRY
-
     if (m_bSetZone)
         return m_pZone;
 
@@ -101,15 +87,11 @@ Zone* InventoryItemPosition::getZone()
         return NULL;
 
     return getZoneByCreature(pCreature);
-
-    __END_CATCH
 }
 
 Creature* InventoryItemPosition::findCreature()
 
 {
-    __BEGIN_TRY
-
     Creature* pTargetCreature = NULL;
 
     PCFinder& pcFinder = de::gameContext().playerCreatures();
@@ -126,15 +108,11 @@ Creature* InventoryItemPosition::findCreature()
     __LEAVE_CRITICAL_SECTION(pcFinder)
 
     return pTargetCreature;
-
-    __END_CATCH
 }
 
 Zone* InventoryItemPosition::getZoneByCreature(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (m_bSetZone)
         return m_pZone;
 
@@ -145,15 +123,11 @@ Zone* InventoryItemPosition::getZoneByCreature(Creature* pCreature)
     m_pZone = pZone;
 
     return pZone;
-
-    __END_CATCH
 }
 
 Item* InventoryItemPosition::popItem_CORE(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Inventory* pInventory = pPC->getInventory();
     Assert(pInventory != NULL);
 
@@ -200,16 +174,10 @@ Item* InventoryItemPosition::popItem_CORE(PlayerCreature* pPC)
     }
 
     return pItem;
-
-    __END_CATCH
 }
 
 string InventoryItemPosition::toString() const
 
 {
-    __BEGIN_TRY
-
     return "InventoryItemPosition";
-
-    __END_CATCH
 }

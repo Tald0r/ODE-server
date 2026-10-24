@@ -53,8 +53,6 @@ void VariableBuffer::clear() {
 void VariableBuffer::parse()
 
 {
-    __BEGIN_TRY
-
     string subStr = trim(m_Buffer);
     if (subStr.size() == 0)
         return;
@@ -80,19 +78,13 @@ void VariableBuffer::parse()
 
         i = j + 1;
     } while (!bEnd);
-
-    __END_CATCH
 }
 
 VariableInfo* VariableBuffer::getVariableInfo(int index) {
-    __BEGIN_TRY
-
     if (index < 0 || index >= (int)m_VariableInfos.size())
         throw OutOfBoundException("VariableBuffer::getVariableInfo() OOB!!");
 
     return m_VariableInfos[index];
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,8 +93,6 @@ VariableInfo* VariableBuffer::getVariableInfo(int index) {
 string VariableBuffer::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "VariableBuffer(";
@@ -116,6 +106,4 @@ string VariableBuffer::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

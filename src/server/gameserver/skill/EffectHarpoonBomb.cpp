@@ -23,27 +23,19 @@
 EffectHarpoonBomb::EffectHarpoonBomb(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_UserObjectID = 0;
     setTarget(pCreature);
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 EffectHarpoonBomb::EffectHarpoonBomb(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = X;
     m_Y = Y;
     m_UserObjectID = 0;
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 void EffectHarpoonBomb::crash(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y) {
@@ -148,8 +140,6 @@ void EffectHarpoonBomb::crash(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y) {
 void EffectHarpoonBomb::affect()
 
 {
-    __BEGIN_TRY
-
     cout << "harpoon bomb affect ";
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
@@ -210,8 +200,6 @@ void EffectHarpoonBomb::affect()
     }
 
     setDeadline(0);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -219,8 +207,6 @@ void EffectHarpoonBomb::affect()
 void EffectHarpoonBomb::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     if (pCreature == NULL) {
@@ -229,18 +215,12 @@ void EffectHarpoonBomb::unaffect()
     } else {
         pCreature->removeFlag(Effect::EFFECT_CLASS_HARPOON_BOMB);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHarpoonBomb::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectHarpoonBomb(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

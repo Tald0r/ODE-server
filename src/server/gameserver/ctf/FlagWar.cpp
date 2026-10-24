@@ -57,8 +57,6 @@ void destroyFlag(Zone&, Item* pFlag) {
 } // namespace
 
 void FlagWar::execute() {
-    __BEGIN_TRY
-
     switch (getState()) {
     case STATE_WAIT:
         filelog("FlagWar.log", "FlagWar Ready..");
@@ -84,14 +82,9 @@ void FlagWar::execute() {
         filelog("FlagWar.log", "Unexpected FlagWar state..");
         break;
     }
-
-    __END_CATCH
 }
 
 void FlagWar::executeReady() {
-    __BEGIN_TRY
-
-
     GCNoticeEvent gcNE;
     gcNE.setCode(NOTICE_EVENT_FLAG_WAR_READY);
 
@@ -104,13 +97,9 @@ void FlagWar::executeReady() {
 
     // Start in 5 minutes
     m_FlagManager.addSchedule(new Schedule(this, VSDateTime::currentDateTime().addSecs(300)));
-
-    __END_CATCH
 }
 
 void FlagWar::executeStart() {
-    __BEGIN_TRY
-
     GCNoticeEvent gcNE;
     gcNE.setCode(NOTICE_EVENT_FLAG_WAR_START);
 
@@ -138,13 +127,9 @@ void FlagWar::executeStart() {
     // Let it run for 2 hours
     m_FlagManager.addSchedule(new Schedule(this, VSDateTime::currentDateTime().addSecs(getWarTime())));
     m_FlagManager.startFlagWar();
-
-    __END_CATCH
 }
 
 void FlagWar::executeFinish() {
-    __BEGIN_TRY
-
     GCNoticeEvent gcNE;
     gcNE.setCode(NOTICE_EVENT_FLAG_WAR_FINISH);
 
@@ -157,13 +142,9 @@ void FlagWar::executeFinish() {
     // The items burst in 3 minutes.
     m_FlagManager.addSchedule(new Schedule(this, VSDateTime::currentDateTime().addSecs(180)));
     m_FlagManager.endFlagWar();
-
-    __END_CATCH
 }
 
 void FlagWar::executeEnd() {
-    __BEGIN_TRY
-
     // Chase down every flag that was created and destroy it, on the thread
     // of whoever holds it: the zone it lies in, a pole's zone, or the player
     // carrying it. The pole sweeps follow the returns (FlagWarPlan.h). The
@@ -188,9 +169,6 @@ void FlagWar::executeEnd() {
 
     // Until next time
     m_FlagManager.addSchedule(new Schedule(this, getNextFlagWarTime()));
-
-
-    __END_CATCH
 }
 
 VSDateTime FlagWar::getNextFlagWarTime() {

@@ -53,8 +53,6 @@ Ring::Ring(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Ring::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -72,8 +70,6 @@ void Ring::create(const string& ownerID, Storage storage, StorageID_t storageID,
     defaultItemObjectRepository().insertGear(GEAR_RING, m_ItemID, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -83,11 +79,7 @@ void Ring::create(const string& ownerID, Storage storage, StorageID_t storageID,
 void Ring::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_RING, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -96,16 +88,12 @@ void Ring::tinysave(const char* field) const
 void Ring::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_RING, m_ObjectID, getItemType(), ownerID, (int)storage, storageID,
                                              (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -148,8 +136,6 @@ string RingInfo::toString() const
 void RingInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_RING);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -183,8 +169,6 @@ void RingInfoManager::load()
 
         addItemInfo(pRingInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -194,8 +178,6 @@ void RingInfoManager::load()
 void RingLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows = defaultItemObjectRepository().loadGearOfOwner(GEAR_RING, pCreature->getName());
@@ -298,8 +280,6 @@ void RingLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -309,8 +289,6 @@ void RingLoader::load(Creature* pCreature)
 void RingLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -351,8 +329,6 @@ void RingLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -362,12 +338,8 @@ void RingLoader::load(Zone* pZone)
 void RingLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

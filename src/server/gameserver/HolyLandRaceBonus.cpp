@@ -12,8 +12,6 @@ HolyLandRaceBonus::~HolyLandRaceBonus() {}
 void HolyLandRaceBonus::refresh()
 
 {
-    __BEGIN_TRY
-
     // Clear the previous ones.
     clear();
 
@@ -35,6 +33,4 @@ void HolyLandRaceBonus::refresh()
             // Ignore
         }
     }
-
-    __END_CATCH
 }

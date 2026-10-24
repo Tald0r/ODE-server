@@ -22,12 +22,8 @@
 EffectBombCrashWalkToEnemy::EffectBombCrashWalkToEnemy(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_UserObjectID = 0;
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,14 +31,8 @@ EffectBombCrashWalkToEnemy::EffectBombCrashWalkToEnemy(Creature* pCreature)
 void EffectBombCrashWalkToEnemy::affect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,8 +40,6 @@ void EffectBombCrashWalkToEnemy::affect()
 void EffectBombCrashWalkToEnemy::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     Zone* pZone = pCreature->getZone();
@@ -89,8 +77,6 @@ void EffectBombCrashWalkToEnemy::affect(Creature* pCreature)
         setNextTime(0);
     }
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 
@@ -99,7 +85,6 @@ void EffectBombCrashWalkToEnemy::affect(Creature* pCreature)
 void EffectBombCrashWalkToEnemy::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -115,7 +100,6 @@ void EffectBombCrashWalkToEnemy::unaffect(Creature* pCreature)
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -123,22 +107,14 @@ void EffectBombCrashWalkToEnemy::unaffect(Creature* pCreature)
 void EffectBombCrashWalkToEnemy::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBombCrashWalkToEnemy::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectBombCrashWalkToEnemy(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

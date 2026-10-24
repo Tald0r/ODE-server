@@ -31,36 +31,32 @@
 GuildManager::GuildManager()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("GuildManager");
-
-    __END_CATCH
 }
 
 GuildManager::~GuildManager()
 
 {
-    __BEGIN_TRY
+    try {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        // Delete every guild object from memory.
+        unordered_map<GuildID_t, Guild*>::iterator itr = m_Guilds.begin();
+        for (; itr != m_Guilds.end(); itr++) {
+            Guild* pGuild = itr->second;
+            SAFE_DELETE(pGuild);
+        }
 
-    // Delete every guild object from memory.
-    unordered_map<GuildID_t, Guild*>::iterator itr = m_Guilds.begin();
-    for (; itr != m_Guilds.end(); itr++) {
-        Guild* pGuild = itr->second;
-        SAFE_DELETE(pGuild);
+        m_Guilds.clear();
+
+        for (size_t i = 0; i < m_RetiredGuilds.size(); i++)
+            SAFE_DELETE(m_RetiredGuilds[i]);
+        m_RetiredGuilds.clear();
+
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_Guilds.clear();
-
-    for (size_t i = 0; i < m_RetiredGuilds.size(); i++)
-        SAFE_DELETE(m_RetiredGuilds[i]);
-    m_RetiredGuilds.clear();
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH_NO_RETHROW
 }
 
 
@@ -77,8 +73,6 @@ void GuildManager::init()
 void GuildManager::load()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     GuildRepository& repository = defaultGuildRepository();
@@ -133,14 +127,10 @@ void GuildManager::load()
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 void GuildManager::addGuild(Guild* pGuild) {
-    __BEGIN_TRY
-
     Assert(pGuild != NULL);
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -150,27 +140,19 @@ void GuildManager::addGuild(Guild* pGuild) {
     m_Guilds[pGuild->getID()] = pGuild;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 void GuildManager::addGuild_NOBLOCKED(Guild* pGuild) {
-    __BEGIN_TRY
-
     Assert(pGuild != NULL);
 
     if (m_Guilds.contains(pGuild->getID()))
         throw DuplicatedException();
     m_Guilds[pGuild->getID()] = pGuild;
-
-    __END_CATCH
 }
 
 
 void GuildManager::deleteGuild(GuildID_t id) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     unordered_map<GuildID_t, Guild*>::iterator itr = m_Guilds.find(id);
@@ -243,16 +225,12 @@ void GuildManager::deleteGuild(GuildID_t id) {
     m_Guilds.erase(itr);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 Guild* GuildManager::getGuild(GuildID_t id)
 
 {
-    __BEGIN_TRY
-
     // Guild pointer to return
     Guild* pGuild;
 
@@ -269,16 +247,12 @@ Guild* GuildManager::getGuild(GuildID_t id)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return pGuild;
-
-    __END_CATCH
 }
 
 
 Guild* GuildManager::getGuild_NOBLOCKED(GuildID_t id)
 
 {
-    __BEGIN_TRY
-
     // Guild pointer to return
     Guild* pGuild;
 
@@ -291,31 +265,21 @@ Guild* GuildManager::getGuild_NOBLOCKED(GuildID_t id)
     pGuild = itr->second;
 
     return pGuild;
-
-    __END_CATCH
 }
 
 
 void GuildManager::clear()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     retireAll_NOBLOCKED();
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void GuildManager::clear_NOBLOCKED() {
-    __BEGIN_TRY
-
     retireAll_NOBLOCKED();
-
-    __END_CATCH
 }
 
 // clear()/clear_NOBLOCKED() run mid-session: SGGuildInfo (the sharedserver's
@@ -335,8 +299,6 @@ void GuildManager::retireAll_NOBLOCKED() {
 void GuildManager::makeWaitGuildList(GCWaitGuildList& gcWaitGuildList, GuildRace_t race)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     HashMapGuildConstItor itr = m_Guilds.begin();
@@ -351,15 +313,11 @@ void GuildManager::makeWaitGuildList(GCWaitGuildList& gcWaitGuildList, GuildRace
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void GuildManager::makeActiveGuildList(GCActiveGuildList& gcActiveGuildList, GuildRace_t race)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     HashMapGuildConstItor itr = m_Guilds.begin();
@@ -374,42 +332,32 @@ void GuildManager::makeActiveGuildList(GCActiveGuildList& gcActiveGuildList, Gui
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void GuildManager::heartbeat()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 string GuildManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     return msg.toString();
-
-    __END_CATCH
 }
 
 bool GuildManager::isGuildMaster(GuildID_t guildID, PlayerCreature* pPC)
 
 {
 #ifdef __GAME_SERVER__
-    __BEGIN_TRY
+    {
+        Guild* pGuild = getGuild(guildID);
 
-    Guild* pGuild = getGuild(guildID);
+        if (pGuild == NULL)
+            return false;
 
-    if (pGuild == NULL)
-        return false;
-
-    //	cout << "isGuildMaster : " << pGuild->getMaster() << ", " << pPC->getName() << endl;
-    return (pGuild->getMaster() == pPC->getName());
-
-    __END_CATCH
+        //	cout << "isGuildMaster : " << pGuild->getMaster() << ", " << pPC->getName() << endl;
+        return (pGuild->getMaster() == pPC->getName());
+    }
 #else
     return false;
 #endif
@@ -419,8 +367,6 @@ bool GuildManager::isGuildMaster(GuildID_t guildID, PlayerCreature* pPC)
 bool GuildManager::hasCastle(GuildID_t guildID)
 
 {
-    __BEGIN_TRY
-
     bool bHasCastle = false;
 
 #ifdef __GAME_SERVER__
@@ -432,16 +378,12 @@ bool GuildManager::hasCastle(GuildID_t guildID)
 #endif
 
     return bHasCastle;
-
-    __END_CATCH
 }
 
 // Does the guild own a castle?
 bool GuildManager::hasCastle(GuildID_t guildID, ServerID_t& serverID, ZoneID_t& zoneID)
 
 {
-    __BEGIN_TRY
-
     bool bHasCastle = false;
 
 #ifdef __GAME_SERVER__
@@ -458,16 +400,12 @@ bool GuildManager::hasCastle(GuildID_t guildID, ServerID_t& serverID, ZoneID_t& 
 #endif
 
     return bHasCastle;
-
-    __END_CATCH
 }
 
 // Has the guild applied for a war?
 bool GuildManager::hasWarSchedule(GuildID_t guildID)
 
 {
-    __BEGIN_TRY
-
     bool bHasWarSchedule = false;
 
 #ifdef __GAME_SERVER__
@@ -483,15 +421,11 @@ bool GuildManager::hasWarSchedule(GuildID_t guildID)
 #endif
 
     return bHasWarSchedule;
-
-    __END_CATCH
 }
 
 bool GuildManager::hasActiveWar(GuildID_t guildID)
 
 {
-    __BEGIN_TRY
-
     bool bHasActiveWar = false;
 
 #ifdef __GAME_SERVER__
@@ -514,22 +448,16 @@ bool GuildManager::hasActiveWar(GuildID_t guildID)
 #endif
 
     return bHasActiveWar;
-
-    __END_CATCH
 }
 
 
 string GuildManager::getGuildName(GuildID_t guildID)
 
 {
-    __BEGIN_TRY
-
     Guild* pGuild = getGuild(guildID);
 
     if (pGuild != NULL)
         return pGuild->getName();
 
     return "";
-
-    __END_CATCH
 }

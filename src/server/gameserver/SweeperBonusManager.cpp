@@ -22,52 +22,39 @@
 SweeperBonusManager::SweeperBonusManager()
 
 {
-    __BEGIN_TRY
-
     m_Count = 0;
-
-    __END_CATCH
 }
 
 SweeperBonusManager::~SweeperBonusManager()
 
 {
-    __BEGIN_TRY
-
-    clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void SweeperBonusManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 void SweeperBonusManager::clear()
 
 {
-    __BEGIN_TRY
-
     SweeperBonusHashMapItor itr = m_SweeperBonuses.begin();
     for (; itr != m_SweeperBonuses.end(); itr++) {
         SAFE_DELETE(itr->second);
     }
 
     m_SweeperBonuses.clear();
-
-    __END_CATCH
 }
 
 void SweeperBonusManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     clear();
@@ -97,13 +84,11 @@ void SweeperBonusManager::load()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void SweeperBonusManager::reloadOwner(int level)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     int maxType = 0;
@@ -128,22 +113,15 @@ void SweeperBonusManager::reloadOwner(int level)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void SweeperBonusManager::save()
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 SweeperBonus* SweeperBonusManager::getSweeperBonus(SweeperBonusType_t sweeperBonusType) const {
-    __BEGIN_TRY
-
     SweeperBonusHashMapConstItor itr = m_SweeperBonuses.find(sweeperBonusType);
 
     if (itr == m_SweeperBonuses.end()) {
@@ -152,15 +130,11 @@ SweeperBonus* SweeperBonusManager::getSweeperBonus(SweeperBonusType_t sweeperBon
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 void SweeperBonusManager::addSweeperBonus(SweeperBonus* pSweeperBonus)
 
 {
-    __BEGIN_TRY
-
     Assert(pSweeperBonus != NULL);
 
     SweeperBonusHashMapConstItor itr = m_SweeperBonuses.find(pSweeperBonus->getType());
@@ -169,14 +143,10 @@ void SweeperBonusManager::addSweeperBonus(SweeperBonus* pSweeperBonus)
     }
 
     m_SweeperBonuses[pSweeperBonus->getType()] = pSweeperBonus;
-
-    __END_CATCH
 }
 
 
 bool SweeperBonusManager::isAble(ZoneID_t zoneID) const {
-    __BEGIN_TRY
-
     ZoneID_t levelWarZoneID;
     if (de::gameContext().levelWarZones().getLevelWarZoneID(zoneID, levelWarZoneID)) {
         Zone* pZone = getZoneByZoneID(levelWarZoneID);
@@ -191,25 +161,17 @@ bool SweeperBonusManager::isAble(ZoneID_t zoneID) const {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 void SweeperBonusManager::setSweeperBonusRace(SweeperBonusType_t sweeperBonusType, Race_t race)
 
 {
-    __BEGIN_TRY
-
     getSweeperBonus(sweeperBonusType)->setRace(race);
-
-    __END_CATCH
 }
 
 void SweeperBonusManager::makeSweeperBonusInfo(GCSweeperBonusInfo& gcSweeperBonusInfo)
 
 {
-    __BEGIN_TRY
-
     SweeperBonusHashMapConstItor itr = m_SweeperBonuses.begin();
     for (; itr != m_SweeperBonuses.end(); itr++) {
         SweeperBonusInfo* pInfo = new SweeperBonusInfo();
@@ -220,15 +182,11 @@ void SweeperBonusManager::makeSweeperBonusInfo(GCSweeperBonusInfo& gcSweeperBonu
 
         gcSweeperBonusInfo.addSweeperBonusInfo(pInfo);
     }
-
-    __END_CATCH
 }
 
 void SweeperBonusManager::makeVoidSweeperBonusInfo(GCSweeperBonusInfo& gcSweeperBonusInfo)
 
 {
-    __BEGIN_TRY
-
     SweeperBonusHashMapConstItor itr = m_SweeperBonuses.begin();
     for (; itr != m_SweeperBonuses.end(); itr++) {
         SweeperBonusInfo* pInfo = new SweeperBonusInfo();
@@ -239,15 +197,11 @@ void SweeperBonusManager::makeVoidSweeperBonusInfo(GCSweeperBonusInfo& gcSweeper
 
         gcSweeperBonusInfo.addSweeperBonusInfo(pInfo);
     }
-
-    __END_CATCH
 }
 
 string SweeperBonusManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "SweeperBonusManager(\n";
@@ -258,6 +212,4 @@ string SweeperBonusManager::toString() const
     }
 
     return msg.toString();
-
-    __END_CATCH
 }

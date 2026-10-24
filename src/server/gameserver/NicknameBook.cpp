@@ -21,8 +21,6 @@ NicknameBook::NicknameBook(PlayerCreature* pOwner, NicknameRepository* pReposito
       m_NextNicknameID(10000) {}
 
 void NicknameBook::load() {
-    __BEGIN_TRY
-
     vector<NicknameRecord> records = m_pRepository->load(m_pOwner->getName());
     m_NextNicknameID = nextNicknameIDAfter(records);
 
@@ -86,8 +84,6 @@ void NicknameBook::load() {
             setNicknameInfo(GUILD_MASTER_NICKNAME_ID, pLevelNickname);
         }
     }
-
-    __END_CATCH
 }
 
 std::unique_ptr<GCNicknameList> NicknameBook::getNicknameBookListPacket() const {
@@ -109,8 +105,6 @@ std::unique_ptr<GCNicknameList> NicknameBook::getNicknameBookListPacket() const 
 void NicknameBook::addNewNickname(const string& nick)
 
 {
-    __BEGIN_TRY
-
     NicknameInfo* pNickname = new NicknameInfo;
     pNickname->setNicknameID(popNicknameID());
     pNickname->setNicknameType(NicknameInfo::NICK_CUSTOM);
@@ -120,6 +114,4 @@ void NicknameBook::addNewNickname(const string& nick)
 
     m_pRepository->insert(m_pOwner->getName(), pNickname->getNicknameID(), pNickname->getNicknameType(),
                           pNickname->getNickname());
-
-    __END_CATCH
 }

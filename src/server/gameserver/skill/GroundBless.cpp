@@ -24,9 +24,6 @@
 void GroundBless::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -104,16 +101,10 @@ void GroundBless::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void GroundBless::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkillSlot* pSkillSlot,
                           CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -242,9 +233,6 @@ void GroundBless::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersS
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 GroundBless g_GroundBless;

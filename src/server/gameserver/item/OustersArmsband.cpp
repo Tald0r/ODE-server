@@ -69,8 +69,6 @@ void OustersArmsband::create(const string& ownerID, Storage storage, StorageID_t
                              ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -88,8 +86,6 @@ void OustersArmsband::create(const string& ownerID, Storage storage, StorageID_t
     defaultItemObjectRepository().insertGear(GEAR_OUSTERS_ARMSBAND, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                              (int)storage, storageID, (int)x, (int)y, optionField, getDurability(),
                                              getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -99,28 +95,26 @@ void OustersArmsband::create(const string& ownerID, Storage storage, StorageID_t
 bool OustersArmsband::destroy()
 
 {
-    __BEGIN_TRY
-
-    //-------------------------------------------------------
-    // If any items are left in the armsband, the items inside would have to be
-    // destroyed as well.
-    // For an armsband the items are already deleted by the delete above, so they
-    // are not deleted here.
-    // If the belt is no longer needed it has to be deleted above.
-    //-------------------------------------------------------
-    for (int i = 0; i < m_pInventory->getHeight(); i++) {
-        for (int j = 0; j < m_pInventory->getWidth(); j++) {
-            Item* pItem = m_pInventory->getItem(j, i);
-            if (pItem != NULL) {
-                pItem->destroy();
+    {
+        //-------------------------------------------------------
+        // If any items are left in the armsband, the items inside would have to be
+        // destroyed as well.
+        // For an armsband the items are already deleted by the delete above, so they
+        // are not deleted here.
+        // If the belt is no longer needed it has to be deleted above.
+        //-------------------------------------------------------
+        for (int i = 0; i < m_pInventory->getHeight(); i++) {
+            for (int j = 0; j < m_pInventory->getWidth(); j++) {
+                Item* pItem = m_pInventory->getItem(j, i);
+                if (pItem != NULL) {
+                    pItem->destroy();
+                }
             }
         }
+
+        if (!defaultItemObjectRepository().destroyGearObject(GEAR_OUSTERS_ARMSBAND, m_ItemID))
+            return false;
     }
-
-    if (!defaultItemObjectRepository().destroyGearObject(GEAR_OUSTERS_ARMSBAND, m_ItemID))
-        return false;
-
-    __END_CATCH
 
     return true;
 }
@@ -132,11 +126,7 @@ bool OustersArmsband::destroy()
 void OustersArmsband::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_OUSTERS_ARMSBAND, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -145,8 +135,6 @@ void OustersArmsband::tinysave(const char* field) const
 void OustersArmsband::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
@@ -163,8 +151,6 @@ void OustersArmsband::save(const string& ownerID, Storage storage, StorageID_t s
             }
         }
     }
-
-    __END_CATCH
 }
 
 void OustersArmsband::makePCItemInfo(PCItemInfo& result) const {
@@ -215,14 +201,10 @@ string OustersArmsband::toString() const
 PocketNum_t OustersArmsband::getPocketCount(void) const
 
 {
-    __BEGIN_TRY
-
     OustersArmsbandInfo* pOustersArmsbandInfo = dynamic_cast<OustersArmsbandInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_OUSTERS_ARMSBAND, getItemType()));
     Assert(pOustersArmsbandInfo != NULL);
     return pOustersArmsbandInfo->getPocketCount();
-
-    __END_CATCH
 }
 //--------------------------------------------------------------------------------
 // get debug string
@@ -247,8 +229,6 @@ string OustersArmsbandInfo::toString() const
 void OustersArmsbandInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_OUSTERS_ARMSBAND);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -283,8 +263,6 @@ void OustersArmsbandInfoManager::load()
 
         addItemInfo(pOustersArmsbandInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -294,8 +272,6 @@ void OustersArmsbandInfoManager::load()
 void OustersArmsbandLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows =
@@ -416,8 +392,6 @@ void OustersArmsbandLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -427,8 +401,6 @@ void OustersArmsbandLoader::load(Creature* pCreature)
 void OustersArmsbandLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -469,8 +441,6 @@ void OustersArmsbandLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -480,12 +450,8 @@ void OustersArmsbandLoader::load(Zone* pZone)
 void OustersArmsbandLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

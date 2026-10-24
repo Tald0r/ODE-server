@@ -12,18 +12,12 @@ AnotherQuestRewardInfo::~AnotherQuestRewardInfo() {}
 QuestMessage AnotherQuestRewardInfo::canGiveReward(PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     return COMPLETE_SUCCESS;
-
-    __END_CATCH
 }
 
 QuestMessage AnotherQuestRewardInfo::giveReward(PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     QuestMessage result = canGiveReward(pPC);
 
     if (result != COMPLETE_SUCCESS)
@@ -31,19 +25,13 @@ QuestMessage AnotherQuestRewardInfo::giveReward(PlayerCreature* pPC) const
 
     Assert(false);
     return COMPLETE_SUCCESS;
-
-    __END_CATCH
 }
 
 string AnotherQuestRewardInfo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "AnotherQuestRewardInfo(" << "QuestID : " << (uint)m_QuestID << ") : " << "\n"
         << RewardInfo::toString().c_str();
 
     return msg.toString();
-
-    __END_CATCH
 }

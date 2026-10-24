@@ -19,8 +19,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 SkillInfo::SkillInfo() {
-    __BEGIN_TRY
-
     m_RequireSkills.clear();
 
     m_RequireFire = 0;
@@ -36,14 +34,9 @@ SkillInfo::SkillInfo() {
     m_RequireStone4Elemental = ELEMENTAL_ANY;
 
     m_CanDelete = 0;
-
-    __END_CATCH
 }
 
-SkillInfo::~SkillInfo() {
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+SkillInfo::~SkillInfo() {}
 
 void SkillInfo::setRequireSkill(const string& requireSkill) {
     if (requireSkill == "")
@@ -127,8 +120,6 @@ void SkillInfo::setCondition(const string& condition) {
 }
 
 string SkillInfo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "SkillInfo (" << "Type:" << (int)m_Type << ",Name:" << m_Name << ",Level:" << (int)m_Level
         << ",MinDam:" << (int)m_MinDamage << ",MaxDam:" << (int)m_MaxDamage << ",MinDelay:" << (int)m_MinDelay
@@ -150,8 +141,6 @@ string SkillInfo::toString() const {
 
     msg << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -161,28 +150,22 @@ string SkillInfo::toString() const {
 SkillInfoManager::SkillInfoManager()
 
 {
-    __BEGIN_TRY
-
     m_SkillCount = 0;
     m_SkillInfoList = NULL;
-
-    __END_CATCH
 }
 
 SkillInfoManager::~SkillInfoManager()
 
 {
-    __BEGIN_TRY
-
-    // This alone is not enough, but it is never called anyway, so leave it.
-    SAFE_DELETE_ARRAY(m_SkillInfoList);
-
-    __END_CATCH_NO_RETHROW
+    try {
+        // This alone is not enough, but it is never called anyway, so leave it.
+        SAFE_DELETE_ARRAY(m_SkillInfoList);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void SkillInfoManager::init() {
-    __BEGIN_TRY
-
     load();
 
     for (uint i = 0; i < m_SkillCount; ++i) {
@@ -286,12 +269,9 @@ void SkillInfoManager::init() {
             Multiple++;
         }
     }
-
-    __END_CATCH
 }
 
 void SkillInfoManager::load() {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // Initialise the skill property manager first.
@@ -363,20 +343,13 @@ void SkillInfoManager::load() {
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void SkillInfoManager::save() {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 void SkillInfoManager::addSkillInfo(SkillInfo* pSkillInfo) {
-    __BEGIN_TRY
-
     Assert(pSkillInfo != NULL);
 
     if (m_SkillInfoList[pSkillInfo->getType()] != NULL)
@@ -385,13 +358,9 @@ void SkillInfoManager::addSkillInfo(SkillInfo* pSkillInfo) {
     m_SkillInfoList[pSkillInfo->getType()] = pSkillInfo;
 
     m_SkillLevelMap[pSkillInfo->getDomainType()][pSkillInfo->getLevel()] = pSkillInfo->getType();
-
-    __END_CATCH
 }
 
 SkillInfo* SkillInfoManager::getSkillInfo(SkillType_t SkillType) const {
-    __BEGIN_TRY
-
     if (SkillType >= m_SkillCount) {
         cerr << "SkillInfoManager::getSkillInfo() : out of bounds : " << (int)SkillType << endl;
         throw OutOfBoundException();
@@ -403,51 +372,35 @@ SkillInfo* SkillInfoManager::getSkillInfo(SkillType_t SkillType) const {
     }
 
     return m_SkillInfoList[SkillType];
-
-    __END_CATCH
 }
 
 SkillType_t SkillInfoManager::getSkillTypeByLevel(SkillDomainType_t SkillDomain, Level_t Level) {
-    __BEGIN_TRY
-
     if (SkillDomain >= SKILL_DOMAIN_MAX)
         throw OutOfBoundException();
     if (Level > SLAYER_MAX_DOMAIN_LEVEL)
         throw OutOfBoundException();
 
     return m_SkillLevelMap[SkillDomain][Level];
-
-    __END_CATCH
 }
 
 // Returns the grade a domain level belongs to.
 SkillGrade SkillInfoManager::getGradeByDomainLevel(Level_t Level) {
-    __BEGIN_TRY
-
     if (Level > SLAYER_MAX_DOMAIN_LEVEL)
         throw OutOfBoundException();
     return m_DomainGradeMap[Level];
-
-    __END_CATCH
 }
 
 // Returns how far a skill can be raised at the current grade.
 Level_t SkillInfoManager::getLimitLevelByDomainGrade(SkillGrade Grade) {
-    __BEGIN_TRY
-
     if (Grade > SKILL_GRADE_MAX)
         throw OutOfBoundException();
     return m_LimitLevelMap[Grade];
-
-    __END_CATCH
 }
 
 // SkillInfoManager:: toString()
 string SkillInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "SkillInfoManager(\n";
@@ -483,6 +436,4 @@ string SkillInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

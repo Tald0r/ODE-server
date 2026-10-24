@@ -32,9 +32,6 @@ void Paralyze::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -210,9 +207,6 @@ void Paralyze::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -221,9 +215,6 @@ void Paralyze::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
 void Paralyze::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
     Assert(pEnemy != NULL);
 
@@ -260,16 +251,11 @@ void Paralyze::execute(Monster* pMonster, Creature* pEnemy)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void Paralyze::executeMonster(Zone* pZone, Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     if (!pMonster->isEnemyToAttack(pEnemy)) {
         return;
     }
@@ -400,8 +386,6 @@ void Paralyze::executeMonster(Zone* pZone, Monster* pMonster, Creature* pEnemy)
     } else {
         executeSkillFailNormal(pMonster, getSkillType(), pEnemy);
     }
-
-    __END_CATCH
 }
 
 Paralyze g_Paralyze;

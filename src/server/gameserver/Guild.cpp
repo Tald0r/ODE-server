@@ -40,8 +40,6 @@ GuildMember::GuildMember()
 void GuildMember::create()
 
 {
-    __BEGIN_TRY
-
     GuildRepository& repository = defaultGuildRepository();
 
     if (repository.memberExists(m_Name)) {
@@ -58,16 +56,12 @@ void GuildMember::create()
             repository.insertMember(m_GuildID, m_Name, m_Rank);
         }
     }
-
-    __END_CATCH
 }
 
 
 bool GuildMember::load()
 
 {
-    __BEGIN_TRY
-
     GuildMemberRow row;
     if (!defaultGuildRepository().loadMember(m_Name, row)) {
         return false;
@@ -81,37 +75,25 @@ bool GuildMember::load()
     m_ServerID = de::kernelContext().config().getPropertyInt("ServerID");
 
     return true;
-
-    __END_CATCH
 }
 
 
 void GuildMember::save()
 
 {
-    __BEGIN_TRY
-
     defaultGuildRepository().saveMember(m_GuildID, m_Rank, m_Name);
-
-    __END_CATCH
 }
 
 
 void GuildMember::destroy()
 
 {
-    __BEGIN_TRY
-
     defaultGuildRepository().deleteMember(m_Name);
-
-    __END_CATCH
 }
 
 void GuildMember::expire()
 
 {
-    __BEGIN_TRY
-
     // The current local date.
     time_t daytime = time(0);
     tm Timec;
@@ -120,15 +102,11 @@ void GuildMember::expire()
     snprintf(ExpireDate, sizeof(ExpireDate), "%03d%02d%02d", Timec.tm_year, Timec.tm_mon, Timec.tm_mday);
 
     defaultGuildRepository().setMemberRankAndExpireDate(GUILDMEMBER_RANK_DENY, ExpireDate, m_Name);
-
-    __END_CATCH
 }
 
 void GuildMember::leave()
 
 {
-    __BEGIN_TRY
-
     // The current local date.
     time_t daytime = time(0);
     tm Timec;
@@ -137,50 +115,36 @@ void GuildMember::leave()
     snprintf(ExpireDate, sizeof(ExpireDate), "%03d%02d%02d", Timec.tm_year, Timec.tm_mon, Timec.tm_mday);
 
     defaultGuildRepository().setMemberRankAndExpireDate(GUILDMEMBER_RANK_LEAVE, ExpireDate, m_Name);
-
-    __END_CATCH
 }
 
 
 void GuildMember::saveIntro(const string& intro)
 
 {
-    __BEGIN_TRY
-
     string modifyIntro = Guild::correctString(intro);
 
     defaultGuildRepository().saveMemberIntro(modifyIntro, m_Name);
-
-    __END_CATCH
 }
 
 
 string GuildMember::getIntro() const
 
 {
-    __BEGIN_TRY
-
     string intro = "";
 
     defaultGuildRepository().loadMemberIntro(m_Name, intro);
 
     return intro;
-
-    __END_CATCH
 }
 
 
 string GuildMember::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "GuildID = " << (int)m_GuildID << " Name = " << m_Name << " Rank = " << (int)m_Rank << "\n";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -195,8 +159,6 @@ GuildMember& GuildMember::operator=(GuildMember& Member) {
 string GuildMember::getRequestDateTime() const
 
 {
-    __BEGIN_TRY
-
     char buf[20];
 
     snprintf(buf, sizeof(buf), "%4d-%02d-%02d %02d:%02d:%02d", m_RequestDateTime.date().year(),
@@ -206,27 +168,19 @@ string GuildMember::getRequestDateTime() const
     cout << buf << "\n";
 
     return string(buf);
-
-    __END_CATCH
 }
 
 
 void GuildMember::setRank(GuildMemberRank_t rank)
 
 {
-    __BEGIN_TRY
-
     m_Rank = rank;
-
-    __END_CATCH
 }
 
 
 void GuildMember::setRequestDateTime(const string& rtime)
 
 {
-    __BEGIN_TRY
-
     // 0123456789012345678
     // YYYY-MM-DD HH:MM:SS
     if (rtime.size() == 19) {
@@ -243,20 +197,14 @@ void GuildMember::setRequestDateTime(const string& rtime)
         m_RequestDateTime.setDate(VSDate(2000, 1, 1));
         m_RequestDateTime.setTime(VSTime(0, 0, 0));
     }
-
-    __END_CATCH
 }
 
 bool GuildMember::isRequestDateTimeOut(const VSDateTime& currentDateTime) const
 
 {
-    __BEGIN_TRY
-
     VSDateTime limitDateTime = m_RequestDateTime.addDays(7);
 
     return currentDateTime > limitDateTime;
-
-    __END_CATCH
 }
 
 
@@ -302,47 +250,41 @@ Guild::Guild()
     m_ActiveMemberCount = 0;
     m_WaitMemberCount = 0;
 
-    __BEGIN_TRY
-
-    m_Mutex.setName("Guild");
-
-    __END_CATCH
+    { m_Mutex.setName("Guild"); }
 }
 
 
 Guild::~Guild()
 
 {
-    __BEGIN_TRY
+    try {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        HashMapGuildMemberItor itr = m_Members.begin();
+        for (; itr != m_Members.end(); itr++) {
+            SAFE_DELETE(itr->second);
+        }
 
-    HashMapGuildMemberItor itr = m_Members.begin();
-    for (; itr != m_Members.end(); itr++) {
-        SAFE_DELETE(itr->second);
-    }
+        m_Members.clear();
 
-    m_Members.clear();
-
-    for (size_t i = 0; i < m_RetiredMembers.size(); i++)
-        SAFE_DELETE(m_RetiredMembers[i]);
-    m_RetiredMembers.clear();
+        for (size_t i = 0; i < m_RetiredMembers.size(); i++)
+            SAFE_DELETE(m_RetiredMembers[i]);
+        m_RetiredMembers.clear();
 
 #ifdef __GAME_SERVER__
-    m_CurrentMembers.clear();
+        m_CurrentMembers.clear();
 #endif
 
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH_NO_RETHROW
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 
 void Guild::create()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     string correctIntro = correctString(m_Intro);
@@ -361,16 +303,12 @@ void Guild::create()
     defaultGuildRepository().insertGuild(record);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 bool Guild::load()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     GuildRow row;
@@ -390,16 +328,12 @@ bool Guild::load()
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return true;
-
-    __END_CATCH
 }
 
 
 void Guild::save()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     GuildRecord record;
@@ -415,23 +349,17 @@ void Guild::save()
     defaultGuildRepository().saveGuild(record);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 void Guild::destroy()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     defaultGuildRepository().deleteGuild(m_ID);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 // Guild::saveIntro / tinysave / saveCount lived here under
@@ -532,8 +460,6 @@ void Guild::setIntro(const string& intro) {
 GuildMember* Guild::getMember(const string& name) const
 
 {
-    __BEGIN_TRY
-
     HashMapGuildMemberConstItor itr;
     GuildMember* pGuildMember = NULL;
 
@@ -557,16 +483,12 @@ GuildMember* Guild::getMember(const string& name) const
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return pGuildMember;
-
-    __END_CATCH
 }
 
 
 GuildMember* Guild::getMember_NOLOCKED(const string& name) const
 
 {
-    __BEGIN_TRY
-
     HashMapGuildMemberConstItor itr;
     GuildMember* pGuildMember = NULL;
 
@@ -581,8 +503,6 @@ GuildMember* Guild::getMember_NOLOCKED(const string& name) const
     pGuildMember = itr->second;
 
     return pGuildMember;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -650,8 +570,6 @@ std::vector<std::string> Guild::getMemberNames() const {
 void Guild::addMember(GuildMember* pMember)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pMember);
@@ -678,16 +596,12 @@ void Guild::addMember(GuildMember* pMember)
 #endif
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 void Guild::deleteMember(const string& name)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     HashMapGuildMemberItor itr;
@@ -723,16 +637,12 @@ void Guild::deleteMember(const string& name)
 #endif
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 void Guild::modifyMember(GuildMember& Member)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     HashMapGuildMemberConstItor itr;
@@ -748,16 +658,12 @@ void Guild::modifyMember(GuildMember& Member)
     *(itr->second) = Member;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 void Guild::modifyMemberRank(const string& name, GuildMemberRank_t rank)
 
 {
-    __BEGIN_TRY
-
     // The counters and the member's rank change together; hold the guild
     // mutex across the lookup and both updates so a reader (a zone thread
     // building a member list) never sees the rank moved but the counts not.
@@ -794,15 +700,11 @@ void Guild::modifyMemberRank(const string& name, GuildMemberRank_t rank)
 #endif
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 #ifdef __GAME_SERVER__
 void Guild::addCurrentMember(const string& name) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex) // A separate mutex would do here.
 
     if (std::ranges::find(m_CurrentMembers, name) != m_CurrentMembers.end()) {
@@ -820,13 +722,9 @@ void Guild::addCurrentMember(const string& name) {
     pGuildMember->setLogOn(true);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void Guild::deleteCurrentMember(const string& name) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     list<string>::iterator itr = std::ranges::find(m_CurrentMembers, name);
@@ -846,15 +744,11 @@ void Guild::deleteCurrentMember(const string& name) {
     pGuildMember->setLogOn(false);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 list<string> Guild::getCurrentMembers()
 
 {
-    __BEGIN_TRY
-
     list<string> cmList;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -864,8 +758,6 @@ list<string> Guild::getCurrentMembers()
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return cmList;
-
-    __END_CATCH
 }
 #endif
 
@@ -873,8 +765,6 @@ list<string> Guild::getCurrentMembers()
 void Guild::makeInfo(GuildInfo2* pGuildInfo)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     pGuildInfo->setID(m_ID);
@@ -900,16 +790,12 @@ void Guild::makeInfo(GuildInfo2* pGuildInfo)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 #endif
 
 void Guild::makeInfo(GuildInfo* pGuildInfo)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     pGuildInfo->setGuildID(m_ID);
@@ -918,15 +804,11 @@ void Guild::makeInfo(GuildInfo* pGuildInfo)
     pGuildInfo->setGuildMemberCount(m_ActiveMemberCount);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void Guild::makeMemberInfo(GCGuildMemberList& gcGuildMemberList)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     HashMapGuildMember& Members = getMembers_NOLOCKED(); // m_Mutex is held above
@@ -945,16 +827,12 @@ void Guild::makeMemberInfo(GCGuildMemberList& gcGuildMemberList)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 void Guild::expireTimeOutWaitMember(VSDateTime currentDateTime, list<string>& mList)
 
 {
-    __BEGIN_TRY
-
 #ifdef __SHARED_SERVER__
 
     HashMapGuildMemberItor itr = m_Members.begin();
@@ -980,16 +858,12 @@ void Guild::expireTimeOutWaitMember(VSDateTime currentDateTime, list<string>& mL
     }
 
 #endif
-
-    __END_CATCH
 }
 
 
 string Guild::toString() const
 
 {
-    __BEGIN_TRY
-
     string name;
     string master;
     string date;
@@ -1011,15 +885,11 @@ string Guild::toString() const
         << " GuildZoneID = " << (int)getZoneID() << " Master = " << master << " Date = " << date << "\n";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 string Guild::correctString(const string& str)
 
 {
-    __BEGIN_TRY
-
     string correct = str;
 
     unsigned int i = 0;
@@ -1040,6 +910,4 @@ string Guild::correctString(const string& str)
     }
 
     return correct;
-
-    __END_CATCH
 }

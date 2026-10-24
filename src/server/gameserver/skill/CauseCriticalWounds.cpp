@@ -25,9 +25,6 @@ void CauseCriticalWounds::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Sk
                                   CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -199,9 +196,6 @@ void CauseCriticalWounds::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Sk
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 CauseCriticalWounds g_CauseCriticalWounds;

@@ -43,8 +43,6 @@ Magazine::Magazine(ItemType_t itemType, const list<OptionType_t>& optionType, It
 void Magazine::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -58,8 +56,6 @@ void Magazine::create(const string& ownerID, Storage storage, StorageID_t storag
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_MAGAZINE, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                     (int)storage, storageID, (int)x, (int)y, (int)m_Num);
-
-    __END_CATCH
 }
 
 
@@ -69,11 +65,7 @@ void Magazine::create(const string& ownerID, Storage storage, StorageID_t storag
 void Magazine::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_MAGAZINE, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -82,12 +74,8 @@ void Magazine::tinysave(const char* field) const
 void Magazine::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_MAGAZINE, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -111,11 +99,7 @@ string Magazine::toString() const
 VolumeWidth_t Magazine::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MAGAZINE, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -125,11 +109,7 @@ VolumeWidth_t Magazine::getVolumeWidth() const
 VolumeHeight_t Magazine::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MAGAZINE, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -139,11 +119,7 @@ VolumeHeight_t Magazine::getVolumeHeight() const
 Weight_t Magazine::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MAGAZINE, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 
@@ -169,8 +145,6 @@ string MagazineInfo::toString() const
 void MagazineInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_MAGAZINE);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -198,8 +172,6 @@ void MagazineInfoManager::load()
 
         addItemInfo(pMagazineInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -209,8 +181,6 @@ void MagazineInfoManager::load()
 void MagazineLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -326,8 +296,6 @@ void MagazineLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -337,8 +305,6 @@ void MagazineLoader::load(Creature* pCreature)
 void MagazineLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumOnlyZoneObjectRow> rows =
@@ -372,8 +338,6 @@ void MagazineLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -383,12 +347,8 @@ void MagazineLoader::load(Zone* pZone)
 void MagazineLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

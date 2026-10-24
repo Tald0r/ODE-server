@@ -13,18 +13,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 ConditionHasQuest::ConditionHasQuest()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ConditionHasQuest::~ConditionHasQuest()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 ////////////////////////////////////////////////////////////////////////////////
 // is satisfied?
@@ -68,11 +63,7 @@ void ConditionHasQuest::read(PropertyBuffer& propertyBuffer)
 string ConditionHasQuest::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionHasQuest(" << "QuestID : " << m_QuestID << ")";
     return msg.toString();
-
-    __END_CATCH
 }

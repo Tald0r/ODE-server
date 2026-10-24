@@ -20,12 +20,8 @@
 EffectDecreaseHP::EffectDecreaseHP(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_UserObjectID = 0;
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -33,43 +29,28 @@ EffectDecreaseHP::EffectDecreaseHP(Creature* pCreature)
 void EffectDecreaseHP::affect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDecreaseHP::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-
-
-    __END_CATCH
-}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDecreaseHP::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDecreaseHP::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -243,7 +224,6 @@ void EffectDecreaseHP::unaffect(Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -251,31 +231,20 @@ void EffectDecreaseHP::unaffect(Creature* pCreature)
 void EffectDecreaseHP::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDecreaseHP::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY
-
-
-         __END_CATCH}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDecreaseHP::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectDecreaseHP(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

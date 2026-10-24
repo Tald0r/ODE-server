@@ -39,11 +39,7 @@ void ConditionIsGuildMember::read(PropertyBuffer& propertyBuffer)
 string ConditionIsGuildMember::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionIsGuildMember()";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -637,6 +637,23 @@ text. The same defaulted parameter carries the direct `addStack()` call in
 messages is the text the macro yields at the same point, so logs and stack
 traces are unchanged.
 
+Every `Throwable` also records its throw site: each constructor of the 45
+classes in `src/Core/Exception.h` takes a defaulted `std::source_location`,
+so the file, line and function are those of the expression that built the
+object, `throw X(...)` itself. The message constructor is inherited with
+`using`, which keeps the default evaluated at the caller; each class declares
+its default constructor, because an implicit one would record a line of the
+header. `assertionFailed()` and `protocolAssertionFailed()` pass their
+caller's location on, so an `Assert` names its own line. `toString()` prints
+`thrown at <file>:<line> in <function>` on the line after the message,
+before the stack trace, so a log names where an exception came from even
+when no `__END_CATCH` stood between the throw and the handler. The GM
+console's `*command` reply, which carries a caught `toString()` in a
+`GCSystemMessage`, is cut to that packet's 255-byte message.
+`tests/diagnostics_test.cpp` pins the line format, the asserts' site, and
+the site every class records from its default and message constructors,
+and fails when `Exception.h` declares a class its list does not name.
+
 ### Explicit coordination and bounded work
 
 Use `std::latch` for one-shot worker readiness, `std::barrier` only where a

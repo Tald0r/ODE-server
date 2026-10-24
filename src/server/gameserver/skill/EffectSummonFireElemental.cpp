@@ -30,21 +30,15 @@
 EffectSummonFireElemental::EffectSummonFireElemental(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectSummonFireElemental::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCastCreature = dynamic_cast<Creature*>(m_pTarget);
 
     if (pCastCreature == NULL || !pCastCreature->isOusters())
@@ -123,8 +117,6 @@ void EffectSummonFireElemental::affect()
     }
 
     setNextTime(20);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -132,9 +124,6 @@ void EffectSummonFireElemental::affect()
 void EffectSummonFireElemental::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isOusters());
 
@@ -152,9 +141,6 @@ void EffectSummonFireElemental::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_FIRE_ELEMENTAL);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -162,22 +148,14 @@ void EffectSummonFireElemental::unaffect(Creature* pCreature)
 void EffectSummonFireElemental::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSummonFireElemental::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectSummonFireElemental(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

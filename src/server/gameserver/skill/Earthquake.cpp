@@ -14,9 +14,6 @@
 void Earthquake::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -34,9 +31,6 @@ void Earthquake::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -45,9 +39,6 @@ void Earthquake::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
 void Earthquake::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -68,9 +59,6 @@ void Earthquake::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlo
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleLinearMeleeSkill.execute(pSlayer, X, Y, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 Earthquake g_Earthquake;

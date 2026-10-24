@@ -120,8 +120,6 @@ void PlayerCreature::applyBloodBibleSign() {
 void Monster::initAllStat(void)
 
 {
-    __BEGIN_TRY
-
     const MonsterInfo* pMonsterInfo = de::gameContext().monsterInfos().getMonsterInfo(m_MonsterType);
 
     Creature::CreatureClass CClass = getCreatureClass();
@@ -224,7 +222,4 @@ void Monster::initAllStat(void)
             m_Defense = max(0, m_Defense - DefensePenalty);
         }
     }
-
-
-    __END_CATCH
 }

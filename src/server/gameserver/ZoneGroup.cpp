@@ -28,8 +28,6 @@
 ZoneGroup::ZoneGroup(ZoneGroupID_t zoneGroupID)
 
     : m_ZoneGroupID(zoneGroupID), m_pZonePlayerManager(NULL) {
-    __BEGIN_TRY
-
 #ifdef DE_OWNERSHIP_CHECKS
     m_LockHolder = TID();
     m_LockHolderValid = false;
@@ -42,8 +40,6 @@ ZoneGroup::ZoneGroup(ZoneGroupID_t zoneGroupID)
 
     m_TickTime.tv_sec = 0;
     m_TickTime.tv_usec = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -52,12 +48,8 @@ ZoneGroup::ZoneGroup(ZoneGroupID_t zoneGroupID)
 ZoneGroup::~ZoneGroup()
 
 {
-    __BEGIN_TRY
-
     // Deleting the pairs of the hash map by hand is not needed. The Snapshot member frees the
     // published map with the object; nothing to clear by hand.
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -98,12 +90,8 @@ void ZoneGroup::assertOwned() const {
 void ZoneGroup::init()
 
 {
-    __BEGIN_TRY
-
     // init == load
     load();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -112,11 +100,7 @@ void ZoneGroup::init()
 void ZoneGroup::load()
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 
@@ -126,11 +110,7 @@ void ZoneGroup::load()
 void ZoneGroup::save()
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 
@@ -140,7 +120,6 @@ void ZoneGroup::save()
 void ZoneGroup::processPlayers()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -194,7 +173,6 @@ void ZoneGroup::processPlayers()
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -240,7 +218,6 @@ std::size_t ZoneGroup::drainMailbox() {
 void ZoneGroup::heartbeat()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -253,7 +230,6 @@ void ZoneGroup::heartbeat()
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -262,7 +238,6 @@ void ZoneGroup::heartbeat()
 void ZoneGroup::makeZoneUserInfo(GMServerInfo& gmServerInfo)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -276,7 +251,6 @@ void ZoneGroup::makeZoneUserInfo(GMServerInfo& gmServerInfo)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -285,8 +259,6 @@ void ZoneGroup::makeZoneUserInfo(GMServerInfo& gmServerInfo)
 void ZoneGroup::addZone(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     // First check whether a zone with the same id exists. The insert is a copy-on-write
     // publish (see m_Zones), so a reader on another thread -- this group's
     // own heartbeat included -- keeps iterating the map it loaded.
@@ -296,24 +268,18 @@ void ZoneGroup::addZone(Zone* pZone)
             throw Error("duplicated zone id");
         zones[pZone->getZoneID()] = pZone;
     });
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // Delete zone from zone group
 //////////////////////////////////////////////////////////////////////////////
 void ZoneGroup::deleteZone(ZoneID_t zoneID) {
-    __BEGIN_TRY
-
     // Unpublishing first only keeps NEW readers from finding the zone; one
     // that loaded the old snapshot still holds the raw Zone* and is not
     // protected by the delete coming second. Safe only while no such
     // reader can exist -- this function has no live caller.
     Zone* pZone = removeZone(zoneID);
     SAFE_DELETE(pZone);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -321,8 +287,6 @@ void ZoneGroup::deleteZone(ZoneID_t zoneID) {
 // Only the node is removed; the zone itself is not deleted.
 //////////////////////////////////////////////////////////////////////////////
 Zone* ZoneGroup::removeZone(ZoneID_t zoneID) {
-    __BEGIN_TRY
-
     return m_Zones.update([zoneID](ZoneMap& zones) {
         ZoneMap::iterator itr = zones.find(zoneID);
         if (itr == zones.end()) {
@@ -338,16 +302,12 @@ Zone* ZoneGroup::removeZone(ZoneID_t zoneID) {
     });
 
     return NULL;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // get zone from zone group
 //////////////////////////////////////////////////////////////////////////////
 Zone* ZoneGroup::getZone(ZoneID_t zoneID) const {
-    __BEGIN_TRY
-
     Zone* pZone = NULL;
 
     const std::shared_ptr<const ZoneMap> zones = m_Zones.load();
@@ -363,8 +323,6 @@ Zone* ZoneGroup::getZone(ZoneID_t zoneID) const {
     }
 
     return pZone;
-
-    __END_CATCH
 }
 
 Zone* ZoneGroup::getCombatZone(ZoneID_t zoneID) const
@@ -372,17 +330,15 @@ Zone* ZoneGroup::getCombatZone(ZoneID_t zoneID) const
 {
     Zone* pZone = NULL;
 
-    __BEGIN_TRY
+    {
+        const std::shared_ptr<const ZoneMap> zones = m_Zones.load();
+        ZoneMap::const_iterator itr = zones->find(zoneID);
 
-    const std::shared_ptr<const ZoneMap> zones = m_Zones.load();
-    ZoneMap::const_iterator itr = zones->find(zoneID);
-
-    if (itr != zones->end()) {
-        pZone = itr->second;
-        return pZone;
+        if (itr != zones->end()) {
+            pZone = itr->second;
+            return pZone;
+        }
     }
-
-    __END_CATCH
 
     return NULL;
 }
@@ -390,20 +346,18 @@ Zone* ZoneGroup::getCombatZone(ZoneID_t zoneID) const
 void ZoneGroup::initLoadValue() {
     Zone* pZone = NULL;
 
-    __BEGIN_TRY
+    {
+        const std::shared_ptr<const ZoneMap> zones = m_Zones.load();
+        ZoneMap::const_iterator itr = zones->begin();
 
-    const std::shared_ptr<const ZoneMap> zones = m_Zones.load();
-    ZoneMap::const_iterator itr = zones->begin();
+        while (itr != zones->end()) {
+            pZone = itr->second;
 
-    while (itr != zones->end()) {
-        pZone = itr->second;
+            pZone->initLoadValue();
 
-        pZone->initLoadValue();
-
-        itr++;
+            itr++;
+        }
     }
-
-    __END_CATCH
 }
 
 DWORD
@@ -411,20 +365,18 @@ ZoneGroup::getLoadValue() const {
     Zone* pZone = NULL;
     DWORD loadValue = 0;
 
-    __BEGIN_TRY
+    {
+        const std::shared_ptr<const ZoneMap> zones = m_Zones.load();
+        ZoneMap::const_iterator itr = zones->begin();
 
-    const std::shared_ptr<const ZoneMap> zones = m_Zones.load();
-    ZoneMap::const_iterator itr = zones->begin();
+        while (itr != zones->end()) {
+            pZone = itr->second;
 
-    while (itr != zones->end()) {
-        pZone = itr->second;
+            loadValue += pZone->getLoadValue();
 
-        loadValue += pZone->getLoadValue();
-
-        itr++;
+            itr++;
+        }
     }
-
-    __END_CATCH
 
     return loadValue;
 }

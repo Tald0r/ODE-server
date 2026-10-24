@@ -61,11 +61,7 @@ void ConditionCanEnterQuestZone::read(PropertyBuffer& propertyBuffer)
 string ConditionCanEnterQuestZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionCanEnterQuestZone(" << "ZoneID:" << (int)m_QuestZoneID << ")";
     return msg.toString();
-
-    __END_CATCH
 }

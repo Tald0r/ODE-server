@@ -53,8 +53,6 @@ VampireRing::VampireRing(ItemType_t itemType, const list<OptionType_t>& optionTy
 void VampireRing::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -72,8 +70,6 @@ void VampireRing::create(const string& ownerID, Storage storage, StorageID_t sto
     defaultItemObjectRepository().insertGear(GEAR_VAMPIRE_RING, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                              (int)storage, storageID, (int)x, (int)y, optionField, getDurability(),
                                              getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -83,11 +79,7 @@ void VampireRing::create(const string& ownerID, Storage storage, StorageID_t sto
 void VampireRing::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_VAMPIRE_RING, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -96,16 +88,12 @@ void VampireRing::tinysave(const char* field) const
 void VampireRing::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_VAMPIRE_RING, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -148,8 +136,6 @@ string VampireRingInfo::toString() const
 void VampireRingInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_VAMPIRE_RING);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -183,8 +169,6 @@ void VampireRingInfoManager::load()
 
         addItemInfo(pVampireRingInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -194,8 +178,6 @@ void VampireRingInfoManager::load()
 void VampireRingLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows = defaultItemObjectRepository().loadGearOfOwner(GEAR_VAMPIRE_RING, pCreature->getName());
@@ -301,8 +283,6 @@ void VampireRingLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -312,8 +292,6 @@ void VampireRingLoader::load(Creature* pCreature)
 void VampireRingLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -354,8 +332,6 @@ void VampireRingLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -365,12 +341,8 @@ void VampireRingLoader::load(Zone* pZone)
 void VampireRingLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

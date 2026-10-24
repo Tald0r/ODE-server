@@ -44,8 +44,6 @@
 MasterLairManager::MasterLairManager(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
     m_pZone = pZone;
 
@@ -80,8 +78,6 @@ MasterLairManager::MasterLairManager(Zone* pZone)
     m_Mutex.setName("MasterLairManager");
 
     // cout << "Init MasterLairManager: zoneID=" << (int)m_pZone->getZoneID() << endl;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,11 +87,7 @@ MasterLairManager::MasterLairManager(Zone* pZone)
 ////////////////////////////////////////////////////////////////////////////////
 MasterLairManager::~MasterLairManager()
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -122,83 +114,81 @@ MasterLairManager::~MasterLairManager()
 bool MasterLairManager::enterCreature(Creature* pCreature)
 
 {
-    __BEGIN_TRY
+    {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        if (pCreature->isDM() || pCreature->isGOD()) {
+            goto ENTER_OK;
+        }
 
-    if (pCreature->isDM() || pCreature->isGOD()) {
-        goto ENTER_OK;
-    }
+        if (m_Event != EVENT_WAITING_PLAYER && m_Event != EVENT_MINION_COMBAT && m_Event != EVENT_MASTER_COMBAT) {
+            // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: cannot enter now" << endl;
+            return false;
+        }
 
-    if (m_Event != EVENT_WAITING_PLAYER && m_Event != EVENT_MINION_COMBAT && m_Event != EVENT_MASTER_COMBAT) {
-        // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: cannot enter now" << endl;
-        return false;
-    }
+        EffectMasterLairPass* pPassEffect = NULL;
 
-    EffectMasterLairPass* pPassEffect = NULL;
+        // Does the creature hold an EffectMasterLairPass for the current zone?
+        if (pCreature->isFlag(Effect::EFFECT_CLASS_MASTER_LAIR_PASS)) {
+            if (de::gameContext().variables().isRetryMasterLair()) {
+                Effect* pEffect = pCreature->getEffectManager()->findEffect(Effect::EFFECT_CLASS_MASTER_LAIR_PASS);
+                Assert(pEffect != NULL);
 
-    // Does the creature hold an EffectMasterLairPass for the current zone?
-    if (pCreature->isFlag(Effect::EFFECT_CLASS_MASTER_LAIR_PASS)) {
-        if (de::gameContext().variables().isRetryMasterLair()) {
-            Effect* pEffect = pCreature->getEffectManager()->findEffect(Effect::EFFECT_CLASS_MASTER_LAIR_PASS);
-            Assert(pEffect != NULL);
+                pPassEffect = dynamic_cast<EffectMasterLairPass*>(pEffect);
 
-            pPassEffect = dynamic_cast<EffectMasterLairPass*>(pEffect);
+                if (pPassEffect->getZoneID() == m_pZone->getZoneID()) {
+                    // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: " << pCreature->getName().c_str()
+                    // << " has EffectPass" << endl;
 
-            if (pPassEffect->getZoneID() == m_pZone->getZoneID()) {
-                // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: " << pCreature->getName().c_str()
-                // << " has EffectPass" << endl;
+                    goto ENTER_OK;
+                }
 
-                goto ENTER_OK;
+                // The pass belongs to a different lair.
+                // cout << "[" << (int)m_pZone->getZoneID() << "] MMasterLairManager: " << pCreature->getName().c_str() << "
+                // has Wrong EffectPass" << endl;
+            } else {
+                // cout << "[" << (int)m_pZone->getZoneID() << "] MMasterLairManager: " << pCreature->getName().c_str() << "
+                // can't enter more" << endl;
+
+                return false;
             }
+        }
 
-            // The pass belongs to a different lair.
-            // cout << "[" << (int)m_pZone->getZoneID() << "] MMasterLairManager: " << pCreature->getName().c_str() << "
-            // has Wrong EffectPass" << endl;
-        } else {
-            // cout << "[" << (int)m_pZone->getZoneID() << "] MMasterLairManager: " << pCreature->getName().c_str() << "
-            // can't enter more" << endl;
+        // Entry is refused.
+        if (m_Event != EVENT_WAITING_PLAYER) {
+            // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: Not WAITING_PLAYER: "
+            //	<< m_pZone->getPCManager()->getSize() << " / " << m_nPassPlayer << "/" << m_nMaxPassPlayer << endl;
 
             return false;
         }
+
+        // if (m_nPassPlayer >= m_nMaxPassPlayer)
+        if (m_nPassPlayer >= de::gameContext().variables().getVariable(MASTER_LAIR_PLAYER_NUM)) // by sigi. 2002.12.31
+        {
+            // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: Already Maximum Players: "
+            //<< m_pZone->getPCManager()->getSize() << " / " << m_nPassPlayer << "/" << m_nMaxPassPlayer << endl;
+
+            return false;
+        }
+
+        // Entry is allowed.
+        m_nPassPlayer++;
+
+        if (pPassEffect == NULL) {
+            pPassEffect = new EffectMasterLairPass(pCreature, m_pZone->getZoneID());
+
+            // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: " << pCreature->getName().c_str() << "
+            // received EffectPass: "
+            //	<< m_pZone->getPCManager()->getSize() << " / " << m_nPassPlayer << "/" << m_nMaxPassPlayer << endl;
+        } else {
+            pPassEffect->setZoneID(m_pZone->getZoneID());
+        }
+
+        pCreature->getEffectManager()->addEffect(pPassEffect);
+        pCreature->setFlag(Effect::EFFECT_CLASS_MASTER_LAIR_PASS);
+
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
     }
-
-    // Entry is refused.
-    if (m_Event != EVENT_WAITING_PLAYER) {
-        // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: Not WAITING_PLAYER: "
-        //	<< m_pZone->getPCManager()->getSize() << " / " << m_nPassPlayer << "/" << m_nMaxPassPlayer << endl;
-
-        return false;
-    }
-
-    // if (m_nPassPlayer >= m_nMaxPassPlayer)
-    if (m_nPassPlayer >= de::gameContext().variables().getVariable(MASTER_LAIR_PLAYER_NUM)) // by sigi. 2002.12.31
-    {
-        // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: Already Maximum Players: "
-        //<< m_pZone->getPCManager()->getSize() << " / " << m_nPassPlayer << "/" << m_nMaxPassPlayer << endl;
-
-        return false;
-    }
-
-    // Entry is allowed.
-    m_nPassPlayer++;
-
-    if (pPassEffect == NULL) {
-        pPassEffect = new EffectMasterLairPass(pCreature, m_pZone->getZoneID());
-
-        // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: " << pCreature->getName().c_str() << "
-        // received EffectPass: "
-        //	<< m_pZone->getPCManager()->getSize() << " / " << m_nPassPlayer << "/" << m_nMaxPassPlayer << endl;
-    } else {
-        pPassEffect->setZoneID(m_pZone->getZoneID());
-    }
-
-    pCreature->getEffectManager()->addEffect(pPassEffect);
-    pCreature->setFlag(Effect::EFFECT_CLASS_MASTER_LAIR_PASS);
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 
 ENTER_OK:
 
@@ -232,32 +222,30 @@ ENTER_OK:
 bool MasterLairManager::leaveCreature(Creature* pCreature)
 
 {
-    __BEGIN_TRY
+    {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
-
-    if (pCreature->isDM() || pCreature->isGOD()) {
-        return true;
-    }
-
-    // The count is decreased only in the waiting player state.
-    if (m_Event == EVENT_WAITING_PLAYER) {
-        if (m_nPassPlayer > 0)
-            m_nPassPlayer--;
-    }
-
-    // When re-entry after leaving (or dying) is not allowed, remove the
-    // EffectMasterLairPass on the way out.
-    if (!de::gameContext().variables().isRetryMasterLair()) {
-        if (pCreature->isFlag(Effect::EFFECT_CLASS_MASTER_LAIR_PASS)) {
-            pCreature->getEffectManager()->deleteEffect(Effect::EFFECT_CLASS_MASTER_LAIR_PASS);
-            pCreature->removeFlag(Effect::EFFECT_CLASS_MASTER_LAIR_PASS);
+        if (pCreature->isDM() || pCreature->isGOD()) {
+            return true;
         }
+
+        // The count is decreased only in the waiting player state.
+        if (m_Event == EVENT_WAITING_PLAYER) {
+            if (m_nPassPlayer > 0)
+                m_nPassPlayer--;
+        }
+
+        // When re-entry after leaving (or dying) is not allowed, remove the
+        // EffectMasterLairPass on the way out.
+        if (!de::gameContext().variables().isRetryMasterLair()) {
+            if (pCreature->isFlag(Effect::EFFECT_CLASS_MASTER_LAIR_PASS)) {
+                pCreature->getEffectManager()->deleteEffect(Effect::EFFECT_CLASS_MASTER_LAIR_PASS);
+                pCreature->removeFlag(Effect::EFFECT_CLASS_MASTER_LAIR_PASS);
+            }
+        }
+
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
     }
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 
     // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager: " << pCreature->getName().c_str() << " leaved:
     // "
@@ -274,38 +262,36 @@ bool MasterLairManager::leaveCreature(Creature* pCreature)
 bool MasterLairManager::heartbeat()
 
 {
-    __BEGIN_TRY
+    {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        switch (m_Event) {
+        case EVENT_WAITING_PLAYER:
+            processEventWaitingPlayer();
+            break;
 
-    switch (m_Event) {
-    case EVENT_WAITING_PLAYER:
-        processEventWaitingPlayer();
-        break;
+        case EVENT_MINION_COMBAT:
+            processEventMinionCombat();
+            break;
 
-    case EVENT_MINION_COMBAT:
-        processEventMinionCombat();
-        break;
+        case EVENT_MASTER_COMBAT:
+            processEventMasterCombat();
+            break;
 
-    case EVENT_MASTER_COMBAT:
-        processEventMasterCombat();
-        break;
+        case EVENT_WAITING_KICK_OUT:
+            processEventWaitingKickOut();
+            break;
 
-    case EVENT_WAITING_KICK_OUT:
-        processEventWaitingKickOut();
-        break;
+        case EVENT_WAITING_REGEN:
+            processEventWaitingRegen();
+            break;
 
-    case EVENT_WAITING_REGEN:
-        processEventWaitingRegen();
-        break;
+        default:
+            break;
+        };
 
-    default:
-        break;
-    };
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+    }
 
     return true;
 }
@@ -318,8 +304,6 @@ bool MasterLairManager::heartbeat()
 void MasterLairManager::processEventWaitingPlayer()
 
 {
-    __BEGIN_TRY
-
     Timeval currentTime;
     getCurrentTime(currentTime);
 
@@ -358,9 +342,6 @@ void MasterLairManager::processEventWaitingPlayer()
             m_EventValue = remainSec;
         }
     }
-
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -371,8 +352,6 @@ void MasterLairManager::processEventWaitingPlayer()
 void MasterLairManager::processEventMinionCombat()
 
 {
-    __BEGIN_TRY
-
     Timeval currentTime;
     getCurrentTime(currentTime);
 
@@ -400,8 +379,6 @@ void MasterLairManager::processEventMinionCombat()
     if (m_pZone->getPCManager()->getSize() == 0) {
         activeEventWaitingRegen();
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -412,8 +389,6 @@ void MasterLairManager::processEventMinionCombat()
 void MasterLairManager::processEventMasterCombat()
 
 {
-    __BEGIN_TRY
-
     Timeval currentTime;
     getCurrentTime(currentTime);
 
@@ -450,8 +425,6 @@ void MasterLairManager::processEventMasterCombat()
     if (m_pZone->getPCManager()->getSize() == 0) {
         activeEventWaitingRegen();
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -462,8 +435,6 @@ void MasterLairManager::processEventMasterCombat()
 void MasterLairManager::processEventWaitingKickOut()
 
 {
-    __BEGIN_TRY
-
     Timeval currentTime;
     getCurrentTime(currentTime);
 
@@ -474,8 +445,6 @@ void MasterLairManager::processEventWaitingKickOut()
         kickOutPlayers();
         activeEventWaitingRegen();
     }
-
-    __END_CATCH
 }
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -485,8 +454,6 @@ void MasterLairManager::processEventWaitingKickOut()
 void MasterLairManager::processEventWaitingRegen()
 
 {
-    __BEGIN_TRY
-
     Timeval currentTime;
     getCurrentTime(currentTime);
 
@@ -503,8 +470,6 @@ void MasterLairManager::processEventWaitingRegen()
             m_RegenTime.tv_sec += pInfo->getRegenDelay();
         }
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -515,8 +480,6 @@ void MasterLairManager::processEventWaitingRegen()
 void MasterLairManager::activeEventWaitingPlayer()
 
 {
-    __BEGIN_TRY
-
     MasterLairInfo* pInfo = de::gameContext().masterLairInfos().getMasterLairInfo(m_pZone->getZoneID());
     Assert(pInfo != NULL);
 
@@ -588,8 +551,6 @@ void MasterLairManager::activeEventWaitingPlayer()
     m_Event = EVENT_WAITING_PLAYER;
 
     // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager::activeEventWaitingPlayer" << endl;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -600,8 +561,6 @@ void MasterLairManager::activeEventWaitingPlayer()
 void MasterLairManager::activeEventMinionCombat()
 
 {
-    __BEGIN_TRY
-
     MasterLairInfo* pInfo = de::gameContext().masterLairInfos().getMasterLairInfo(m_pZone->getZoneID());
     Assert(pInfo != NULL);
 
@@ -651,8 +610,6 @@ void MasterLairManager::activeEventMinionCombat()
     m_EventTime.tv_sec += pInfo->getEndDelay();
 
     // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager::activeEventMinionCombat" << endl;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -663,8 +620,6 @@ void MasterLairManager::activeEventMinionCombat()
 void MasterLairManager::activeEventMasterCombat()
 
 {
-    __BEGIN_TRY
-
     Creature* pMaster = m_pZone->getMonsterManager()->getCreature(m_MasterID);
     // Master-specific hardcoding can go here.
 
@@ -730,8 +685,6 @@ void MasterLairManager::activeEventMasterCombat()
     m_EventValue = 0;
 
     // cout << "[" << (int)m_pZone->getZoneID() << "[ MasterLairManager::activeEventMasterCombat" << endl;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -742,8 +695,6 @@ void MasterLairManager::activeEventMasterCombat()
 void MasterLairManager::activeEventWaitingKickOut()
 
 {
-    __BEGIN_TRY
-
     MasterLairInfo* pInfo = de::gameContext().masterLairInfos().getMasterLairInfo(m_pZone->getZoneID());
     Assert(pInfo != NULL);
 
@@ -774,8 +725,6 @@ void MasterLairManager::activeEventWaitingKickOut()
     m_pZone->broadcastPacket(&gcNoticeEvent);
 
     // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager::activeEventKickOut" << endl;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -786,8 +735,6 @@ void MasterLairManager::activeEventWaitingKickOut()
 void MasterLairManager::activeEventWaitingRegen()
 
 {
-    __BEGIN_TRY
-
     deleteAllMonsters();
 
     // Turn off EffectContinualGroundAttack.
@@ -800,9 +747,6 @@ void MasterLairManager::activeEventWaitingRegen()
     m_bMasterReady = false;
 
     // cout << "[" << (int)m_pZone->getZoneID() << "] MasterLairManager::activeEventWaitingRegen" << endl;
-
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -813,8 +757,6 @@ void MasterLairManager::activeEventWaitingRegen()
 void MasterLairManager::deleteAllMonsters()
 
 {
-    __BEGIN_TRY
-
     // Remove it from the zone's MonsterManager, then delete it.
     // m_pZone->getMonsterManager()->deleteCreature( m_pMaster->getObjectID() );
     // SAFE_DELETE(m_pMaster);
@@ -824,8 +766,6 @@ void MasterLairManager::deleteAllMonsters()
     m_MasterID = 0;
     m_MasterX = 0;
     m_MasterY = 0;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -836,11 +776,7 @@ void MasterLairManager::deleteAllMonsters()
 void MasterLairManager::killAllMonsters()
 
 {
-    __BEGIN_TRY
-
     // Removed because something seems wrong with this part.
-
-    __END_CATCH
 }
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -855,11 +791,7 @@ void MasterLairManager::killAllMonsters()
 void MasterLairManager::startEvent()
 
 {
-    __BEGIN_TRY
-
     activeEventWaitingPlayer();
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -870,12 +802,8 @@ void MasterLairManager::startEvent()
 void MasterLairManager::stopEvent()
 
 {
-    __BEGIN_TRY
-
     kickOutPlayers();
     activeEventWaitingRegen();
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -886,8 +814,6 @@ void MasterLairManager::stopEvent()
 void MasterLairManager::kickOutPlayers()
 
 {
-    __BEGIN_TRY
-
     MasterLairInfo* pInfo = de::gameContext().masterLairInfos().getMasterLairInfo(m_pZone->getZoneID());
     Assert(pInfo != NULL);
 
@@ -914,8 +840,6 @@ void MasterLairManager::kickOutPlayers()
     gcNoticeEvent.setParameter(pInfo->getStartDelay()); // seconds
 
     m_pZone->broadcastPacket(&gcNoticeEvent);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -931,8 +855,6 @@ void MasterLairManager::kickOutPlayers()
 void MasterLairManager::giveKillingReward()
 
 {
-    __BEGIN_TRY
-
     const PCManager* pPCManager = m_pZone->getPCManager();
     const unordered_map<ObjectID_t, Creature*>& creatures = pPCManager->getCreatures();
     unordered_map<ObjectID_t, Creature*>::const_iterator itr;
@@ -1029,8 +951,6 @@ void MasterLairManager::giveKillingReward()
             throw Error("PCManager holds a creature that is not a PC");
         }
     }
-
-    __END_CATCH
 }
 
 string MasterLairManager::toString() const

@@ -24,9 +24,6 @@ void IllusionInversion::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Skil
                                 CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -201,7 +198,6 @@ void IllusionInversion::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Skil
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, param.SkillType);
     }
-    __END_CATCH
 }
 
 IllusionInversion g_IllusionInversion;

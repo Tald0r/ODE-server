@@ -13,37 +13,23 @@
 EffectExplosionWater::EffectExplosionWater(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectExplosionWater::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 void EffectExplosionWater::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 void EffectExplosionWater::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     pCreature->removeFlag(Effect::EFFECT_CLASS_EXPLOSION_WATER);
@@ -62,27 +48,17 @@ void EffectExplosionWater::unaffect(Creature* pCreature)
 
         pPlayer->sendPacket(&gcRemoveEffect);
     }
-
-    __END_CATCH
 }
 
 void EffectExplosionWater::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 string EffectExplosionWater::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectExplosionWater(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -52,8 +52,6 @@ Mitten::Mitten(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Mitten::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -71,8 +69,6 @@ void Mitten::create(const string& ownerID, Storage storage, StorageID_t storageI
     defaultItemObjectRepository().insertGear(GEAR_MITTEN, m_ItemID, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -82,11 +78,7 @@ void Mitten::create(const string& ownerID, Storage storage, StorageID_t storageI
 void Mitten::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_MITTEN, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -95,16 +87,12 @@ void Mitten::tinysave(const char* field) const
 void Mitten::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_MITTEN, m_ObjectID, getItemType(), ownerID, (int)storage, storageID,
                                              (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -146,8 +134,6 @@ string MittenInfo::toString() const
 void MittenInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_MITTEN);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -181,8 +167,6 @@ void MittenInfoManager::load()
 
         addItemInfo(pMittenInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -192,8 +176,6 @@ void MittenInfoManager::load()
 void MittenLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows = defaultItemObjectRepository().loadGearOfOwner(GEAR_MITTEN, pCreature->getName());
@@ -303,8 +285,6 @@ void MittenLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -313,11 +293,7 @@ void MittenLoader::load(Creature* pCreature)
 //--------------------------------------------------------------------------------
 void MittenLoader::load(Zone* pZone)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 //--------------------------------------------------------------------------------
@@ -325,8 +301,4 @@ void MittenLoader::load(Zone* pZone)
 //--------------------------------------------------------------------------------
 void MittenLoader::load(StorageID_t storageID, Inventory* pInventory)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}

@@ -28,11 +28,7 @@ EventSystemMessage::~EventSystemMessage()
 void EventSystemMessage::addMessage(const string& msg)
 
 {
-    __BEGIN_TRY
-
     m_Messages.push_back(msg);
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -41,8 +37,6 @@ void EventSystemMessage::addMessage(const string& msg)
 void EventSystemMessage::activate()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pGamePlayer != NULL);
     Creature* pCreature = m_pGamePlayer->getCreature();
 
@@ -58,8 +52,6 @@ void EventSystemMessage::activate()
     }
 
     // setNextTime( m_MessageTick );
-
-    __END_CATCH
 }
 
 string EventSystemMessage::toString() const

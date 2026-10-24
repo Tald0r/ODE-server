@@ -21,16 +21,12 @@
 EffectHalo::EffectHalo(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_UserOID = 0;
     m_TargetOID = 0;
     m_Damage = 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -38,14 +34,10 @@ EffectHalo::EffectHalo(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 void EffectHalo::affect()
 
 {
-    __BEGIN_TRY
-
     setNextTime(10);
 
     Creature* pCreature = m_pZone->getCreature(m_TargetOID);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -53,8 +45,6 @@ void EffectHalo::affect()
 void EffectHalo::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL)
         return;
 
@@ -100,27 +90,19 @@ void EffectHalo::affect(Creature* pCreature)
     gcAET.setXY(m_X, m_Y);
 
     pZone->broadcastPacket(m_X, m_Y, &gcAET);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectHalo::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectHalo::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
 
@@ -129,21 +111,14 @@ void EffectHalo::unaffect()
     gcDT.setObjectID(getObjectID());
     gcDT.setEffectID(Effect::EFFECT_CLASS_HALO);
     m_pZone->broadcastPacket(m_X, m_Y, &gcDT);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHalo::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectHalo(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

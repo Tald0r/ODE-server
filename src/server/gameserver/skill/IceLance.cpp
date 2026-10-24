@@ -16,8 +16,6 @@ void IceLance::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkil
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -38,17 +36,12 @@ void IceLance::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkil
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-    __END_CATCH
 }
 
 void IceLance::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersSkillSlot* pOustersSkillSlot,
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -82,17 +75,11 @@ void IceLance::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersS
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleTileMissileSkill.execute(pOusters, X, Y, pOustersSkillSlot, param, result, CEffectID);
-
-
-    __END_CATCH
 }
 
 void IceLance::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -119,9 +106,6 @@ void IceLance::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
             param.addMask(i, j, 100);
 
     g_SimpleTileMissileSkill.execute(pMonster, X, Y, param, result);
-
-
-    __END_CATCH
 }
 
 IceLance g_IceLance;

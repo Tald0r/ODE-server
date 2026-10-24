@@ -23,8 +23,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 BloodyBreaker::BloodyBreaker() {
-    __BEGIN_TRY
-
     const int width[7] = {0, 0, 1, 1, 2, 2, 2};
 
     TPOINT mask[8];
@@ -73,8 +71,6 @@ BloodyBreaker::BloodyBreaker() {
             }
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -84,9 +80,6 @@ void BloodyBreaker::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampir
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -107,9 +100,6 @@ void BloodyBreaker::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampir
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -119,8 +109,6 @@ void BloodyBreaker::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vam
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     SkillType_t SkillType = getSkillType();
 
     // Knowledge of Blood gives a hit bonus of 10.
@@ -338,9 +326,6 @@ void BloodyBreaker::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vam
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, SkillType);
     }
-
-
-    __END_CATCH
 }
 
 BloodyBreaker g_BloodyBreaker;

@@ -16,9 +16,6 @@ void DistanceBlitz::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouster
                             CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -38,16 +35,10 @@ void DistanceBlitz::execute(Ousters* pOusters, ObjectID_t TargetObjectID, Ouster
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void DistanceBlitz::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, OustersSkillSlot* pOustersSkillSlot,
                             CEffectID_t CEffectID) {
-    __BEGIN_TRY
-
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -102,8 +93,6 @@ void DistanceBlitz::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ous
     param.addMask(-1, -2, 50);
 
     g_SimpleTileMissileSkill.execute(pOusters, X, Y, pOustersSkillSlot, param, result, CEffectID);
-
-    __END_CATCH
 }
 
 DistanceBlitz g_DistanceBlitz;

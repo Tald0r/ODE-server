@@ -23,20 +23,14 @@
 Item* MouseItemPosition::popItem(bool bLock)
 
 {
-    __BEGIN_TRY
-
     if (bLock)
         return popItem_UNLOCKED();
     return popItem_LOCKED();
-
-    __END_CATCH
 }
 
 Item* MouseItemPosition::popItem_UNLOCKED()
 
 {
-    __BEGIN_TRY
-
     Creature* pTargetCreature = findCreature();
     Zone* pZone = getZoneByCreature(pTargetCreature);
 
@@ -55,15 +49,11 @@ Item* MouseItemPosition::popItem_UNLOCKED()
     __LEAVE_CRITICAL_SECTION((*pZone))
 
     return pItem;
-
-    __END_CATCH
 }
 
 Item* MouseItemPosition::popItem_LOCKED()
 
 {
-    __BEGIN_TRY
-
     Creature* pTargetCreature = findCreature();
 
     Zone* pZone = getZoneByCreature(pTargetCreature);
@@ -73,8 +63,6 @@ Item* MouseItemPosition::popItem_LOCKED()
     Assert(pPC != NULL);
 
     return popItem_CORE(pPC);
-
-    __END_CATCH
 }
 
 Item* MouseItemPosition::popItemFrom(PlayerCreature& pc) {
@@ -87,8 +75,6 @@ Item* MouseItemPosition::popItemFrom(PlayerCreature& pc) {
 Zone* MouseItemPosition::getZone()
 
 {
-    __BEGIN_TRY
-
     // Return the one already obtained, if there is one.
     if (m_bSetZone)
         return m_pZone;
@@ -97,15 +83,11 @@ Zone* MouseItemPosition::getZone()
     Creature* pTargetCreature = findCreature();
 
     return getZoneByCreature(pTargetCreature);
-
-    __END_CATCH
 }
 
 Item* MouseItemPosition::popItem_CORE(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Item* pItem;
 
     if (pPC->getExtraInventorySlotItem() == NULL) {
@@ -151,15 +133,11 @@ Item* MouseItemPosition::popItem_CORE(PlayerCreature* pPC)
     }
 
     return pItem;
-
-    __END_CATCH
 }
 
 Creature* MouseItemPosition::findCreature()
 
 {
-    __BEGIN_TRY
-
     Creature* pTargetCreature = NULL;
 
     PCFinder& pcFinder = de::gameContext().playerCreatures();
@@ -177,8 +155,6 @@ Creature* MouseItemPosition::findCreature()
     __LEAVE_CRITICAL_SECTION(pcFinder)
 
     return pTargetCreature;
-
-    __END_CATCH
 }
 
 Zone* MouseItemPosition::getZoneByCreature(Creature* pCreature)

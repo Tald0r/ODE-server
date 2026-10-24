@@ -30,61 +30,47 @@
 TradeInfo::TradeInfo()
 
 {
-    __BEGIN_TRY
-
     m_Gold = 0;
     m_Status = TRADE_TRADING;
 
     Timeval currentTime;
     getCurrentTime(currentTime);
     m_LastOKTime = currentTime;
-
-    __END_CATCH
 }
 
 TradeInfo::~TradeInfo()
 
 {
-    __BEGIN_TRY
-
-    m_ItemList.clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        m_ItemList.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 bool TradeInfo::hasItem(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     list<Item*>::const_iterator itr = m_ItemList.begin();
     for (; itr != m_ItemList.end(); itr++) {
         if (pItem == (*itr))
             return true;
     }
     return false;
-
-    __END_CATCH
 }
 
 bool TradeInfo::addItem(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (hasItem(pItem))
         return false;
     m_ItemList.push_back(pItem);
     return true;
-
-    __END_CATCH
 }
 
 bool TradeInfo::removeItem(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     list<Item*>::iterator itr = m_ItemList.begin();
     for (; itr != m_ItemList.end(); itr++) {
         if (pItem == (*itr)) {
@@ -93,20 +79,14 @@ bool TradeInfo::removeItem(Item* pItem)
         }
     }
     return false;
-
-    __END_CATCH
 }
 
 void TradeInfo::clearAll(void)
 
 {
-    __BEGIN_TRY
-
     m_ItemList.clear();
     m_Gold = 0;
     m_Status = TRADE_TRADING;
-
-    __END_CATCH
 }
 
 void TradeInfo::setNextTime(const Timeval& currentTime) {
@@ -126,72 +106,55 @@ bool TradeInfo::isValidOKTime(const Timeval& currentTime) {
 
 TradeManager::TradeManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 TradeManager::~TradeManager()
 
 {
-    __BEGIN_TRY
+    try {
+        unordered_map<string, TradeInfo*>::iterator itr = m_InfoMap.begin();
+        for (; itr != m_InfoMap.end(); itr++) {
+            TradeInfo* pInfo = itr->second;
+            SAFE_DELETE(pInfo);
+        }
 
-    unordered_map<string, TradeInfo*>::iterator itr = m_InfoMap.begin();
-    for (; itr != m_InfoMap.end(); itr++) {
-        TradeInfo* pInfo = itr->second;
-        SAFE_DELETE(pInfo);
+        m_InfoMap.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_InfoMap.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 void TradeManager::init()
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 bool TradeManager::hasTradeInfo(const string& Name)
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, TradeInfo*>::iterator itr = m_InfoMap.find(Name);
     if (itr == m_InfoMap.end())
         return false;
     return true;
-
-    __END_CATCH
 }
 
 TradeInfo* TradeManager::getTradeInfo(const string& Name)
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, TradeInfo*>::iterator itr = m_InfoMap.find(Name);
     if (itr == m_InfoMap.end())
         return NULL;
     return itr->second;
-
-    __END_CATCH
 }
 
 void TradeManager::addTradeInfo(TradeInfo* pInfo) {
-    __BEGIN_TRY
-
     Assert(pInfo != NULL);
     unordered_map<string, TradeInfo*>::iterator itr = m_InfoMap.find(pInfo->getMainName());
     if (itr != m_InfoMap.end())
         throw DuplicatedException();
     m_InfoMap[pInfo->getMainName()] = pInfo;
-
-    __END_CATCH
 }
 
 void TradeManager::removeTradeInfo(const string& Name) {
-    __BEGIN_TRY
-
     unordered_map<string, TradeInfo*>::iterator itr = m_InfoMap.find(Name);
     if (itr == m_InfoMap.end()) {
         cerr << "TradeManager::removeTradeInfo() : NoSuchElementException" << endl;
@@ -203,15 +166,11 @@ void TradeManager::removeTradeInfo(const string& Name) {
     TradeInfo* pInfo = itr->second;
     m_InfoMap.erase(itr);
     SAFE_DELETE(pInfo);
-
-    __END_CATCH
 }
 
 void TradeManager::initTrade(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     // Neither creature may already have trade info.
     if (hasTradeInfo(pCreature1->getName()) || hasTradeInfo(pCreature2->getName())) {
         throw Error("TradeManager::initTrade() : Trade info already exist!");
@@ -228,15 +187,11 @@ void TradeManager::initTrade(Creature* pCreature1, Creature* pCreature2)
     pInfo2->setTargetName(pCreature1->getName());
     pInfo2->setStatus(TRADE_TRADING);
     addTradeInfo(pInfo2);
-
-    __END_CATCH
 }
 
 int TradeManager::canTrade(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     try {
         // The pointers must not be null.
         if (pCreature1 == NULL || pCreature2 == NULL)
@@ -391,15 +346,11 @@ int TradeManager::canTrade(Creature* pCreature1, Creature* pCreature2)
         // It is enough to report that the trade is not possible.
         return 0;
     }
-
-    __END_CATCH
 }
 
 void TradeManager::processTrade(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     if (!canTrade(pCreature1, pCreature2)) {
         throw Error("TradeManager::processTrade() : the two cannot trade at all");
     }
@@ -655,8 +606,6 @@ void TradeManager::processTrade(Creature* pCreature1, Creature* pCreature2)
     // removeTradeInfo(pCreature2->getObjectID());
     pInfo1->clearAll();
     pInfo2->clearAll();
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -666,8 +615,6 @@ void TradeManager::processTrade(Creature* pCreature1, Creature* pCreature2)
 void TradeManager::cancelTrade(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     try {
         int nCondition = 0;
 
@@ -739,8 +686,6 @@ void TradeManager::cancelTrade(Creature* pCreature1, Creature* pCreature2)
         filelog("tradeError.txt", "[1] %s", t.toString().c_str());
         // throw Error(t.toString().c_str());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -750,8 +695,6 @@ void TradeManager::cancelTrade(Creature* pCreature1, Creature* pCreature2)
 void TradeManager::cancelTrade(Creature* pPC)
 
 {
-    __BEGIN_TRY
-
     try {
         // The pointer must not be null.
         if (pPC == NULL)
@@ -815,8 +758,6 @@ void TradeManager::cancelTrade(Creature* pPC)
         filelog("tradeError.txt", "[2] %s", t.toString().c_str());
         // throw Error(t.toString().c_str());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -825,8 +766,6 @@ void TradeManager::cancelTrade(Creature* pPC)
 bool TradeManager::isTrading(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     TradeInfo* pInfo1 = getTradeInfo(pCreature1->getName());
     TradeInfo* pInfo2 = getTradeInfo(pCreature2->getName());
 
@@ -837,6 +776,4 @@ bool TradeManager::isTrading(Creature* pCreature1, Creature* pCreature2)
         return true;
 
     return false;
-
-    __END_CATCH
 }

@@ -127,9 +127,7 @@ void initItemIDRegistryFromTable(Mutex& mutex, ItemID_t& registry, const char* t
 
 #define ITEMIDREGISTRY(CLASS, TABLE, LABEL)                                   \
     void CLASS::initItemIDRegistry(void) {                                    \
-        __BEGIN_TRY                                                           \
         initItemIDRegistryFromTable(m_Mutex, m_ItemIDRegistry, TABLE, LABEL); \
-        __END_CATCH                                                           \
     }
 
 ITEMIDREGISTRY(CarryingReceiver, "CarryingReceiverObject", "CarryingReceiverObject")

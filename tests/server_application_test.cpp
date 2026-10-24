@@ -206,9 +206,10 @@ TEST_P(ServerApplicationTest, APartiallyReadFileNeverPublishesOrInvokesTheLifecy
 }
 
 TEST_P(ServerApplicationTest, InitializationFailureKeepsConfigurationAliveThroughCleanupAndTheReturn) {
-    actions.initialize = [original = actions.initialize] {
+    const Error failure("initialization failed");
+    actions.initialize = [original = actions.initialize, failure] {
         original();
-        throw Error("initialization failed");
+        throw failure;
     };
     {
         de::ServerApplication application(context);
@@ -227,7 +228,7 @@ TEST_P(ServerApplicationTest, InitializationFailureKeepsConfigurationAliveThroug
         EXPECT_GT(stopped, diagnostic);
         std::ifstream log(instantLog);
         const std::string logged{std::istreambuf_iterator<char>(log), std::istreambuf_iterator<char>()};
-        EXPECT_EQ(Error("initialization failed").toString() + "\n", logged);
+        EXPECT_EQ(failure.toString() + "\n", logged);
     }
     expectUntouchedConfiguration();
 }

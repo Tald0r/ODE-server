@@ -22,9 +22,6 @@
 void AttackMelee::execute(Slayer* pSlayer, ObjectID_t TargetObjectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
 
     try {
@@ -155,9 +152,6 @@ void AttackMelee::execute(Slayer* pSlayer, ObjectID_t TargetObjectID)
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -166,9 +160,6 @@ void AttackMelee::execute(Slayer* pSlayer, ObjectID_t TargetObjectID)
 void AttackMelee::execute(Vampire* pVampire, ObjectID_t TargetObjectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
 
     try {
@@ -265,9 +256,6 @@ void AttackMelee::execute(Vampire* pVampire, ObjectID_t TargetObjectID)
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 
@@ -277,8 +265,6 @@ void AttackMelee::execute(Vampire* pVampire, ObjectID_t TargetObjectID)
 void AttackMelee::execute(Ousters* pOusters, ObjectID_t TargetObjectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
 
     try {
@@ -375,9 +361,6 @@ void AttackMelee::execute(Ousters* pOusters, ObjectID_t TargetObjectID)
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -386,9 +369,6 @@ void AttackMelee::execute(Ousters* pOusters, ObjectID_t TargetObjectID)
 void AttackMelee::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
     Assert(pEnemy != NULL);
 
@@ -452,9 +432,6 @@ void AttackMelee::execute(Monster* pMonster, Creature* pEnemy)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 AttackMelee g_AttackMelee;

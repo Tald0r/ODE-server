@@ -11,8 +11,6 @@ EffectRegenZone::EffectRegenZone(MonsterCorpse* pTower) {
 void EffectRegenZone::unaffect()
 
 {
-    __BEGIN_TRY
-
     MonsterCorpse* pTower = dynamic_cast<MonsterCorpse*>(m_pTarget);
     Assert(pTower != NULL);
 
@@ -23,6 +21,4 @@ void EffectRegenZone::unaffect()
     gcRemoveEffect.addEffectList(getSendEffectClass());
 
     pTower->getZone()->broadcastPacket(pTower->getX(), pTower->getY(), &gcRemoveEffect);
-
-    __END_CATCH
 }

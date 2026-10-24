@@ -16,11 +16,7 @@
 EffectGhost::EffectGhost(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -28,34 +24,21 @@ EffectGhost::EffectGhost(Creature* pCreature)
 void EffectGhost::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectGhost::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-
-
-    __END_CATCH
-}
+{}
 
 void EffectGhost::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -63,7 +46,6 @@ void EffectGhost::unaffect()
 void EffectGhost::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectGhost" << "unaffect BEGIN" << endl;
@@ -77,17 +59,12 @@ void EffectGhost::unaffect(Creature* pCreature)
     // cout << "EffectGhost" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectGhost::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectGhost(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

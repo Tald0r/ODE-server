@@ -26,8 +26,6 @@
 EffectAddItemToCorpse::EffectAddItemToCorpse(Zone* pZone, Item* pItem, ObjectID_t corpseObjectID, Turn_t delay)
 
     : Effect(pZone, 0, 0, pItem, delay) {
-    __BEGIN_TRY
-
     // Server-only effect.
     m_bBroadcastingEffect = false;
 
@@ -36,8 +34,6 @@ EffectAddItemToCorpse::EffectAddItemToCorpse(Zone* pZone, Item* pItem, ObjectID_
 
     // m_ObjectID = pItem->getObjectID();
     m_CorpseObjectID = corpseObjectID;
-
-    __END_CATCH
 }
 
 
@@ -59,11 +55,7 @@ EffectAddItemToCorpse::~EffectAddItemToCorpse()
 void EffectAddItemToCorpse::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     //	throw UnsupportedError();
-
-    __END_CATCH
 }
 
 
@@ -73,8 +65,6 @@ void EffectAddItemToCorpse::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Ob
 void EffectAddItemToCorpse::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pTarget)
 
 {
-    __BEGIN_TRY
-
     // The coordinates must be valid.
     Assert(pTarget != NULL);
 
@@ -95,8 +85,6 @@ void EffectAddItemToCorpse::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, 
     }
 
     pTarget = NULL;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -104,17 +92,14 @@ void EffectAddItemToCorpse::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, 
 //----------------------------------------------------------------------
 void EffectAddItemToCorpse::unaffect()
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //----------------------------------------------------------------------
 // unaffect()
 //----------------------------------------------------------------------
 void EffectAddItemToCorpse::unaffect(Creature* pCreature)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 //----------------------------------------------------------------------
 // get debug string

@@ -47,8 +47,6 @@ Pupa::Pupa(ItemType_t itemType, const list<OptionType_t>& optionType, ItemNum_t 
 void Pupa::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -62,8 +60,6 @@ void Pupa::create(const string& ownerID, Storage storage, StorageID_t storageID,
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_PUPA, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, x, y, (int)m_Num);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -72,12 +68,10 @@ void Pupa::create(const string& ownerID, Storage storage, StorageID_t storageID,
 bool Pupa::destroy()
 
 {
-    __BEGIN_TRY
-
-    if (!defaultItemObjectRepository().destroyItemObject(GEAR_PUPA, getObjectTableName(), m_ItemID))
-        return false;
-
-    __END_CATCH
+    {
+        if (!defaultItemObjectRepository().destroyItemObject(GEAR_PUPA, getObjectTableName(), m_ItemID))
+            return false;
+    }
 
     return true;
 }
@@ -89,11 +83,7 @@ bool Pupa::destroy()
 void Pupa::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_PUPA, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -102,12 +92,8 @@ void Pupa::tinysave(const char* field) const
 void Pupa::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_PUPA, m_ObjectID, m_ItemType, ownerID, (int)storage, storageID,
                                                     (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -131,11 +117,7 @@ string Pupa::toString() const
 VolumeWidth_t Pupa::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -145,11 +127,7 @@ VolumeWidth_t Pupa::getVolumeWidth() const
 VolumeHeight_t Pupa::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -159,107 +137,71 @@ VolumeHeight_t Pupa::getVolumeHeight() const
 Weight_t Pupa::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 int Pupa::getHPAmount(void) const
 
 {
-    __BEGIN_TRY
-
     PupaInfo* pInfo =
         dynamic_cast<PupaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType));
     return pInfo->getHPAmount();
-
-    __END_CATCH
 }
 
 int Pupa::getMPAmount(void) const
 
 {
-    __BEGIN_TRY
-
     PupaInfo* pInfo =
         dynamic_cast<PupaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType));
     return pInfo->getMPAmount();
-
-    __END_CATCH
 }
 
 int Pupa::getHPDelay(void) const
 
 {
-    __BEGIN_TRY
-
     PupaInfo* pInfo =
         dynamic_cast<PupaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType));
     return pInfo->getHPDelay();
-
-    __END_CATCH
 }
 
 int Pupa::getMPDelay(void) const
 
 {
-    __BEGIN_TRY
-
     PupaInfo* pInfo =
         dynamic_cast<PupaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType));
     return pInfo->getMPDelay();
-
-    __END_CATCH
 }
 
 int Pupa::getHPQuantity(void) const
 
 {
-    __BEGIN_TRY
-
     PupaInfo* pInfo =
         dynamic_cast<PupaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType));
     return pInfo->getHPQuantity();
-
-    __END_CATCH
 }
 
 int Pupa::getMPQuantity(void) const
 
 {
-    __BEGIN_TRY
-
     PupaInfo* pInfo =
         dynamic_cast<PupaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType));
     return pInfo->getMPQuantity();
-
-    __END_CATCH
 }
 
 int Pupa::getHPRecoveryUnit(void) const
 
 {
-    __BEGIN_TRY
-
     PupaInfo* pInfo =
         dynamic_cast<PupaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType));
     return pInfo->getHPRecoveryUnit();
-
-    __END_CATCH
 }
 
 int Pupa::getMPRecoveryUnit(void) const
 
 {
-    __BEGIN_TRY
-
     PupaInfo* pInfo =
         dynamic_cast<PupaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_PUPA, m_ItemType));
     return pInfo->getMPRecoveryUnit();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -268,8 +210,6 @@ int Pupa::getMPRecoveryUnit(void) const
 void PupaInfo::parseEffect(const string& effect)
 
 {
-    __BEGIN_TRY
-
     m_HPAmount = 0;
     m_HPDelay = 0;
     m_HPRecoveryUnit = 0;
@@ -311,8 +251,6 @@ void PupaInfo::parseEffect(const string& effect)
             m_MPRecoveryUnit = (int)unit;
         }
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -336,8 +274,6 @@ string PupaInfo::toString() const
 void PupaInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_PUPA);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -361,8 +297,6 @@ void PupaInfoManager::load()
 
         addItemInfo(pPupaInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -372,8 +306,6 @@ void PupaInfoManager::load()
 void PupaLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -512,8 +444,6 @@ void PupaLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -523,8 +453,6 @@ void PupaLoader::load(Creature* pCreature)
 void PupaLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumOnlyZoneObjectRow> rows =
@@ -558,8 +486,6 @@ void PupaLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -569,12 +495,8 @@ void PupaLoader::load(Zone* pZone)
 void PupaLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

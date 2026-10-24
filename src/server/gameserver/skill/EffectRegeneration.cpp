@@ -26,13 +26,9 @@
 EffectRegeneration::EffectRegeneration(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = X;
     m_Y = Y;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,13 +36,9 @@ EffectRegeneration::EffectRegeneration(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y
 void EffectRegeneration::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     affect(m_pZone, m_X, m_Y);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -54,8 +46,6 @@ void EffectRegeneration::affect()
 void EffectRegeneration::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     VSRect rect(0, 0, pZone->getWidth() - 1, pZone->getHeight() - 1);
@@ -119,8 +109,6 @@ void EffectRegeneration::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
     }
 
     setNextTime(m_Delay);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -128,22 +116,14 @@ void EffectRegeneration::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
 void EffectRegeneration::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectRegeneration::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectRegeneration(" << "Damage:" << (int)m_Damage << ")";
     return msg.toString();
-
-    __END_CATCH
 }

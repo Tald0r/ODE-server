@@ -16,9 +16,6 @@ void CauseSeriousWounds::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Ski
                                  CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -46,9 +43,6 @@ void CauseSeriousWounds::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Ski
     }
 
     g_SimpleMissileSkill.execute(pSlayer, TargetObjectID, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 CauseSeriousWounds g_CauseSeriousWounds;

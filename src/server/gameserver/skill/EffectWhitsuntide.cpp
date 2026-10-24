@@ -21,14 +21,10 @@
 EffectWhitsuntide::EffectWhitsuntide(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer());
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -36,14 +32,8 @@ EffectWhitsuntide::EffectWhitsuntide(Creature* pCreature)
 void EffectWhitsuntide::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -51,9 +41,6 @@ void EffectWhitsuntide::unaffect()
 void EffectWhitsuntide::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     Assert(pCreature->isSlayer()); // Only a Slayer can be affected.
 
@@ -74,19 +61,12 @@ void EffectWhitsuntide::unaffect(Creature* pCreature)
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_WHITSUNTIDE);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectWhitsuntide::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectWhitsuntide(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

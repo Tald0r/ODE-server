@@ -27,31 +27,20 @@
 EffectSoulChain::EffectSoulChain(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     m_OwnerOID = pCreature->getObjectID();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSoulChain::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSoulChain::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
 
     // A missing effect flag means the caster died and will not be transported.
@@ -135,8 +124,6 @@ void EffectSoulChain::unaffect(Creature* pCreature)
 
         pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcSkillFailed2, pCreature);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -144,25 +131,17 @@ void EffectSoulChain::unaffect(Creature* pCreature)
 void EffectSoulChain::unaffect()
 
 {
-    __BEGIN_TRY
-
     if (m_pZone != NULL) {
         Creature* pCreature = m_pZone->getCreature(m_OwnerOID);
         if (pCreature != NULL)
             unaffect(pCreature);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSoulChain::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectSoulChain(" << "ObjectID:" << getObjectID() << "TargetName:" << m_TargetName << ")";
     return msg.toString();
-
-    __END_CATCH
 }

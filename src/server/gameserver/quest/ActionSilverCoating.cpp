@@ -16,10 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionSilverCoating::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,8 +25,6 @@ void ActionSilverCoating::read(PropertyBuffer& propertyBuffer)
 void ActionSilverCoating::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -41,8 +36,6 @@ void ActionSilverCoating::execute(Creature* pCreature1, Creature* pCreature2)
     Player* pPlayer = pCreature2->getPlayer();
     Assert(pPlayer != NULL);
     pPlayer->sendPacket(&okpkt);
-
-    __END_CATCH
 }
 
 
@@ -52,11 +45,7 @@ void ActionSilverCoating::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionSilverCoating::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSilverCoating(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

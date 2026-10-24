@@ -21,12 +21,8 @@
 EffectXRLMissile::EffectXRLMissile(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_UserObjectID = 0;
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -34,13 +30,8 @@ EffectXRLMissile::EffectXRLMissile(Creature* pCreature)
 void EffectXRLMissile::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -48,7 +39,6 @@ void EffectXRLMissile::affect()
 void EffectXRLMissile::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -120,7 +110,6 @@ void EffectXRLMissile::affect(Creature* pCreature)
     setDeadline(0);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -128,8 +117,6 @@ void EffectXRLMissile::affect(Creature* pCreature)
 void EffectXRLMissile::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
 
     if (pCreature == NULL)
@@ -144,18 +131,12 @@ void EffectXRLMissile::unaffect()
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
     gcRemoveEffect.addEffectList(Effect::EFFECT_CLASS_XRL_Missile);
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectXRLMissile::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectXRLMissile(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

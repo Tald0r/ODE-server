@@ -28,14 +28,10 @@ string MeetNPCQuestInfo::toString() const {
 }
 
 MeetNPCQuestStatus* MeetNPCQuestInfo::makeQuestStatus(PlayerCreature* pPC) const {
-    __BEGIN_TRY
-
     MeetNPCQuestStatus* newQS = new MeetNPCQuestStatus(m_QuestID, VSDateTime::currentDateTime().addSecs(m_TimeLimitSec),
                                                        m_NPCID[0], m_NPCID[1]);
 
     Assert(newQS != NULL);
 
     return newQS;
-
-    __END_CATCH
 }

@@ -24,30 +24,26 @@
 EffectScheduleWork::EffectScheduleWork()
 
 {
-    __BEGIN_TRY
-
     m_Code = WORKCODE_MAX;
-
-    __END_CATCH
 }
 
 EffectScheduleWork::~EffectScheduleWork()
 
 {
-    __BEGIN_TRY
+    try {
+        // SAFE_DELETE(m_pData);
 
-    // SAFE_DELETE(m_pData);
-
-    // Depending on the code, void* m_pData must be cast
-    // and deleted appropriately.
-    if (m_Code == WORKCODE_ADD_VAMPIRE_PORTAL) {
-        Assert(m_pData == NULL);
-    } else if (m_Code == WORKCODE_DELETE) {
-        Assert(m_pData == NULL);
-    } else {
+        // Depending on the code, void* m_pData must be cast
+        // and deleted appropriately.
+        if (m_Code == WORKCODE_ADD_VAMPIRE_PORTAL) {
+            Assert(m_pData == NULL);
+        } else if (m_Code == WORKCODE_DELETE) {
+            Assert(m_pData == NULL);
+        } else {
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,46 +53,36 @@ EffectScheduleWork::~EffectScheduleWork()
 EffectSchedule::EffectSchedule()
 
 {
-    __BEGIN_TRY
-
     m_pEffect = NULL;
-
-    __END_CATCH
 }
 
 EffectSchedule::~EffectSchedule()
 
 {
-    __BEGIN_TRY
-
-    while (!m_WorkList.empty()) {
-        EffectScheduleWork* pWork = getFrontWork();
-        SAFE_DELETE(pWork);
+    try {
+        while (!m_WorkList.empty()) {
+            EffectScheduleWork* pWork = getFrontWork();
+            SAFE_DELETE(pWork);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 void EffectSchedule::addWork(int WorkCode, void* pData)
 
 {
-    __BEGIN_TRY
-
     Assert(WorkCode < WORKCODE_MAX);
 
     EffectScheduleWork* pWork = new EffectScheduleWork();
     pWork->setCode(WorkCode);
     pWork->setData(pData);
     m_WorkList.push_back(pWork);
-
-    __END_CATCH
 }
 
 EffectScheduleWork* EffectSchedule::getFrontWork(void)
 
 {
-    __BEGIN_TRY
-
     if (!m_WorkList.empty()) {
         EffectScheduleWork* pWork = m_WorkList.front();
         m_WorkList.pop_front();
@@ -104,8 +90,6 @@ EffectScheduleWork* EffectSchedule::getFrontWork(void)
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -114,27 +98,25 @@ EffectScheduleWork* EffectSchedule::getFrontWork(void)
 
 EffectScheduleManager::EffectScheduleManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 EffectScheduleManager::~EffectScheduleManager()
 
 {
-    __BEGIN_TRY
-
-    while (!m_EffectScheduleList.empty()) {
-        EffectSchedule* pSchedule = m_EffectScheduleList.front();
-        m_EffectScheduleList.pop_front();
-        SAFE_DELETE(pSchedule);
+    try {
+        while (!m_EffectScheduleList.empty()) {
+            EffectSchedule* pSchedule = m_EffectScheduleList.front();
+            m_EffectScheduleList.pop_front();
+            SAFE_DELETE(pSchedule);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 void EffectScheduleManager::addEffectSchedule(EffectSchedule* pEffectSchedule)
 
 {
-    __BEGIN_TRY
-
     Assert(pEffectSchedule != NULL);
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -142,15 +124,11 @@ void EffectScheduleManager::addEffectSchedule(EffectSchedule* pEffectSchedule)
     m_EffectScheduleList.push_back(pEffectSchedule);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void EffectScheduleManager::heartbeat(void)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // Until every schedule has been handled...
@@ -234,6 +212,4 @@ void EffectScheduleManager::heartbeat(void)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }

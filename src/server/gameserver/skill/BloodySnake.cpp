@@ -26,9 +26,6 @@ void BloodySnake::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireS
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -48,9 +45,6 @@ void BloodySnake::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireS
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,9 +54,6 @@ void BloodySnake::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampi
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -259,9 +250,6 @@ void BloodySnake::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampi
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -269,13 +257,9 @@ void BloodySnake::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampi
 void BloodySnake::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
     Assert(pMonster != NULL);
     Assert(pEnemy != NULL);
     execute(pMonster, pEnemy->getX(), pEnemy->getY());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -284,9 +268,6 @@ void BloodySnake::execute(Monster* pMonster, Creature* pEnemy)
 void BloodySnake::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -473,9 +454,6 @@ void BloodySnake::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 BloodySnake g_BloodySnake;

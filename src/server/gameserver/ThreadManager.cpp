@@ -47,8 +47,6 @@ ThreadManager::~ThreadManager() = default;
 void ThreadManager::init()
 
 {
-    __BEGIN_TRY
-
     // Register one thread per zone group.
     vector<int> zoneGroupIDs = defaultZoneInfoRepository().loadZoneGroupIDs(false);
 
@@ -57,8 +55,6 @@ void ThreadManager::init()
         m_ZoneGroupThreadPool.addThread(
             std::make_unique<ZoneGroupThread>(de::gameContext().zoneGroups().getZoneGroup(zoneGroupID)));
     }
-
-    __END_CATCH
 }
 
 
@@ -72,12 +68,8 @@ void ThreadManager::init()
 void ThreadManager::start()
 
 {
-    __BEGIN_TRY
-
     // Start the Zone Thread Pool.
     m_ZoneGroupThreadPool.start();
-
-    __END_CATCH
 }
 
 
@@ -91,9 +83,5 @@ void ThreadManager::start()
 void ThreadManager::stop()
 
 {
-    __BEGIN_TRY
-
     m_ZoneGroupThreadPool.stop();
-
-    __END_CATCH
 }

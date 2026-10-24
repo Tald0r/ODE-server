@@ -27,11 +27,7 @@
 EffectRelicPosition::EffectRelicPosition(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     setTarget(pItem);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,12 +35,8 @@ EffectRelicPosition::EffectRelicPosition(Item* pItem)
 void EffectRelicPosition::affect()
 
 {
-    __BEGIN_TRY
-
     Item* pItem = dynamic_cast<Item*>(m_pTarget);
     affect(pItem);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -52,8 +44,6 @@ void EffectRelicPosition::affect()
 void EffectRelicPosition::affect(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     // Get the zone info.
     ZoneInfo* pZoneInfo = de::gameContext().zoneInfos().getZoneInfo(m_ZoneID);
     Assert(pZoneInfo != NULL);
@@ -118,9 +108,6 @@ void EffectRelicPosition::affect(Item* pItem)
     } else {
         return;
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -128,12 +115,8 @@ void EffectRelicPosition::affect(Item* pItem)
 void EffectRelicPosition::unaffect()
 
 {
-    __BEGIN_TRY
-
     Item* pItem = dynamic_cast<Item*>(m_pTarget);
     unaffect(pItem);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -141,24 +124,16 @@ void EffectRelicPosition::unaffect()
 void EffectRelicPosition::unaffect(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     pItem->removeFlag(Effect::EFFECT_CLASS_RELIC_POSITION);
-
-    __END_CATCH
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectRelicPosition::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectRelicPosition(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

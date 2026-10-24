@@ -18,9 +18,6 @@
 void WaterBarrier::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -91,9 +88,6 @@ void WaterBarrier::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlo
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 WaterBarrier g_WaterBarrier;

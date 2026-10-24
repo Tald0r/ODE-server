@@ -25,15 +25,11 @@
 void ActionAdvanceEventQuest::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_QuestLevel = propertyBuffer.getPropertyInt("QuestLevel") - 1;
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -43,8 +39,6 @@ void ActionAdvanceEventQuest::read(PropertyBuffer& propertyBuffer)
 void ActionAdvanceEventQuest::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -116,9 +110,6 @@ void ActionAdvanceEventQuest::execute(Creature* pCreature1, Creature* pCreature2
         pPC->getQuestManager()->adjustQuestStatus();
         pPC->sendCurrentQuestInfo();
     }
-
-
-    __END_CATCH
 }
 
 
@@ -128,12 +119,8 @@ void ActionAdvanceEventQuest::execute(Creature* pCreature1, Creature* pCreature2
 string ActionAdvanceEventQuest::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionAdvanceEventQuest(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

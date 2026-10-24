@@ -25,14 +25,10 @@
 void ActionStartPetQuest::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -42,8 +38,6 @@ void ActionStartPetQuest::read(PropertyBuffer& propertyBuffer)
 void ActionStartPetQuest::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -92,8 +86,6 @@ void ActionStartPetQuest::execute(Creature* pCreature1, Creature* pCreature2)
 
     pPC->getQuestManager()->addQuest(pQS);
     pPC->sendCurrentQuestInfo();
-
-    __END_CATCH
 }
 
 
@@ -103,12 +95,8 @@ void ActionStartPetQuest::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionStartPetQuest::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionStartPetQuest(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

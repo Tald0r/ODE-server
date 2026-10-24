@@ -15,11 +15,7 @@
 // Constructor
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
-SummonMigaAttack::SummonMigaAttack() {
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+SummonMigaAttack::SummonMigaAttack() {}
 
 //////////////////////////////////////////////////////////////////////////////
 // Monster self handler
@@ -27,9 +23,6 @@ SummonMigaAttack::SummonMigaAttack() {
 void SummonMigaAttack::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -83,9 +76,6 @@ void SummonMigaAttack::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 SummonMigaAttack g_SummonMigaAttack;

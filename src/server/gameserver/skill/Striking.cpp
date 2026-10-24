@@ -22,9 +22,6 @@
 void Striking::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -149,9 +146,6 @@ void Striking::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pS
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -160,9 +154,6 @@ void Striking::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pS
 void Striking::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -242,9 +233,6 @@ void Striking::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffe
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Striking g_Striking;

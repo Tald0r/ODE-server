@@ -108,8 +108,6 @@ IncomingPlayerManager::~IncomingPlayerManager() noexcept(false) {
 void IncomingPlayerManager::init()
 
 {
-    __BEGIN_TRY
-
     Properties& config = de::kernelContext().config();
 
     m_ProxyAcceptor = de::ProxyAcceptor::fromConfig(config);
@@ -143,8 +141,6 @@ void IncomingPlayerManager::init()
     repository.logOffPlayersOfServer(config.getPropertyInt("WorldID"), config.getPropertyInt("ServerID"));
 
     repository.deleteUserIPsOfServer(config.getPropertyInt("ServerID"));
-
-    __END_CATCH
 }
 
 
@@ -153,15 +149,11 @@ void IncomingPlayerManager::init()
 void IncomingPlayerManager::copyPlayers()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     PlayerManager::copyPlayers();
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -170,8 +162,6 @@ void IncomingPlayerManager::copyPlayers()
 void IncomingPlayerManager::broadcast(Packet* pPacket)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     const de::DescriptorRange walk = de::descriptorRange((int)m_MinFD, (int)m_MaxFD, (int)nMaxPlayers);
@@ -181,8 +171,6 @@ void IncomingPlayerManager::broadcast(Packet* pPacket)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -191,8 +179,6 @@ void IncomingPlayerManager::broadcast(Packet* pPacket)
 // When none is, the steps that follow find nothing to process.
 //////////////////////////////////////////////////////////////////////////////
 void IncomingPlayerManager::pollSockets() {
-    __BEGIN_TRY
-
     // The membership is read and the answers are stored under the mutex that
     // guards the table, while the wait itself runs without it, so a thread
     // looking a player up is never held for the length of a poll.
@@ -213,8 +199,6 @@ void IncomingPlayerManager::pollSockets() {
     m_PollSet.collect();
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -225,8 +209,6 @@ void IncomingPlayerManager::pollSockets() {
 // arrived, so that player's processInput() is called.
 //////////////////////////////////////////////////////////////////////////////
 void IncomingPlayerManager::processInputs() {
-    __BEGIN_TRY
-
     // Gateway connections whose header arrived; acceptNewConnection() owns
     // each socket it is handed.
     if (m_ProxyAcceptor) {
@@ -331,8 +313,6 @@ void IncomingPlayerManager::processInputs() {
             } // if
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -341,7 +321,6 @@ void IncomingPlayerManager::processInputs() {
 //////////////////////////////////////////////////////////////////////////////
 
 void IncomingPlayerManager::processCommands() {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (m_MinFD == -1 && m_MaxFD == -1) // no player exist
@@ -441,7 +420,6 @@ void IncomingPlayerManager::processCommands() {
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -450,8 +428,6 @@ void IncomingPlayerManager::processCommands() {
 //////////////////////////////////////////////////////////////////////////////
 
 void IncomingPlayerManager::processOutputs() {
-    __BEGIN_TRY
-
     if (m_MinFD == -1 && m_MaxFD == -1) // no player exist
     {
         return;
@@ -579,8 +555,6 @@ void IncomingPlayerManager::processOutputs() {
             // pTempPlayer->processOutput();
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -591,8 +565,6 @@ void IncomingPlayerManager::processOutputs() {
 //////////////////////////////////////////////////////////////////////////////
 
 void IncomingPlayerManager::processExceptions() {
-    __BEGIN_TRY
-
     if (m_MinFD == -1 && m_MaxFD == -1) // no player exist
     {
         return;
@@ -644,8 +616,6 @@ void IncomingPlayerManager::processExceptions() {
             }
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -653,8 +623,6 @@ void IncomingPlayerManager::processExceptions() {
 // The socket the poll reported ready is accepted here.
 //////////////////////////////////////////////////////////////////////////////
 bool IncomingPlayerManager::acceptNewConnection(Socket* forwarded) {
-    __BEGIN_TRY
-
     std::unique_ptr<Socket> client(forwarded);
     de::GameConnection player;
     std::string peerHost;
@@ -734,8 +702,6 @@ bool IncomingPlayerManager::acceptNewConnection(Socket* forwarded) {
     }
     m_CheckValue = 33;
     return true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -744,8 +710,6 @@ bool IncomingPlayerManager::acceptNewConnection(Socket* forwarded) {
 //
 //////////////////////////////////////////////////////////////////////
 void IncomingPlayerManager::addPlayer(Player* pGamePlayer) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // call base class's method
@@ -762,8 +726,6 @@ void IncomingPlayerManager::addPlayer(Player* pGamePlayer) {
     m_PollSet.watch(fd, de::DescriptorPollSet::kRead | de::DescriptorPollSet::kWrite | de::DescriptorPollSet::kUrgent);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -772,8 +734,6 @@ void IncomingPlayerManager::addPlayer(Player* pGamePlayer) {
 //
 //////////////////////////////////////////////////////////////////////
 void IncomingPlayerManager::addPlayer_NOBLOCKED(Player* pGamePlayer) {
-    __BEGIN_TRY
-
     // call base class's method
     PlayerManager::addPlayer(pGamePlayer);
 
@@ -786,13 +746,9 @@ void IncomingPlayerManager::addPlayer_NOBLOCKED(Player* pGamePlayer) {
     // Watch the new descriptor. It is reported ready no earlier than the next
     // poll.
     m_PollSet.watch(fd, de::DescriptorPollSet::kRead | de::DescriptorPollSet::kWrite | de::DescriptorPollSet::kUrgent);
-
-    __END_CATCH
 }
 
 void IncomingPlayerManager::deletePlayer_NOBLOCKED(SOCKET fd) {
-    __BEGIN_TRY
-
     // call base class's method
     // filelog("deletePlayer.log", "Call in deletePlayer_NOBLOCKED");
     PlayerManager::deletePlayer(fd);
@@ -843,8 +799,6 @@ void IncomingPlayerManager::deletePlayer_NOBLOCKED(SOCKET fd) {
     // reported for it, because otherwise an object that is gone could still be
     // processed.
     m_PollSet.unwatch(fd);
-
-    __END_CATCH
 }
 
 
@@ -861,8 +815,6 @@ void IncomingPlayerManager::deletePlayer_NOBLOCKED(SOCKET fd) {
 //
 //////////////////////////////////////////////////////////////////////
 void IncomingPlayerManager::deletePlayer(SOCKET fd) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // call base class's method
@@ -917,38 +869,28 @@ void IncomingPlayerManager::deletePlayer(SOCKET fd) {
     m_PollSet.unwatch(fd);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void IncomingPlayerManager::pushPlayer(GamePlayer* pGamePlayer)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pGamePlayer != nullptr);
     m_PlayerListQueue.push_back(pGamePlayer);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void IncomingPlayerManager::pushOutPlayer(GamePlayer* pGamePlayer)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_MutexOut)
 
     Assert(pGamePlayer != nullptr);
     m_PlayerOutListQueue.push_back(pGamePlayer);
 
     __LEAVE_CRITICAL_SECTION(m_MutexOut)
-
-    __END_CATCH
 }
 
 void IncomingPlayerManager::moveToOutgoing(GamePlayer* player) {
@@ -966,8 +908,6 @@ void IncomingPlayerManager::moveToOutgoing(GamePlayer* player) {
 void IncomingPlayerManager::heartbeat()
 
 {
-    __BEGIN_TRY
-
     Properties& config = de::kernelContext().config();
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -1185,14 +1125,9 @@ void IncomingPlayerManager::heartbeat()
         });
 
     __LEAVE_CRITICAL_SECTION(m_MutexOut)
-
-    __END_CATCH
 }
 
 void IncomingPlayerManager::deleteQueuePlayer(GamePlayer* pGamePlayer) {
-    __BEGIN_TRY
-
-
     // This lock looks unnecessary.
     // by sigi. 2002.5.9
     // A different lock is used.
@@ -1208,8 +1143,6 @@ void IncomingPlayerManager::deleteQueuePlayer(GamePlayer* pGamePlayer) {
     }
 
     __LEAVE_CRITICAL_SECTION(m_MutexOut)
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////

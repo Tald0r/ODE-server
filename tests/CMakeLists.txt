@@ -753,6 +753,7 @@ target_include_directories(diagnostics_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src/Core
 )
 target_link_libraries(diagnostics_tests PRIVATE de-kernel gtest_main Threads::Threads)
+target_compile_definitions(diagnostics_tests PRIVATE EXCEPTION_HEADER="${CMAKE_SOURCE_DIR}/src/Core/Exception.h")
 add_dependencies(wire_tests diagnostics_tests)
 add_test(NAME diagnostics_tests COMMAND diagnostics_tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -864,6 +865,15 @@ add_test(
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 set_tests_properties(critical_section_audit PROPERTIES TIMEOUT 60)
+
+# The try-rethrow macro retirement tool (tools/r5_retire_try.pl): its rewrite
+# of each site shape and its checker's refusal of anything but a retired pair.
+add_test(
+    NAME r5_retire_try_selftest
+    COMMAND perl ${CMAKE_SOURCE_DIR}/tools/r5_retire_try.pl --self-test
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+set_tests_properties(r5_retire_try_selftest PROPERTIES TIMEOUT 60)
 
 # Knowledge bundle (docs/). docs/ is an Open Knowledge Format bundle and
 # CLAUDE.md is an index into it: a rule lives in one concept file and the

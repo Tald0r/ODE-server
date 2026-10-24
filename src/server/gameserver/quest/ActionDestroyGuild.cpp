@@ -18,11 +18,7 @@
 void ActionDestroyGuild::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     // Opening the guild disband window takes no arguments, so nothing is read here.
-
-    __END_CATCH
 }
 
 
@@ -32,8 +28,6 @@ void ActionDestroyGuild::read(PropertyBuffer& propertyBuffer)
 void ActionDestroyGuild::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -47,8 +41,6 @@ void ActionDestroyGuild::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse okpkt;
     okpkt.setCode(NPC_RESPONSE_INTERFACE_DESTROY_GUILD);
     pPlayer->sendPacket(&okpkt);
-
-    __END_CATCH
 }
 
 
@@ -58,11 +50,7 @@ void ActionDestroyGuild::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionDestroyGuild::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionDestroyGuild(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

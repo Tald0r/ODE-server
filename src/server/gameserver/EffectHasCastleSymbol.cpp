@@ -41,26 +41,18 @@ const Effect::EffectClass EffectHasCastleSymbol::EffectClasses[6] = {
 //////////////////////////////////////////////////////////////////////////////
 EffectHasCastleSymbol::EffectHasCastleSymbol(Creature* pCreature)
 
-    : EffectHasRelic(pCreature){__BEGIN_TRY
+    : EffectHasRelic(pCreature) {}
 
-                                    __END_CATCH}
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+EffectHasCastleSymbol::EffectHasCastleSymbol(Item* pItem)
 
-      //////////////////////////////////////////////////////////////////////////////
-      //////////////////////////////////////////////////////////////////////////////
-      EffectHasCastleSymbol::EffectHasCastleSymbol(Item * pItem)
-
-    : EffectHasRelic(pItem) {
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+    : EffectHasRelic(pItem) {}
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectHasCastleSymbol::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Get the zone.
     Zone* pZone = pCreature->getZone();
     Assert(pZone != NULL);
@@ -86,8 +78,6 @@ void EffectHasCastleSymbol::affect(Creature* pCreature)
     //	g_pZoneGroupManager->broadcast( &gcSystemMessage );
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -95,8 +85,6 @@ void EffectHasCastleSymbol::affect(Creature* pCreature)
 void EffectHasCastleSymbol::affect(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (m_pZone == NULL)
         return;
 
@@ -124,15 +112,11 @@ void EffectHasCastleSymbol::affect(Item* pItem)
     }
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 void EffectHasCastleSymbol::setPart(int part)
 
 {
-    __BEGIN_TRY
-
     const CastleSymbolInfo* pCastleSymbolInfo = dynamic_cast<const CastleSymbolInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_CASTLE_SYMBOL, part));
 
@@ -140,18 +124,12 @@ void EffectHasCastleSymbol::setPart(int part)
         m_Part = part;
         m_PartName = pCastleSymbolInfo->getName();
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectHasCastleSymbol::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectHasCastleSymbol(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

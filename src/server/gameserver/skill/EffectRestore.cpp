@@ -17,48 +17,32 @@
 EffectRestore::EffectRestore(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // This is a server-only effect.
     m_bBroadcastingEffect = false;
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectRestore::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectRestore::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectRestore::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pCreature != NULL);
     destroy(pCreature->getName());
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -66,14 +50,8 @@ void EffectRestore::unaffect(Creature* pCreature)
 void EffectRestore::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-
-    __END_CATCH
 }
 
 
@@ -81,25 +59,18 @@ void EffectRestore::unaffect()
 //////////////////////////////////////////////////////////////////////////////
 void EffectRestore::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectRestore::create(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().insertDeadline(EFFECT_TABLE_RESTORE, ownerID, currentYearTime, m_Deadline.tv_sec);
-
-    __END_CATCH
 }
 
 
@@ -108,11 +79,7 @@ void EffectRestore::create(const string& ownerID)
 void EffectRestore::destroy(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     defaultEffectSaveRepository().deleteDeadline(EFFECT_TABLE_RESTORE, ownerID);
-
-    __END_CATCH
 }
 
 
@@ -121,30 +88,22 @@ void EffectRestore::destroy(const string& ownerID)
 void EffectRestore::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().updateDeadline(EFFECT_TABLE_RESTORE, ownerID, currentYearTime, m_Deadline.tv_sec);
-
-    __END_CATCH
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectRestore::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectRestore(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -152,8 +111,6 @@ string EffectRestore::toString() const {
 void EffectRestoreLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<DWORD> dayTimes = defaultEffectSaveRepository().loadDeadlines(EFFECT_TABLE_RESTORE, pCreature->getName());
@@ -182,6 +139,4 @@ void EffectRestoreLoader::load(Creature* pCreature)
             }
         }
     }
-
-    __END_CATCH
 }

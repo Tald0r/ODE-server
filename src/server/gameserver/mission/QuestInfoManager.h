@@ -37,8 +37,6 @@ public:
 
     // OutITR must be a container<QuestID_t>::output_iterator-compatible type.
     template <class OutITR> void getEventQuestIDs(int questLevel, PlayerCreature* pPC, OutITR outItr) const {
-        __BEGIN_TRY
-
         QuestInfoHashMap::const_iterator itr = m_QuestInfos.begin();
         QuestInfoHashMap::const_iterator endItr = m_QuestInfos.end();
 
@@ -46,22 +44,16 @@ public:
             if (itr->second->isEventQuest() && itr->second->getQuestLevel() == questLevel &&
                 canExecuteQuest(itr->first, pPC) == START_SUCCESS)
                 (*outItr++) = itr->first;
-
-        __END_CATCH
     }
 
     // OutITR must be a container<QuestID_t>::output_iterator-compatible type.
     template <class OutITR> void getPossibleQuestIDs(PlayerCreature* pPC, OutITR outItr) const {
-        __BEGIN_TRY
-
         QuestInfoHashMap::const_iterator itr = m_QuestInfos.begin();
         QuestInfoHashMap::const_iterator endItr = m_QuestInfos.end();
 
         for (; itr != endItr; ++itr)
             if (canExecuteQuest(itr->first, pPC) == START_SUCCESS)
                 (*outItr++) = itr->first;
-
-        __END_CATCH
     }
 
     // *InITR yields QuestID_t values, *OutITR receives QuestInfo pointers.

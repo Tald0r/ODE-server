@@ -17,10 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void ActionCallHelicopter::read(PropertyBuffer& propertyBuffer)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,8 +26,6 @@ void ActionCallHelicopter::read(PropertyBuffer& propertyBuffer)
 void ActionCallHelicopter::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -55,8 +50,6 @@ void ActionCallHelicopter::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse gcNPCResponse;
     gcNPCResponse.setCode(NPC_RESPONSE_INTERFACE_HELICOPTER);
     pPlayer->sendPacket(&gcNPCResponse);
-
-    __END_CATCH
 }
 
 
@@ -66,11 +59,7 @@ void ActionCallHelicopter::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionCallHelicopter::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionCallHelicopter(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

@@ -12,8 +12,6 @@
 #include "repository/QuestInfoRepository.h"
 
 void EventQuestInfoManager::load(const string& name) {
-    __BEGIN_TRY
-
     clear();
 
     vector<EventMonsterKillQuestRow> monsterKills = defaultQuestInfoRepository().loadEventMonsterKillQuestsOfNPC(name);
@@ -112,6 +110,4 @@ void EventQuestInfoManager::load(const string& name) {
         de::diagnosticTrace(
             [&](std::ostream& output) { output << "Loading Quest Info : " << pMiniGameQI->toString(); });
     }
-
-    __END_CATCH
 }

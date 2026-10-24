@@ -23,8 +23,6 @@ void FierceFlame::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersS
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
     int Grade = 0;
@@ -179,8 +177,6 @@ void FierceFlame::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersS
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), Grade);
     }
-
-    __END_CATCH
 }
 
 FierceFlame g_FierceFlame;

@@ -44,14 +44,10 @@ void MiniGameQuestStatus::executeWhenFail() {
 }
 
 string MiniGameQuestStatus::toStrong() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "MiniGameQuestStatus(" << "Game Type : " << m_GameType
         << ", Score : " << ((m_bScoreSet) ? -1 : (int)m_GameScore) << ") : " << QuestStatus::toString().c_str();
 
     return msg.toString();
-
-    __END_CATCH
 }

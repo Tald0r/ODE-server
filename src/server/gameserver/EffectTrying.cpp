@@ -6,16 +6,10 @@
 #include "Zone.h"
 
 EffectTrying::EffectTrying(Creature* pCreature) {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 void EffectTrying::unaffect() {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     Assert(pCreature != NULL);
 
@@ -24,6 +18,4 @@ void EffectTrying::unaffect() {
     gcRemoveEffect.setObjectID(pCreature->getObjectID());
 
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
-
-    __END_CATCH
 }

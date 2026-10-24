@@ -25,9 +25,6 @@
 void IntimateGrail::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -158,9 +155,6 @@ void IntimateGrail::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlo
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -169,9 +163,6 @@ void IntimateGrail::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlo
 void IntimateGrail::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -256,9 +247,6 @@ void IntimateGrail::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t 
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 IntimateGrail g_IntimateGrail;

@@ -25,8 +25,6 @@
 void ActionRedistributeAttr::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script type
         string AttrType = propertyBuffer.getProperty("AttrType");
@@ -45,8 +43,6 @@ void ActionRedistributeAttr::read(PropertyBuffer& propertyBuffer)
         cout << nsee.toString() << endl;
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -56,8 +52,6 @@ void ActionRedistributeAttr::read(PropertyBuffer& propertyBuffer)
 void ActionRedistributeAttr::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     StringPool& strings = context().strings();
 
     Assert(pCreature1 != NULL);
@@ -201,8 +195,6 @@ void ActionRedistributeAttr::execute(Creature* pCreature1, Creature* pCreature2)
 
     // Store the amount of stats converted.
     defaultCharacterRepository().saveVampireRedistributeAttr(RedistributedAttr + 1, pVampire->getName());
-
-    __END_CATCH
 }
 
 
@@ -212,11 +204,7 @@ void ActionRedistributeAttr::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionRedistributeAttr::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionRedistributeAttr(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

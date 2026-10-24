@@ -41,9 +41,6 @@
 void EnergyDrop::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     // Slayer Object Assertion
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
@@ -65,9 +62,6 @@ void EnergyDrop::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -77,9 +71,6 @@ void EnergyDrop::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* 
 void EnergyDrop::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     EffectEnergyDrop* pEffect = NULL;
     EffectEnergyDrop* pEffect2 = NULL;
 
@@ -319,9 +310,6 @@ void EnergyDrop::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlo
         SAFE_DELETE(pEffect2);
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -330,8 +318,6 @@ void EnergyDrop::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlo
 void EnergyDrop::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     EffectEnergyDrop* pEffect = NULL;
     EffectEnergyDrop* pEffect2 = NULL;
 
@@ -503,8 +489,5 @@ void EnergyDrop::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
         SAFE_DELETE(pEffect2);
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 EnergyDrop g_EnergyDrop;

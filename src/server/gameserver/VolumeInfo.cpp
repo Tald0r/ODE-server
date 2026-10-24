@@ -15,30 +15,22 @@
 VolumeInfo::VolumeInfo(VolumeType_t type, VolumeWidth_t width, VolumeHeight_t height)
 
 {
-    __BEGIN_TRY
-
     m_VolumeType = type;
     m_VolumeWidth = width;
     m_VolumeHeight = height;
-
-    __END_CATCH
 }
 
 VolumeInfo::~VolumeInfo()
 
-    {__BEGIN_TRY __END_CATCH_NO_RETHROW}
+{}
 
 string VolumeInfo::toString()
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "VolumeInfo(" << "TYPE:" << (int)m_VolumeType << "WIDTH:" << (int)m_VolumeWidth
         << "HEIGHT:" << (int)m_VolumeHeight << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -47,20 +39,15 @@ string VolumeInfo::toString()
 ////////////////////////////////////////////////////////////////////////////////
 VolumeInfoManager::VolumeInfoManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 VolumeInfoManager::~VolumeInfoManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void VolumeInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     // initialize VolumeInfoManager
     m_VolumeInfo[0] = new VolumeInfo(0, 0, 0);
     m_VolumeInfo[1] = new VolumeInfo(1, 1, 1);
@@ -69,15 +56,11 @@ void VolumeInfoManager::init()
     m_VolumeInfo[4] = new VolumeInfo(4, 2, 1);
     m_VolumeInfo[5] = new VolumeInfo(5, 2, 2);
     m_VolumeInfo[6] = new VolumeInfo(6, 2, 3);
-
-    __END_CATCH
 }
 
 string VolumeInfoManager::toString()
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "VolumeInfoManager (";
     for (int i = 0; i < MAX_VOLUME_TYPE; i++) {
@@ -85,6 +68,4 @@ string VolumeInfoManager::toString()
     }
     msg << ")";
     return msg.toString();
-
-    __END_CATCH
 }

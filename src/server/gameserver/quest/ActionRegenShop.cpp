@@ -28,14 +28,10 @@
 ActionRegenShop::ActionRegenShop()
 
 {
-    __BEGIN_TRY
-
     m_Period.tv_sec = 0;
     m_Period.tv_usec = 0;
     m_NextRegen.tv_sec = 0;
     m_NextRegen.tv_usec = 0;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,11 +39,11 @@ ActionRegenShop::ActionRegenShop()
 ActionRegenShop::~ActionRegenShop()
 
 {
-    __BEGIN_TRY
-
-    clearList();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        clearList();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 
@@ -56,8 +52,6 @@ ActionRegenShop::~ActionRegenShop()
 void ActionRegenShop::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read NPC id
         int NPCID = propertyBuffer.getPropertyInt("NPCID");
@@ -79,8 +73,6 @@ void ActionRegenShop::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -91,8 +83,6 @@ void ActionRegenShop::read(PropertyBuffer& propertyBuffer)
 void ActionRegenShop::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature1->isNPC());
 
@@ -275,8 +265,6 @@ void ActionRegenShop::execute(Creature* pCreature1, Creature* pCreature2)
 
     // Set the time of the next update.
     m_NextRegen = m_NextRegen + m_Period;
-
-    __END_CATCH
 }
 
 
@@ -286,8 +274,6 @@ void ActionRegenShop::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionRegenShop::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     int i = 0;
 
@@ -300,6 +286,4 @@ string ActionRegenShop::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

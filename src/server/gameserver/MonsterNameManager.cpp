@@ -17,8 +17,6 @@
 MonsterNameManager::MonsterNameManager()
 
 {
-    __BEGIN_TRY
-
     m_pFirstName = NULL;
     m_pMiddleName = NULL;
     m_pLastName = NULL;
@@ -27,30 +25,26 @@ MonsterNameManager::MonsterNameManager()
     m_nMiddleNameCount = 0;
     m_nLastNameCount = 0;
     m_nEventLastNameCount = 0;
-
-    __END_CATCH
 }
 
 MonsterNameManager::~MonsterNameManager()
 
 {
-    __BEGIN_TRY
+    try {
+        SAFE_DELETE_ARRAY(m_pFirstName);
+        SAFE_DELETE_ARRAY(m_pMiddleName);
+        SAFE_DELETE_ARRAY(m_pLastName);
+        SAFE_DELETE_ARRAY(m_pEventLastName);
 
-    SAFE_DELETE_ARRAY(m_pFirstName);
-    SAFE_DELETE_ARRAY(m_pMiddleName);
-    SAFE_DELETE_ARRAY(m_pLastName);
-    SAFE_DELETE_ARRAY(m_pEventLastName);
-
-    m_UsedName.clear();
-
-    __END_CATCH_NO_RETHROW
+        m_UsedName.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 void MonsterNameManager::init()
 
 {
-    __BEGIN_TRY
-
     int nCount = 0;
 
     // Load the first names.
@@ -115,16 +109,12 @@ void MonsterNameManager::init()
     for (nCount = 0; nCount < (int)eventLastNames.size(); nCount++) {
         m_pEventLastName[nCount] = eventLastNames[nCount];
     }
-
-    __END_CATCH
 }
 
 
 string MonsterNameManager::getRandomName(Monster* pMonster, bool event)
 
 {
-    __BEGIN_TRY
-
     if (pMonster == NULL)
         return "";
 
@@ -145,16 +135,12 @@ string MonsterNameManager::getRandomName(Monster* pMonster, bool event)
         Name = "Nameless";
 
     return Name;
-
-    __END_CATCH
 }
 
 
 string MonsterNameManager::getRandomName(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
     if (pMonster == NULL)
         return "";
 
@@ -177,6 +163,4 @@ string MonsterNameManager::getRandomName(Monster* pMonster)
         Name = "Nameless";
 
     return Name;
-
-    __END_CATCH
 }

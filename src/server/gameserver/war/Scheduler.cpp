@@ -18,16 +18,12 @@ Scheduler::~Scheduler()
 void Scheduler::clear()
 
 {
-    __BEGIN_TRY
-
     while (!m_RecentSchedules.empty()) {
         Schedule* pSchedule = m_RecentSchedules.top();
         m_RecentSchedules.pop();
 
         SAFE_DELETE(pSchedule);
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -40,12 +36,8 @@ void Scheduler::clear()
 void Scheduler::addSchedule(Schedule* pSchedule)
 
 {
-    __BEGIN_TRY
-
     m_RecentSchedules.push(pSchedule);
     pSchedule->m_pScheduler = this;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -59,8 +51,6 @@ void Scheduler::addSchedule(Schedule* pSchedule)
 Work* Scheduler::popRecentWork()
 
 {
-    __BEGIN_TRY
-
     Schedule* pRecentSchedule = m_RecentSchedules.top();
 
     m_RecentSchedules.pop();
@@ -69,8 +59,6 @@ Work* Scheduler::popRecentWork()
     SAFE_DELETE(pRecentSchedule);
 
     return pWork;
-
-    __END_CATCH
 }
 
 Schedule* Scheduler::popDueSchedule() {
@@ -94,8 +82,6 @@ Schedule* Scheduler::popDueSchedule() {
 Work* Scheduler::heartbeat()
 
 {
-    __BEGIN_TRY
-
     if (m_RecentSchedules.empty())
         return NULL;
 
@@ -110,6 +96,4 @@ Work* Scheduler::heartbeat()
     }
 
     return NULL;
-
-    __END_CATCH
 }

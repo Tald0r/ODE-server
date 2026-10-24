@@ -100,8 +100,6 @@ bool SiegeWar::addChallengerGuild(GuildID_t gID) {
 void SiegeWar::executeStart()
 
 {
-    __BEGIN_TRY
-
     sendWarStartMessage();
     clearReinforceRegisters();
 
@@ -113,8 +111,6 @@ void SiegeWar::executeStart()
     Assert(siegeZoneID != 0);
 
     de::war::postToZone(siegeZoneID, [](Zone& zone) { SiegeManager::Instance().start(zone.getZoneID()); });
-
-    __END_CATCH
 }
 //--------------------------------------------------------------------------------
 //
@@ -126,8 +122,6 @@ void SiegeWar::executeStart()
 void SiegeWar::executeEnd()
 
 {
-    __BEGIN_TRY
-
     CastleInfoManager& castleInfos = de::gameContext().castleInfos();
 
     //----------------------------------------------------------------------------
@@ -189,18 +183,12 @@ void SiegeWar::executeEnd()
     // leave through the ordinary zone transfer.
     filelog("SiegeWar.log", "[%u] executeEnd : reset zone %u", getWarID(), siegeZoneID);
     de::war::postToZone(siegeZoneID, [](Zone& zone) { SiegeManager::Instance().reset(zone.getZoneID()); });
-
-    __END_CATCH
 }
 
 string SiegeWar::getWarName() const
 
 {
-    __BEGIN_TRY
-
     return "Siege War";
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -213,8 +201,6 @@ string SiegeWar::getWarName() const
 bool SiegeWar::isModifyCastleOwner(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     CastleInfo* pCastleInfo = de::gameContext().castleInfos().getCastleInfo(m_CastleZoneID);
@@ -232,8 +218,6 @@ bool SiegeWar::isModifyCastleOwner(PlayerCreature* pPC)
         return true;
 
     return false;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -246,8 +230,6 @@ bool SiegeWar::isModifyCastleOwner(PlayerCreature* pPC)
 GuildID_t SiegeWar::getWinnerGuildID(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     // in a guild war : pPC's GuildID when the applying guild is pPC's guild
@@ -255,15 +237,11 @@ GuildID_t SiegeWar::getWinnerGuildID(PlayerCreature* pPC)
     //					 otherwise COMMON_GUILD_ID
 
     return pPC->getGuildID();
-
-    __END_CATCH
 }
 
 bool SiegeWar::endWar(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     // < castle owner change >
@@ -276,8 +254,6 @@ bool SiegeWar::endWar(PlayerCreature* pPC)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -286,8 +262,6 @@ bool SiegeWar::endWar(PlayerCreature* pPC)
 void SiegeWar::sendWarEndMessage() const
 
 {
-    __BEGIN_TRY
-
     War::sendWarEndMessage();
 
     // The packet that confirms the safe zone release?
@@ -295,15 +269,11 @@ void SiegeWar::sendWarEndMessage() const
     gcNoticeEvent.setCode(NOTICE_EVENT_WAR_OVER);
     gcNoticeEvent.setParameter(m_CastleZoneID);
     de::gameContext().zoneGroups().broadcast(&gcNoticeEvent);
-
-    __END_CATCH
 }
 
 void SiegeWar::makeWarScheduleInfo(WarScheduleInfo* pWSI) const
 
 {
-    __BEGIN_TRY
-
     pWSI->warType = getWarType();
 
     for (int i = 0; i < 5; ++i) {
@@ -315,15 +285,11 @@ void SiegeWar::makeWarScheduleInfo(WarScheduleInfo* pWSI) const
     pWSI->reinforceGuildID = m_ReinforceGuildID;
     if (m_ReinforceGuildID != 0)
         pWSI->reinforceGuildName = de::gameContext().guilds().getGuildName(m_ReinforceGuildID);
-
-    __END_CATCH
 }
 
 void SiegeWar::makeWarInfo(WarInfo* pWarInfo) const
 
 {
-    __BEGIN_TRY
-
     Assert(pWarInfo != NULL);
     Assert(pWarInfo->getWarType() == WAR_GUILD);
 
@@ -368,16 +334,12 @@ void SiegeWar::makeWarInfo(WarInfo* pWarInfo) const
 
     pGuildWarInfo->setAttackGuildName(attackGuildName);
     pGuildWarInfo->setDefenseGuildName(defenseGuildName);
-
-    __END_CATCH
 }
 
 
 string SiegeWar::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "SiegeWar(" << "WarID:" << (int)getWarID() << ",State:" << (int)getState()
@@ -385,8 +347,6 @@ string SiegeWar::toString() const
         << ",ChallengerGuildID:" << (int)m_ChallangerGuildID[0] << ",RegistrationFee:" << (int)m_RegistrationFee << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 BYTE SiegeWar::canReinforce(GuildID_t gID) {

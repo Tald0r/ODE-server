@@ -22,30 +22,21 @@
 EffectPeace::EffectPeace(Creature* pCreature, ObjectID_t PeaceCreatureID)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
     m_PeaceCreatureID = PeaceCreatureID;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectPeace::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectPeace::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(!pCreature->isSlayer()); // Slayers are not affected.
     Assert(!pCreature->isNPC());    // NPCs are not affected either.
@@ -55,8 +46,6 @@ void EffectPeace::affect(Creature* pCreature)
 
         pMonster->deleteEnemy(pCreature->getObjectID());
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -64,7 +53,6 @@ void EffectPeace::affect(Creature* pCreature)
 void EffectPeace::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -81,14 +69,12 @@ void EffectPeace::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectPeace::unaffect()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -97,7 +83,6 @@ void EffectPeace::unaffect()
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -105,19 +90,15 @@ void EffectPeace::unaffect()
 //////////////////////////////////////////////////////////////////////////////
 void EffectPeace::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectPeace::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectPeace(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -23,16 +23,12 @@
 void ActionGiveItem::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ItemClass = (Item::ItemClass)propertyBuffer.getPropertyInt("ItemClass");
         m_ItemType = (ItemType_t)propertyBuffer.getPropertyInt("ItemType");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -42,8 +38,6 @@ void ActionGiveItem::read(PropertyBuffer& propertyBuffer)
 void ActionGiveItem::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature2 != NULL);
     Assert(pCreature2->isPC());
 
@@ -84,8 +78,6 @@ void ActionGiveItem::execute(Creature* pCreature1, Creature* pCreature2)
     GCCreateItem gcCreateItem;
     makeGCCreateItem(&gcCreateItem, pItem, X, Y);
     pPlayer->sendPacket(&gcCreateItem);
-
-    __END_CATCH
 }
 
 
@@ -95,12 +87,8 @@ void ActionGiveItem::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionGiveItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionGiveItem(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

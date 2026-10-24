@@ -47,8 +47,6 @@ void SlayerPortalItem::create(const string& ownerID, Storage storage, StorageID_
                               ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -62,8 +60,6 @@ void SlayerPortalItem::create(const string& ownerID, Storage storage, StorageID_
 
     defaultItemObjectRepository().insertChargeItem(GEAR_SLAYER_PORTAL_ITEM, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                    (int)storage, storageID, (int)x, (int)y, m_Charge);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -72,82 +68,54 @@ void SlayerPortalItem::create(const string& ownerID, Storage storage, StorageID_
 void SlayerPortalItem::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_SLAYER_PORTAL_ITEM, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void SlayerPortalItem::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateChargeItem(GEAR_SLAYER_PORTAL_ITEM, m_ObjectID, m_ItemType, ownerID,
                                                    (int)storage, storageID, (int)x, (int)y, m_Charge, m_ItemID);
-
-    __END_CATCH
 }
 
 VolumeWidth_t SlayerPortalItem::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SLAYER_PORTAL_ITEM, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t SlayerPortalItem::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext()
         .itemInfos()
         .getItemInfo(Item::ITEM_CLASS_SLAYER_PORTAL_ITEM, m_ItemType)
         ->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t SlayerPortalItem::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SLAYER_PORTAL_ITEM, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 string SlayerPortalItem::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "SlayerPortalItem(" << "ItemID:" << m_ItemID << ",ItemType:" << (int)m_ItemType << ",Charge:" << m_Charge
         << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 int SlayerPortalItem::getMaxCharge(void) const
 
 {
-    __BEGIN_TRY
-
     SlayerPortalItemInfo* pInfo = dynamic_cast<SlayerPortalItemInfo*>(
         de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_SLAYER_PORTAL_ITEM, m_ItemType));
     Assert(pInfo != NULL);
     return pInfo->getMaxCharge();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -157,8 +125,6 @@ int SlayerPortalItem::getMaxCharge(void) const
 void SlayerPortalItemInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_SLAYER_PORTAL_ITEM);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -183,22 +149,16 @@ void SlayerPortalItemInfoManager::load()
 
         addItemInfo(pSlayerPortalItemInfo);
     }
-
-    __END_CATCH
 }
 
 string SlayerPortalItemInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "SlayerPortalItemInfo(" << "ItemType:" << m_ItemType << ",Name:" << m_Name << ",EName:" << m_EName
         << ",Price:" << m_Price << ",VolumeType:" << Volume2String[m_VolumeType] << ",Weight:" << m_Weight
         << ",MaxCharge:" << m_MaxCharge << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -209,8 +169,6 @@ string SlayerPortalItemInfo::toString() const
 void SlayerPortalItemLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<ChargeObjectRow> rows =
@@ -282,15 +240,11 @@ void SlayerPortalItemLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void SlayerPortalItemLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<ChargeObjectRow> rows = defaultItemObjectRepository().loadChargeItemInZone(
@@ -319,13 +273,8 @@ void SlayerPortalItemLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void SlayerPortalItemLoader::load(StorageID_t storageID, Inventory* pInventory)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}

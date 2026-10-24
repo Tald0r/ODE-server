@@ -30,16 +30,12 @@
 void ActionShowGuildDialog::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // Type of the dialog
         m_Type = (GuildDialog_t)propertyBuffer.getPropertyInt("Type");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -49,8 +45,6 @@ void ActionShowGuildDialog::read(PropertyBuffer& propertyBuffer)
 void ActionShowGuildDialog::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     GuildManager& guilds = context().guilds();
 
     Assert(pCreature1 != NULL);
@@ -317,8 +311,6 @@ void ActionShowGuildDialog::execute(Creature* pCreature1, Creature* pCreature2)
         response.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
         pPlayer->sendPacket(&response);
     }
-
-    __END_CATCH
 }
 
 
@@ -328,11 +320,7 @@ void ActionShowGuildDialog::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionShowGuildDialog::toString() const
 
 {
-    __BEGIN_TRY
-
     string str = "ActionShowGuildDialog";
 
     return str;
-
-    __END_CATCH
 }

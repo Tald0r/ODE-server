@@ -28,13 +28,9 @@
 EffectSlayerRelic::EffectSlayerRelic(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     m_HPRecovery = 1;
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -42,21 +38,15 @@ EffectSlayerRelic::EffectSlayerRelic(Creature* pCreature)
 EffectSlayerRelic::EffectSlayerRelic(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     m_HPRecovery = 1;
 
     setTarget(pItem);
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSlayerRelic::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Room for the longest message a GCSystemMessage carries.
     char msg[de::wire::kMaxByteStringLength + 1];
     snprintf(msg, sizeof(msg), de::gameContext().strings().c_str(STRID_TAKE_SLAYER_RELIC),
@@ -78,27 +68,18 @@ void EffectSlayerRelic::affect(Creature* pCreature)
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectSlayerRelic::affect(Item* pItem)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 
 void EffectSlayerRelic::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     switch (m_pTarget->getObjectClass()) {
     case OBJECT_CLASS_CREATURE: {
         Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
@@ -113,8 +94,6 @@ void EffectSlayerRelic::unaffect()
     default:
         throw Error("Wrong Object Class");
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -122,7 +101,6 @@ void EffectSlayerRelic::unaffect()
 void EffectSlayerRelic::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectSlayerRelic" << "unaffect BEGIN" << endl;
@@ -144,7 +122,6 @@ void EffectSlayerRelic::unaffect(Creature* pCreature)
     // cout << "EffectSlayerRelic" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -152,7 +129,6 @@ void EffectSlayerRelic::unaffect(Creature* pCreature)
 void EffectSlayerRelic::unaffect(Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectSlayerRelic" << "unaffect BEGIN" << endl;
@@ -177,18 +153,13 @@ void EffectSlayerRelic::unaffect(Item* pItem)
     // cout << "EffectSlayerRelic" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectSlayerRelic::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectSlayerRelic(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

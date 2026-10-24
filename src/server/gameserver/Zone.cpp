@@ -540,11 +540,7 @@ Zone::Zone(ZoneID_t zoneID)
 Zone::Zone(ZoneID_t zoneID, ZoneCoord_t width, ZoneCoord_t height)
 
 {
-    __BEGIN_TRY
-
     Assert(false);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -552,42 +548,42 @@ Zone::Zone(ZoneID_t zoneID, ZoneCoord_t width, ZoneCoord_t height)
 Zone::~Zone()
 
 {
-    __BEGIN_TRY
+    try {
+        if (m_pTiles != NULL) {
+            for (uint i = 0; i < m_Width; i++)
+                SAFE_DELETE_ARRAY(m_pTiles[i]);
+            SAFE_DELETE_ARRAY(m_pTiles);
+        }
 
-    if (m_pTiles != NULL) {
-        for (uint i = 0; i < m_Width; i++)
-            SAFE_DELETE_ARRAY(m_pTiles[i]);
-        SAFE_DELETE_ARRAY(m_pTiles);
+        if (m_ppLevel != NULL) {
+            for (uint i = 0; i < m_Width; i++)
+                SAFE_DELETE_ARRAY(m_ppLevel[i]);
+            SAFE_DELETE_ARRAY(m_ppLevel);
+        }
+
+        if (m_pSectors != NULL) {
+            for (int i = 0; i < m_SectorWidth; i++)
+                SAFE_DELETE_ARRAY(m_pSectors[i]);
+            SAFE_DELETE_ARRAY(m_pSectors);
+        }
+
+        SAFE_DELETE(m_pPCManager);
+        SAFE_DELETE(m_pNPCManager);
+        SAFE_DELETE(m_pMonsterManager);
+        SAFE_DELETE(m_pMasterLairManager);
+        SAFE_DELETE(m_pWarScheduler);
+
+
+        SAFE_DELETE(m_pWeatherManager);
+        SAFE_DELETE(m_pEffectManager);
+        SAFE_DELETE(m_pLockedEffectManager);
+        SAFE_DELETE(m_pVampirePortalManager);
+        SAFE_DELETE(m_pEffectScheduleManager);
+        SAFE_DELETE(m_pLocalPartyManager);
+        SAFE_DELETE(m_pPartyInviteInfoManager);
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    if (m_ppLevel != NULL) {
-        for (uint i = 0; i < m_Width; i++)
-            SAFE_DELETE_ARRAY(m_ppLevel[i]);
-        SAFE_DELETE_ARRAY(m_ppLevel);
-    }
-
-    if (m_pSectors != NULL) {
-        for (int i = 0; i < m_SectorWidth; i++)
-            SAFE_DELETE_ARRAY(m_pSectors[i]);
-        SAFE_DELETE_ARRAY(m_pSectors);
-    }
-
-    SAFE_DELETE(m_pPCManager);
-    SAFE_DELETE(m_pNPCManager);
-    SAFE_DELETE(m_pMonsterManager);
-    SAFE_DELETE(m_pMasterLairManager);
-    SAFE_DELETE(m_pWarScheduler);
-
-
-    SAFE_DELETE(m_pWeatherManager);
-    SAFE_DELETE(m_pEffectManager);
-    SAFE_DELETE(m_pLockedEffectManager);
-    SAFE_DELETE(m_pVampirePortalManager);
-    SAFE_DELETE(m_pEffectScheduleManager);
-    SAFE_DELETE(m_pLocalPartyManager);
-    SAFE_DELETE(m_pPartyInviteInfoManager);
-
-    __END_CATCH_NO_RETHROW
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -596,9 +592,6 @@ Zone::~Zone()
 ZoneLevel_t Zone::getZoneLevel(ZoneCoord_t x, ZoneCoord_t y) const
 
 {
-    __BEGIN_TRY
-
-
     // No assert here:
     // the value went out of bounds and the assert killed the process,
     // so going without it should be fine.
@@ -608,8 +601,6 @@ ZoneLevel_t Zone::getZoneLevel(ZoneCoord_t x, ZoneCoord_t y) const
     }
 
     return COMPLETE_SAFE_ZONE;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -618,23 +609,15 @@ ZoneLevel_t Zone::getZoneLevel(ZoneCoord_t x, ZoneCoord_t y) const
 const Tile& Zone::getTile(ZoneCoord_t x, ZoneCoord_t y) const
 
 {
-    __BEGIN_TRY
-
     Assert(x < m_Width && y < m_Height);
     return m_pTiles[x][y];
-
-    __END_CATCH
 }
 
 Tile& Zone::getTile(ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     Assert(x < m_Width && y < m_Height);
     return m_pTiles[x][y];
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -643,8 +626,6 @@ Tile& Zone::getTile(ZoneCoord_t x, ZoneCoord_t y)
 Sector* Zone::getSector(ZoneCoord_t x, ZoneCoord_t y)
 
 {
-    __BEGIN_TRY
-
     Assert(x < m_Width && y < m_Height);
 
     int sx = x / SECTOR_SIZE;
@@ -653,8 +634,6 @@ Sector* Zone::getSector(ZoneCoord_t x, ZoneCoord_t y)
     Assert(sx < m_SectorWidth && y < m_SectorHeight);
 
     return &(m_pSectors[sx][sy]);
-
-    __END_CATCH
 }
 
 
@@ -663,33 +642,21 @@ Sector* Zone::getSector(ZoneCoord_t x, ZoneCoord_t y)
 void Zone::addEffect(Effect* pEffect)
 
 {
-    __BEGIN_TRY
-
     Assert(pEffect != NULL);
 
     m_pEffectManager->addEffect(pEffect);
-
-    __END_CATCH
 }
 
 void Zone::deleteEffect(ObjectID_t id)
 
 {
-    __BEGIN_TRY
-
     m_pEffectManager->deleteEffect(id);
-
-    __END_CATCH
 }
 
 Effect* Zone::findEffect(Effect::EffectClass eid)
 
 {
-    __BEGIN_TRY
-
     return m_pEffectManager->findEffect(eid);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -697,8 +664,6 @@ Effect* Zone::findEffect(Effect::EffectClass eid)
 void Zone::addEffect_LOCKING(Effect* pEffect)
 
 {
-    __BEGIN_TRY
-
     Assert(pEffect != NULL);
 
     __ENTER_CRITICAL_SECTION(m_MutexEffect)
@@ -706,22 +671,16 @@ void Zone::addEffect_LOCKING(Effect* pEffect)
     m_pLockedEffectManager->addEffect(pEffect);
 
     __LEAVE_CRITICAL_SECTION(m_MutexEffect)
-
-    __END_CATCH
 }
 
 void Zone::deleteEffect_LOCKING(ObjectID_t id)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_MutexEffect)
 
     m_pLockedEffectManager->deleteEffect(id);
 
     __LEAVE_CRITICAL_SECTION(m_MutexEffect)
-
-    __END_CATCH
 }
 
 
@@ -731,7 +690,6 @@ void Zone::deleteEffect_LOCKING(ObjectID_t id)
 void Zone::heartbeat()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     try {
@@ -872,7 +830,6 @@ void Zone::heartbeat()
     m_LoadValue++;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -886,8 +843,6 @@ void Zone::heartbeat()
 Creature* Zone::getCreature(ObjectID_t objectID) const
 // NoSuchElementException, Error)
 {
-    __BEGIN_TRY
-
     // Version that does not use NoSuchElementException.
     Creature* pCreature = NULL;
 
@@ -902,9 +857,6 @@ Creature* Zone::getCreature(ObjectID_t objectID) const
     }
 
     return pCreature;
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -918,8 +870,6 @@ Creature* Zone::getCreature(ObjectID_t objectID) const
 Creature* Zone::getCreature(const string& Name) const
 // NoSuchElementException, Error)
 {
-    __BEGIN_TRY
-
     // Version that does not use NoSuchElementException.
     Creature* pCreature = NULL;
 
@@ -934,9 +884,6 @@ Creature* Zone::getCreature(const string& Name) const
     }
 
     return pCreature;
-
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -947,8 +894,6 @@ Creature* Zone::getCreature(const string& Name) const
 Creature* Zone::getCreature(Creature::CreatureClass creatureClass, ObjectID_t objectID) const
 
 {
-    __BEGIN_TRY
-
     if (creatureClass == Creature::CREATURE_CLASS_SLAYER) {
         return m_pPCManager->getCreature(objectID);
     } else if (creatureClass == Creature::CREATURE_CLASS_VAMPIRE) {
@@ -962,8 +907,6 @@ Creature* Zone::getCreature(Creature::CreatureClass creatureClass, ObjectID_t ob
     }
 
     return NULL; // evade warning.
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -972,8 +915,6 @@ Creature* Zone::getCreature(Creature::CreatureClass creatureClass, ObjectID_t ob
 string Zone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "Zone(" << "ZoneID:" << (int)m_ZoneID << ",ZoneGroupID:" << (int)m_pZoneGroup->getZoneGroupID()
@@ -994,8 +935,6 @@ string Zone::toString() const
     msg << ",Width:" << (int)m_Width << ",Height:" << (int)m_Height << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -1041,8 +980,6 @@ DWORD Zone::getLoadValue() const {
 void Zone::sendNPCInfo()
 
 {
-    __BEGIN_TRY
-
     // Send the NPC information to the client.
     GCNPCInfo gcNPCInfo;
 
@@ -1053,14 +990,10 @@ void Zone::sendNPCInfo()
     }
 
     broadcastPacket(&gcNPCInfo);
-
-    __END_CATCH
 }
 
 
 bool Zone::removeNPCInfo(NPC* pNPC) {
-    __BEGIN_TRY
-
     list<NPCInfo*>::iterator itr = m_NPCInfos.begin();
 
     for (; itr != m_NPCInfos.end(); itr++) {
@@ -1075,48 +1008,34 @@ bool Zone::removeNPCInfo(NPC* pNPC) {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 void Zone::releaseSafeZone()
 
 {
-    __BEGIN_TRY
-
     m_ZoneLevel = NO_SAFE_ZONE;
 
     // Reset the zone level of every tile.
     for (ZoneCoord_t x = 0; x < m_Width; x++)
         for (ZoneCoord_t y = 0; y < m_Height; y++)
             m_ppLevel[x][y] = m_ZoneLevel;
-
-    __END_CATCH
 }
 
 void Zone::resetSafeZone()
 
 {
-    __BEGIN_TRY
-
     m_ZoneLevel = de::gameContext().zoneInfos().getZoneInfo(m_ZoneID)->getZoneLevel();
 
     // Reset the zone level of every tile.
     for (ZoneCoord_t x = 0; x < m_Width; x++)
         for (ZoneCoord_t y = 0; y < m_Height; y++)
             m_ppLevel[x][y] = m_ZoneLevel;
-
-    __END_CATCH
 }
 
 void Zone::resetDarkLightInfo()
 
 {
-    __BEGIN_TRY
-
     m_pWeatherManager->resetDarkLightInfo();
-
-    __END_CATCH
 }
 
 
@@ -1124,8 +1043,6 @@ void Zone::resetDarkLightInfo()
 void Zone::remainRaceWarPlayers()
 
 {
-    __BEGIN_TRY
-
     try {
         // Ignore this when the participant limit is not active.
         if (!de::gameContext().variables().isActiveRaceWarLimiter())
@@ -1180,8 +1097,6 @@ void Zone::remainRaceWarPlayers()
         cout << t.toString().c_str() << endl;
         throw;
     }
-
-    __END_CATCH
 }
 
 bool Zone::isLevelWarZone() const {
@@ -1201,8 +1116,6 @@ bool Zone::isLevelWarZone() const {
 void Zone::remainPayPlayer()
 
 {
-    __BEGIN_TRY
-
     try {
         unordered_map<ObjectID_t, Creature*>& creatures = m_pPCManager->getCreatures();
         unordered_map<ObjectID_t, Creature*>::iterator itr = creatures.begin();
@@ -1260,6 +1173,4 @@ void Zone::remainPayPlayer()
         cout << t.toString().c_str() << endl;
         throw;
     }
-
-    __END_CATCH
 }

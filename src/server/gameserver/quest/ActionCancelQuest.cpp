@@ -23,16 +23,12 @@
 void ActionCancelQuest::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ScriptID = propertyBuffer.getPropertyInt("ScriptID");
         m_CounterScriptID = propertyBuffer.getPropertyInt("CounterScriptID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -42,8 +38,6 @@ void ActionCancelQuest::read(PropertyBuffer& propertyBuffer)
 void ActionCancelQuest::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature2 != NULL);
     Assert(pCreature2->isPC());
 
@@ -87,8 +81,6 @@ void ActionCancelQuest::execute(Creature* pCreature1, Creature* pCreature2)
             pPlayer->sendPacket(&gcNPCResponse);
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -98,12 +90,8 @@ void ActionCancelQuest::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionCancelQuest::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionCancelQuest(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

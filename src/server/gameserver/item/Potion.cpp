@@ -52,8 +52,6 @@ Potion::Potion(ItemType_t itemType, const list<OptionType_t>& optionType, ItemNu
 void Potion::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -67,8 +65,6 @@ void Potion::create(const string& ownerID, Storage storage, StorageID_t storageI
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_POTION, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                                     (int)storage, storageID, x, y, (int)getNum());
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -77,12 +73,10 @@ void Potion::create(const string& ownerID, Storage storage, StorageID_t storageI
 bool Potion::destroy()
 
 {
-    __BEGIN_TRY
-
-    if (!defaultItemObjectRepository().destroyItemObject(GEAR_POTION, getObjectTableName(), m_ItemID))
-        return false;
-
-    __END_CATCH
+    {
+        if (!defaultItemObjectRepository().destroyItemObject(GEAR_POTION, getObjectTableName(), m_ItemID))
+            return false;
+    }
 
     return true;
 }
@@ -94,11 +88,7 @@ bool Potion::destroy()
 void Potion::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_POTION, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -107,12 +97,8 @@ void Potion::tinysave(const char* field) const
 void Potion::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_POTION, m_ObjectID, getItemType(), ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)getNum(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -133,100 +119,68 @@ string Potion::toString() const
 int Potion::getHPAmount(void) const
 
 {
-    __BEGIN_TRY
-
     PotionInfo* pInfo =
         dynamic_cast<PotionInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_POTION, getItemType()));
     return pInfo->getHPAmount();
-
-    __END_CATCH
 }
 
 int Potion::getMPAmount(void) const
 
 {
-    __BEGIN_TRY
-
     PotionInfo* pInfo =
         dynamic_cast<PotionInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_POTION, getItemType()));
     return pInfo->getMPAmount();
-
-    __END_CATCH
 }
 
 
 int Potion::getHPDelay(void) const
 
 {
-    __BEGIN_TRY
-
     PotionInfo* pInfo =
         dynamic_cast<PotionInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_POTION, getItemType()));
     return pInfo->getHPDelay();
-
-    __END_CATCH
 }
 
 int Potion::getMPDelay(void) const
 
 {
-    __BEGIN_TRY
-
     PotionInfo* pInfo =
         dynamic_cast<PotionInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_POTION, getItemType()));
     return pInfo->getMPDelay();
-
-    __END_CATCH
 }
 
 
 int Potion::getHPQuantity(void) const
 
 {
-    __BEGIN_TRY
-
     PotionInfo* pInfo =
         dynamic_cast<PotionInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_POTION, getItemType()));
     return pInfo->getHPQuantity();
-
-    __END_CATCH
 }
 
 int Potion::getMPQuantity(void) const
 
 {
-    __BEGIN_TRY
-
     PotionInfo* pInfo =
         dynamic_cast<PotionInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_POTION, getItemType()));
     return pInfo->getMPQuantity();
-
-    __END_CATCH
 }
 
 
 int Potion::getHPRecoveryUnit(void) const
 
 {
-    __BEGIN_TRY
-
     PotionInfo* pInfo =
         dynamic_cast<PotionInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_POTION, getItemType()));
     return pInfo->getHPRecoveryUnit();
-
-    __END_CATCH
 }
 
 int Potion::getMPRecoveryUnit(void) const
 
 {
-    __BEGIN_TRY
-
     PotionInfo* pInfo =
         dynamic_cast<PotionInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_POTION, getItemType()));
     return pInfo->getMPRecoveryUnit();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -235,8 +189,6 @@ int Potion::getMPRecoveryUnit(void) const
 void PotionInfo::parseEffect(const string& effect)
 
 {
-    __BEGIN_TRY
-
     m_HPAmount = 0;
     m_HPDelay = 0;
     m_HPRecoveryUnit = 0;
@@ -278,8 +230,6 @@ void PotionInfo::parseEffect(const string& effect)
             m_MPRecoveryUnit = (int)unit;
         }
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -303,8 +253,6 @@ string PotionInfo::toString() const
 void PotionInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_POTION);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -329,8 +277,6 @@ void PotionInfoManager::load()
 
         addItemInfo(pPotionInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -340,8 +286,6 @@ void PotionInfoManager::load()
 void PotionLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -457,8 +401,6 @@ void PotionLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -468,8 +410,6 @@ void PotionLoader::load(Creature* pCreature)
 void PotionLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumOnlyZoneObjectRow> rows =
@@ -503,8 +443,6 @@ void PotionLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -514,12 +452,8 @@ void PotionLoader::load(Zone* pZone)
 void PotionLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

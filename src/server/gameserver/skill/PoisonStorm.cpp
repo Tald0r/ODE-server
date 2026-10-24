@@ -25,9 +25,6 @@ void PoisonStorm::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireS
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     // Vampire Object Assertion
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
@@ -49,9 +46,6 @@ void PoisonStorm::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireS
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -61,9 +55,6 @@ void PoisonStorm::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampi
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pVampire->getPlayer();
         Zone* pZone = pVampire->getZone();
@@ -285,9 +276,6 @@ void PoisonStorm::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampi
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -296,8 +284,6 @@ void PoisonStorm::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampi
 void PoisonStorm::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     try {
         Zone* pZone = pMonster->getZone();
 
@@ -464,8 +450,5 @@ void PoisonStorm::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 PoisonStorm g_PoisonStorm;

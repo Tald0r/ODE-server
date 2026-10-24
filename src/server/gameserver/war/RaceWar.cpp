@@ -61,8 +61,6 @@ RaceWar::~RaceWar() {}
 void RaceWar::executeStart()
 
 {
-    __BEGIN_TRY
-
     sendWarStartMessage();
 
     // Broadcasting the blood bible positions and sending out the players who
@@ -90,15 +88,11 @@ void RaceWar::executeStart()
 
     // Record in the RaceWarHistory Table
     recordRaceWarStart();
-
-    __END_CATCH
 }
 
 void RaceWar::recordRaceWarStart()
 
 {
-    __BEGIN_TRY
-
     vector<RaceCurrentNumRow> raceNums = defaultWarInfoRepository().loadRaceWarCurrentNums();
 
     uint slayerSum = 0;
@@ -137,8 +131,6 @@ void RaceWar::recordRaceWarStart()
 
     defaultWarInfoRepository().insertRaceWarHistory(getWarStartTime().toStringforWeb(), slayerSum, vampireSum,
                                                     oustersSum, slayerOld, vampireOld, oustersOld);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -151,8 +143,6 @@ void RaceWar::recordRaceWarStart()
 void RaceWar::executeEnd()
 
 {
-    __BEGIN_TRY
-
     ShrineInfoManager& shrines = de::gameContext().shrines();
 
     //----------------------------------------------------------------------------
@@ -202,15 +192,11 @@ void RaceWar::executeEnd()
 
     // Record in the RaceWarHistory Table
     recordRaceWarEnd();
-
-    __END_CATCH
 }
 
 void RaceWar::recordRaceWarEnd()
 
 {
-    __BEGIN_TRY
-
     vector<ShrineOwnerRow> owners = defaultWarInfoRepository().loadShrineOwners();
 
     string slayerNew;
@@ -240,8 +226,6 @@ void RaceWar::recordRaceWarEnd()
 
     filelog("script.log", cmd);
     system(cmd);
-
-    __END_CATCH
 }
 
 // A shrine set changes owner for the race of the player who places the matching
@@ -262,11 +246,7 @@ bool RaceWar::mayModifyShrineOwner(PlayerCreature* pPC) {
 string RaceWar::getWarName() const
 
 {
-    __BEGIN_TRY
-
     return "Race War";
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -275,34 +255,24 @@ string RaceWar::getWarName() const
 void RaceWar::sendWarEndMessage() const
 
 {
-    __BEGIN_TRY
-
     War::sendWarEndMessage();
 
     // The packet that confirms the safe zone release?
     GCNoticeEvent gcNoticeEvent;
     gcNoticeEvent.setCode(NOTICE_EVENT_RACE_WAR_OVER);
     de::gameContext().zoneGroups().broadcast(&gcNoticeEvent);
-
-    __END_CATCH
 }
 
 
 void RaceWar::makeWarScheduleInfo(WarScheduleInfo* pWSI) const
 
 {
-    __BEGIN_TRY
-
     pWSI->warType = getWarType();
-
-    __END_CATCH
 }
 
 void RaceWar::makeWarInfo(WarInfo* pWarInfo) const
 
 {
-    __BEGIN_TRY
-
     Assert(pWarInfo != NULL);
     Assert(pWarInfo->getWarType() == WAR_RACE);
 
@@ -317,21 +287,15 @@ void RaceWar::makeWarInfo(WarInfo* pWarInfo) const
         CastleInfo* pCastleInfo = itr->second;
         pRaceWarInfo->addCastleID(pCastleInfo->getZoneID());
     }
-
-    __END_CATCH
 }
 
 
 string RaceWar::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "RaceWar(" << "WarID:" << (int)getWarID() << ",State:" << (int)getState() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

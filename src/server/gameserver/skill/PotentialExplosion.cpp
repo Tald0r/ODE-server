@@ -20,9 +20,6 @@
 void PotentialExplosion::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -126,9 +123,6 @@ void PotentialExplosion::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffect
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 PotentialExplosion g_PotentialExplosion;

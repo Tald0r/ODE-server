@@ -47,11 +47,7 @@ void ConditionFlagOn::read(PropertyBuffer& propertyBuffer)
 string ConditionFlagOn::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionFlagOn(" << "Index:" << (int)m_Index << ")";
     return msg.toString();
-
-    __END_CATCH
 }

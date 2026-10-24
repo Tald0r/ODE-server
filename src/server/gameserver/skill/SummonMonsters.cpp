@@ -19,10 +19,7 @@
 // Constructor
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
-SummonMonsters::SummonMonsters() {
-    __BEGIN_TRY
-    __END_CATCH
-}
+SummonMonsters::SummonMonsters() {}
 
 //////////////////////////////////////////////////////////////////////////////
 // Vampire self handler
@@ -34,9 +31,6 @@ SummonMonsters::SummonMonsters() {
 void SummonMonsters::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
     Zone* pZone = pMonster->getZone();
     Assert(pZone != NULL);
@@ -131,8 +125,6 @@ void SummonMonsters::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-    __END_CATCH
 }
 
 SummonMonsters g_SummonMonsters;

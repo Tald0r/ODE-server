@@ -20,36 +20,27 @@
 EffectYellowPoisonToCreature::EffectYellowPoisonToCreature(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     m_Level = 0;
     setTarget(pCreature);
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoisonToCreature::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoisonToCreature::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoisonToCreature::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -91,17 +82,12 @@ void EffectYellowPoisonToCreature::unaffect(Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 void EffectYellowPoisonToCreature::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 
@@ -109,18 +95,13 @@ void EffectYellowPoisonToCreature::unaffect()
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoisonToCreature::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectYellowPoisonToCreature::create(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Timeval currentTime;
 
     getCurrentTime(currentTime);
@@ -131,8 +112,6 @@ void EffectYellowPoisonToCreature::create(const string& ownerID)
     defaultEffectSaveRepository().insertCreatureEffect(CREATURE_EFFECT_YELLOW_POISON_TO_CREATURE, ownerID,
                                                        currentYearTime, m_Deadline.tv_sec, (int)m_Level,
                                                        (int)m_OldSight);
-
-    __END_CATCH
 }
 
 
@@ -141,11 +120,7 @@ void EffectYellowPoisonToCreature::create(const string& ownerID)
 void EffectYellowPoisonToCreature::destroy(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     defaultEffectSaveRepository().deleteCreatureEffect(CREATURE_EFFECT_YELLOW_POISON_TO_CREATURE, ownerID);
-
-    __END_CATCH
 }
 
 
@@ -154,30 +129,22 @@ void EffectYellowPoisonToCreature::destroy(const string& ownerID)
 void EffectYellowPoisonToCreature::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().updateCreatureEffect(CREATURE_EFFECT_YELLOW_POISON_TO_CREATURE, ownerID,
                                                        currentYearTime, m_Deadline.tv_sec, (int)m_Level,
                                                        (int)m_OldSight);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectYellowPoisonToCreature::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectYellowPoisonToCreature(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -185,8 +152,6 @@ string EffectYellowPoisonToCreature::toString() const {
 void EffectYellowPoisonToCreatureLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL) {
         return;
     }
@@ -224,6 +189,4 @@ void EffectYellowPoisonToCreatureLoader::load(Creature* pCreature)
             pCreature->addEffect(pEffect);
         }
     }
-
-    __END_CATCH
 }

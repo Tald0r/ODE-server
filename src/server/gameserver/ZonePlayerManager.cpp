@@ -59,8 +59,6 @@ bool checkZonePlayerManager(GamePlayer* pGamePlayer, ZonePlayerManager* pZPM, co
 ZonePlayerManager::ZonePlayerManager()
 
     : m_PollSet((int)nMaxPlayers), m_TimeoutMilliseconds(0), m_MinFD(-1), m_MaxFD(-1) {
-    __BEGIN_TRY
-
     m_Mutex.setName("ZonePlayerManager");
     m_PlayerListQueue.clear();
     m_BroadcastQueue.clear();
@@ -68,7 +66,6 @@ ZonePlayerManager::ZonePlayerManager()
     // How long a poll waits. This interval should eventually become a
     // configuration option.
     m_TimeoutMilliseconds = 0;
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -84,15 +81,11 @@ ZonePlayerManager::~ZonePlayerManager() noexcept {
 void ZonePlayerManager::broadcastPacket(Packet* pPacket)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     PlayerManager::broadcastPacket(pPacket);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -100,11 +93,7 @@ void ZonePlayerManager::broadcastPacket(Packet* pPacket)
 void ZonePlayerManager::broadcastPacket_NOBLOCKED(Packet* pPacket)
 
 {
-    __BEGIN_TRY
-
     PlayerManager::broadcastPacket(pPacket);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -127,15 +116,11 @@ void ZonePlayerManager::flushBroadcastPacket() {
 void ZonePlayerManager::copyPlayers()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     PlayerManager::copyPlayers();
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
@@ -144,8 +129,6 @@ void ZonePlayerManager::copyPlayers()
 // When none is, there are no players to process.
 //////////////////////////////////////////////////////////////////////////////
 void ZonePlayerManager::pollSockets() {
-    __BEGIN_TRY
-
     // The membership is read and the answers are stored under the mutex that
     // guards it, while the wait itself runs without it: other threads add and
     // remove players here.
@@ -166,8 +149,6 @@ void ZonePlayerManager::pollSockets() {
     m_PollSet.collect();
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -178,9 +159,6 @@ void ZonePlayerManager::pollSockets() {
 // so that player's processInput() is called.
 //////////////////////////////////////////////////////////////////////////////
 void ZonePlayerManager::processInputs() {
-    __BEGIN_TRY
-
-
     if (m_MinFD == -1 && m_MaxFD == -1) // no player exist
     {
         return;
@@ -245,16 +223,12 @@ void ZonePlayerManager::processInputs() {
             }
         }
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // process all players' commands
 //////////////////////////////////////////////////////////////////////////////
 void ZonePlayerManager::processCommands() {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // test code
@@ -389,7 +363,6 @@ void ZonePlayerManager::processCommands() {
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -398,9 +371,6 @@ void ZonePlayerManager::processCommands() {
 //
 //////////////////////////////////////////////////////////////////////
 void ZonePlayerManager::processOutputs() {
-    __BEGIN_TRY
-
-
     if (m_MinFD == -1 && m_MaxFD == -1) // no player exist
     {
         return;
@@ -456,9 +426,6 @@ void ZonePlayerManager::processOutputs() {
             }
         }
     }
-
-
-    __END_CATCH
 }
 
 
@@ -471,9 +438,6 @@ void ZonePlayerManager::processOutputs() {
 //
 //////////////////////////////////////////////////////////////////////
 void ZonePlayerManager::processExceptions() {
-    __BEGIN_TRY
-
-
     if (m_MinFD == -1 && m_MaxFD == -1) // no player exist
     {
         return;
@@ -499,9 +463,6 @@ void ZonePlayerManager::processExceptions() {
             }
         }
     }
-
-
-    __END_CATCH
 }
 
 
@@ -509,8 +470,6 @@ void ZonePlayerManager::processExceptions() {
 // Add a player to the manager.
 //////////////////////////////////////////////////////////////////////
 void ZonePlayerManager::addPlayer(GamePlayer* pGamePlayer) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     PlayerManager::addPlayer(pGamePlayer);
@@ -532,16 +491,12 @@ void ZonePlayerManager::addPlayer(GamePlayer* pGamePlayer) {
     m_PollSet.watch(fd, de::DescriptorPollSet::kRead | de::DescriptorPollSet::kWrite | de::DescriptorPollSet::kUrgent);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
 // Add a player to the manager.
 //////////////////////////////////////////////////////////////////////
 void ZonePlayerManager::addPlayer_NOBLOCKED(GamePlayer* pGamePlayer) {
-    __BEGIN_TRY
-
     PlayerManager::addPlayer(pGamePlayer);
 
 
@@ -559,16 +514,12 @@ void ZonePlayerManager::addPlayer_NOBLOCKED(GamePlayer* pGamePlayer) {
     // Watch the new descriptor. It is reported ready no earlier than the next
     // poll.
     m_PollSet.watch(fd, de::DescriptorPollSet::kRead | de::DescriptorPollSet::kWrite | de::DescriptorPollSet::kUrgent);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
 // Remove a player from the manager.
 //////////////////////////////////////////////////////////////////////
 void ZonePlayerManager::deletePlayer_NOBLOCKED(SOCKET fd) {
-    __BEGIN_TRY
-
     // Remove the player pointer from the player array.
     PlayerManager::deletePlayer(fd);
 
@@ -617,9 +568,6 @@ void ZonePlayerManager::deletePlayer_NOBLOCKED(SOCKET fd) {
     // reported for it, because later processing could otherwise still service
     // an object that is already gone.
     m_PollSet.unwatch(fd);
-
-
-    __END_CATCH
 }
 
 
@@ -627,8 +575,6 @@ void ZonePlayerManager::deletePlayer_NOBLOCKED(SOCKET fd) {
 // Remove a player from the manager.
 //////////////////////////////////////////////////////////////////////
 void ZonePlayerManager::deletePlayer(SOCKET fd) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     try {
@@ -695,16 +641,12 @@ void ZonePlayerManager::deletePlayer(SOCKET fd) {
     m_PollSet.unwatch(fd);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////////////
 Player* ZonePlayerManager::getPlayer(SOCKET fd) {
-    __BEGIN_TRY
-
     Player* pPlayer = NULL;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -714,17 +656,13 @@ Player* ZonePlayerManager::getPlayer(SOCKET fd) {
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return pPlayer;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////////////
 Player* ZonePlayerManager::getPlayerByPhoneNumber(PhoneNumber_t PhoneNumber) {
-    __BEGIN_TRY
     return NULL;
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -737,8 +675,6 @@ Player* ZonePlayerManager::getPlayerByPhoneNumber(PhoneNumber_t PhoneNumber) {
 void ZonePlayerManager::save()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     unsigned int i;
@@ -756,34 +692,24 @@ void ZonePlayerManager::save()
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void ZonePlayerManager::pushPlayer(GamePlayer* pGamePlayer)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     Assert(pGamePlayer != nullptr);
     m_PlayerListQueue.push_back(pGamePlayer);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void ZonePlayerManager::pushOutPlayer(GamePlayer* pGamePlayer)
 
 {
-    __BEGIN_TRY
-
     Assert(pGamePlayer != nullptr);
     m_PlayerOutListQueue.push_back(pGamePlayer);
-
-    __END_CATCH
 }
 
 void ZonePlayerManager::moveToOutgoing(GamePlayer* player) {
@@ -800,8 +726,6 @@ void ZonePlayerManager::moveToOutgoing(GamePlayer* player) {
 void ZonePlayerManager::processPlayerListQueue()
 
 {
-    __BEGIN_TRY
-
     // Add the players in the queue to the manager.
     while (!m_PlayerListQueue.empty()) {
         GamePlayer* pGamePlayer = m_PlayerListQueue.front();
@@ -825,15 +749,11 @@ void ZonePlayerManager::processPlayerListQueue()
 
         pZone->addPC(pCreature, pCreature->getX(), pCreature->getY(), DOWN);
     }
-
-    __END_CATCH
 }
 
 void ZonePlayerManager::heartbeat()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     processPlayerListQueue();
@@ -849,13 +769,9 @@ void ZonePlayerManager::heartbeat()
 
     // Even the empty check belongs under the producer's broadcast mutex.
     flushBroadcastPacket();
-
-    __END_CATCH
 }
 
 void ZonePlayerManager::deleteQueuePlayer(GamePlayer* pGamePlayer) {
-    __BEGIN_TRY
-
     // No lock is needed here.
 
     Assert(pGamePlayer != NULL);
@@ -866,16 +782,11 @@ void ZonePlayerManager::deleteQueuePlayer(GamePlayer* pGamePlayer) {
     if (itr != m_PlayerOutListQueue.end()) {
         m_PlayerOutListQueue.erase(itr);
     }
-
-
-    __END_CATCH
 }
 
 void ZonePlayerManager::removeFlag(Effect::EffectClass EC)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     for (uint i = 0; i < nMaxPlayers; i++) {
@@ -893,8 +804,6 @@ void ZonePlayerManager::removeFlag(Effect::EffectClass EC)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////

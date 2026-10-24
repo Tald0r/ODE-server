@@ -33,27 +33,27 @@
 //--------------------------------------------------------------------------------
 ZoneGroupManager::ZoneGroupManager()
 
-    : m_ZoneGroups(10){__BEGIN_TRY __END_CATCH}
+    : m_ZoneGroups(10) {}
 
 
-      //--------------------------------------------------------------------------------
-      // destructor
-      //--------------------------------------------------------------------------------
-      ZoneGroupManager::~ZoneGroupManager()
+//--------------------------------------------------------------------------------
+// destructor
+//--------------------------------------------------------------------------------
+ZoneGroupManager::~ZoneGroupManager()
 
 {
-    __BEGIN_TRY
+    try {
+        unordered_map<ZoneGroupID_t, ZoneGroup*>::iterator itr = m_ZoneGroups.begin();
+        for (; itr != m_ZoneGroups.end(); itr++) {
+            ZoneGroup* pZoneGroup = itr->second;
+            SAFE_DELETE(pZoneGroup);
+        }
 
-    unordered_map<ZoneGroupID_t, ZoneGroup*>::iterator itr = m_ZoneGroups.begin();
-    for (; itr != m_ZoneGroups.end(); itr++) {
-        ZoneGroup* pZoneGroup = itr->second;
-        SAFE_DELETE(pZoneGroup);
+        // Delete every pair held in the hash map.
+        m_ZoneGroups.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    // Delete every pair held in the hash map.
-    m_ZoneGroups.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 
@@ -63,11 +63,7 @@ ZoneGroupManager::ZoneGroupManager()
 void ZoneGroupManager::init()
 
 {
-    __BEGIN_TRY
-
     load();
-
-    __END_CATCH
 }
 
 
@@ -81,7 +77,6 @@ void ZoneGroupManager::init()
 void ZoneGroupManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     list<ZoneGroupID_t> ZoneGroupIDList;
@@ -136,7 +131,6 @@ void ZoneGroupManager::load()
     ZoneGroupIDList.clear();
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -146,11 +140,7 @@ void ZoneGroupManager::load()
 void ZoneGroupManager::save()
 
 {
-    __BEGIN_TRY
-
     throw UnsupportedError();
-
-    __END_CATCH
 }
 
 
@@ -160,8 +150,6 @@ void ZoneGroupManager::save()
 void ZoneGroupManager::addZoneGroup(ZoneGroup* pZoneGroup)
 
 {
-    __BEGIN_TRY
-
     unordered_map<ZoneGroupID_t, ZoneGroup*>::iterator itr = m_ZoneGroups.find(pZoneGroup->getZoneGroupID());
 
     if (itr != m_ZoneGroups.end())
@@ -170,16 +158,12 @@ void ZoneGroupManager::addZoneGroup(ZoneGroup* pZoneGroup)
 
     // Store the zone group under its id.
     m_ZoneGroups[pZoneGroup->getZoneGroupID()] = pZoneGroup;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
 // get zone from zone manager
 //--------------------------------------------------------------------------------
 ZoneGroup* ZoneGroupManager::getZoneGroupByGroupID(ZoneGroupID_t ZoneGroupID) const {
-    __BEGIN_TRY
-
     ZoneGroup* pZoneGroup = NULL;
 
     unordered_map<ZoneGroupID_t, ZoneGroup*>::const_iterator itr = m_ZoneGroups.find(ZoneGroupID);
@@ -195,8 +179,6 @@ ZoneGroup* ZoneGroupManager::getZoneGroupByGroupID(ZoneGroupID_t ZoneGroupID) co
     }
 
     return pZoneGroup;
-
-    __END_CATCH
 }
 
 
@@ -204,8 +186,6 @@ ZoneGroup* ZoneGroupManager::getZoneGroupByGroupID(ZoneGroupID_t ZoneGroupID) co
 // Delete zone from zone manager
 //--------------------------------------------------------------------------------
 void ZoneGroupManager::deleteZoneGroup(ZoneGroupID_t zoneID) {
-    __BEGIN_TRY
-
     unordered_map<ZoneGroupID_t, ZoneGroup*>::iterator itr = m_ZoneGroups.find(zoneID);
 
     if (itr != m_ZoneGroups.end()) {
@@ -220,8 +200,6 @@ void ZoneGroupManager::deleteZoneGroup(ZoneGroupID_t zoneID) {
         msg << "ZoneGroupID : " << zoneID;
         throw NoSuchElementException(msg.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -229,8 +207,6 @@ void ZoneGroupManager::deleteZoneGroup(ZoneGroupID_t zoneID) {
 // get zone from zone manager
 //--------------------------------------------------------------------------------
 ZoneGroup* ZoneGroupManager::getZoneGroup(ZoneGroupID_t zoneID) const {
-    __BEGIN_TRY
-
     ZoneGroup* pZoneGroup = NULL;
 
     unordered_map<ZoneGroupID_t, ZoneGroup*>::const_iterator itr = m_ZoneGroups.find(zoneID);
@@ -246,8 +222,6 @@ ZoneGroup* ZoneGroupManager::getZoneGroup(ZoneGroupID_t zoneID) const {
     }
 
     return pZoneGroup;
-
-    __END_CATCH
 }
 
 void ZoneGroupManager::broadcast(Packet* pPacket)
@@ -498,49 +472,49 @@ bool ZoneGroupManager::makeBalancedLoadInfo(LOAD_INFOS& loadInfos, bool bForce)
 bool ZoneGroupManager::makeDefaultLoadInfo(LOAD_INFOS& loadInfos)
 
 {
-    __BEGIN_TRY
-    __BEGIN_DEBUG
+    {
+        __BEGIN_DEBUG
 
-    list<ZoneGroupID_t> ZoneGroupIDList;
+        list<ZoneGroupID_t> ZoneGroupIDList;
 
-    // Read the zone group ids first.
-    vector<int> zoneGroupIDs = defaultZoneInfoRepository().loadZoneGroupIDs(false);
-    for (size_t g = 0; g < zoneGroupIDs.size(); g++) {
-        ZoneGroupID_t ID = zoneGroupIDs[g];
-        ZoneGroupIDList.push_back(ID);
-    }
-
-
-    list<ZoneGroupID_t>::iterator itr = ZoneGroupIDList.begin();
-    for (; itr != ZoneGroupIDList.end(); itr++) {
-        ZoneGroupID_t ID = *itr;
-
-        vector<int> zoneIDs = defaultZoneInfoRepository().loadZoneIDsOfGroup(ID, false);
-
-        for (size_t z = 0; z < zoneIDs.size(); z++) {
-            ZoneID_t zoneID = zoneIDs[z];
-
-            LoadInfo* pInfo = new LoadInfo;
-            pInfo->id = zoneID;
-
-            try {
-                pInfo->oldGroupID = de::gameContext().zoneInfos().getZoneInfo(zoneID)->getZoneGroupID();
-            } catch (NoSuchElementException&) {
-                filelog("makeDefaultLoadInfoError.txt", "NoSuch ZoneInfo : %d", zoneID);
-                pInfo->oldGroupID = ID; // just let it through
-            }
-
-            pInfo->groupID = ID;
-            pInfo->load = 0; // meaningless here
-
-            loadInfos[zoneID] = pInfo;
+        // Read the zone group ids first.
+        vector<int> zoneGroupIDs = defaultZoneInfoRepository().loadZoneGroupIDs(false);
+        for (size_t g = 0; g < zoneGroupIDs.size(); g++) {
+            ZoneGroupID_t ID = zoneGroupIDs[g];
+            ZoneGroupIDList.push_back(ID);
         }
+
+
+        list<ZoneGroupID_t>::iterator itr = ZoneGroupIDList.begin();
+        for (; itr != ZoneGroupIDList.end(); itr++) {
+            ZoneGroupID_t ID = *itr;
+
+            vector<int> zoneIDs = defaultZoneInfoRepository().loadZoneIDsOfGroup(ID, false);
+
+            for (size_t z = 0; z < zoneIDs.size(); z++) {
+                ZoneID_t zoneID = zoneIDs[z];
+
+                LoadInfo* pInfo = new LoadInfo;
+                pInfo->id = zoneID;
+
+                try {
+                    pInfo->oldGroupID = de::gameContext().zoneInfos().getZoneInfo(zoneID)->getZoneGroupID();
+                } catch (NoSuchElementException&) {
+                    filelog("makeDefaultLoadInfoError.txt", "NoSuch ZoneInfo : %d", zoneID);
+                    pInfo->oldGroupID = ID; // just let it through
+                }
+
+                pInfo->groupID = ID;
+                pInfo->load = 0; // meaningless here
+
+                loadInfos[zoneID] = pInfo;
+            }
+        }
+
+        ZoneGroupIDList.clear();
+
+        __END_DEBUG
     }
-
-    ZoneGroupIDList.clear();
-
-    __END_DEBUG
-    __END_CATCH
 
     return true;
 }
@@ -563,12 +537,8 @@ bool ZoneGroupManager::makeDefaultLoadInfo(LOAD_INFOS& loadInfos)
 void ZoneGroupManager::balanceZoneGroup(bool bForce, bool bDefault)
 
 {
-    __BEGIN_TRY
-
     filelog("balanceZoneGroup.txt", "Zone group balancing is disabled.");
     return;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -577,8 +547,6 @@ void ZoneGroupManager::balanceZoneGroup(bool bForce, bool bDefault)
 void ZoneGroupManager::lockZoneGroups()
 
 {
-    __BEGIN_TRY
-
     //------------------------------------------------------------------
     // LoginServerManager UNLOCK
     //------------------------------------------------------------------
@@ -595,8 +563,6 @@ void ZoneGroupManager::lockZoneGroups()
         ZoneGroup* pZoneGroup = itr->second;
         pZoneGroup->lock();
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -605,8 +571,6 @@ void ZoneGroupManager::lockZoneGroups()
 void ZoneGroupManager::unlockZoneGroups()
 
 {
-    __BEGIN_TRY
-
     //------------------------------------------------------------------
     //
     // 					UNLOCK all ZoneGroups
@@ -623,9 +587,6 @@ void ZoneGroupManager::unlockZoneGroups()
     // LoginServerManager UNLOCK
     //------------------------------------------------------------------
     de::gameContext().loginServer().unlock();
-
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -634,8 +595,6 @@ void ZoneGroupManager::unlockZoneGroups()
 int ZoneGroupManager::getPlayerNum() const
 
 {
-    __BEGIN_TRY
-
     int numPC = 0;
 
     unordered_map<ZoneGroupID_t, ZoneGroup*>::const_iterator itr = m_ZoneGroups.begin();
@@ -648,8 +607,6 @@ int ZoneGroupManager::getPlayerNum() const
     }
 
     return numPC;
-
-    __END_CATCH
 }
 
 void ZoneGroupManager::removeFlag(Effect::EffectClass EC) {
@@ -662,8 +619,6 @@ void ZoneGroupManager::removeFlag(Effect::EffectClass EC) {
 string ZoneGroupManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ZoneGroupManager(";
@@ -676,6 +631,4 @@ string ZoneGroupManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

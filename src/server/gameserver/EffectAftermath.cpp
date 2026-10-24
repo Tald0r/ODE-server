@@ -17,50 +17,36 @@
 EffectAftermath::EffectAftermath(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Server-only Effect.
     m_bBroadcastingEffect = false;
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 EffectAftermath::~EffectAftermath()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectAftermath::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectAftermath::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectAftermath::unaffect(Creature* pFromCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // cout << "EffectAftermath" << "unaffect BEGIN" << endl;
@@ -72,7 +58,6 @@ void EffectAftermath::unaffect(Creature* pFromCreature)
     // cout << "EffectAftermath" << "unaffect END" << endl;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -80,16 +65,12 @@ void EffectAftermath::unaffect(Creature* pFromCreature)
 void EffectAftermath::unaffect()
 
 {
-    __BEGIN_TRY
-
     // cout << "EffectAftermath" << "unaffect BEGIN" << endl;
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
 
     // cout << "EffectAftermath" << "unaffect END" << endl;
-
-    __END_CATCH
 }
 
 
@@ -97,25 +78,18 @@ void EffectAftermath::unaffect()
 //////////////////////////////////////////////////////////////////////////////
 void EffectAftermath::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectAftermath::create(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().insertDeadline(EFFECT_TABLE_AFTERMATH, ownerID, currentYearTime, m_Deadline.tv_sec);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -123,11 +97,7 @@ void EffectAftermath::create(const string& ownerID)
 void EffectAftermath::destroy(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     defaultEffectSaveRepository().deleteDeadline(EFFECT_TABLE_AFTERMATH, ownerID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -135,29 +105,21 @@ void EffectAftermath::destroy(const string& ownerID)
 void EffectAftermath::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
 
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().updateDeadline(EFFECT_TABLE_AFTERMATH, ownerID, currentYearTime, m_Deadline.tv_sec);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectAftermath::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectAftermath(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -165,8 +127,6 @@ string EffectAftermath::toString() const {
 void EffectAftermathLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     if (pCreature == NULL || (!pCreature->isSlayer() && !pCreature->isOusters())) {
         // cout << "EffectAftermathLoader : the creature is null." << endl;
         return;
@@ -198,6 +158,4 @@ void EffectAftermathLoader::load(Creature* pCreature)
             pEffectManager->addEffect(pEffectAftermath);
         }
     }
-
-    __END_CATCH
 }

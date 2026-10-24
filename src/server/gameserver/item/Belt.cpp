@@ -36,8 +36,6 @@ Belt::Belt(ItemType_t itemType, const list<OptionType_t>& optionType)
 
 //: m_ItemType(itemType), m_OptionType(optionType), m_Durability(0), m_pInventory(NULL)
 {
-    __BEGIN_TRY
-
     setItemType(itemType);
     setOptionType(optionType);
 
@@ -53,8 +51,6 @@ Belt::Belt(ItemType_t itemType, const list<OptionType_t>& optionType)
         filelog("itembug.log", "Belt::Belt() : Invalid item type or option type");
         throw Error("Belt::Belt() : Invalid item type or optionType");
     }
-
-    __END_CATCH
 }
 
 
@@ -73,8 +69,6 @@ Belt::~Belt()
 void Belt::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -92,8 +86,6 @@ void Belt::create(const string& ownerID, Storage storage, StorageID_t storageID,
     defaultItemObjectRepository().insertGear(GEAR_BELT, m_ItemID, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -103,28 +95,26 @@ void Belt::create(const string& ownerID, Storage storage, StorageID_t storageID,
 bool Belt::destroy()
 
 {
-    __BEGIN_TRY
-
-    //-------------------------------------------------------
-    // If any items are left in the belt, the items inside would have to be
-    // destroyed as well.
-    // For a belt the items are already deleted by the delete above, so they
-    // are not deleted here.
-    // If the belt is no longer needed it has to be deleted above.
-    //-------------------------------------------------------
-    for (int i = 0; i < m_pInventory->getHeight(); i++) {
-        for (int j = 0; j < m_pInventory->getWidth(); j++) {
-            Item* pItem = m_pInventory->getItem(j, i);
-            if (pItem != NULL) {
-                pItem->destroy();
+    {
+        //-------------------------------------------------------
+        // If any items are left in the belt, the items inside would have to be
+        // destroyed as well.
+        // For a belt the items are already deleted by the delete above, so they
+        // are not deleted here.
+        // If the belt is no longer needed it has to be deleted above.
+        //-------------------------------------------------------
+        for (int i = 0; i < m_pInventory->getHeight(); i++) {
+            for (int j = 0; j < m_pInventory->getWidth(); j++) {
+                Item* pItem = m_pInventory->getItem(j, i);
+                if (pItem != NULL) {
+                    pItem->destroy();
+                }
             }
         }
+
+        if (!defaultItemObjectRepository().destroyGearObject(GEAR_BELT, m_ItemID))
+            return false;
     }
-
-    if (!defaultItemObjectRepository().destroyGearObject(GEAR_BELT, m_ItemID))
-        return false;
-
-    __END_CATCH
 
     return true;
 }
@@ -136,11 +126,7 @@ bool Belt::destroy()
 void Belt::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_BELT, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -149,8 +135,6 @@ void Belt::tinysave(const char* field) const
 void Belt::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
@@ -167,8 +151,6 @@ void Belt::save(const string& ownerID, Storage storage, StorageID_t storageID, B
             }
         }
     }
-
-    __END_CATCH
 }
 
 void Belt::makePCItemInfo(PCItemInfo& result) const {
@@ -218,14 +200,10 @@ string Belt::toString() const
 PocketNum_t Belt::getPocketCount(void) const
 
 {
-    __BEGIN_TRY
-
     BeltInfo* pBeltInfo =
         dynamic_cast<BeltInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_BELT, getItemType()));
     Assert(pBeltInfo != NULL);
     return pBeltInfo->getPocketCount();
-
-    __END_CATCH
 }
 
 
@@ -251,7 +229,6 @@ string BeltInfo::toString() const
 void BeltInfoManager::load()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_BELT);
@@ -290,7 +267,6 @@ void BeltInfoManager::load()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -300,8 +276,6 @@ void BeltInfoManager::load()
 void BeltLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows = defaultItemObjectRepository().loadGearOfOwner(GEAR_BELT, pCreature->getName());
@@ -413,8 +387,6 @@ void BeltLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -424,8 +396,6 @@ void BeltLoader::load(Creature* pCreature)
 void BeltLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -466,8 +436,6 @@ void BeltLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -477,12 +445,8 @@ void BeltLoader::load(Zone* pZone)
 void BeltLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

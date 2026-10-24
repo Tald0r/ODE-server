@@ -30,9 +30,6 @@ void PoisonMesh::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -168,9 +165,6 @@ void PoisonMesh::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 PoisonMesh g_PoisonMesh;

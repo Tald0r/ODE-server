@@ -47,8 +47,6 @@ EventStar::EventStar(ItemType_t itemType, const list<OptionType_t>& optionType, 
 void EventStar::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -62,8 +60,6 @@ void EventStar::create(const string& ownerID, Storage storage, StorageID_t stora
 
     defaultItemObjectRepository().insertNumItem(GEAR_EVENT_STAR, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                 (int)storage, storageID, (int)x, (int)y, (int)m_Num, (int)m_CreateType);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -72,22 +68,14 @@ void EventStar::create(const string& ownerID, Storage storage, StorageID_t stora
 void EventStar::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_EVENT_STAR, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void EventStar::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumItem(GEAR_EVENT_STAR, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                 storageID, (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 string EventStar::toString() const
@@ -103,31 +91,19 @@ string EventStar::toString() const
 VolumeWidth_t EventStar::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_EVENT_STAR, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t EventStar::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_EVENT_STAR, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t EventStar::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_EVENT_STAR, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -148,8 +124,6 @@ string EventStarInfo::toString() const
 void EventStarInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_EVENT_STAR);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -174,8 +148,6 @@ void EventStarInfoManager::load()
 
         addItemInfo(pEventStarInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -185,8 +157,6 @@ void EventStarInfoManager::load()
 void EventStarLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumObjectRow> rows = defaultItemObjectRepository().loadNumItemOfOwner(GEAR_EVENT_STAR, pCreature->getName());
@@ -279,15 +249,11 @@ void EventStarLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void EventStarLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumZoneObjectRow> rows =
@@ -322,19 +288,13 @@ void EventStarLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void EventStarLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

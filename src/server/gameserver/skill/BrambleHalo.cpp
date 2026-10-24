@@ -18,9 +18,6 @@
 void BrambleHalo::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -94,9 +91,6 @@ void BrambleHalo::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CE
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 BrambleHalo g_BrambleHalo;

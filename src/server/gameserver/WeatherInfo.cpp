@@ -16,8 +16,6 @@
 Weather WeatherInfo::getWeather(uint probability) const
 
 {
-    __BEGIN_TRY
-
     Assert(m_Probabilities[WEATHER_CLEAR] + m_Probabilities[WEATHER_RAINY] + m_Probabilities[WEATHER_SNOWY] == 100);
     Assert(probability <= 100);
 
@@ -27,22 +25,16 @@ Weather WeatherInfo::getWeather(uint probability) const
         return WEATHER_RAINY;
     else
         return WEATHER_SNOWY;
-
-    __END_CATCH
 }
 
 string WeatherInfo::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "WeatherInfo(" << "Clear:" << m_Probabilities[WEATHER_CLEAR] << "%"
         << ",Rainy:" << m_Probabilities[WEATHER_RAINY] << "%" << ",Snowy:" << m_Probabilities[WEATHER_SNOWY] << "%"
         << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,8 +44,6 @@ string WeatherInfo::toString() const
 void WeatherInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     vector<WeatherRow> rows = defaultGameInfoRepository().loadWeather();
 
     Assert(rows.size() == 12);
@@ -64,14 +54,11 @@ void WeatherInfoManager::load()
         m_WeatherInfos[month - 1].setProbability(WEATHER_RAINY, rows[r].rainy);
         m_WeatherInfos[month - 1].setProbability(WEATHER_SNOWY, rows[r].snowy);
     }
-
-    __END_CATCH
 }
 
 string WeatherInfoManager::toString() const
 
 {
-    __BEGIN_TRY
     StringStream msg;
 
     msg << "WeatherInfoManager(";
@@ -83,5 +70,4 @@ string WeatherInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-    __END_CATCH
 }

@@ -34,8 +34,6 @@
 Inventory::Inventory(CoordInven_t Width, CoordInven_t Height, bool bDeleteAll)
 
 {
-    __BEGIN_TRY
-
     m_Owner = "";
     m_Width = Width;
     m_Height = Height;
@@ -48,9 +46,6 @@ Inventory::Inventory(CoordInven_t Width, CoordInven_t Height, bool bDeleteAll)
     for (int i = 0; i < m_Width; i++) {
         m_pInventorySlot[i] = new InventorySlot[m_Height];
     }
-
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -59,8 +54,6 @@ Inventory::Inventory(CoordInven_t Width, CoordInven_t Height, bool bDeleteAll)
 Inventory::Inventory(const Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     m_Width = pInventory->getWidth();
     m_Height = pInventory->getHeight();
     m_TotalNum = pInventory->getItemNum();
@@ -80,8 +73,6 @@ Inventory::Inventory(const Inventory* pInventory)
                 m_pInventorySlot[x][y].addItem(pItem);
         }
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -90,64 +81,64 @@ Inventory::Inventory(const Inventory* pInventory)
 Inventory::~Inventory()
 
 {
-    __BEGIN_TRY
-
-    int i, j, k;
-
     try {
-        if (m_pInventorySlot != NULL) {
-            // Delete every item held in the inventory.
-            // Using the item size would allow further optimization.
-            for (j = 0; j < m_Height; j++) {
-                for (i = 0; i < m_Width; i++) {
-                    Item* pItem = m_pInventorySlot[i][j].getItem();
-                    if (pItem != NULL) {
-                        // Set the inventory slot to NULL.
+        int i, j, k;
 
-                        deleteItem(i, j);
+        try {
+            if (m_pInventorySlot != NULL) {
+                // Delete every item held in the inventory.
+                // Using the item size would allow further optimization.
+                for (j = 0; j < m_Height; j++) {
+                    for (i = 0; i < m_Width; i++) {
+                        Item* pItem = m_pInventorySlot[i][j].getItem();
+                        if (pItem != NULL) {
+                            // Set the inventory slot to NULL.
 
-                        if (m_bDeleteAll) {
-                            // For a key, take the motorcycle information out of the ParkingCenter,
-                            // remove the motorcycle from the Zone, then delete it from the ParkingCenter.
-                            // Cleanly this would belong in the destructor of GamePlayer or Creature,
-                            // but it is done here as a shortcut to save search time.
-                            // Removing this breaks things.
-                            if (pItem->getItemClass() == Item::ITEM_CLASS_KEY) {
-                                Key* pKey = dynamic_cast<Key*>(pItem);
-                                // The call below also takes care of removing it from the zone.
-                                if (de::gameContext().parking().hasMotorcycleBox(pKey->getTarget())) {
-                                    de::gameContext().parking().deleteMotorcycleBox(pKey->getTarget());
+                            deleteItem(i, j);
+
+                            if (m_bDeleteAll) {
+                                // For a key, take the motorcycle information out of the ParkingCenter,
+                                // remove the motorcycle from the Zone, then delete it from the ParkingCenter.
+                                // Cleanly this would belong in the destructor of GamePlayer or Creature,
+                                // but it is done here as a shortcut to save search time.
+                                // Removing this breaks things.
+                                if (pItem->getItemClass() == Item::ITEM_CLASS_KEY) {
+                                    Key* pKey = dynamic_cast<Key*>(pItem);
+                                    // The call below also takes care of removing it from the zone.
+                                    if (de::gameContext().parking().hasMotorcycleBox(pKey->getTarget())) {
+                                        de::gameContext().parking().deleteMotorcycleBox(pKey->getTarget());
+                                    }
                                 }
-                            }
 
-                            SAFE_DELETE(pItem);
-                        } // end of if (m_bDeleteAll)
-                    } // end of if (pItem != NULL)
+                                SAFE_DELETE(pItem);
+                            } // end of if (m_bDeleteAll)
+                        } // end of if (pItem != NULL)
+                    } // end of for
                 } // end of for
-            } // end of for
 
-            // Assert(m_TotalNum == 0);
-            // Assert(m_TotalWeight == 0);
-            // Temporary code, just to look at the number.
-            if (m_TotalNum != 0) {
-                filelog("inventoryBug.txt", "TotalNum=%d", m_TotalNum);
-            }
-
-            Assert(m_TotalNum == 0);
-
-            for (k = 0; k < m_Width; k++) {
-                if (m_pInventorySlot[k] != NULL) {
-                    SAFE_DELETE_ARRAY(m_pInventorySlot[k]);
+                // Assert(m_TotalNum == 0);
+                // Assert(m_TotalWeight == 0);
+                // Temporary code, just to look at the number.
+                if (m_TotalNum != 0) {
+                    filelog("inventoryBug.txt", "TotalNum=%d", m_TotalNum);
                 }
+
+                Assert(m_TotalNum == 0);
+
+                for (k = 0; k < m_Width; k++) {
+                    if (m_pInventorySlot[k] != NULL) {
+                        SAFE_DELETE_ARRAY(m_pInventorySlot[k]);
+                    }
+                }
+
+                SAFE_DELETE_ARRAY(m_pInventorySlot);
             }
-
-            SAFE_DELETE_ARRAY(m_pInventorySlot);
+        } catch (Throwable& t) {
+            // cerr << t.toString() << endl;
         }
-    } catch (Throwable& t) {
-        // cerr << t.toString() << endl;
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 
@@ -163,15 +154,11 @@ Inventory::~Inventory()
 bool Inventory::hasItem(CoordInven_t X, CoordInven_t Y)
 
 {
-    __BEGIN_TRY
-
     if (X < m_Width && Y < m_Height) {
         InventorySlot& slot = getInventorySlot(X, Y);
         return (slot.getItem() != NULL) ? true : false;
     }
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -180,14 +167,10 @@ bool Inventory::hasItem(CoordInven_t X, CoordInven_t Y)
 bool Inventory::hasItem(ObjectID_t ObjectID)
 
 {
-    __BEGIN_TRY
-
     CoordInven_t x, y;
     if (findItemOID(ObjectID, x, y) != NULL)
         return true;
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -196,14 +179,10 @@ bool Inventory::hasItem(ObjectID_t ObjectID)
 bool Inventory::hasItemWithItemID(ItemID_t ItemID)
 
 {
-    __BEGIN_TRY
-
     CoordInven_t x, y;
     if (findItemIID(ItemID, x, y) != NULL)
         return true;
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -212,8 +191,6 @@ bool Inventory::hasItemWithItemID(ItemID_t ItemID)
 bool Inventory::hasKey(ItemID_t TargetItemID)
 
 {
-    __BEGIN_TRY
-
     for (int x = 0; x < m_Width; x++) {
         for (int y = 0; y < m_Height; y++) {
             Item* pSlotItem = m_pInventorySlot[x][y].getItem();
@@ -227,8 +204,6 @@ bool Inventory::hasKey(ItemID_t TargetItemID)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -239,8 +214,6 @@ bool Inventory::hasKey(ItemID_t TargetItemID)
 bool Inventory::canAdding(CoordInven_t X, CoordInven_t Y, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     // get Volume's Size Width, Height
     VolumeWidth_t ItemWidth = pItem->getVolumeWidth();
     VolumeHeight_t ItemHeight = pItem->getVolumeHeight();
@@ -272,8 +245,6 @@ bool Inventory::canAdding(CoordInven_t X, CoordInven_t Y, Item* pItem)
 
     // if not false return true
     return true;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -284,8 +255,6 @@ bool Inventory::canAdding(CoordInven_t X, CoordInven_t Y, Item* pItem)
 bool Inventory::canAddingEx(CoordInven_t X, CoordInven_t Y, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     VolumeWidth_t ItemWidth = pItem->getVolumeWidth();
     VolumeHeight_t ItemHeight = pItem->getVolumeHeight();
     list<Item*> prevItemList;
@@ -351,8 +320,6 @@ bool Inventory::canAddingEx(CoordInven_t X, CoordInven_t Y, Item* pItem)
     prevItemList.clear();
 
     return true;
-
-    __END_CATCH
 }
 
 
@@ -368,7 +335,6 @@ bool Inventory::canAddingEx(CoordInven_t X, CoordInven_t Y, Item* pItem)
 bool Inventory::addItem(CoordInven_t X, CoordInven_t Y, Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (pItem == NULL) {
@@ -401,7 +367,6 @@ bool Inventory::addItem(CoordInven_t X, CoordInven_t Y, Item* pItem)
     return true;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -410,7 +375,6 @@ bool Inventory::addItem(CoordInven_t X, CoordInven_t Y, Item* pItem)
 Item* Inventory::addItemEx(CoordInven_t X, CoordInven_t Y, Item* pItem)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (!canAddingEx(X, Y, pItem)) {
@@ -454,15 +418,12 @@ Item* Inventory::addItemEx(CoordInven_t X, CoordInven_t Y, Item* pItem)
     return pItem;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
 // Add an item at an automatically chosen position.
 ////////////////////////////////////////////////////////////
 bool Inventory::addItem(Item* pItem) {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     _TPOINT pt;
@@ -473,16 +434,12 @@ bool Inventory::addItem(Item* pItem) {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
 // Add an item at an automatically chosen position.
 ////////////////////////////////////////////////////////////
 bool Inventory::addItem(Item* pItem, TPOINT& rpt) {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     _TPOINT pt;
@@ -498,8 +455,6 @@ bool Inventory::addItem(Item* pItem, TPOINT& rpt) {
     rpt.y = 255;
 
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -508,8 +463,6 @@ bool Inventory::addItem(Item* pItem, TPOINT& rpt) {
 bool Inventory::getEmptySlot(VolumeWidth_t ItemWidth, VolumeHeight_t ItemHeight, _TPOINT& p)
 
 {
-    __BEGIN_TRY
-
     int x, y;
     int i, j;
 
@@ -563,8 +516,6 @@ bool Inventory::getEmptySlot(VolumeWidth_t ItemWidth, VolumeHeight_t ItemHeight,
     }
 
     return false;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -573,7 +524,6 @@ bool Inventory::getEmptySlot(VolumeWidth_t ItemWidth, VolumeHeight_t ItemHeight,
 void Inventory::deleteItem(ObjectID_t ObjectID)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Item* pTargetItem = NULL;
@@ -588,7 +538,6 @@ void Inventory::deleteItem(ObjectID_t ObjectID)
         Assert(false);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -600,7 +549,6 @@ void Inventory::deleteItem(ObjectID_t ObjectID)
 void Inventory::deleteItem(CoordInven_t X, CoordInven_t Y)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     if (X < m_Width && Y < m_Height) {
@@ -639,7 +587,6 @@ void Inventory::deleteItem(CoordInven_t X, CoordInven_t Y)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -656,8 +603,6 @@ void Inventory::deleteItem(CoordInven_t X, CoordInven_t Y)
 Item* Inventory::searchItem(CoordInven_t X, CoordInven_t Y, Item* pItem, TPOINT& pt)
 
 {
-    __BEGIN_TRY
-
     // get Volume's Size Width, Height
     VolumeWidth_t ItemWidth = pItem->getVolumeWidth();
     VolumeHeight_t ItemHeight = pItem->getVolumeHeight();
@@ -675,8 +620,6 @@ Item* Inventory::searchItem(CoordInven_t X, CoordInven_t Y, Item* pItem, TPOINT&
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -685,12 +628,8 @@ Item* Inventory::searchItem(CoordInven_t X, CoordInven_t Y, Item* pItem, TPOINT&
 Item* Inventory::getItemWithItemID(ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     CoordInven_t x, y;
     return findItemIID(itemID, x, y);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -699,12 +638,8 @@ Item* Inventory::getItemWithItemID(ItemID_t itemID)
 Item* Inventory::getBeltWithItemID(ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     CoordInven_t x, y;
     return findItemIID(itemID, Item::ITEM_CLASS_BELT, x, y);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -713,12 +648,8 @@ Item* Inventory::getBeltWithItemID(ItemID_t itemID)
 Item* Inventory::getItemWithObjectID(ObjectID_t objectID)
 
 {
-    __BEGIN_TRY
-
     CoordInven_t x, y;
     return findItemOID(objectID, x, y);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -728,8 +659,6 @@ Item* Inventory::getItemWithObjectID(ObjectID_t objectID)
 Item* Inventory::findItemOID(ObjectID_t id, CoordInven_t& X, CoordInven_t& Y)
 
 {
-    __BEGIN_TRY
-
     for (int j = 0; j < m_Height; j++) {
         for (int i = 0; i < m_Width; i++) {
             InventorySlot& slot = getInventorySlot(i, j);
@@ -744,8 +673,6 @@ Item* Inventory::findItemOID(ObjectID_t id, CoordInven_t& X, CoordInven_t& Y)
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -755,8 +682,6 @@ Item* Inventory::findItemOID(ObjectID_t id, CoordInven_t& X, CoordInven_t& Y)
 Item* Inventory::findItemIID(ItemID_t id, CoordInven_t& X, CoordInven_t& Y)
 
 {
-    __BEGIN_TRY
-
     for (int y = 0; y < m_Height; y++) {
         for (int x = 0; x < m_Width; x++) {
             InventorySlot& slot = getInventorySlot(x, y);
@@ -771,8 +696,6 @@ Item* Inventory::findItemIID(ItemID_t id, CoordInven_t& X, CoordInven_t& Y)
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -782,8 +705,6 @@ Item* Inventory::findItemIID(ItemID_t id, CoordInven_t& X, CoordInven_t& Y)
 Item* Inventory::findItemOID(ObjectID_t id, Item::ItemClass IClass, CoordInven_t& X, CoordInven_t& Y)
 
 {
-    __BEGIN_TRY
-
     for (int j = 0; j < m_Height; j++) {
         for (int i = 0; i < m_Width; i++) {
             InventorySlot& slot = getInventorySlot(i, j);
@@ -798,8 +719,6 @@ Item* Inventory::findItemOID(ObjectID_t id, Item::ItemClass IClass, CoordInven_t
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -809,8 +728,6 @@ Item* Inventory::findItemOID(ObjectID_t id, Item::ItemClass IClass, CoordInven_t
 Item* Inventory::findItemIID(ItemID_t id, Item::ItemClass IClass, CoordInven_t& X, CoordInven_t& Y)
 
 {
-    __BEGIN_TRY
-
     for (int y = 0; y < m_Height; y++) {
         for (int x = 0; x < m_Width; x++) {
             InventorySlot& slot = getInventorySlot(x, y);
@@ -825,8 +742,6 @@ Item* Inventory::findItemIID(ItemID_t id, Item::ItemClass IClass, CoordInven_t& 
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -841,8 +756,6 @@ Item* Inventory::findItemIID(ItemID_t id, Item::ItemClass IClass, CoordInven_t& 
 Item* Inventory::findItem(Item::ItemClass IClass, ItemType_t itemType) //, CoordInven_t& X, CoordInven_t& Y)
 
 {
-    __BEGIN_TRY
-
     for (int y = 0; y < m_Height; y++) {
         for (int x = 0; x < m_Width; x++) {
             InventorySlot& slot = getInventorySlot(x, y);
@@ -858,15 +771,11 @@ Item* Inventory::findItem(Item::ItemClass IClass, ItemType_t itemType) //, Coord
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 Item* Inventory::findItem(Item::ItemClass IClass, ItemType_t itemType, CoordInven_t& X, CoordInven_t& Y)
 
 {
-    __BEGIN_TRY
-
     for (int y = 0; y < m_Height; y++) {
         for (int x = 0; x < m_Width; x++) {
             InventorySlot& slot = getInventorySlot(x, y);
@@ -884,8 +793,6 @@ Item* Inventory::findItem(Item::ItemClass IClass, ItemType_t itemType, CoordInve
     //	X = -1;
     //	Y = -1;
     return NULL;
-
-    __END_CATCH
 }
 
 
@@ -901,12 +808,8 @@ Item* Inventory::findItem(Item::ItemClass IClass, ItemType_t itemType, CoordInve
 Item* Inventory::getItem(CoordInven_t X, CoordInven_t Y) const
 
 {
-    __BEGIN_TRY
-
     InventorySlot& slot = getInventorySlot(X, Y);
     return slot.getItem();
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -915,12 +818,8 @@ Item* Inventory::getItem(CoordInven_t X, CoordInven_t Y) const
 void Inventory::setItem(CoordInven_t X, CoordInven_t Y, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     InventorySlot& slot = getInventorySlot(X, Y);
     slot.addItem(pItem);
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -936,8 +835,6 @@ void Inventory::setItem(CoordInven_t X, CoordInven_t Y, Item* pItem)
 void Inventory::clear()
 
 {
-    __BEGIN_TRY
-
     // Scan right through the whole inventory...
     for (int y = 0; y < m_Height; y++) {
         for (int x = 0; x < m_Width; x++) {
@@ -948,8 +845,6 @@ void Inventory::clear()
 
     m_TotalNum = 0;
     m_TotalWeight = 0;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -958,8 +853,6 @@ void Inventory::clear()
 list<Item*> Inventory::getList() const
 
 {
-    __BEGIN_TRY
-
     list<Item*> itemList;
 
     for (int x = 0; x < m_Width; x++) {
@@ -991,8 +884,6 @@ list<Item*> Inventory::getList() const
     }
 
     return itemList;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -1001,8 +892,6 @@ list<Item*> Inventory::getList() const
 int Inventory::calc2x2Item(void) const
 
 {
-    __BEGIN_TRY
-
     int rValue = 0;
     list<Item*> itemList = getList();
 
@@ -1014,8 +903,6 @@ int Inventory::calc2x2Item(void) const
     }
 
     return rValue;
-
-    __END_CATCH
 }
 
 
@@ -1030,8 +917,6 @@ int Inventory::calc2x2Item(void) const
 void Inventory::save(const string& owner)
 
 {
-    __BEGIN_TRY
-
     list<Item*> itemList;
 
     for (int x = 0; x < m_Width; x++) {
@@ -1063,8 +948,6 @@ void Inventory::save(const string& owner)
             }
         }
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -1072,8 +955,6 @@ void Inventory::save(const string& owner)
 string Inventory::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "Inventory(" << "\n";
     msg << "Owner:" << m_Owner << "\n";
@@ -1095,8 +976,6 @@ string Inventory::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -1115,8 +994,6 @@ string Inventory::toString() const
 bool Inventory::hasEnoughStar(const XMAS_STAR& star)
 
 {
-    __BEGIN_TRY
-
     // cout << "Number of stars needed : " << star.amount << endl;
 
     int amount[STAR_COLOR_MAX];
@@ -1170,8 +1047,6 @@ bool Inventory::hasEnoughStar(const XMAS_STAR& star)
         return true;
 
     return false;
-
-    __END_CATCH
 }
 // #endif
 
@@ -1179,8 +1054,6 @@ bool Inventory::hasEnoughStar(const XMAS_STAR& star)
 void Inventory::decreaseStar(const XMAS_STAR& star)
 
 {
-    __BEGIN_TRY
-
     // Remember the amount that has to be reduced.
     int amount = star.amount;
 
@@ -1233,8 +1106,6 @@ void Inventory::decreaseStar(const XMAS_STAR& star)
 
     // Normal processing should never reach this point.
     Assert(false);
-
-    __END_CATCH
 }
 // #endif
 
@@ -1244,8 +1115,6 @@ void Inventory::decreaseStar(const XMAS_STAR& star)
 bool Inventory::hasRedGiftBox(void)
 
 {
-    __BEGIN_TRY
-
     for (int y = 0; y < m_Height; y++) {
         for (int x = 0; x < m_Width; x++) {
             InventorySlot& slot = getInventorySlot(x, y);
@@ -1263,8 +1132,6 @@ bool Inventory::hasRedGiftBox(void)
     }
 
     return false;
-
-    __END_CATCH
 }
 // #endif
 //*/
@@ -1274,8 +1141,6 @@ bool Inventory::hasRedGiftBox(void)
 bool Inventory::hasGreenGiftBox(void)
 
 {
-    __BEGIN_TRY
-
     for (int y = 0; y < m_Height; y++) {
         for (int x = 0; x < m_Width; x++) {
             InventorySlot& slot = getInventorySlot(x, y);
@@ -1293,8 +1158,6 @@ bool Inventory::hasGreenGiftBox(void)
     }
 
     return false;
-
-    __END_CATCH
 }
 // #endif
 //*/

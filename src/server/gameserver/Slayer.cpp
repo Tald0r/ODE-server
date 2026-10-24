@@ -101,8 +101,6 @@
 Slayer::Slayer()
 
     : PlayerCreature(0, NULL), m_pRealWearingCheck{} {
-    __BEGIN_TRY
-
     m_CClass = CREATURE_CLASS_SLAYER;
 
     m_Mutex.setName("Slayer");
@@ -144,95 +142,93 @@ Slayer::Slayer()
     m_Gold = 0;
 
     //	m_pRank = NULL;
-
-    __END_CATCH
 }
 
 Slayer::~Slayer()
 
 {
-    __BEGIN_TRY
-
     try {
-        if (m_pMotorcycle != NULL) {
-            // getOffMotorcycle();
+        try {
+            if (m_pMotorcycle != NULL) {
+                // getOffMotorcycle();
 
-            // Doing this in IncomingPlayerManager causes problems.
-            // So just get rid of the motorcycle here.
-            if (de::gameContext().parking().hasMotorcycleBox(m_pMotorcycle->getItemID())) {
-                de::gameContext().parking().deleteMotorcycleBox(m_pMotorcycle->getItemID());
+                // Doing this in IncomingPlayerManager causes problems.
+                // So just get rid of the motorcycle here.
+                if (de::gameContext().parking().hasMotorcycleBox(m_pMotorcycle->getItemID())) {
+                    de::gameContext().parking().deleteMotorcycleBox(m_pMotorcycle->getItemID());
+                }
+
+                m_pMotorcycle = NULL;
             }
 
-            m_pMotorcycle = NULL;
+            // Build the outfit information in advance.
+            DWORD flag;
+            Color_t color[PCSlayerInfo::SLAYER_COLOR_MAX];
+            getShapeInfo(flag, color);
+
+            char pField[128];
+            snprintf(pField, sizeof(pField),
+                     "Shape=%u, HelmetColor=%d, JacketColor=%d, PantsColor=%d, WeaponColor=%d, ShieldColor=%d", flag,
+                     color[PCSlayerInfo::SLAYER_COLOR_HELMET], color[PCSlayerInfo::SLAYER_COLOR_JACKET],
+                     color[PCSlayerInfo::SLAYER_COLOR_PANTS], color[PCSlayerInfo::SLAYER_COLOR_WEAPON],
+                     color[PCSlayerInfo::SLAYER_COLOR_SHIELD]);
+
+            // cout << "SAVE = " << pField << endl;
+
+            tinysave(pField);
+
+
+            // Save the worn items' durability, the experience and the alignment.
+            saveGears();
+            saveExps();
+            saveSkills();
+
+            // Delete the equipped items from memory.
+            destroyGears();
+
+            // When this class is deleted the matching trade information must be deleted,
+            // and the trade partner must be told about it.
+            TradeManager* pTradeManager = m_pZone->getTradeManager();
+            TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
+            if (pInfo != NULL) {
+                // Delete the trade information.
+                pTradeManager->cancelTrade(this);
+            }
+
+            // Remove from the global party.
+            // On a normal logout CGLogoutHandler calls
+            // Zone::deleteCreature(), and even in an abnormal case
+            // GamePlayer::disconnect() calls Zone::deleteCreature(),
+            // so the local party, the party invitations and the trade
+            // information need no attention here.
+            deleteAllPartyInfo(this);
+
+            // Delete the skills.
+            unordered_map<SkillType_t, SkillSlot*>::iterator itr = m_SkillSlot.begin();
+            for (; itr != m_SkillSlot.end(); itr++) {
+                SkillSlot* pSkillSlot = itr->second;
+                SAFE_DELETE(pSkillSlot);
+            }
+
+            m_SkillSlot.clear();
+
+            //		SAFE_DELETE( m_pRank );
+
+        } catch (Throwable& t) {
+            diagnosticFilelog("slayerDestructor.txt", "%s", t.toString().c_str());
+            throw;
+        } catch (exception& e) {
+            diagnosticFilelog("slayerDestructor.txt", "Unknown std::exception");
+            throw;
+        } catch (...) {
+            diagnosticFilelog("slayerDestructor.txt", "Unknown ... exception");
+            throw;
         }
 
-        // Build the outfit information in advance.
-        DWORD flag;
-        Color_t color[PCSlayerInfo::SLAYER_COLOR_MAX];
-        getShapeInfo(flag, color);
-
-        char pField[128];
-        snprintf(pField, sizeof(pField),
-                 "Shape=%u, HelmetColor=%d, JacketColor=%d, PantsColor=%d, WeaponColor=%d, ShieldColor=%d", flag,
-                 color[PCSlayerInfo::SLAYER_COLOR_HELMET], color[PCSlayerInfo::SLAYER_COLOR_JACKET],
-                 color[PCSlayerInfo::SLAYER_COLOR_PANTS], color[PCSlayerInfo::SLAYER_COLOR_WEAPON],
-                 color[PCSlayerInfo::SLAYER_COLOR_SHIELD]);
-
-        // cout << "SAVE = " << pField << endl;
-
-        tinysave(pField);
-
-
-        // Save the worn items' durability, the experience and the alignment.
-        saveGears();
-        saveExps();
-        saveSkills();
-
-        // Delete the equipped items from memory.
-        destroyGears();
-
-        // When this class is deleted the matching trade information must be deleted,
-        // and the trade partner must be told about it.
-        TradeManager* pTradeManager = m_pZone->getTradeManager();
-        TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
-        if (pInfo != NULL) {
-            // Delete the trade information.
-            pTradeManager->cancelTrade(this);
-        }
-
-        // Remove from the global party.
-        // On a normal logout CGLogoutHandler calls
-        // Zone::deleteCreature(), and even in an abnormal case
-        // GamePlayer::disconnect() calls Zone::deleteCreature(),
-        // so the local party, the party invitations and the trade
-        // information need no attention here.
-        deleteAllPartyInfo(this);
-
-        // Delete the skills.
-        unordered_map<SkillType_t, SkillSlot*>::iterator itr = m_SkillSlot.begin();
-        for (; itr != m_SkillSlot.end(); itr++) {
-            SkillSlot* pSkillSlot = itr->second;
-            SAFE_DELETE(pSkillSlot);
-        }
-
-        m_SkillSlot.clear();
-
-        //		SAFE_DELETE( m_pRank );
-
-    } catch (Throwable& t) {
-        diagnosticFilelog("slayerDestructor.txt", "%s", t.toString().c_str());
-        throw;
-    } catch (exception& e) {
-        diagnosticFilelog("slayerDestructor.txt", "Unknown std::exception");
-        throw;
-    } catch (...) {
-        diagnosticFilelog("slayerDestructor.txt", "Unknown ... exception");
-        throw;
+        m_bDeriveDestructed = true;
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_bDeriveDestructed = true;
-
-    __END_CATCH_NO_RETHROW
 }
 
 // Allocate ObjectIDs for the Slayer and its owned items from the
@@ -240,8 +236,6 @@ Slayer::~Slayer()
 void Slayer::registerObject()
 
 {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
 
     // Access the zone's object registry.
@@ -300,8 +294,6 @@ void Slayer::registerObject()
 
     m_SlayerInfo.setObjectID(m_ObjectID);
     m_pStore->updateStoreInfo();
-
-    __END_CATCH
 }
 
 // Allocate ObjectIDs for the Slayer and its owned items from the
@@ -309,8 +301,6 @@ void Slayer::registerObject()
 void Slayer::registerInitObject()
 
 {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
 
     // Access the zone's object registry.
@@ -368,16 +358,12 @@ void Slayer::registerInitObject()
     __LEAVE_CRITICAL_SECTION(OR)
 
     m_SlayerInfo.setObjectID(m_ObjectID);
-
-    __END_CATCH
 }
 
 
 // Check the time-limited items.
 // Every item must already be registered.
 void Slayer::checkItemTimeLimit() {
-    __BEGIN_TRY
-
     // Search the inventory.
     {
         list<Item*> ItemList;
@@ -442,13 +428,9 @@ void Slayer::checkItemTimeLimit() {
     }
 
     // The motorcycle is left out of the sweep: it carries no time limit.
-
-    __END_CATCH
 }
 
 void Slayer::updateEventItemTime(DWORD time) {
-    __BEGIN_TRY
-
     // Search the inventory.
     {
         list<Item*> ItemList;
@@ -502,8 +484,6 @@ void Slayer::updateEventItemTime(DWORD time) {
             updateItemTimeLimit(pSlotItem, time);
         }
     }
-
-    __END_CATCH
 }
 
 void Slayer::loadOwnedItems() {
@@ -525,8 +505,6 @@ void Slayer::giveNewbieItems() {
 bool Slayer::load()
 
 {
-    __BEGIN_TRY
-
     if (!PlayerCreature::load())
         return false;
 
@@ -779,15 +757,11 @@ bool Slayer::load()
     }
 
     return true;
-
-    __END_CATCH
 }
 
 void Slayer::save() const
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // Normally, when no data has changed at all, #Affected Rows == 0.
@@ -818,41 +792,29 @@ void Slayer::save() const
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 PhoneNumber_t Slayer::getPhoneSlotNumber(SlotID_t SlotID)
 
 {
-    __BEGIN_TRY
-
     Assert(SlotID <= MAX_PHONE_SLOT);
 
     return m_PhoneSlot[SlotID];
-
-    __END_CATCH
 }
 
 void Slayer::setPhoneSlotNumber(SlotID_t SlotID, PhoneNumber_t PhoneNumber)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     m_PhoneSlot[SlotID] = PhoneNumber;
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 bool Slayer::isSlotByPhoneNumber(PhoneNumber_t PhoneNumber)
 
 {
-    __BEGIN_TRY
-
     bool isFind = false;
 
     for (int i = 0; i < MAX_PHONE_SLOT; i++) {
@@ -861,30 +823,22 @@ bool Slayer::isSlotByPhoneNumber(PhoneNumber_t PhoneNumber)
     }
 
     return isFind;
-
-    __END_CATCH
 }
 
 SlotID_t Slayer::getSlotWithPhoneNumber(PhoneNumber_t PhoneNumber)
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < MAX_PHONE_SLOT; i++) {
         if (m_PhoneSlot[i] == PhoneNumber)
             return i;
     }
 
     return MAX_PHONE_SLOT;
-
-    __END_CATCH
 }
 
 SlotID_t Slayer::findEmptyPhoneSlot()
 
 {
-    __BEGIN_TRY
-
     for (int i = 0; i < MAX_PHONE_SLOT; i++) {
         if (m_PhoneSlot[i] == 0) {
             return i;
@@ -892,15 +846,11 @@ SlotID_t Slayer::findEmptyPhoneSlot()
     }
 
     return MAX_PHONE_SLOT;
-
-    __END_CATCH
 }
 
 bool Slayer::isEmptyPhoneSlot()
 
 {
-    __BEGIN_TRY
-
     bool Success = false;
 
     for (int i = 0; i < MAX_PHONE_SLOT; i++) {
@@ -911,8 +861,6 @@ bool Slayer::isEmptyPhoneSlot()
     }
 
     return Success;
-
-    __END_CATCH
 }
 
 // Look up whether a given Skill exists and return its SkillSlot.
@@ -924,8 +872,6 @@ SkillSlot* Slayer::getSkill(SkillType_t SkillType) const {
 void Slayer::addSkill(SkillSlot* pSkillSlot)
 
 {
-    __BEGIN_TRY
-
     SkillType_t SkillType = pSkillSlot->getSkillType();
     switch (SkillType) {
     case SKILL_UN_BURROW:
@@ -951,16 +897,12 @@ void Slayer::addSkill(SkillSlot* pSkillSlot)
         if (pSkillSlot != itr->second)
             SAFE_DELETE(pSkillSlot);
     }
-
-    __END_CATCH
 }
 
 // Only for learning a skill. Calling it anywhere else breaks things.
 void Slayer::addSkill(SkillType_t SkillType)
 
 {
-    __BEGIN_TRY
-
     switch (SkillType) {
     case SKILL_UN_BURROW:
     case SKILL_UN_TRANSFORM:
@@ -994,8 +936,6 @@ void Slayer::addSkill(SkillType_t SkillType)
 
         m_SkillSlot[SkillType] = pSkillSlot;
     }
-
-    __END_CATCH
 }
 
 void Slayer::removeCastleSkill(SkillType_t SkillType) {
@@ -1248,7 +1188,6 @@ RideMotorcycleInfo* Slayer::getRideMotorcycleInfo() const
 void Slayer::sendSlayerSkillInfo()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     try {
@@ -1326,7 +1265,6 @@ void Slayer::sendSlayerSkillInfo()
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -1338,7 +1276,6 @@ EffectInfo* Slayer::getEffectInfo() const {
 void Slayer::setGoldEx(Gold_t gold)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     setGold(gold);
@@ -1348,7 +1285,6 @@ void Slayer::setGoldEx(Gold_t gold)
     tinysave(pField);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void Slayer::heartbeat(const Timeval& currentTime)
@@ -1424,8 +1360,6 @@ void Slayer::heartbeat(const Timeval& currentTime)
 void Slayer::getSlayerRecord(SLAYER_RECORD& record) const
 
 {
-    __BEGIN_TRY
-
     record.pSTR[0] = m_STR[0];
     record.pSTR[1] = m_STR[1];
     record.pSTR[2] = m_STR[2];
@@ -1453,15 +1387,11 @@ void Slayer::getSlayerRecord(SLAYER_RECORD& record) const
     record.Protection = m_Protection[0];
     record.ToHit = m_ToHit[0];
     record.AttackSpeed = m_AttackSpeed[0];
-
-    __END_CATCH
 }
 
 uint Slayer::getSlayerLevel(void) const
 
 {
-    __BEGIN_TRY
-
     uint SumAttr = 0, SumDomain = 0;
 
     SumAttr += m_STR[ATTR_BASIC];
@@ -1475,8 +1405,6 @@ uint Slayer::getSlayerLevel(void) const
     SumDomain += m_SkillDomainLevels[SKILL_DOMAIN_ENCHANT];
 
     return (uint)(SumAttr / 4 + SumDomain / 2);
-
-    __END_CATCH
 }
 
 string Slayer::toString() const
@@ -1512,8 +1440,6 @@ string Slayer::toString() const
 SkillLevel_t Slayer::getSkillDomainLevelSum() const
 
 {
-    __BEGIN_TRY
-
     SkillLevel_t sum = 0;
     sum += m_SkillDomainLevels[SKILL_DOMAIN_BLADE];
     sum += m_SkillDomainLevels[SKILL_DOMAIN_SWORD];
@@ -1521,16 +1447,12 @@ SkillLevel_t Slayer::getSkillDomainLevelSum() const
     sum += m_SkillDomainLevels[SKILL_DOMAIN_HEAL];
     sum += m_SkillDomainLevels[SKILL_DOMAIN_ENCHANT];
     return sum;
-
-    __END_CATCH
 }
 
 
 SkillLevel_t Slayer::getHighestSkillDomainLevel() const
 
 {
-    __BEGIN_TRY
-
     SkillLevel_t highest;
 
     highest = max(m_SkillDomainLevels[SKILL_DOMAIN_BLADE], m_SkillDomainLevels[SKILL_DOMAIN_SWORD]);
@@ -1539,15 +1461,11 @@ SkillLevel_t Slayer::getHighestSkillDomainLevel() const
     highest = max(highest, m_SkillDomainLevels[SKILL_DOMAIN_ENCHANT]);
 
     return highest;
-
-    __END_CATCH
 }
 
 SkillDomainType_t Slayer::getHighestSkillDomain() const
 
 {
-    __BEGIN_TRY
-
     SkillDomainType_t highest;
 
     if (m_SkillDomainLevels[SKILL_DOMAIN_BLADE] > m_SkillDomainLevels[SKILL_DOMAIN_SWORD])
@@ -1565,8 +1483,6 @@ SkillDomainType_t Slayer::getHighestSkillDomain() const
         highest = SKILL_DOMAIN_ENCHANT;
 
     return highest;
-
-    __END_CATCH
 }
 
 void Slayer::saveSkills(void) const {
@@ -1576,8 +1492,6 @@ void Slayer::saveSkills(void) const {
 void Slayer::saveGears(void) const
 
 {
-    __BEGIN_TRY
-
     // Save the equipped items.
     char pField[80];
 
@@ -1615,15 +1529,11 @@ void Slayer::saveGears(void) const
             }
         }
     }
-
-    __END_CATCH
 }
 
 void Slayer::saveExps(void) const
 
 {
-    __BEGIN_TRY
-
     // Divide by 10 to reduce the number of queries in the skill handler,
     // If the server is not down and you log out normally
     // If you don't explicitly save, the part that goes up below 10 will be blown away.
@@ -1650,8 +1560,6 @@ void Slayer::saveExps(void) const
     record.advancedINT = m_AdvancedINT;
     record.advancedAttrBonus = m_AdvancedAttrBonus;
     defaultCharacterRepository().saveSlayerExps(m_Name, record);
-
-    __END_CATCH
 }
 
 QuestGrade_t Slayer::getQuestGrade() const {

@@ -51,11 +51,7 @@ void ConditionRaceComp::read(PropertyBuffer& propertyBuffer)
 string ConditionRaceComp::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionRaceComp(" << "CClass:" << (int)m_CClass << ")";
     return msg.toString();
-
-    __END_CATCH
 }

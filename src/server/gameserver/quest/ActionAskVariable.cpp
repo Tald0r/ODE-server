@@ -41,8 +41,6 @@ void convertCommaString(string& str);
 void ActionAskVariable::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_ScriptID = propertyBuffer.getPropertyInt("ScriptID");
@@ -55,8 +53,6 @@ void ActionAskVariable::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -66,8 +62,6 @@ void ActionAskVariable::read(PropertyBuffer& propertyBuffer)
 void ActionAskVariable::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     StringPool& strings = context().strings();
 
     Assert(pCreature1 != NULL);
@@ -627,8 +621,6 @@ void ActionAskVariable::execute(Creature* pCreature1, Creature* pCreature2)
 
     Player* pPlayer = pCreature2->getPlayer();
     pPlayer->sendPacket(&gcNPCAskVariable);
-
-    __END_CATCH
 }
 
 
@@ -638,15 +630,11 @@ void ActionAskVariable::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionAskVariable::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionAskVariable(" << ",ScriptID:" << (int)m_ScriptID
         << ",VariableBuffer:" << m_pVariableBuffer->toString() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 void convertCommaString(string& str) {

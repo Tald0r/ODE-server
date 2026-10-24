@@ -49,8 +49,6 @@ Shoes::Shoes(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Shoes::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -68,8 +66,6 @@ void Shoes::create(const string& ownerID, Storage storage, StorageID_t storageID
     defaultItemObjectRepository().insertGear(GEAR_SHOES, m_ItemID, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -79,11 +75,7 @@ void Shoes::create(const string& ownerID, Storage storage, StorageID_t storageID
 void Shoes::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_SHOES, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -92,16 +84,12 @@ void Shoes::tinysave(const char* field) const
 void Shoes::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_SHOES, m_ObjectID, getItemType(), ownerID, (int)storage, storageID,
                                              (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -144,8 +132,6 @@ string ShoesInfo::toString() const
 void ShoesInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_SHOES);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -179,8 +165,6 @@ void ShoesInfoManager::load()
 
         addItemInfo(pShoesInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -190,8 +174,6 @@ void ShoesInfoManager::load()
 void ShoesLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows = defaultItemObjectRepository().loadGearOfOwner(GEAR_SHOES, pCreature->getName());
@@ -294,8 +276,6 @@ void ShoesLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -305,8 +285,6 @@ void ShoesLoader::load(Creature* pCreature)
 void ShoesLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -347,8 +325,6 @@ void ShoesLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -358,12 +334,8 @@ void ShoesLoader::load(Zone* pZone)
 void ShoesLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

@@ -81,8 +81,6 @@ const Color_t QUEST_COLOR = 0xFFFE;
 Vampire::Vampire()
 
     : PlayerCreature(0, NULL), m_pRealWearingCheck{} {
-    __BEGIN_TRY
-
     m_CClass = CREATURE_CLASS_VAMPIRE;
 
     m_Mutex.setName("Vampire");
@@ -112,71 +110,69 @@ Vampire::Vampire()
     m_ExpSaveCount = 0;
     m_FameSaveCount = 0;
     m_AlignmentSaveCount = 0;
-
-    __END_CATCH
 }
 
 Vampire::~Vampire()
 
 {
-    __BEGIN_TRY
-
     try {
-        // Build the outfit information.
-        DWORD flag;
-        Color_t color[PCVampireInfo::VAMPIRE_COLOR_MAX];
-        getShapeInfo(flag, color);
+        try {
+            // Build the outfit information.
+            DWORD flag;
+            Color_t color[PCVampireInfo::VAMPIRE_COLOR_MAX];
+            getShapeInfo(flag, color);
 
-        char pField[128];
-        snprintf(pField, sizeof(pField), "Shape=%u, CoatColor=%d", flag, color[PCVampireInfo::VAMPIRE_COLOR_COAT]);
+            char pField[128];
+            snprintf(pField, sizeof(pField), "Shape=%u, CoatColor=%d", flag, color[PCVampireInfo::VAMPIRE_COLOR_COAT]);
 
-        // cout << "SAVE = " << pField << endl;
+            // cout << "SAVE = " << pField << endl;
 
-        tinysave(pField);
+            tinysave(pField);
 
 
-        // Save the items' remaining durability, the experience and the alignment.
-        saveGears();
-        saveExps(m_GoalExp, m_SilverDamage);
-        saveSkills();
+            // Save the items' remaining durability, the experience and the alignment.
+            saveGears();
+            saveExps(m_GoalExp, m_SilverDamage);
+            saveSkills();
 
-        // Delete the items being worn from memory.
-        destroyGears();
+            // Delete the items being worn from memory.
+            destroyGears();
 
-        // When the class is deleted the matching trade information must be deleted,
-        // and the trade partner must be told as well.
-        TradeManager* pTradeManager = m_pZone->getTradeManager();
-        TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
-        if (pInfo != NULL) {
-            // Delete the trade information.
-            pTradeManager->cancelTrade(this);
+            // When the class is deleted the matching trade information must be deleted,
+            // and the trade partner must be told as well.
+            TradeManager* pTradeManager = m_pZone->getTradeManager();
+            TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
+            if (pInfo != NULL) {
+                // Delete the trade information.
+                pTradeManager->cancelTrade(this);
+            }
+
+            // Delete the global party information.
+            // On a normal logout
+            // CGLogoutHandler calls Zone::deleteCreature(), and
+            // even in an abnormal case
+            // GamePlayer::disconnect() calls Zone::deleteCreature(), so
+            // the local party, party invitation and trade information need no care here.
+            deleteAllPartyInfo(this);
+
+            // Delete the skills.
+            unordered_map<SkillType_t, VampireSkillSlot*>::iterator itr = m_SkillSlot.begin();
+            for (; itr != m_SkillSlot.end(); itr++) {
+                VampireSkillSlot* pVampireSkillSlot = itr->second;
+                SAFE_DELETE(pVampireSkillSlot);
+            }
+        } catch (Throwable& t) {
+            diagnosticFilelog("vampireDestructor.txt", "%s", t.toString().c_str());
+        } catch (exception& e) {
+            diagnosticFilelog("vampireDestructor.txt", "Unknown std::exception");
+        } catch (...) {
+            diagnosticFilelog("vampireDestructor.txt", "Unknown ... exception");
         }
 
-        // Delete the global party information.
-        // On a normal logout
-        // CGLogoutHandler calls Zone::deleteCreature(), and
-        // even in an abnormal case
-        // GamePlayer::disconnect() calls Zone::deleteCreature(), so
-        // the local party, party invitation and trade information need no care here.
-        deleteAllPartyInfo(this);
-
-        // Delete the skills.
-        unordered_map<SkillType_t, VampireSkillSlot*>::iterator itr = m_SkillSlot.begin();
-        for (; itr != m_SkillSlot.end(); itr++) {
-            VampireSkillSlot* pVampireSkillSlot = itr->second;
-            SAFE_DELETE(pVampireSkillSlot);
-        }
-    } catch (Throwable& t) {
-        diagnosticFilelog("vampireDestructor.txt", "%s", t.toString().c_str());
-    } catch (exception& e) {
-        diagnosticFilelog("vampireDestructor.txt", "Unknown std::exception");
-    } catch (...) {
-        diagnosticFilelog("vampireDestructor.txt", "Unknown ... exception");
+        m_bDeriveDestructed = true;
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_bDeriveDestructed = true;
-
-    __END_CATCH_NO_RETHROW
 }
 
 // registerObject
@@ -185,8 +181,6 @@ Vampire::~Vampire()
 void Vampire::registerObject()
 
 {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
 
     // Access the zone's object registry.
@@ -241,8 +235,6 @@ void Vampire::registerObject()
 
     m_VampireInfo.setObjectID(m_ObjectID);
     m_pStore->updateStoreInfo();
-
-    __END_CATCH
 }
 
 // Use the ObjectRegistry owned by the Zone to allocate ObjectIDs for the
@@ -250,8 +242,6 @@ void Vampire::registerObject()
 void Vampire::registerInitObject()
 
 {
-    __BEGIN_TRY
-
     Assert(getZone() != NULL);
 
     // Access the zone's object registry.
@@ -305,15 +295,11 @@ void Vampire::registerInitObject()
     __LEAVE_CRITICAL_SECTION(OR)
 
     m_VampireInfo.setObjectID(m_ObjectID);
-
-    __END_CATCH
 }
 
 // Check the time-limit items.
 // Every item must already be registered.
 void Vampire::checkItemTimeLimit() {
-    __BEGIN_TRY
-
     // Search the inventory.
     {
         list<Item*> ItemList;
@@ -378,13 +364,9 @@ void Vampire::checkItemTimeLimit() {
             SAFE_DELETE(pSlotItem);
         }
     }
-
-    __END_CATCH
 }
 
 void Vampire::updateEventItemTime(DWORD time) {
-    __BEGIN_TRY
-
     // Search the inventory.
     {
         list<Item*> ItemList;
@@ -440,8 +422,6 @@ void Vampire::updateEventItemTime(DWORD time) {
             updateItemTimeLimit(pSlotItem, time);
         }
     }
-
-    __END_CATCH
 }
 
 // A vampire is made by transforming a slayer, so it is never given a
@@ -456,8 +436,6 @@ void Vampire::loadOwnedItems() {
 bool Vampire::load()
 
 {
-    __BEGIN_TRY
-
     if (!PlayerCreature::load())
         return false;
 
@@ -664,8 +642,6 @@ bool Vampire::load()
 
 
     return true;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -673,8 +649,6 @@ bool Vampire::load()
 void Vampire::save() const
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // Save the vampire information.
@@ -694,8 +668,6 @@ void Vampire::save() const
     m_pEffectManager->save(m_Name);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -715,8 +687,6 @@ VampireSkillSlot* Vampire::getSkill(SkillType_t SkillType) const {
 void Vampire::addSkill(SkillType_t SkillType)
 
 {
-    __BEGIN_TRY
-
     switch (SkillType) {
     case SKILL_UN_BURROW:
     case SKILL_UN_TRANSFORM:
@@ -752,16 +722,12 @@ void Vampire::addSkill(SkillType_t SkillType)
 
         m_SkillSlot[SkillType] = pVampireSkillSlot;
     }
-
-    __END_CATCH
 }
 
 // Put a SkillSlot into an empty slot found automatically.
 void Vampire::addSkill(VampireSkillSlot* pVampireSkillSlot)
 
 {
-    __BEGIN_TRY
-
     SkillType_t SkillType = pVampireSkillSlot->getSkillType();
     switch (SkillType) {
     case SKILL_UN_BURROW:
@@ -786,8 +752,6 @@ void Vampire::addSkill(VampireSkillSlot* pVampireSkillSlot)
     else {
         delete pVampireSkillSlot;
     }
-
-    __END_CATCH
 }
 
 void Vampire::removeCastleSkill(SkillType_t SkillType) {
@@ -817,8 +781,6 @@ void Vampire::removeAllCastleSkill() {
 void Vampire::wearItem(WearPart Part, Item* pItem)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     Item* pPrevItem = NULL;
@@ -952,8 +914,6 @@ void Vampire::wearItem(WearPart Part, Item* pItem)
         // Set the item type.
         m_VampireInfo.setCoatType(pItem->getItemType());
     }
-
-    __END_CATCH
 }
 
 
@@ -964,8 +924,6 @@ void Vampire::wearItem(WearPart Part, Item* pItem)
 void Vampire::wearItem(WearPart Part)
 
 {
-    __BEGIN_TRY
-
     // Get the item that is about to be worn.
     Item* pItem = getExtraInventorySlotItem();
     Assert(pItem != NULL);
@@ -1149,8 +1107,6 @@ void Vampire::wearItem(WearPart Part)
             m_pZone->broadcastPacket(m_X, m_Y, &gcOtherModifyInfo, this);
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -1162,8 +1118,6 @@ void Vampire::wearItem(WearPart Part)
 void Vampire::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
 
 {
-    __BEGIN_TRY
-
     VAMPIRE_RECORD prev;
 
     // Get the item in the wear slot.
@@ -1235,8 +1189,6 @@ void Vampire::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
             m_pZone->broadcastPacket(m_X, m_Y, &gcOtherModifyInfo, this);
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -1247,7 +1199,6 @@ void Vampire::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
 void Vampire::destroyGears()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     for (int j = 0; j < VAMPIRE_WEAR_MAX; j++) {
@@ -1285,7 +1236,6 @@ void Vampire::destroyGears()
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1293,8 +1243,6 @@ void Vampire::destroyGears()
 bool Vampire::isRealWearing(WearPart part) const
 
 {
-    __BEGIN_TRY
-
     if (part >= VAMPIRE_WEAR_MAX)
         throw Error("Vampire::isRealWearing() : invalid wear point!");
 
@@ -1307,8 +1255,6 @@ bool Vampire::isRealWearing(WearPart part) const
     }
 
     return isRealWearing(m_pWearItem[part]);
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1316,8 +1262,6 @@ bool Vampire::isRealWearing(WearPart part) const
 bool Vampire::isRealWearing(Item* pItem) const
 
 {
-    __BEGIN_TRY
-
     if (pItem == NULL)
         return false;
 
@@ -1355,8 +1299,6 @@ bool Vampire::isRealWearing(Item* pItem) const
     const decore::EquipRequirement required = computeEquipRequirement(decore::EquipRace::Vampire, pItem, pItemInfo);
     const decore::EquipStats current = {0, 0, 0, m_Level, m_Sex};
     return decore::meetsRequirement(decore::EquipRace::Vampire, required, current);
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1370,8 +1312,6 @@ bool Vampire::isRealWearingEx(WearPart part) const {
 DWORD Vampire::sendRealWearingInfo(void) const
 
 {
-    __BEGIN_TRY
-
     DWORD info = 0;
     DWORD flag = 1;
 
@@ -1386,8 +1326,6 @@ DWORD Vampire::sendRealWearingInfo(void) const
     m_pPlayer->sendPacket(&pkt);
 
     return info;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1401,7 +1339,6 @@ DWORD Vampire::sendRealWearingInfo(void) const
 PCVampireInfo2* Vampire::getVampireInfo2()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     PCVampireInfo2* pInfo = new PCVampireInfo2();
@@ -1458,7 +1395,6 @@ PCVampireInfo2* Vampire::getVampireInfo2()
     return pInfo;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -1468,7 +1404,6 @@ PCVampireInfo2* Vampire::getVampireInfo2()
 PCVampireInfo3 Vampire::getVampireInfo3() const
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     m_VampireInfo.setX(m_X);
@@ -1510,7 +1445,6 @@ PCVampireInfo3 Vampire::getVampireInfo3() const
     return m_VampireInfo;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1521,7 +1455,6 @@ PCVampireInfo3 Vampire::getVampireInfo3() const
 GearInfo* Vampire::getGearInfo() const
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     GearInfo* pGearInfo = new GearInfo();
@@ -1547,7 +1480,6 @@ GearInfo* Vampire::getGearInfo() const
     return pGearInfo;
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1556,7 +1488,6 @@ GearInfo* Vampire::getGearInfo() const
 void Vampire::sendVampireSkillInfo()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     VampireSkillInfo* pVampireSkillInfo = new VampireSkillInfo();
@@ -1600,7 +1531,6 @@ void Vampire::sendVampireSkillInfo()
     m_pPlayer->sendPacket(&gcSkillInfo);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -1618,7 +1548,6 @@ void Vampire::sendVampireSkillInfo()
 void Vampire::heartbeat(const Timeval& currentTime)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     PlayerCreature::heartbeat(currentTime);
@@ -1692,14 +1621,11 @@ void Vampire::heartbeat(const Timeval& currentTime)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 void Vampire::getVampireRecord(VAMPIRE_RECORD& record) const
 
 {
-    __BEGIN_TRY
-
     record.pSTR[0] = m_STR[0];
     record.pSTR[1] = m_STR[1];
     record.pSTR[2] = m_STR[2];
@@ -1724,8 +1650,6 @@ void Vampire::getVampireRecord(VAMPIRE_RECORD& record) const
     record.ToHit = m_ToHit[0];
     record.Protection = m_Protection[0];
     record.AttackSpeed = m_AttackSpeed[0];
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -1734,8 +1658,6 @@ void Vampire::getVampireRecord(VAMPIRE_RECORD& record) const
 string Vampire::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "Vampire("
@@ -1755,8 +1677,6 @@ string Vampire::toString() const
         << ",Sight:" << (int)m_Sight << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 void Vampire::saveSkills(void) const {
@@ -1766,8 +1686,6 @@ void Vampire::saveSkills(void) const {
 void Vampire::saveGears(void) const
 
 {
-    __BEGIN_TRY
-
     // Save the items being worn.
     char pField[80];
 
@@ -1783,8 +1701,6 @@ void Vampire::saveGears(void) const
             }
         }
     }
-
-    __END_CATCH
 }
 
 

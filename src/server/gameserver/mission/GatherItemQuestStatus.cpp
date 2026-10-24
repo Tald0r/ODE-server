@@ -18,19 +18,13 @@ GCQuestStatus* GatherItemQuestStatus::makeStatusPacket() const {
 }
 
 bool GatherItemQuestStatus::isTarget(Item* pItem) const {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     return (pItem->getItemClass() == m_TargetItemClass &&
             (m_TargetItemType == 999 || pItem->getItemType() == m_TargetItemType));
-
-    __END_CATCH
 }
 
 bool GatherItemQuestStatus::isSuccess() const {
-    __BEGIN_TRY
-
     PlayerCreature* pOwnerPC = getOwnerPC();
     Inventory* pInventory = pOwnerPC->getInventory();
 
@@ -70,6 +64,4 @@ bool GatherItemQuestStatus::isSuccess() const {
     }
 
     return false;
-
-    __END_CATCH
 }

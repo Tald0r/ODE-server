@@ -26,28 +26,18 @@ RewardClass::~RewardClass()
 void RewardClass::addRewardInfo(RewardInfo* pRewardInfo)
 
 {
-    __BEGIN_TRY
-
     Assert(pRewardInfo != NULL);
     m_RewardInfos.push_back(pRewardInfo);
-
-    __END_CATCH
 }
 
 QuestMessage RewardClass::giveReward(PlayerCreature* pPC) const {
-    __BEGIN_TRY
-
     RewardInfo* pRI = selectReward(pPC);
     return pRI->giveReward(pPC);
-
-    __END_CATCH
 }
 
 QuestMessage RewardClass::canGiveReward(PlayerCreature* pPC) const
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     vector<RewardInfo*>::const_iterator itr = m_RewardInfos.begin();
@@ -63,8 +53,6 @@ QuestMessage RewardClass::canGiveReward(PlayerCreature* pPC) const
     }
 
     return COMPLETE_SUCCESS;
-
-    __END_CATCH
 }
 
 string RewardClass::toString() const {

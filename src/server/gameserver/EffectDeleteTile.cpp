@@ -15,13 +15,9 @@
 EffectDeleteTile::EffectDeleteTile(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -29,37 +25,26 @@ EffectDeleteTile::EffectDeleteTile(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t z
 void EffectDeleteTile::affect()
 
 {
-    __BEGIN_TRY
-
     // Broadcast to the surroundings. -> probably not needed
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDeleteTile::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDeleteTile::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectDeleteTile::unaffect()
 
 {
-    __BEGIN_TRY
-
     cout << "delete effect " << m_X << " , " << m_Y << endl;
     Tile& EffectedTile = m_pZone->getTile(m_X, m_Y);
     EffectedTile.deleteEffect(m_ObjectID);
@@ -70,21 +55,15 @@ void EffectDeleteTile::unaffect()
     gcDeleteEffectFromTile.setObjectID(m_ObjectID);
     gcDeleteEffectFromTile.setXY(m_X, m_Y);
     m_pZone->broadcastPacket(&gcDeleteEffectFromTile);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDeleteTile::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectDeleteTile(" << "ObjectID:" << (int)getObjectID() << ",Zone:" << m_pZone->getZoneID()
         << ",X:" << (int)m_X << ",Y:" << (int)m_Y << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

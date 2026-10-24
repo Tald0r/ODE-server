@@ -26,8 +26,6 @@ PCWarLimiter::~PCWarLimiter() {}
 void PCWarLimiter::load()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     clear();
@@ -42,8 +40,6 @@ void PCWarLimiter::load()
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -54,8 +50,6 @@ void PCWarLimiter::load()
 void PCWarLimiter::clearCurrent()
 
 {
-    __BEGIN_TRY
-
     // Set the participant count to 0
     int num = m_LimitInfos.size();
     for (int i = 0; i < num; i++) {
@@ -66,8 +60,6 @@ void PCWarLimiter::clearCurrent()
 
     // Set it to 0 in the DB too.
     defaultWarInfoRepository().clearRaceWarCurrentNums(getTableName());
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -78,13 +70,9 @@ void PCWarLimiter::clearCurrent()
 void PCWarLimiter::saveCurrent(const LevelLimitInfo* pLI) const
 
 {
-    __BEGIN_TRY
-
     Assert(pLI != NULL);
 
     defaultWarInfoRepository().saveRaceWarCurrentNum(getTableName(), pLI->getCurrent(), pLI->getID());
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -93,8 +81,6 @@ void PCWarLimiter::saveCurrent(const LevelLimitInfo* pLI) const
 bool PCWarLimiter::join(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     bool isJoin = false;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -111,8 +97,6 @@ bool PCWarLimiter::join(PlayerCreature* pPC)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return isJoin;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -121,8 +105,6 @@ bool PCWarLimiter::join(PlayerCreature* pPC)
 bool PCWarLimiter::leave(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     bool isLeave = false;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -139,8 +121,6 @@ bool PCWarLimiter::leave(PlayerCreature* pPC)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return isLeave;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -160,8 +140,6 @@ SlayerWarLimiter::~SlayerWarLimiter() {}
 SlayerWarLimiter::LimitInfo_t* SlayerWarLimiter::getLimitInfo(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
     Assert(pPC->isSlayer());
     Assert(!m_LimitInfos.empty());
@@ -180,8 +158,6 @@ SlayerWarLimiter::LimitInfo_t* SlayerWarLimiter::getLimitInfo(PlayerCreature* pP
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 
@@ -202,8 +178,6 @@ VampireWarLimiter::~VampireWarLimiter() {}
 VampireWarLimiter::LimitInfo_t* VampireWarLimiter::getLimitInfo(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
     Assert(pPC->isVampire());
     Assert(!m_LimitInfos.empty());
@@ -222,8 +196,6 @@ VampireWarLimiter::LimitInfo_t* VampireWarLimiter::getLimitInfo(PlayerCreature* 
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -243,8 +215,6 @@ OustersWarLimiter::~OustersWarLimiter() {}
 OustersWarLimiter::LimitInfo_t* OustersWarLimiter::getLimitInfo(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
     Assert(pPC->isOusters());
     Assert(!m_LimitInfos.empty());
@@ -263,8 +233,6 @@ OustersWarLimiter::LimitInfo_t* OustersWarLimiter::getLimitInfo(PlayerCreature* 
     }
 
     return NULL;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -278,13 +246,9 @@ OustersWarLimiter::LimitInfo_t* OustersWarLimiter::getLimitInfo(PlayerCreature* 
 void RaceWarLimiter::clearCurrent()
 
 {
-    __BEGIN_TRY
-
     m_SlayerWarLimiter.clearCurrent();
     m_VampireWarLimiter.clearCurrent();
     m_OustersWarLimiter.clearCurrent();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -293,13 +257,9 @@ void RaceWarLimiter::clearCurrent()
 void RaceWarLimiter::load()
 
 {
-    __BEGIN_TRY
-
     m_SlayerWarLimiter.load();
     m_VampireWarLimiter.load();
     m_OustersWarLimiter.load();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -308,8 +268,6 @@ void RaceWarLimiter::load()
 bool RaceWarLimiter::join(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     bool isJoin = false;
@@ -332,8 +290,6 @@ bool RaceWarLimiter::join(PlayerCreature* pPC)
     }
 
     return isJoin;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -342,8 +298,6 @@ bool RaceWarLimiter::join(PlayerCreature* pPC)
 bool RaceWarLimiter::leave(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     bool isLeave = false;
@@ -365,8 +319,6 @@ bool RaceWarLimiter::leave(PlayerCreature* pPC)
     }
 
     return isLeave;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -375,8 +327,6 @@ bool RaceWarLimiter::leave(PlayerCreature* pPC)
 LevelLimitInfo* RaceWarLimiter::getLimitInfo(Race_t race, int index)
 
 {
-    __BEGIN_TRY
-
     if (race == RACE_SLAYER) {
         return m_SlayerWarLimiter.getLimitInfoByIndex(index);
     } else if (race == RACE_VAMPIRE) {
@@ -386,8 +336,6 @@ LevelLimitInfo* RaceWarLimiter::getLimitInfo(Race_t race, int index)
     Assert(race == RACE_OUSTERS);
 
     return m_OustersWarLimiter.getLimitInfoByIndex(index);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -396,8 +344,6 @@ LevelLimitInfo* RaceWarLimiter::getLimitInfo(Race_t race, int index)
 void RaceWarLimiter::clearPCList()
 
 {
-    __BEGIN_TRY
-
     VSDateTime current = VSDateTime::currentDateTime();
     char filename[128];
     snprintf(filename, sizeof(filename), "RaceWarPCList%s.txt", current.toString().c_str());
@@ -426,9 +372,6 @@ void RaceWarLimiter::clearPCList()
     file << "NumOusters = " << num[2] << endl;
 
     file.close();
-
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -437,12 +380,7 @@ void RaceWarLimiter::clearPCList()
 void RaceWarLimiter::addPCList(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     defaultWarInfoRepository().insertRaceWarPCListEntry(pPC->getName(), (int)pPC->getRace());
-
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -451,15 +389,11 @@ void RaceWarLimiter::addPCList(PlayerCreature* pPC)
 bool RaceWarLimiter::isInPCList(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     int count = defaultWarInfoRepository().countRaceWarPCListEntries(pPC->getName());
 
     bool bExist = count > 0;
 
     return bExist;
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -468,10 +402,5 @@ bool RaceWarLimiter::isInPCList(PlayerCreature* pPC)
 void RaceWarLimiter::removePCList(PlayerCreature* pPC)
 
 {
-    __BEGIN_TRY
-
     defaultWarInfoRepository().deleteRaceWarPCListEntry(pPC->getName());
-
-
-    __END_CATCH
 }

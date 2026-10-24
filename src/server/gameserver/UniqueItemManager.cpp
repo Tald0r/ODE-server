@@ -18,7 +18,6 @@
 void UniqueItemManager::init()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // Read the current rows and mark each (itemClass, itemType) unique.
@@ -34,7 +33,6 @@ void UniqueItemManager::init()
         pItemInfo->setUnique();
     }
 
-    __END_CATCH
     __END_DEBUG
 }
 
@@ -44,7 +42,6 @@ void UniqueItemManager::init()
 bool UniqueItemManager::isPossibleCreate(Item::ItemClass itemClass, ItemType_t itemType)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     // Read the current numbers; an item without a row falls through to the
@@ -56,7 +53,6 @@ bool UniqueItemManager::isPossibleCreate(Item::ItemClass itemClass, ItemType_t i
         return limitNumber == 0 || currentNumber < limitNumber;
     }
 
-    __END_CATCH
     __END_DEBUG
 
     return false;
@@ -70,12 +66,10 @@ bool UniqueItemManager::isPossibleCreate(Item::ItemClass itemClass, ItemType_t i
 void UniqueItemManager::createItem(Item::ItemClass itemClass, ItemType_t itemType)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     defaultItemRepository().incrementUniqueItemCount((int)itemClass, (int)itemType);
 
-    __END_CATCH
     __END_DEBUG
 }
 
@@ -87,11 +81,9 @@ void UniqueItemManager::createItem(Item::ItemClass itemClass, ItemType_t itemTyp
 void UniqueItemManager::deleteItem(Item::ItemClass itemClass, ItemType_t itemType)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     defaultItemRepository().decrementUniqueItemCount((int)itemClass, (int)itemType);
 
-    __END_CATCH
     __END_DEBUG
 }

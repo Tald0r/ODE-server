@@ -23,9 +23,6 @@
 void MercyGround::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -45,9 +42,6 @@ void MercyGround::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot*
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -56,9 +50,6 @@ void MercyGround::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot*
 void MercyGround::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -267,9 +258,6 @@ void MercyGround::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSl
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 MercyGround g_MercyGround;

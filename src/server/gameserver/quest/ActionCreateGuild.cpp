@@ -18,11 +18,7 @@
 void ActionCreateGuild::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     // Opening the guild creation window takes no arguments, so nothing is read here.
-
-    __END_CATCH
 }
 
 
@@ -32,8 +28,6 @@ void ActionCreateGuild::read(PropertyBuffer& propertyBuffer)
 void ActionCreateGuild::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature2 != NULL);
     Assert(pCreature1->isNPC());
@@ -47,8 +41,6 @@ void ActionCreateGuild::execute(Creature* pCreature1, Creature* pCreature2)
     GCNPCResponse okpkt;
     okpkt.setCode(NPC_RESPONSE_INTERFACE_CREATE_GUILD);
     pPlayer->sendPacket(&okpkt);
-
-    __END_CATCH
 }
 
 
@@ -58,11 +50,7 @@ void ActionCreateGuild::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionCreateGuild::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionCreateGuild(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

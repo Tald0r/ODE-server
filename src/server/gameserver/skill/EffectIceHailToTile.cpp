@@ -7,8 +7,6 @@
 #include "Zone.h"
 
 void EffectIceHailToTile::affect() {
-    __BEGIN_TRY
-
     Tile& rTile = m_pZone->getTile(m_X, m_Y);
     const forward_list<Object*>& rList = rTile.getObjectList();
 
@@ -60,6 +58,4 @@ void EffectIceHailToTile::affect() {
     }
 
     EffectWithWarning::affect();
-
-    __END_CATCH
 }

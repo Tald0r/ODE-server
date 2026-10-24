@@ -25,29 +25,20 @@
 EffectFlare::EffectFlare(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectFlare::affect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectFlare::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(!pCreature->isSlayer()); // Slayers are not affected.
     Assert(!pCreature->isNPC());    // NPCs are not affected either.
@@ -63,8 +54,6 @@ void EffectFlare::affect(Creature* pCreature)
         gcChangeDarkLight.setLightLevel(1);
         pPlayer->sendPacket(&gcChangeDarkLight);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,7 +61,6 @@ void EffectFlare::affect(Creature* pCreature)
 void EffectFlare::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -128,14 +116,12 @@ void EffectFlare::unaffect(Creature* pCreature)
 
 
     __END_DEBUG
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectFlare::unaffect()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -144,7 +130,6 @@ void EffectFlare::unaffect()
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -152,18 +137,13 @@ void EffectFlare::unaffect()
 //////////////////////////////////////////////////////////////////////////////
 void EffectFlare::unaffect(Zone* pZone, ZoneCoord_t x, ZoneCoord_t y, Object* pObject)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectFlare::create(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Timeval currentTime;
 
     getCurrentTime(currentTime);
@@ -173,8 +153,6 @@ void EffectFlare::create(const string& ownerID)
 
     defaultEffectSaveRepository().insertCreatureEffect(CREATURE_EFFECT_FLARE, ownerID, currentYearTime,
                                                        m_Deadline.tv_sec, 0, (int)m_OldSight);
-
-    __END_CATCH
 }
 
 
@@ -183,11 +161,7 @@ void EffectFlare::create(const string& ownerID)
 void EffectFlare::destroy(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     defaultEffectSaveRepository().deleteCreatureEffect(CREATURE_EFFECT_FLARE, ownerID);
-
-    __END_CATCH
 }
 
 
@@ -196,29 +170,21 @@ void EffectFlare::destroy(const string& ownerID)
 void EffectFlare::save(const string& ownerID)
 
 {
-    __BEGIN_TRY
-
     Turn_t currentYearTime;
     getCurrentYearTime(currentYearTime);
 
     defaultEffectSaveRepository().updateCreatureEffect(CREATURE_EFFECT_FLARE, ownerID, currentYearTime,
                                                        m_Deadline.tv_sec, 0, (int)m_OldSight);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectFlare::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectFlare(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -226,8 +192,6 @@ string EffectFlare::toString() const {
 void EffectFlareLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<CreatureEffectRow> rows =
@@ -260,6 +224,4 @@ void EffectFlareLoader::load(Creature* pCreature)
             pCreature->addEffect(pEffect);
         }
     }
-
-    __END_CATCH
 }

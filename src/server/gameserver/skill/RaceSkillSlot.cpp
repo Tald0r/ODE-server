@@ -6,31 +6,21 @@
 #include "RaceSkillSlot.h"
 
 RaceSkillSlot::RaceSkillSlot() {
-    __BEGIN_TRY
     m_SkillType = 0;
     m_Interval = 0;
     m_CastingTime = 0;
-    __END_CATCH
 }
 
 RaceSkillSlot::RaceSkillSlot(SkillType_t SkillType, ulong Interval, ulong CastingTime) {
-    __BEGIN_TRY
-
     m_SkillType = SkillType;
     m_Interval = Interval;
     m_CastingTime = CastingTime;
-
-    __END_CATCH
 }
 
 RaceSkillSlot::~RaceSkillSlot() {
-    __BEGIN_TRY
-
     m_SkillType = 0;
     m_Interval = 0;
     m_CastingTime = 0;
-
-    __END_CATCH
 }
 
 Turn_t RaceSkillSlot::getRemainTurn(Timeval currentTime) const {

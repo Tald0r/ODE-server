@@ -23,9 +23,6 @@ void ContinualLight::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, Skil
                              CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -225,9 +222,6 @@ void ContinualLight::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, Skil
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ContinualLight g_ContinualLight;

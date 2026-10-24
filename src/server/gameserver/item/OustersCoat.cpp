@@ -54,8 +54,6 @@ OustersCoat::OustersCoat(ItemType_t itemType, const list<OptionType_t>& optionTy
 void OustersCoat::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -73,8 +71,6 @@ void OustersCoat::create(const string& ownerID, Storage storage, StorageID_t sto
     defaultItemObjectRepository().insertGear(GEAR_OUSTERS_COAT, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                              (int)storage, storageID, (int)x, (int)y, optionField, getDurability(),
                                              getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -84,11 +80,7 @@ void OustersCoat::create(const string& ownerID, Storage storage, StorageID_t sto
 void OustersCoat::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_OUSTERS_COAT, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -97,16 +89,12 @@ void OustersCoat::tinysave(const char* field) const
 void OustersCoat::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_OUSTERS_COAT, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -149,8 +137,6 @@ string OustersCoatInfo::toString() const
 void OustersCoatInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_OUSTERS_COAT);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -184,8 +170,6 @@ void OustersCoatInfoManager::load()
 
         addItemInfo(pOustersCoatInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -195,8 +179,6 @@ void OustersCoatInfoManager::load()
 void OustersCoatLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows = defaultItemObjectRepository().loadGearOfOwner(GEAR_OUSTERS_COAT, pCreature->getName());
@@ -309,8 +291,6 @@ void OustersCoatLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -320,8 +300,6 @@ void OustersCoatLoader::load(Creature* pCreature)
 void OustersCoatLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -362,8 +340,6 @@ void OustersCoatLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -373,12 +349,8 @@ void OustersCoatLoader::load(Zone* pZone)
 void OustersCoatLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

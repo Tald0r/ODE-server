@@ -24,9 +24,6 @@ void MeteorStrike::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -47,9 +44,6 @@ void MeteorStrike::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampire
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -59,9 +53,6 @@ void MeteorStrike::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vamp
                            CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pVampire->getPlayer();
         Zone* pZone = pVampire->getZone();
@@ -232,9 +223,6 @@ void MeteorStrike::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vamp
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -243,9 +231,6 @@ void MeteorStrike::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vamp
 void MeteorStrike::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Zone* pZone = pMonster->getZone();
         Assert(pZone != NULL);
@@ -381,9 +366,6 @@ void MeteorStrike::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 MeteorStrike g_MeteorStrike;

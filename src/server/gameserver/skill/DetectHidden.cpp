@@ -19,9 +19,6 @@
 void DetectHidden::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -103,9 +100,6 @@ void DetectHidden::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t C
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 DetectHidden g_DetectHidden;

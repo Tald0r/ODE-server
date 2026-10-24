@@ -15,7 +15,7 @@
 //////////////////////////////////////////////////////////////////////////////
 ZoneInfoManager::ZoneInfoManager()
 
-    {__BEGIN_TRY __END_CATCH}
+{}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -24,18 +24,18 @@ ZoneInfoManager::ZoneInfoManager()
 ZoneInfoManager::~ZoneInfoManager()
 
 {
-    __BEGIN_TRY
-
-    // Teardown: free the ZoneInfo objects through the published tables; the
-    // Snapshot member releases the tables themselves with this object.
-    const std::shared_ptr<const Tables> tables = m_Tables.load();
-    for (unordered_map<ZoneID_t, ZoneInfo*>::const_iterator itr = tables->byID.begin(); itr != tables->byID.end();
-         itr++) {
-        ZoneInfo* pInfo = itr->second;
-        SAFE_DELETE(pInfo);
+    try {
+        // Teardown: free the ZoneInfo objects through the published tables; the
+        // Snapshot member releases the tables themselves with this object.
+        const std::shared_ptr<const Tables> tables = m_Tables.load();
+        for (unordered_map<ZoneID_t, ZoneInfo*>::const_iterator itr = tables->byID.begin(); itr != tables->byID.end();
+             itr++) {
+            ZoneInfo* pInfo = itr->second;
+            SAFE_DELETE(pInfo);
+        }
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    __END_CATCH_NO_RETHROW
 }
 
 
@@ -45,12 +45,8 @@ ZoneInfoManager::~ZoneInfoManager()
 void ZoneInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     // init == load
     load();
-
-    __END_CATCH
 }
 
 
@@ -60,8 +56,6 @@ void ZoneInfoManager::init()
 void ZoneInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     const std::shared_ptr<const Tables> loaded = m_Tables.load();
     bool bReload = !loaded->byID.empty();
 
@@ -117,8 +111,6 @@ void ZoneInfoManager::load()
             }
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -128,8 +120,6 @@ void ZoneInfoManager::load()
 void ZoneInfoManager::addZoneInfo(ZoneInfo* pZoneInfo)
 
 {
-    __BEGIN_TRY
-
     // One copy-on-write publish covers all three maps, so a reader never
     // sees the id in one table and not yet in another; a duplicate throws
     // before anything is published.
@@ -157,8 +147,6 @@ void ZoneInfoManager::addZoneInfo(ZoneInfo* pZoneInfo)
         tables.byFullName[pZoneInfo->getFullName()] = pZoneInfo;
         tables.byShortName[pZoneInfo->getShortName()] = pZoneInfo;
     });
-
-    __END_CATCH
 }
 
 
@@ -166,8 +154,6 @@ void ZoneInfoManager::addZoneInfo(ZoneInfo* pZoneInfo)
 // Delete zone info from zone info manager
 //////////////////////////////////////////////////////////////////////////////
 void ZoneInfoManager::deleteZoneInfo(ZoneID_t zoneID) {
-    __BEGIN_TRY
-
     // Unpublishing first only keeps NEW readers from finding the entry; one
     // that loaded the old snapshot still holds the raw ZoneInfo* and is not
     // protected by the delete coming second. Safe only while no such reader
@@ -192,8 +178,6 @@ void ZoneInfoManager::deleteZoneInfo(ZoneID_t zoneID) {
         msg << "ZoneID : " << zoneID;
         throw NoSuchElementException(msg.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -201,8 +185,6 @@ void ZoneInfoManager::deleteZoneInfo(ZoneID_t zoneID) {
 // get zone from zone info manager
 //////////////////////////////////////////////////////////////////////////////
 ZoneInfo* ZoneInfoManager::getZoneInfo(ZoneID_t zoneID) {
-    __BEGIN_TRY
-
     ZoneInfo* pZoneInfo = NULL;
 
     const std::shared_ptr<const Tables> tables = m_Tables.load();
@@ -219,8 +201,6 @@ ZoneInfo* ZoneInfoManager::getZoneInfo(ZoneID_t zoneID) {
     }
 
     return pZoneInfo;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -261,8 +241,6 @@ vector<Zone*> ZoneInfoManager::getNormalFields() const {
 string ZoneInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "ZoneInfoManager(";
@@ -280,6 +258,4 @@ string ZoneInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

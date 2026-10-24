@@ -23,9 +23,6 @@ void PlasmaRocketLauncher::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, S
                                    CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -154,9 +151,6 @@ void PlasmaRocketLauncher::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, S
         printf("skill exception!!~1\n");
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 PlasmaRocketLauncher g_PlasmaRocketLauncher;

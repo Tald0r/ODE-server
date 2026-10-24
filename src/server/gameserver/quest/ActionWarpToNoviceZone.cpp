@@ -35,8 +35,6 @@
 void ActionWarpToNoviceZone::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_NoviceZoneID = pb.getPropertyInt("NoviceZoneID");
         m_NoviceX = pb.getPropertyInt("NoviceX");
@@ -48,8 +46,6 @@ void ActionWarpToNoviceZone::read(PropertyBuffer& pb)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +54,6 @@ void ActionWarpToNoviceZone::read(PropertyBuffer& pb)
 void ActionWarpToNoviceZone::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -106,7 +101,6 @@ void ActionWarpToNoviceZone::execute(Creature* pNPC, Creature* pCreature)
     }
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -116,13 +110,9 @@ void ActionWarpToNoviceZone::execute(Creature* pNPC, Creature* pCreature)
 string ActionWarpToNoviceZone::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionWarpToNoviceZone(" << "NoviceZoneID:" << (int)m_NoviceZoneID << ",NoviceX:" << (int)m_NoviceX
         << ",NoviceY:" << (int)m_NoviceY << "BeginnerZoneID:" << (int)m_BeginnerZoneID
         << ",BeginnerX:" << (int)m_BeginnerX << ",BeginnerY:" << (int)m_BeginnerY << ")";
     return msg.toString();
-
-    __END_CATCH
 }

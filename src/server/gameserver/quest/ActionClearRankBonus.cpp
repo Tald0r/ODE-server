@@ -25,15 +25,11 @@
 void ActionClearRankBonus::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         m_Rank = propertyBuffer.getPropertyInt("Rank");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -43,8 +39,6 @@ void ActionClearRankBonus::read(PropertyBuffer& propertyBuffer)
 void ActionClearRankBonus::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature2 != NULL);
     Assert(pCreature2->isPC());
 
@@ -177,8 +171,6 @@ void ActionClearRankBonus::execute(Creature* pCreature1, Creature* pCreature2)
 
     response.setCode(NPC_RESPONSE_QUIT_DIALOGUE);
     pPlayer->sendPacket(&response);
-
-    __END_CATCH
 }
 
 
@@ -188,11 +180,7 @@ void ActionClearRankBonus::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionClearRankBonus::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionClearRankBonus(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

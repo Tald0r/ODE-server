@@ -47,8 +47,6 @@ MoonCard::MoonCard(ItemType_t itemType, const list<OptionType_t>& optionType, It
 void MoonCard::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -62,8 +60,6 @@ void MoonCard::create(const string& ownerID, Storage storage, StorageID_t storag
 
     defaultItemObjectRepository().insertNumItem(GEAR_MOON_CARD, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                 storageID, (int)x, (int)y, (int)m_Num, (int)m_CreateType);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -72,22 +68,14 @@ void MoonCard::create(const string& ownerID, Storage storage, StorageID_t storag
 void MoonCard::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_MOON_CARD, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void MoonCard::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumItem(GEAR_MOON_CARD, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                 storageID, (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 string MoonCard::toString() const
@@ -103,31 +91,19 @@ string MoonCard::toString() const
 VolumeWidth_t MoonCard::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MOON_CARD, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t MoonCard::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MOON_CARD, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t MoonCard::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MOON_CARD, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -147,8 +123,6 @@ string MoonCardInfo::toString() const
 void MoonCardInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_MOON_CARD);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -171,8 +145,6 @@ void MoonCardInfoManager::load()
 
         addItemInfo(pMoonCardInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -182,8 +154,6 @@ void MoonCardInfoManager::load()
 void MoonCardLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumObjectRow> rows = defaultItemObjectRepository().loadNumItemOfOwner(GEAR_MOON_CARD, pCreature->getName());
@@ -276,15 +246,11 @@ void MoonCardLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void MoonCardLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumZoneObjectRow> rows =
@@ -319,19 +285,13 @@ void MoonCardLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void MoonCardLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

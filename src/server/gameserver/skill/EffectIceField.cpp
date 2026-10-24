@@ -24,16 +24,12 @@
 EffectIceField::EffectIceField(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
     m_CasterName = "";
     m_CasterID = 0;
     m_bForce = false;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -41,9 +37,6 @@ EffectIceField::EffectIceField(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY
 void EffectIceField::affect()
 
 {
-    __BEGIN_TRY
-
-
     Assert(m_pZone != NULL);
 
     // Fetches the creature that used the effect.
@@ -106,63 +99,42 @@ void EffectIceField::affect()
     }
 
     setNextTime(m_Tick);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIceField::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIceField::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectIceField::unaffect()
 
 {
-    __BEGIN_TRY
-
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectIceField::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectIceField(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 void EffectIceFieldLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     vector<ZoneEffectRow> rows =
         defaultZoneInfoRepository().loadZoneEffectRects(pZone->getZoneID(), (int)Effect::EFFECT_CLASS_ICE_FIELD);
 
@@ -193,6 +165,4 @@ void EffectIceFieldLoader::load(Zone* pZone)
                 }
             }
     }
-
-    __END_CATCH
 }

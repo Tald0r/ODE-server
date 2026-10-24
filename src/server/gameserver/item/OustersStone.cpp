@@ -55,8 +55,6 @@ void OustersStone::create(const string& ownerID, Storage storage, StorageID_t st
                           ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -74,8 +72,6 @@ void OustersStone::create(const string& ownerID, Storage storage, StorageID_t st
     defaultItemObjectRepository().insertGear(GEAR_OUSTERS_STONE, m_ItemID, m_ObjectID, getItemType(), ownerID,
                                              (int)storage, storageID, (int)x, (int)y, optionField, getDurability(),
                                              getGrade(), (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -85,11 +81,7 @@ void OustersStone::create(const string& ownerID, Storage storage, StorageID_t st
 void OustersStone::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_OUSTERS_STONE, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -98,16 +90,12 @@ void OustersStone::tinysave(const char* field) const
 void OustersStone::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateGear(GEAR_OUSTERS_STONE, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), getGrade(),
                                              (int)getEnchantLevel(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -131,11 +119,7 @@ string OustersStone::toString() const
 // get Elemental Type
 //--------------------------------------------------------------------------------
 ElementalType OustersStone::getElementalType(void) const {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_OUSTERS_STONE, getItemType())->getElementalType();
-
-    __END_CATCH
 }
 
 
@@ -143,11 +127,7 @@ ElementalType OustersStone::getElementalType(void) const {
 // get Elemental
 //--------------------------------------------------------------------------------
 Elemental_t OustersStone::getElemental(void) const {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_OUSTERS_STONE, getItemType())->getElemental();
-
-    __END_CATCH
 }
 
 
@@ -174,8 +154,6 @@ string OustersStoneInfo::toString() const
 void OustersStoneInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_OUSTERS_STONE);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -211,8 +189,6 @@ void OustersStoneInfoManager::load()
 
         addItemInfo(pOustersStoneInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -222,8 +198,6 @@ void OustersStoneInfoManager::load()
 void OustersStoneLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<GearObjectRow> rows =
@@ -339,8 +313,6 @@ void OustersStoneLoader::load(Creature* pCreature)
                     pCreature->getName().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -350,8 +322,6 @@ void OustersStoneLoader::load(Creature* pCreature)
 void OustersStoneLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<GearZoneObjectRow> rows =
@@ -392,8 +362,6 @@ void OustersStoneLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -403,12 +371,8 @@ void OustersStoneLoader::load(Zone* pZone)
 void OustersStoneLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

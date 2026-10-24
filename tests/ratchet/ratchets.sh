@@ -6,7 +6,10 @@
 #   measured < baseline  -> FAIL: progress! tighten the baseline below (and
 #                           the table in docs/reviews/RESTRUCTURING.md) in the same
 #                           commit, so the number stays honest.
-# Never raise a baseline.
+# Never raise a baseline for new debt. The only rise is a widening: a
+# measure widened to count what it missed rises in the commit that widens
+# it, by exactly what the new scope adds (the old scope's count unchanged),
+# with the numbers, the date and the reason here and in the plan's table.
 #
 # Run from the repository root (ctest does this via WORKING_DIRECTORY).
 set -uo pipefail
@@ -63,6 +66,10 @@ R4=$(grep -rlE 'void execute\(Player' src/Core --include='*.h' | wc -l)
 check_ratchet R4 "packet headers with execute()" 0 "$R4"
 
 # --- R5: __BEGIN_TRY control-flow macro sites in gameserver ----------------
+# None is left: the rethrowing pairs went, the throw site every Throwable
+# records standing in for the function chain they built, and the swallowing
+# ones are the explicit catches R19 counts. The count holds at zero, so a new
+# __BEGIN_TRY in the gameserver fails here.
 # handler/, packetfill/ and gm/ are excluded. handler/ and packetfill/ hold
 # sources that moved there from src/Core in task 2.4, where this metric never
 # counted them; gm/ holds the GM command bodies that moved out of
@@ -70,9 +77,11 @@ check_ratchet R4 "packet headers with execute()" 0 "$R4"
 # those same handler bodies at a new address, not new debt. Including either
 # set would jump the baseline without anything having been written. Fold them
 # in (with a re-baseline note) when they become de-core extraction targets in
-# 3.x.
-R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' | grep -vE 'gameserver/(gm|handler|packetfill)/' | wc -l)
-check_ratchet R5 "__BEGIN_TRY sites in gameserver" 5114 "$R5"
+# 3.x. Headers count too: a template's body holds pairs as live as a .cpp's
+# (5,114 -> 5,119 on 2026-10-23, the widening: four live header sites and one
+# comment line).
+R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' --include='*.h' | grep -vE 'gameserver/(gm|handler|packetfill)/' | wc -l)
+check_ratchet R5 "__BEGIN_TRY sites in gameserver" 0 "$R5"
 
 # --- R6: god-file line counts (task 3.3 files only, so far) -----------------
 # Formula extraction to de-core (src/domain) shrinks these; each delegation
@@ -98,7 +107,7 @@ check_ratchet R6a "SkillUtil.cpp lines" 678 "$R6a"
 # Monster::initAllStat. Under the 2,000-line phase exit criterion, so the
 # ratchet is a pin rather than a god-file baseline now.
 R6b=$(wc -l < src/server/gameserver/InitAllStat.cpp 2>/dev/null || echo missing)
-check_ratchet R6b "InitAllStat.cpp lines" 230 "$R6b"
+check_ratchet R6b "InitAllStat.cpp lines" 225 "$R6b"
 R6c=$(wc -l < src/server/gameserver/skill/HitRoll.cpp 2>/dev/null || echo missing)
 check_ratchet R6c "HitRoll.cpp lines" 642 "$R6c"
 R6d=$(wc -l < src/server/gameserver/skill/SkillFormula.cpp 2>/dev/null || echo missing)
@@ -119,7 +128,7 @@ check_ratchet R6f "ConsoleCommands.cpp lines" 1574 "$R6f"
 # What is left is the zone's own state: tiles, effects, creature lookup, the
 # NPC registry and the heartbeat. Under the 2,000-line phase exit criterion.
 R6g=$(wc -l < src/server/gameserver/Zone.cpp 2>/dev/null || echo missing)
-check_ratchet R6g "Zone.cpp lines" 1265 "$R6g"
+check_ratchet R6g "Zone.cpp lines" 1176 "$R6g"
 
 # R6h-j: the three race classes. Persistence, gold, item-shape, inventory,
 # free-play, skill-slot-table, exps, initial-rank, silver-damage and
@@ -134,11 +143,11 @@ check_ratchet R6g "Zone.cpp lines" 1265 "$R6g"
 # bodies in SlayerShape.cpp, which puts Slayer.cpp under the 2,000-line phase
 # exit criterion with the other two.
 R6h=$(wc -l < src/server/gameserver/Slayer.cpp 2>/dev/null || echo missing)
-check_ratchet R6h "Slayer.cpp lines" 1835 "$R6h"
+check_ratchet R6h "Slayer.cpp lines" 1743 "$R6h"
 R6i=$(wc -l < src/server/gameserver/Vampire.cpp 2>/dev/null || echo missing)
-check_ratchet R6i "Vampire.cpp lines" 1919 "$R6i"
+check_ratchet R6i "Vampire.cpp lines" 1835 "$R6i"
 R6j=$(wc -l < src/server/gameserver/Ousters.cpp 2>/dev/null || echo missing)
-check_ratchet R6j "Ousters.cpp lines" 1848 "$R6j"
+check_ratchet R6j "Ousters.cpp lines" 1752 "$R6j"
 
 # --- R7: pre-C++17 dynamic exception specifications ------------------------
 # The migration also normalized real `throw(expr)` expressions to `throw expr`
@@ -532,6 +541,41 @@ if ! [[ "$r18_files" =~ ^[0-9]+$ ]] || [ "$r18_files" -lt 3000 ]; then
     fail=1
 else
     check_ratchet R18 "commented-out code lines in /* */ blocks" 0 "$R18"
+fi
+
+# --- R19: catch (Throwable&) clauses that drop the exception ---------------
+# A catch whose body is empty, comments and `;` aside, ends the Throwable
+# there: the caller never learns the block failed, and whatever the block
+# had not done yet stays undone. That is control flow nobody has judged yet
+# -- most of these were swallowing try macros, written out unchanged -- so
+# each one that goes is a decision made test first: let the exception reach
+# a caller that handles it, or handle it here, with a test that pins which.
+#
+# R5's scope: the gameserver's .cpp and .h files outside gm/, handler/ and
+# packetfill/. A perl match over each file's text: `Throwable&`,
+# `Throwable &`, `const Throwable&` and a named variable all count, and the
+# body may hold only blanks, comments and empty statements (`;`). Textual,
+# so a commented-out clause or one in a string literal counts too. It cannot
+# see a swallow spelled another way: a body that only
+# logs or calls addStack(), a `catch (...)`, a catch of a Throwable subclass,
+# or the __END_CATCH_NO_RETHROW macro, which R5 keeps out of this scope.
+r19_raw=$(find src/server/gameserver \( -name '*.cpp' -o -name '*.h' \) -print0 | perl -0 -ne '
+    BEGIN { $files = 0; $count = 0 }
+    chomp; next if m{gameserver/(?:gm|handler|packetfill)/};
+    open(my $fh, "<", $_) or next; $files++;
+    my $src = do { local $/; <$fh> }; close $fh;
+    $count++ while $src =~ m{\bcatch\s*\(\s*(?:const\s+)?Throwable\s*&\s*\w*\s*\)\s*\{(?:\s|;|//[^\n]*+|/\*(?:[^*]|\*(?!/))*+\*/)*+\}}g;
+    END { print "$files $count\n" }
+')
+# R13's rule: a scan that found almost nothing must fail loudly. The scope
+# holds well over two thousand sources.
+r19_files=${r19_raw%% *}
+R19=${r19_raw##* }
+if ! [[ "$r19_files" =~ ^[0-9]+$ ]] || [ "$r19_files" -lt 2000 ]; then
+    echo "[FAIL] R19 swallowing catches: only '$r19_files' files scanned (find or perl broken?)"
+    fail=1
+else
+    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 107 "$R19"
 fi
 
 # --- Removed dead services must not return --------------------------------

@@ -19,13 +19,9 @@
 EffectTurretLaser::EffectTurretLaser(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = X;
     m_Y = Y;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -33,15 +29,11 @@ EffectTurretLaser::EffectTurretLaser(Zone* pZone, ZoneCoord_t X, ZoneCoord_t Y)
 void EffectTurretLaser::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     setNextTime(5);
 
     affect(m_pZone, m_X, m_Y);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -49,8 +41,6 @@ void EffectTurretLaser::affect()
 void EffectTurretLaser::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
 
 {
-    __BEGIN_TRY
-
     if (!isValidZoneCoord(pZone, Cx, Cy))
         return;
     Tile& rTile = pZone->getTile(Cx, Cy);
@@ -83,8 +73,6 @@ void EffectTurretLaser::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
             pZone->broadcastPacket(Cx + i, Cy + i, &gcAE);
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -92,12 +80,8 @@ void EffectTurretLaser::affect(Zone* pZone, ZoneCoord_t Cx, ZoneCoord_t Cy)
 void EffectTurretLaser::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& tile = m_pZone->getTile(m_X, m_Y);
     tile.deleteEffect(m_ObjectID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -105,11 +89,7 @@ void EffectTurretLaser::unaffect()
 string EffectTurretLaser::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectTurretLaser(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

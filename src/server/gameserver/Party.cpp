@@ -51,13 +51,9 @@
 string PartyInviteInfo::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "PartyInviteInfo(" << "Host:" << m_HostName << ",Guest:" << m_GuestName << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -69,49 +65,39 @@ string PartyInviteInfo::toString(void) const
 PartyInviteInfoManager::PartyInviteInfoManager()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("PartyInviteInfoManager");
-
-    __END_CATCH
 }
 
 PartyInviteInfoManager::~PartyInviteInfoManager()
 
 {
-    __BEGIN_TRY
+    try {
+        unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.begin();
+        for (; itr != m_InfoMap.end(); itr++) {
+            PartyInviteInfo* pInfo = itr->second;
+            SAFE_DELETE(pInfo);
+        }
 
-    unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.begin();
-    for (; itr != m_InfoMap.end(); itr++) {
-        PartyInviteInfo* pInfo = itr->second;
-        SAFE_DELETE(pInfo);
+        m_InfoMap.clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
     }
-
-    m_InfoMap.clear();
-
-    __END_CATCH_NO_RETHROW
 }
 
 bool PartyInviteInfoManager::hasInviteInfo(const string& HostName)
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.find(HostName);
     if (itr == m_InfoMap.end()) {
         return false;
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool PartyInviteInfoManager::canInvite(Creature* pHost, Creature* pGuest)
 
 {
-    __BEGIN_TRY
-
     Assert(pHost != NULL && pGuest != NULL);
 
     // Only PCs may invite each other.
@@ -129,15 +115,11 @@ bool PartyInviteInfoManager::canInvite(Creature* pHost, Creature* pGuest)
         return false;
 
     return true;
-
-    __END_CATCH
 }
 
 bool PartyInviteInfoManager::isInviting(Creature* pHost, Creature* pGuest)
 
 {
-    __BEGIN_TRY
-
     Assert(pHost != NULL && pGuest != NULL);
 
     PartyInviteInfo* pHostInfo = getInviteInfo(pHost->getName());
@@ -155,15 +137,11 @@ bool PartyInviteInfoManager::isInviting(Creature* pHost, Creature* pGuest)
         return true;
 
     return false;
-
-    __END_CATCH
 }
 
 void PartyInviteInfoManager::initInviteInfo(Creature* pHost, Creature* pGuest)
 
 {
-    __BEGIN_TRY
-
     if (hasInviteInfo(pHost->getName()) || hasInviteInfo(pGuest->getName())) {
         // An overlap has been seen here: party invite information is about to be
         // initialized by a CGPartyInvite packet, but invite information already
@@ -188,15 +166,11 @@ void PartyInviteInfoManager::initInviteInfo(Creature* pHost, Creature* pGuest)
     if (!addInviteInfo(pGuestInfo)) {
         delete pHostInfo;
     }
-
-    __END_CATCH
 }
 
 void PartyInviteInfoManager::cancelInvite(Creature* pHost, Creature* pGuest)
 
 {
-    __BEGIN_TRY
-
     Assert(pHost != NULL && pGuest != NULL);
 
     int nCondition = 0;
@@ -218,15 +192,11 @@ void PartyInviteInfoManager::cancelInvite(Creature* pHost, Creature* pGuest)
 
     deleteInviteInfo(pHost->getName());
     deleteInviteInfo(pGuest->getName());
-
-    __END_CATCH
 }
 
 void PartyInviteInfoManager::cancelInvite(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     PartyInviteInfo* pInfo = getInviteInfo(pCreature->getName());
@@ -256,15 +226,11 @@ void PartyInviteInfoManager::cancelInvite(Creature* pCreature)
         deleteInviteInfo(HostName);
         deleteInviteInfo(GuestName);
     }
-
-    __END_CATCH
 }
 
 bool PartyInviteInfoManager::addInviteInfo(PartyInviteInfo* pInfo)
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.find(pInfo->getHostName());
     if (itr != m_InfoMap.end()) {
         cerr << "PartyInviteInfoManager::addInviteInfo() : DuplicatedException" << endl;
@@ -276,28 +242,20 @@ bool PartyInviteInfoManager::addInviteInfo(PartyInviteInfo* pInfo)
     m_InfoMap[pInfo->getHostName()] = pInfo;
 
     return true;
-
-    __END_CATCH
 }
 
 void PartyInviteInfoManager::deleteInviteInfo(const string& HostName)
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.find(HostName);
     if (itr != m_InfoMap.end()) {
         m_InfoMap.erase(itr);
     }
-
-    __END_CATCH
 }
 
 PartyInviteInfo* PartyInviteInfoManager::getInviteInfo(const string& HostName)
 
 {
-    __BEGIN_TRY
-
     unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.find(HostName);
 
     if (itr == m_InfoMap.end()) {
@@ -306,8 +264,6 @@ PartyInviteInfo* PartyInviteInfoManager::getInviteInfo(const string& HostName)
 
 
     return itr->second;
-
-    __END_CATCH
 }
 
 
@@ -320,8 +276,6 @@ PartyInviteInfo* PartyInviteInfoManager::getInviteInfo(const string& HostName)
 Party::Party(Creature::CreatureClass CClass)
 
 {
-    __BEGIN_TRY
-
     // Fix the creature class that may belong to the party...
     m_CreatureClass = CClass;
 
@@ -329,30 +283,26 @@ Party::Party(Creature::CreatureClass CClass)
 
     // Name the mutex. (for debugging)
     m_Mutex.setName("Party");
-
-    __END_CATCH
 }
 
 Party::~Party()
 
 {
-    __BEGIN_TRY
+    try {
+        __ENTER_CRITICAL_SECTION(m_Mutex)
 
-    __ENTER_CRITICAL_SECTION(m_Mutex)
+        m_MemberMap.clear();
 
-    m_MemberMap.clear();
-
-    __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH_NO_RETHROW
+        __LEAVE_CRITICAL_SECTION(m_Mutex)
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 // Find a party member by name and return it.
 Creature* Party::getMember(const string& name) const
 
 {
-    __BEGIN_TRY
-
     // cout << "Party::getMember() : BEGIN" << endl;
 
     Creature* pCreature = NULL;
@@ -372,16 +322,12 @@ Creature* Party::getMember(const string& name) const
     // cout << "Party::getMember() : END" << endl;
 
     return pCreature;
-
-    __END_CATCH
 }
 
 // Add a member.
 void Party::addMember(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // cout << "Party::addMember() : BEGIN" << endl;
 
     // Not a race that may belong to the party...
@@ -402,16 +348,12 @@ void Party::addMember(Creature* pCreature)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     // cout << "Party::addMember() : END" << endl;
-
-    __END_CATCH
 }
 
 // Delete a member from the party.
 void Party::deleteMember(const string& name)
 
 {
-    __BEGIN_TRY
-
     // cout << "Party::deleteMember() : BEGIN" << endl;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -430,16 +372,12 @@ void Party::deleteMember(const string& name)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     // cout << "Party::deleteMember() : END" << endl;
-
-    __END_CATCH
 }
 
 // Check whether the party has a member with the given name.
 bool Party::hasMember(const string& name) const
 
 {
-    __BEGIN_TRY
-
     // cout << "Party::hasMember() : BEGIN" << endl;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -456,8 +394,6 @@ bool Party::hasMember(const string& name) const
     // cout << "Party::hasMember() : END" << endl;
 
     return true;
-
-    __END_CATCH
 }
 
 // Used only by the global party manager...
@@ -466,8 +402,6 @@ bool Party::hasMember(const string& name) const
 void Party::destroyParty(void)
 
 {
-    __BEGIN_TRY
-
     // cout << "Party::destroyParty() : BEGIN" << endl;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -493,14 +427,10 @@ void Party::destroyParty(void)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     // cout << "Party::destroyParty() : END" << endl;
-
-    __END_CATCH
 }
 
 // Send a packet to the party members.
 void Party::broadcastPacket(Packet* pPacket, Creature* pOwner) {
-    __BEGIN_TRY
-
     // cout << "Party::broadcastPacket() : BEGIN" << endl;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -517,8 +447,6 @@ void Party::broadcastPacket(Packet* pPacket, Creature* pOwner) {
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     // cout << "Party::broadcastPacket() : END" << endl;
-
-    __END_CATCH
 }
 
 // Build the GCPartyJoined packet that goes out to the party members
@@ -526,8 +454,6 @@ void Party::broadcastPacket(Packet* pPacket, Creature* pOwner) {
 void Party::makeGCPartyJoined(GCPartyJoined* pGCPartyJoined) const
 
 {
-    __BEGIN_TRY
-
     // cout << "Party::makeGCPartyJoined() : BEGIN" << endl;
 
     Assert(pGCPartyJoined != NULL);
@@ -572,33 +498,21 @@ void Party::makeGCPartyJoined(GCPartyJoined* pGCPartyJoined) const
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     // cout << "Party::makeGCPartyJoined() : END" << endl;
-
-    __END_CATCH
 }
 
 int Party::getSize(void) const
 
 {
-    __BEGIN_TRY
-
     return m_MemberMap.size();
-
-    __END_CATCH
 }
 
 unordered_map<string, Creature*> Party::getMemberMap(void) {
-    __BEGIN_TRY
-
     return m_MemberMap;
-
-    __END_CATCH
 }
 
 int Party::getAdjacentMemberSize(Creature* pLeader) const
 
 {
-    __BEGIN_TRY
-
     // cout << "Party::getAdjacentMemberSize() : BEGIN" << endl;
 
     Zone* pZone = pLeader->getZone();
@@ -635,15 +549,11 @@ int Party::getAdjacentMemberSize(Creature* pLeader) const
     // cout << "Party::getAdjacentMemberSize() : END" << endl;
 
     return rValue;
-
-    __END_CATCH
 }
 
 int Party::getAdjacentMemberSize_LOCKED(Creature* pLeader) const
 
 {
-    __BEGIN_TRY
-
     // cout << "Party::getAdjacentMemberSize() : BEGIN" << endl;
 
     Zone* pZone = pLeader->getZone();
@@ -678,8 +588,6 @@ int Party::getAdjacentMemberSize_LOCKED(Creature* pLeader) const
     // cout << "Party::getAdjacentMemberSize() : END" << endl;
 
     return rValue;
-
-    __END_CATCH
 }
 
 // Raise the attribute experience of the leader and the party members.
@@ -689,8 +597,6 @@ int Party::shareAttrExp(Creature* pLeader, int amount, int STRMultiplier, int DE
                         ModifyInfo& LeaderModifyInfo) const
 
 {
-    __BEGIN_TRY
-
     Assert(pLeader != NULL);
     Assert(pLeader->isSlayer());
 
@@ -823,15 +729,11 @@ int Party::shareAttrExp(Creature* pLeader, int amount, int STRMultiplier, int DE
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return 0;
-
-    __END_CATCH
 }
 
 int Party::shareVampireExp(Creature* pLeader, int amount, ModifyInfo& LeaderModifyInfo) const
 
 {
-    __BEGIN_TRY
-
     Assert(pLeader != NULL);
     Assert(pLeader->isVampire());
 
@@ -924,15 +826,11 @@ int Party::shareVampireExp(Creature* pLeader, int amount, ModifyInfo& LeaderModi
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return 0;
-
-    __END_CATCH
 }
 
 int Party::shareOustersExp(Creature* pLeader, int amount, ModifyInfo& LeaderModifyInfo) const
 
 {
-    __BEGIN_TRY
-
     Assert(pLeader != NULL);
     Assert(pLeader->isOusters());
 
@@ -1015,15 +913,11 @@ int Party::shareOustersExp(Creature* pLeader, int amount, ModifyInfo& LeaderModi
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return 0;
-
-    __END_CATCH
 }
 
 void Party::shareRankExp(Creature* pLeader, int otherLevel)
 
 {
-    __BEGIN_TRY
-
     Assert(pLeader != NULL);
     Assert(pLeader->isPC());
 
@@ -1129,15 +1023,11 @@ void Party::shareRankExp(Creature* pLeader, int otherLevel)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return;
-
-    __END_CATCH
 }
 
 void Party::shareAdvancementExp(Creature* pLeader, int amount)
 
 {
-    __BEGIN_TRY
-
     Assert(pLeader != NULL);
     Assert(pLeader->isPC());
 
@@ -1204,15 +1094,11 @@ void Party::shareAdvancementExp(Creature* pLeader, int amount)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return;
-
-    __END_CATCH
 }
 
 void Party::shareRevealer(Creature* pCaster, int Duration)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pCaster->getZone();
     ZoneCoord_t cx = pCaster->getX();
     ZoneCoord_t cy = pCaster->getY();
@@ -1275,15 +1161,11 @@ void Party::shareRevealer(Creature* pCaster, int Duration)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void Party::shareActivation(Creature* pCaster, int Duration)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pCaster->getZone();
     ZoneCoord_t cx = pCaster->getX();
     ZoneCoord_t cy = pCaster->getY();
@@ -1330,16 +1212,12 @@ void Party::shareActivation(Creature* pCaster, int Duration)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 void Party::shareGnomesWhisper(Creature* pCaster, int Duration, int SkillLevel)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pCaster->getZone();
     ZoneCoord_t cx = pCaster->getX();
     ZoneCoord_t cy = pCaster->getY();
@@ -1388,15 +1266,11 @@ void Party::shareGnomesWhisper(Creature* pCaster, int Duration, int SkillLevel)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void Party::shareHolyArmor(Creature* pCaster, int DefBonus, int SkillLevel)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pCaster->getZone();
     ZoneCoord_t cx = pCaster->getX();
     ZoneCoord_t cy = pCaster->getY();
@@ -1449,15 +1323,11 @@ void Party::shareHolyArmor(Creature* pCaster, int DefBonus, int SkillLevel)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 bool Party::shareWaterElementalHeal(Creature* pCaster, int HealPoint)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pCaster->getZone();
     ZoneCoord_t cx = pCaster->getX();
     ZoneCoord_t cy = pCaster->getY();
@@ -1525,15 +1395,11 @@ bool Party::shareWaterElementalHeal(Creature* pCaster, int HealPoint)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return ret;
-
-    __END_CATCH
 }
 
 void Party::shareGDRLairEnter(Creature* pLeader)
 
 {
-    __BEGIN_TRY
-
     //	Zone*       pZone = pLeader->getZone();
     ZoneCoord_t cx = pLeader->getX();
     ZoneCoord_t cy = pLeader->getY();
@@ -1582,16 +1448,12 @@ void Party::shareGDRLairEnter(Creature* pLeader)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 
 void Party::shareDetectHidden(Creature* pCaster, int Duration)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pCaster->getZone();
     ZoneCoord_t cx = pCaster->getX();
     ZoneCoord_t cy = pCaster->getY();
@@ -1640,15 +1502,11 @@ void Party::shareDetectHidden(Creature* pCaster, int Duration)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void Party::shareDetectInvisibility(Creature* pCaster, int Duration)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pCaster->getZone();
     ZoneCoord_t cx = pCaster->getX();
     ZoneCoord_t cy = pCaster->getY();
@@ -1697,15 +1555,11 @@ void Party::shareDetectInvisibility(Creature* pCaster, int Duration)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void Party::shareExpansion(Creature* pCaster, int Duration, int Percent)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pCaster->getZone();
     ZoneCoord_t cx = pCaster->getX();
     ZoneCoord_t cy = pCaster->getY();
@@ -1770,13 +1624,9 @@ void Party::shareExpansion(Creature* pCaster, int Duration, int Percent)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex)
-
-    __END_CATCH
 }
 
 void Party::dissectCorpse(Creature* pDissecter, MonsterCorpse* pCorpse) {
-    __BEGIN_TRY
-
     de::diagnosticTrace([&](std::ostream& output) { output << "Party::dissectCorpse"; });
     if (getSize() != 2)
         return;
@@ -1816,13 +1666,9 @@ void Party::dissectCorpse(Creature* pDissecter, MonsterCorpse* pCorpse) {
         PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
         pPC->getGQuestManager()->partyDissect(pCorpse);
     }
-
-    __END_CATCH
 }
 
 void Party::eventPartyCrash() {
-    __BEGIN_TRY
-
     de::diagnosticTrace([&](std::ostream& output) { output << "Party::eventPartyCrash"; });
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -1835,8 +1681,6 @@ void Party::eventPartyCrash() {
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 void Party::refreshFamilyPay() {
@@ -1887,8 +1731,6 @@ void Party::refreshFamilyPay() {
 string Party::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "Party(" << "ID:" << m_ID << ",CClass:" << m_CreatureClass << ",Member(";
 
@@ -1907,8 +1749,6 @@ string Party::toString(void) const
 
 
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -1921,25 +1761,16 @@ string Party::toString(void) const
 PartyManager::PartyManager()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("PartyManager");
-
-    __END_CATCH
 }
 
 PartyManager::~PartyManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 bool PartyManager::createParty(int ID, Creature::CreatureClass CClass)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // Look for a party with a duplicate ID.
@@ -1956,15 +1787,11 @@ bool PartyManager::createParty(int ID, Creature::CreatureClass CClass)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return true;
-
-    __END_CATCH
 }
 
 Party* PartyManager::getParty(int ID) // by sigi. 2002.10.14
 
 {
-    __BEGIN_TRY
-
     // Look for the matching party.
     unordered_map<int, Party*>::const_iterator itr = m_PartyMap.find(ID);
     if (itr == m_PartyMap.end()) {
@@ -1972,14 +1799,10 @@ Party* PartyManager::getParty(int ID) // by sigi. 2002.10.14
     }
 
     return itr->second;
-
-    __END_CATCH
 }
 
 
 bool PartyManager::addPartyMember(int ID, Creature* pCreature) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // Look for the matching party.
@@ -2011,15 +1834,11 @@ bool PartyManager::addPartyMember(int ID, Creature* pCreature) {
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return true;
-
-    __END_CATCH
 }
 
 bool PartyManager::deletePartyMember(int ID, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // Look for the matching party.
@@ -2036,8 +1855,6 @@ bool PartyManager::deletePartyMember(int ID, Creature* pCreature)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2049,25 +1866,16 @@ bool PartyManager::deletePartyMember(int ID, Creature* pCreature)
 LocalPartyManager::LocalPartyManager()
 
 {
-    __BEGIN_TRY
-
     m_Mutex.setName("LocalPartyManager");
-
-    __END_CATCH
 }
 
 LocalPartyManager::~LocalPartyManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void LocalPartyManager::heartbeat(void)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex);
 
     unordered_map<int, Party*>::iterator before = m_PartyMap.end();
@@ -2098,15 +1906,11 @@ void LocalPartyManager::heartbeat(void)
     }
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 int LocalPartyManager::getAdjacentMemberSize(int PartyID, Creature* pLeader) const
 
 {
-    __BEGIN_TRY
-
     int size = 0;
 
     __ENTER_CRITICAL_SECTION(m_Mutex);
@@ -2125,16 +1929,12 @@ int LocalPartyManager::getAdjacentMemberSize(int PartyID, Creature* pLeader) con
     __LEAVE_CRITICAL_SECTION(m_Mutex);
 
     return size;
-
-    __END_CATCH
 }
 
 int LocalPartyManager::shareAttrExp(int PartyID, Creature* pLeader, int amount, int STRMultiplier, int DEXMultiplier,
                                     int INTMultiplier, ModifyInfo& LeaderModifyInfo) const
 
 {
-    __BEGIN_TRY
-
     int rvalue = 0;
 
     __ENTER_CRITICAL_SECTION(m_Mutex);
@@ -2153,15 +1953,11 @@ int LocalPartyManager::shareAttrExp(int PartyID, Creature* pLeader, int amount, 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
 
     return rvalue;
-
-    __END_CATCH
 }
 
 int LocalPartyManager::shareVampireExp(int PartyID, Creature* pLeader, int amount, ModifyInfo& LeaderModifyInfo) const
 
 {
-    __BEGIN_TRY
-
     int rvalue = 0;
 
     __ENTER_CRITICAL_SECTION(m_Mutex);
@@ -2180,15 +1976,11 @@ int LocalPartyManager::shareVampireExp(int PartyID, Creature* pLeader, int amoun
     __LEAVE_CRITICAL_SECTION(m_Mutex);
 
     return rvalue;
-
-    __END_CATCH
 }
 
 int LocalPartyManager::shareOustersExp(int PartyID, Creature* pLeader, int amount, ModifyInfo& LeaderModifyInfo) const
 
 {
-    __BEGIN_TRY
-
     int rvalue = 0;
 
     __ENTER_CRITICAL_SECTION(m_Mutex);
@@ -2207,15 +1999,11 @@ int LocalPartyManager::shareOustersExp(int PartyID, Creature* pLeader, int amoun
     __LEAVE_CRITICAL_SECTION(m_Mutex);
 
     return rvalue;
-
-    __END_CATCH
 }
 
 int LocalPartyManager::shareRankExp(int PartyID, Creature* pLeader, int amount) const
 
 {
-    __BEGIN_TRY
-
     // int rvalue = 0;
 
     __ENTER_CRITICAL_SECTION(m_Mutex);
@@ -2234,15 +2022,11 @@ int LocalPartyManager::shareRankExp(int PartyID, Creature* pLeader, int amount) 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
 
     return 0;
-
-    __END_CATCH
 }
 
 void LocalPartyManager::shareRevealer(int PartyID, Creature* pCaster, int Duration)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex);
 
     // Look for the matching party.
@@ -2257,15 +2041,11 @@ void LocalPartyManager::shareRevealer(int PartyID, Creature* pCaster, int Durati
     pParty->shareRevealer(pCaster, Duration);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 void LocalPartyManager::shareDetectHidden(int PartyID, Creature* pCaster, int Duration)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex);
 
     // Look for the matching party.
@@ -2280,15 +2060,11 @@ void LocalPartyManager::shareDetectHidden(int PartyID, Creature* pCaster, int Du
     pParty->shareDetectHidden(pCaster, Duration);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 void LocalPartyManager::shareDetectInvisibility(int PartyID, Creature* pCaster, int Duration)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex);
 
     // Look for the matching party.
@@ -2303,15 +2079,11 @@ void LocalPartyManager::shareDetectInvisibility(int PartyID, Creature* pCaster, 
     pParty->shareDetectInvisibility(pCaster, Duration);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 void LocalPartyManager::shareExpansion(int PartyID, Creature* pCaster, int Duration, int percent)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex);
 
     // Look for the matching party.
@@ -2326,15 +2098,11 @@ void LocalPartyManager::shareExpansion(int PartyID, Creature* pCaster, int Durat
     pParty->shareExpansion(pCaster, Duration, percent);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 void LocalPartyManager::shareActivation(int PartyID, Creature* pCaster, int Duration)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex);
 
     // Look for the matching party.
@@ -2349,15 +2117,11 @@ void LocalPartyManager::shareActivation(int PartyID, Creature* pCaster, int Dura
     pParty->shareActivation(pCaster, Duration);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 void LocalPartyManager::shareGnomesWhisper(int PartyID, Creature* pCaster, int Duration, int SkillLevel)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex);
 
     // Look for the matching party.
@@ -2372,15 +2136,11 @@ void LocalPartyManager::shareGnomesWhisper(int PartyID, Creature* pCaster, int D
     pParty->shareGnomesWhisper(pCaster, Duration, SkillLevel);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 void LocalPartyManager::shareHolyArmor(int PartyID, Creature* pCaster, int DefBonus, int SkillLevel)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex);
 
     // Look for the matching party.
@@ -2395,15 +2155,11 @@ void LocalPartyManager::shareHolyArmor(int PartyID, Creature* pCaster, int DefBo
     pParty->shareHolyArmor(pCaster, DefBonus, SkillLevel);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 bool LocalPartyManager::shareWaterElementalHeal(int PartyID, Creature* pCaster, int HealPoint)
 
 {
-    __BEGIN_TRY
-
     bool ret = false;
 
     __ENTER_CRITICAL_SECTION(m_Mutex);
@@ -2422,15 +2178,11 @@ bool LocalPartyManager::shareWaterElementalHeal(int PartyID, Creature* pCaster, 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
 
     return ret;
-
-    __END_CATCH
 }
 
 void LocalPartyManager::shareGDRLairEnter(int PartyID, Creature* pLeader)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex);
 
     // Look for the matching party.
@@ -2445,13 +2197,9 @@ void LocalPartyManager::shareGDRLairEnter(int PartyID, Creature* pLeader)
     pParty->shareGDRLairEnter(pLeader);
 
     __LEAVE_CRITICAL_SECTION(m_Mutex);
-
-    __END_CATCH
 }
 
 int LocalPartyManager::shareAdvancementExp(int PartyID, Creature* pLeader, int amount) const {
-    __BEGIN_TRY
-
     // int rvalue = 0;
 
     __ENTER_CRITICAL_SECTION(m_Mutex);
@@ -2470,15 +2218,11 @@ int LocalPartyManager::shareAdvancementExp(int PartyID, Creature* pLeader, int a
     __LEAVE_CRITICAL_SECTION(m_Mutex);
 
     return 0;
-
-    __END_CATCH
 }
 
 string LocalPartyManager::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "LocalPartyManager(";
 
@@ -2495,8 +2239,6 @@ string LocalPartyManager::toString(void) const
 
     msg << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 
@@ -2509,26 +2251,17 @@ string LocalPartyManager::toString(void) const
 GlobalPartyManager::GlobalPartyManager()
 
 {
-    __BEGIN_TRY
-
     m_PartyIDRegistry = 0;
     m_Mutex.setName("GlobalPartyManager");
-
-    __END_CATCH
 }
 
 GlobalPartyManager::~GlobalPartyManager()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 bool GlobalPartyManager::canAddMember(int ID)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     unordered_map<int, Party*>::iterator itr = m_PartyMap.find(ID);
@@ -2545,13 +2278,9 @@ bool GlobalPartyManager::canAddMember(int ID)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return true;
-
-    __END_CATCH
 }
 
 bool GlobalPartyManager::addPartyMember(int ID, Creature* pCreature) {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_Mutex)
 
     // cout << "GlobalPartyManager::addPartyMember() : BEGIN" << endl;
@@ -2630,15 +2359,11 @@ bool GlobalPartyManager::addPartyMember(int ID, Creature* pCreature) {
     // cout << "GlobalPartyManager::addPartyMember() : END" << endl;
 
     return true;
-
-    __END_CATCH
 }
 
 bool GlobalPartyManager::deletePartyMember(int ID, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // cout << "GlobalPartyManager::deletePartyMember() : BEGIN" << endl;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -2698,15 +2423,11 @@ bool GlobalPartyManager::deletePartyMember(int ID, Creature* pCreature)
     // cout << "GlobalPartyManager::deletePartyMember() : END" << endl;
 
     return true;
-
-    __END_CATCH
 }
 
 bool GlobalPartyManager::expelPartyMember(int ID, Creature* pExpeller, const string& ExpelleeName)
 
 {
-    __BEGIN_TRY
-
     // cout << "GlobalPartyManager::expelPartyMember() : BEGIN" << endl;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -2798,8 +2519,6 @@ bool GlobalPartyManager::expelPartyMember(int ID, Creature* pExpeller, const str
     // cout << "GlobalPartyManager::expelPartyMember() : END" << endl;
 
     return true;
-
-    __END_CATCH
 }
 
 void GlobalPartyManager::refreshFamilyPay(int ID) {
@@ -2823,8 +2542,6 @@ void GlobalPartyManager::refreshFamilyPay(int ID) {
 int GlobalPartyManager::registerParty(void)
 
 {
-    __BEGIN_TRY
-
     int PartyID = 0;
 
     __ENTER_CRITICAL_SECTION(m_Mutex)
@@ -2834,15 +2551,11 @@ int GlobalPartyManager::registerParty(void)
     __LEAVE_CRITICAL_SECTION(m_Mutex)
 
     return PartyID;
-
-    __END_CATCH
 }
 
 string GlobalPartyManager::toString(void) const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "GlobalPartyManager(";
 
@@ -2859,8 +2572,6 @@ string GlobalPartyManager::toString(void) const
 
     msg << ")";
     return msg.toString();
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2871,8 +2582,6 @@ string GlobalPartyManager::toString(void) const
 void deleteAllPartyInfo(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // cout << "DeleteAllPartyInfo BEGIN" << endl;
 
     Zone* pZone = pCreature->getZone();
@@ -2918,6 +2627,4 @@ void deleteAllPartyInfo(Creature* pCreature)
     }
 
     // cout << "DeleteAllPartyInfo END" << endl;
-
-    __END_CATCH
 }

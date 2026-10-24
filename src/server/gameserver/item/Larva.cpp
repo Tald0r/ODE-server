@@ -46,8 +46,6 @@ Larva::Larva(ItemType_t itemType, const list<OptionType_t>& optionType, ItemNum_
 void Larva::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -61,8 +59,6 @@ void Larva::create(const string& ownerID, Storage storage, StorageID_t storageID
 
     defaultItemObjectRepository().insertNumOnlyItem(GEAR_LARVA, m_ItemID, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, x, y, (int)m_Num);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -71,12 +67,10 @@ void Larva::create(const string& ownerID, Storage storage, StorageID_t storageID
 bool Larva::destroy()
 
 {
-    __BEGIN_TRY
-
-    if (!defaultItemObjectRepository().destroyItemObject(GEAR_LARVA, getObjectTableName(), m_ItemID))
-        return false;
-
-    __END_CATCH
+    {
+        if (!defaultItemObjectRepository().destroyItemObject(GEAR_LARVA, getObjectTableName(), m_ItemID))
+            return false;
+    }
 
     return true;
 }
@@ -88,11 +82,7 @@ bool Larva::destroy()
 void Larva::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_LARVA, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -101,12 +91,8 @@ void Larva::tinysave(const char* field) const
 void Larva::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateNumOnlyItem(GEAR_LARVA, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                     storageID, (int)x, (int)y, (int)m_Num, m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -130,11 +116,7 @@ string Larva::toString() const
 VolumeWidth_t Larva::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 
@@ -144,11 +126,7 @@ VolumeWidth_t Larva::getVolumeWidth() const
 VolumeHeight_t Larva::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 
@@ -158,107 +136,71 @@ VolumeHeight_t Larva::getVolumeHeight() const
 Weight_t Larva::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 int Larva::getHPAmount(void) const
 
 {
-    __BEGIN_TRY
-
     LarvaInfo* pInfo =
         dynamic_cast<LarvaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType));
     return pInfo->getHPAmount();
-
-    __END_CATCH
 }
 
 int Larva::getMPAmount(void) const
 
 {
-    __BEGIN_TRY
-
     LarvaInfo* pInfo =
         dynamic_cast<LarvaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType));
     return pInfo->getMPAmount();
-
-    __END_CATCH
 }
 
 int Larva::getHPDelay(void) const
 
 {
-    __BEGIN_TRY
-
     LarvaInfo* pInfo =
         dynamic_cast<LarvaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType));
     return pInfo->getHPDelay();
-
-    __END_CATCH
 }
 
 int Larva::getMPDelay(void) const
 
 {
-    __BEGIN_TRY
-
     LarvaInfo* pInfo =
         dynamic_cast<LarvaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType));
     return pInfo->getMPDelay();
-
-    __END_CATCH
 }
 
 int Larva::getHPQuantity(void) const
 
 {
-    __BEGIN_TRY
-
     LarvaInfo* pInfo =
         dynamic_cast<LarvaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType));
     return pInfo->getHPQuantity();
-
-    __END_CATCH
 }
 
 int Larva::getMPQuantity(void) const
 
 {
-    __BEGIN_TRY
-
     LarvaInfo* pInfo =
         dynamic_cast<LarvaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType));
     return pInfo->getMPQuantity();
-
-    __END_CATCH
 }
 
 int Larva::getHPRecoveryUnit(void) const
 
 {
-    __BEGIN_TRY
-
     LarvaInfo* pInfo =
         dynamic_cast<LarvaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType));
     return pInfo->getHPRecoveryUnit();
-
-    __END_CATCH
 }
 
 int Larva::getMPRecoveryUnit(void) const
 
 {
-    __BEGIN_TRY
-
     LarvaInfo* pInfo =
         dynamic_cast<LarvaInfo*>(de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_LARVA, m_ItemType));
     return pInfo->getMPRecoveryUnit();
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -267,8 +209,6 @@ int Larva::getMPRecoveryUnit(void) const
 void LarvaInfo::parseEffect(const string& effect)
 
 {
-    __BEGIN_TRY
-
     m_HPAmount = 0;
     m_HPDelay = 0;
     m_HPRecoveryUnit = 0;
@@ -310,8 +250,6 @@ void LarvaInfo::parseEffect(const string& effect)
             m_MPRecoveryUnit = (int)unit;
         }
     }
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -335,8 +273,6 @@ string LarvaInfo::toString() const
 void LarvaInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_LARVA);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -360,8 +296,6 @@ void LarvaInfoManager::load()
 
         addItemInfo(pLarvaInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -371,8 +305,6 @@ void LarvaInfoManager::load()
 void LarvaLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<NumOnlyObjectRow> rows =
@@ -508,8 +440,6 @@ void LarvaLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -519,8 +449,6 @@ void LarvaLoader::load(Creature* pCreature)
 void LarvaLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<NumOnlyZoneObjectRow> rows =
@@ -554,8 +482,6 @@ void LarvaLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -565,12 +491,8 @@ void LarvaLoader::load(Zone* pZone)
 void LarvaLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

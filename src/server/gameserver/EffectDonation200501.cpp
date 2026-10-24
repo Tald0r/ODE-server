@@ -18,11 +18,7 @@
 EffectDonation200501::EffectDonation200501(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -30,12 +26,8 @@ EffectDonation200501::EffectDonation200501(Creature* pCreature)
 void EffectDonation200501::affect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     affect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -43,8 +35,6 @@ void EffectDonation200501::affect()
 void EffectDonation200501::affect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     pCreature->setFlag(Effect::EFFECT_CLASS_DONATION_200501);
 
     // Broadcast to the surroundings.
@@ -53,19 +43,13 @@ void EffectDonation200501::affect(Creature* pCreature)
     gcAddEffect.setEffectID(getSendEffectClass());
     gcAddEffect.setDuration(static_cast<Duration_t>(999999));
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
-
-    __END_CATCH
 }
 
 void EffectDonation200501::unaffect()
 
 {
-    __BEGIN_TRY
-
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
     unaffect(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -73,7 +57,6 @@ void EffectDonation200501::unaffect()
 void EffectDonation200501::unaffect(Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -90,17 +73,12 @@ void EffectDonation200501::unaffect(Creature* pCreature)
     pZone->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcRemoveEffect);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectDonation200501::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "EffectDonation200501(" << "ObjectID:" << getObjectID() << ")";
     return msg.toString();
-
-    __END_CATCH
 }

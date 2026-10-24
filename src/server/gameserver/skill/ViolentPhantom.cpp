@@ -14,8 +14,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 ViolentPhantom::ViolentPhantom() {
-    __BEGIN_TRY
-
     m_pViolentPhantomMask[0].set(0, 0);
     m_pViolentPhantomMask[1].set(-1, -1);
     m_pViolentPhantomMask[2].set(0, -1);
@@ -25,8 +23,6 @@ ViolentPhantom::ViolentPhantom() {
     m_pViolentPhantomMask[6].set(-1, 1);
     m_pViolentPhantomMask[7].set(0, 1);
     m_pViolentPhantomMask[8].set(1, 1);
-
-    __END_CATCH
 }
 
 
@@ -37,9 +33,6 @@ void ViolentPhantom::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampi
                              CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -60,9 +53,6 @@ void ViolentPhantom::execute(Vampire* pVampire, ObjectID_t TargetObjectID, Vampi
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,9 +62,6 @@ void ViolentPhantom::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Va
                              CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pVampire);
     SkillOutput output;
     computeOutput(input, output);
@@ -99,9 +86,6 @@ void ViolentPhantom::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Va
 
     // Knowledge of Blood gives a hit bonus of 10.
     g_SimpleTileMeleeSkill.execute(pVampire, X, Y, pVampireSkillSlot, param, result, CEffectID);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -110,9 +94,6 @@ void ViolentPhantom::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Va
 void ViolentPhantom::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -136,9 +117,6 @@ void ViolentPhantom::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     }
 
     g_SimpleTileMeleeSkill.execute(pMonster, X, Y, param, result);
-
-
-    __END_CATCH
 }
 
 ViolentPhantom g_ViolentPhantom;

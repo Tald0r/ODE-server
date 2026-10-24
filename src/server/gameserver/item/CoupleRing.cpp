@@ -38,21 +38,15 @@ CoupleRing::CoupleRing()
 CoupleRing::CoupleRing(ItemType_t itemType, const list<OptionType_t>& optionType)
 
     : m_ItemType(itemType), m_OptionType(optionType) {
-    __BEGIN_TRY
-
     if (!de::gameContext().itemInfos().isPossibleItem(getItemClass(), m_ItemType, optionType)) {
         filelog("itembug.log", "CoupleRing::CoupleRing() : Invalid item type or option type");
         throw Error("CoupleRing::CoupleRing() : Invalid item type or optionType");
     }
-
-    __END_CATCH
 }
 
 void CoupleRing::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -70,8 +64,6 @@ void CoupleRing::create(const string& ownerID, Storage storage, StorageID_t stor
     defaultItemObjectRepository().insertCoupleRing(GEAR_COUPLE_RING, m_ItemID, m_ObjectID, m_ItemType, ownerID,
                                                    (int)storage, storageID, (int)x, (int)y, optionField, getName(),
                                                    getPartnerItemID());
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -80,22 +72,14 @@ void CoupleRing::create(const string& ownerID, Storage storage, StorageID_t stor
 void CoupleRing::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_COUPLE_RING, field, m_ItemID);
-
-    __END_CATCH
 }
 
 void CoupleRing::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().updateCoupleRing(GEAR_COUPLE_RING, m_ObjectID, m_ItemType, ownerID, (int)storage,
                                                    storageID, (int)x, (int)y, getName(), getPartnerItemID(), m_ItemID);
-
-    __END_CATCH
 }
 
 string CoupleRing::toString() const
@@ -109,38 +93,24 @@ string CoupleRing::toString() const
 VolumeWidth_t CoupleRing::getVolumeWidth() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COUPLE_RING, m_ItemType)->getVolumeWidth();
-
-    __END_CATCH
 }
 
 VolumeHeight_t CoupleRing::getVolumeHeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COUPLE_RING, m_ItemType)->getVolumeHeight();
-
-    __END_CATCH
 }
 
 Weight_t CoupleRing::getWeight() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_COUPLE_RING, m_ItemType)->getWeight();
-
-    __END_CATCH
 }
 
 bool CoupleRing::hasPartnerItem()
 
 {
-    __BEGIN_TRY
-
     bool bRet = false;
 
     int count = 0;
@@ -157,8 +127,6 @@ bool CoupleRing::hasPartnerItem()
     }
 
     return bRet;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -178,8 +146,6 @@ string CoupleRingInfo::toString() const
 void CoupleRingInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_COUPLE_RING);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -202,8 +168,6 @@ void CoupleRingInfoManager::load()
 
         addItemInfo(pCoupleRingInfo);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -213,8 +177,6 @@ void CoupleRingInfoManager::load()
 void CoupleRingLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<CoupleRingObjectRow> rows =
@@ -335,15 +297,11 @@ void CoupleRingLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 void CoupleRingLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     cout << "Loading items dropped in a zone is not supported." << endl;
     Assert(false);
 
@@ -378,19 +336,13 @@ void CoupleRingLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 void CoupleRingLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

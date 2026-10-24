@@ -20,16 +20,12 @@
 void ActionSimpleQuestList::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_ScriptID = propertyBuffer.getPropertyInt("ScriptID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -38,9 +34,7 @@ void ActionSimpleQuestList::read(PropertyBuffer& propertyBuffer)
 ////////////////////////////////////////////////////////////////////////////////
 void ActionSimpleQuestList::execute(Creature* pCreature1, Creature* pCreature2)
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,12 +43,8 @@ void ActionSimpleQuestList::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionSimpleQuestList::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionSimpleQuestList(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

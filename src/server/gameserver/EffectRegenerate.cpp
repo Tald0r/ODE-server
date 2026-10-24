@@ -16,28 +16,19 @@
 EffectRegenerate::EffectRegenerate(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     // Server-only Effect.
     m_bBroadcastingEffect = false;
 
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 EffectRegenerate::~EffectRegenerate()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void EffectRegenerate::affect() {
-    __BEGIN_TRY
-
     setNextTime(m_Tick);
 
     Monster* pMonster = dynamic_cast<Monster*>(m_pTarget);
@@ -55,30 +46,22 @@ void EffectRegenerate::affect() {
 
         cout << pMonster->getName() << "'s HP became " << pMonster->getHP() << "." << endl;
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectRegenerate::unaffect()
 
-    {__BEGIN_TRY
+{
+    // cout << "EffectRegenerate" << "unaffect BEGIN" << endl;
 
-         // cout << "EffectRegenerate" << "unaffect BEGIN" << endl;
-
-         // cout << "EffectRegenerate" << "unaffect END" << endl;
-
-         __END_CATCH}
+    // cout << "EffectRegenerate" << "unaffect END" << endl;
+}
 
 string EffectRegenerate::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectRegenerate(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

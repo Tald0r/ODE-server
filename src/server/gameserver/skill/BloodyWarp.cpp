@@ -16,8 +16,6 @@
 //////////////////////////////////////////////////////////////////////////////
 POINT
 BloodyWarp::getWarpPosition(int myX, int myY, int targetX, int targetY) {
-    __BEGIN_TRY
-
     POINT pt;
 
     // Warp to a random position a few tiles past the target
@@ -34,8 +32,6 @@ BloodyWarp::getWarpPosition(int myX, int myY, int targetX, int targetY) {
     }
 
     return pt;
-
-    __END_CATCH
 }
 
 
@@ -46,9 +42,6 @@ void BloodyWarp::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pVampire != NULL);
     Assert(pVampireSkillSlot != NULL);
 
@@ -70,9 +63,6 @@ void BloodyWarp::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSk
     } catch (Throwable& t) {
         executeSkillFailException(pVampire, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -82,15 +72,7 @@ void BloodyWarp::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampir
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
-    {
-        executeSkillFailNormal(pVampire, getSkillType(), NULL);
-    }
-
-
-    __END_CATCH
+    { executeSkillFailNormal(pVampire, getSkillType(), NULL); }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -99,8 +81,6 @@ void BloodyWarp::execute(Vampire* pVampire, ZoneCoord_t X, ZoneCoord_t Y, Vampir
 void BloodyWarp::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
     Zone* pZone = pMonster->getZone();
     Assert(pZone != NULL);
 
@@ -136,9 +116,6 @@ void BloodyWarp::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } else {
         executeSkillFailNormal(pMonster, getSkillType(), NULL);
     }
-
-
-    __END_CATCH
 }
 
 BloodyWarp g_BloodyWarp;

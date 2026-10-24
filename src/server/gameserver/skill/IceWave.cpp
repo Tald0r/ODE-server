@@ -17,8 +17,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 IceWave::IceWave() {
-    __BEGIN_TRY
-
     int index = 0;
 
     for (int i = -3; i <= 3; ++i) {
@@ -41,8 +39,6 @@ IceWave::IceWave() {
             }
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -51,9 +47,6 @@ IceWave::IceWave() {
 void IceWave::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pMonster != NULL);
 
     try {
@@ -137,9 +130,6 @@ void IceWave::execute(Monster* pMonster, ZoneCoord_t X, ZoneCoord_t Y)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 IceWave g_IceWave;

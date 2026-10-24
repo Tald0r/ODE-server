@@ -20,8 +20,6 @@
 void ActionRandomSay::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
         // read script id
         m_StartScriptID = propertyBuffer.getPropertyInt("StartScriptID");
@@ -29,8 +27,6 @@ void ActionRandomSay::read(PropertyBuffer& propertyBuffer)
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +35,6 @@ void ActionRandomSay::read(PropertyBuffer& propertyBuffer)
 void ActionRandomSay::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature1 != NULL);
@@ -65,7 +60,6 @@ void ActionRandomSay::execute(Creature* pCreature1, Creature* pCreature2)
     pZone->broadcastPacket(pNPC->getX(), pNPC->getY(), &gcNPCSay);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 
@@ -75,11 +69,8 @@ void ActionRandomSay::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionRandomSay::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionRandomSay(" << ",ScriptID:" << (int)m_StartScriptID << "-" << (int)m_EndScriptID << ")";
 
     return msg.toString();
-    __END_CATCH
 }

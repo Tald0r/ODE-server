@@ -21,9 +21,6 @@
 void Sniping::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -108,9 +105,6 @@ void Sniping::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffec
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 void Sniping::checkRevealRatio(Creature* pCreature, int base, int divisor) {

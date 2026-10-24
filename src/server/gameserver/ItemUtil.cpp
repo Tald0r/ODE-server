@@ -606,8 +606,6 @@ Bullet_t reloadArmsItem(Item* pGun, Item* pMagazine) {
 Bullet_t decreaseBullet(Item* pWeapon)
 
 {
-    __BEGIN_TRY
-
     if (pWeapon == NULL) {
         ofstream file("bulletBug.txt", ios::out | ios::app);
         file << "decreaseBullet() : pWeapon is NULL" << endl;
@@ -654,8 +652,6 @@ Bullet_t decreaseBullet(Item* pWeapon)
     //*/
 
     return bullet;
-
-    __END_CATCH
 }
 
 
@@ -665,8 +661,6 @@ Bullet_t decreaseBullet(Item* pWeapon)
 Bullet_t getRemainBullet(Item* pWeapon)
 
 {
-    __BEGIN_TRY
-
     if (pWeapon == NULL) {
         return 0;
     }
@@ -692,8 +686,6 @@ Bullet_t getRemainBullet(Item* pWeapon)
     }
 
     return 0;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1064,8 +1056,6 @@ bool isPossibleNextOption(ITEM_TEMPLATE* pTemplate) {
 Item* getRandomMysteriousItem(Creature* pCreature, Item::ItemClass itemClass, int maxLevel)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     InfoClassManager* pInfoClass = de::gameContext().itemInfos().getInfoManager(itemClass);
@@ -1434,8 +1424,6 @@ Item* getRandomMysteriousItem(Creature* pCreature, Item::ItemClass itemClass, in
     pItem->setGrade(min(6, ItemGradeManager::Instance().getRandomGambleGrade()));
 
     return pItem;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1587,8 +1575,6 @@ ItemType_t getDowngradeItemType(Item::ItemClass IClass, ItemType_t itemType) {
 
 // Generalized version; checkEventTree, checkEventDocument and checkEventDoll can be removed.
 TPOINT checkEventPuzzle(PlayerCreature* pPC, CoordInven_t iX, CoordInven_t iY, int start) {
-    __BEGIN_TRY
-
     Assert(pPC != NULL);
 
     TPOINT pt;
@@ -1634,15 +1620,11 @@ TPOINT checkEventPuzzle(PlayerCreature* pPC, CoordInven_t iX, CoordInven_t iY, i
     pt.y = startY;
 
     return pt;
-
-    __END_CATCH
 }
 
 // Delete the items in the inventory range (X0, Y0) - (X1, y1).
 void deleteInventoryItem(Inventory* pInventory, CoordInven_t invenX0, CoordInven_t invenY0, CoordInven_t invenX1,
                          CoordInven_t invenY1) {
-    __BEGIN_TRY
-
     CoordInven_t curIX = 0, curIY = 0;
     Item* pCurItem = 0;
 
@@ -1662,8 +1644,6 @@ void deleteInventoryItem(Inventory* pInventory, CoordInven_t invenX0, CoordInven
             }
         }
     }
-
-    __END_CATCH
 }
 
 typedef struct {
@@ -1687,8 +1667,6 @@ const NewbieItem NewbieItems[maxNewbieItemNum] = {
 bool addNewbieItemToInventory(Slayer* pSlayer, bool sendPacket)
 
 {
-    __BEGIN_TRY
-
     if (sendPacket) {
         filelog("NewbieItemError.log", "Someone request packet to addNewbieItemToInventory() function!");
         return false;
@@ -1739,15 +1717,11 @@ bool addNewbieItemToInventory(Slayer* pSlayer, bool sendPacket)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool addNewbieGoldToInventory(Slayer* pSlayer, bool sendPacket)
 
 {
-    __BEGIN_TRY
-
     if (sendPacket) {
         filelog("NewbieItemError.log", "Someone request packet to addNewbieGoldToInventory() function!");
         return false;
@@ -1761,15 +1735,11 @@ bool addNewbieGoldToInventory(Slayer* pSlayer, bool sendPacket)
     pSlayer->setGoldEx(500);
 
     return true;
-
-    __END_CATCH
 }
 
 bool addNewbieItemToGear(Slayer* pSlayer, bool sendPacket)
 
 {
-    __BEGIN_TRY
-
     if (sendPacket) {
         filelog("NewbieItemError.log", "Someone request packet to addNewbieItemToGear() function!");
         return false;
@@ -1805,13 +1775,9 @@ bool addNewbieItemToGear(Slayer* pSlayer, bool sendPacket)
     }
 
     return true;
-
-    __END_CATCH
 }
 
 bool addNewbieGoldToInventory(Ousters* pOusters, bool sendPacket /*= false*/) {
-    __BEGIN_TRY
-
     if (sendPacket) {
         filelog("NewbieItemError.log", "Someone request packet to addNewbieItemToInventory() function!");
         return false;
@@ -1825,13 +1791,9 @@ bool addNewbieGoldToInventory(Ousters* pOusters, bool sendPacket /*= false*/) {
     pOusters->setGoldEx(500);
 
     return true;
-
-    __END_CATCH
 }
 
 bool addNewbieItemToInventory(Ousters* pOusters, bool sendPacket /*= false */) {
-    __BEGIN_TRY
-
     if (sendPacket) {
         filelog("NewbieItemError.log", "Someone request packet to addNewbieGoldToInventory() function!");
         return false;
@@ -1872,13 +1834,9 @@ bool addNewbieItemToInventory(Ousters* pOusters, bool sendPacket /*= false */) {
     pLarva->create(pOusters->getName(), STORAGE_INVENTORY, 0, tp.x, tp.y, pLarva->getItemID());
 
     return true;
-
-    __END_CATCH
 }
 
 bool addNewbieItemToGear(Ousters* pOusters, bool sendPacket /*= false */) {
-    __BEGIN_TRY
-
     if (sendPacket) {
         filelog("NewbieItemError.log", "Someone request packet to addNewbieItemToInventory() function!");
         return false;
@@ -1903,15 +1861,11 @@ bool addNewbieItemToGear(Ousters* pOusters, bool sendPacket /*= false */) {
     pWeapon->create(pOusters->getName(), STORAGE_GEAR, 0, Ousters::WEAR_RIGHTHAND, 0, pWeapon->getItemID());
 
     return true;
-
-    __END_CATCH
 }
 
 Item::ItemClass getBestNewbieWeaponClass(Slayer* pSlayer)
 
 {
-    __BEGIN_TRY
-
     Assert(pSlayer != NULL);
 
     Attr_t STR = pSlayer->getSTR();
@@ -1929,9 +1883,6 @@ Item::ItemClass getBestNewbieWeaponClass(Slayer* pSlayer)
 
     // INT
     return (rand() % 2 ? Item::ITEM_CLASS_CROSS : Item::ITEM_CLASS_MACE);
-
-
-    __END_CATCH
 }
 
 void makeOptionList(const string& options, list<OptionType_t>& optionList)
@@ -1970,8 +1921,6 @@ void makeOptionList(const string& options, list<OptionType_t>& optionList)
 void saveDissectionItem(Creature* pCreature, Item* pTreasure, int x, int y)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     Assert(pTreasure != NULL);
 
@@ -2021,15 +1970,11 @@ void saveDissectionItem(Creature* pCreature, Item* pTreasure, int x, int y)
         pTreasure->create("", STORAGE_ZONE, pCreature->getZone()->getZoneID(), x, y, pTreasure->getItemID());
     }
     }
-
-    __END_CATCH
 }
 
 bool canDecreaseDurability(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     if (pItem == NULL)
         return false;
     if (pItem->isUnique())
@@ -2055,8 +2000,6 @@ bool canDecreaseDurability(Item* pItem)
         break;
     }
     return true;
-
-    __END_CATCH
 }
 
 bool canSell(Item* pItem) {
@@ -2320,8 +2263,6 @@ void remainTraceLog(Item* pItem, const string& preOwner, const string& owner, It
                     ItemTraceDetailType detailType)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     ItemTraceRecord record;
@@ -2334,33 +2275,24 @@ void remainTraceLog(Item* pItem, const string& preOwner, const string& owner, It
     record.logType = ItemTraceLogType2String[(int)logType];
     record.detailType = ItemTraceLogDetailType2String[(int)detailType];
     defaultItemRepository().insertItemTraceLog(record);
-
-    __END_CATCH
 }
 
 void remainTraceLogNew(Item* pItem, const string& owner, ITLType logType, ITLDType detailType, ZoneID_t zid /*=0*/,
                        int x /*=0*/, int y /*=0 */)
 
 {
-    __BEGIN_TRY
-
     Assert(pItem != NULL);
 
     // The ItemTrace2Log INSERT that lived here was commented out long ago;
     // the dead block is gone so it no longer reads as inline SQL.
-    __END_CATCH
 }
 
 void remainMoneyTraceLog(const string& preOwner, const string& owner, ItemTraceLogType logType,
                          ItemTraceDetailType detailType, int amount)
 
 {
-    __BEGIN_TRY
-
     defaultItemRepository().insertMoneyTraceLog(preOwner, owner, ItemTraceLogType2String[(int)logType],
                                                 ItemTraceLogDetailType2String[(int)detailType], amount);
-
-    __END_CATCH
 }
 
 // Creates an item bought on the web.
@@ -2456,9 +2388,7 @@ void deleteFlagEffect(Corpse* pFlagPole, Item* pFlag) {
 }
 
 void countResurrectItem() {
-    __BEGIN_TRY
     defaultItemRepository().incrementResurrectItemCount();
-    __END_CATCH
 }
 
 Item* fitToPC(Item* pItem, PlayerCreature* pPC) {

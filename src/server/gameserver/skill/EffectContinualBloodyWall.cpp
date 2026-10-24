@@ -23,8 +23,6 @@
 EffectContinualBloodyWall::EffectContinualBloodyWall(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     m_pZone = pZone;
@@ -36,8 +34,6 @@ EffectContinualBloodyWall::EffectContinualBloodyWall(Zone* pZone)
 
     // This is a server-only effect.
     m_bBroadcastingEffect = false;
-
-    __END_CATCH
 }
 
 
@@ -51,8 +47,6 @@ EffectContinualBloodyWall::~EffectContinualBloodyWall()
 void EffectContinualBloodyWall::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     VSRect rect(0, 0, m_pZone->getWidth() - 1, m_pZone->getHeight() - 1);
@@ -84,8 +78,6 @@ void EffectContinualBloodyWall::affect()
         }
 
     setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------
@@ -93,9 +85,7 @@ void EffectContinualBloodyWall::affect()
 //--------------------------------------------------------------------
 void EffectContinualBloodyWall::unaffect()
 
-    {__BEGIN_TRY
-
-         __END_CATCH}
+{}
 
 //----------------------------------------------------------------------
 // get debug string
@@ -115,8 +105,6 @@ string EffectContinualBloodyWall::toString() const {
 void EffectContinualBloodyWallLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     vector<ZoneEffectRow> rows = defaultZoneInfoRepository().loadZoneEffectRects(
         pZone->getZoneID(), (int)Effect::EFFECT_CLASS_CONTINUAL_BLOODY_WALL);
 
@@ -139,6 +127,4 @@ void EffectContinualBloodyWallLoader::load(Zone* pZone)
         pZone->registerObject(pEffect);
         pZone->addEffect(pEffect);
     }
-
-    __END_CATCH
 }

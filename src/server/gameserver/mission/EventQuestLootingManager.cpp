@@ -74,8 +74,6 @@ bool EventQuestLootingInfo::isTargetMonster(PlayerCreature* pPC, Monster* pMonst
 }
 
 Item* EventQuestLootingInfo::getLootingItem() {
-    __BEGIN_TRY
-
     int diff = m_LootingItemTypeMax - m_LootingItemTypeMin + 1;
     Assert(diff > 0);
 
@@ -88,8 +86,6 @@ Item* EventQuestLootingInfo::getLootingItem() {
     pRet->setQuestItem();
 
     return pRet;
-
-    __END_CATCH
 }
 
 EventQuestLootingInfo* EventQuestLootingManager::isTargetMonster(PlayerCreature* pPC, Monster* pMonster) {
@@ -121,8 +117,6 @@ EventQuestLootingInfo* EventQuestLootingManager::isTargetMonster(PlayerCreature*
 }
 
 bool EventQuestLootingManager::killed(PlayerCreature* pPC, Monster* pMonster) {
-    __BEGIN_TRY
-
     if (!pPC->getQuestManager()->hasQuest())
         return false;
 
@@ -140,13 +134,9 @@ bool EventQuestLootingManager::killed(PlayerCreature* pPC, Monster* pMonster) {
     }
 
     return false;
-
-    __END_CATCH
 }
 
 void EventQuestLootingManager::load() {
-    __BEGIN_TRY
-
     vector<EventQuestLootingRow> rows = defaultQuestInfoRepository().loadEventQuestLootingInfos();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -168,6 +158,4 @@ void EventQuestLootingManager::load() {
         else if (pInfo->m_Type != EventQuestLootingInfo::LOOTING_NONE)
             m_MonsterLootingInfo[pInfo->m_LootingMonsterType].push_back(pInfo);
     }
-
-    __END_CATCH
 }

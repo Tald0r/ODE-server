@@ -18,9 +18,6 @@
 void CrossGuard::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -107,9 +104,6 @@ void CrossGuard::execute(Ousters* pOusters, OustersSkillSlot* pOustersSkillSlot,
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType(), Grade);
     }
-
-
-    __END_CATCH
 }
 
 CrossGuard g_CrossGuard;

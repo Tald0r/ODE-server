@@ -15,9 +15,6 @@
 void MonsterRangeSkill::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     SIMPLE_SKILL_INPUT param;
     param.SkillType = getSkillType();
     param.SkillDamage = m_Damage;
@@ -33,7 +30,4 @@ void MonsterRangeSkill::execute(Monster* pMonster, Creature* pEnemy)
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleMissileSkill.execute(pMonster, pEnemy, param, result);
-
-
-    __END_CATCH
 }

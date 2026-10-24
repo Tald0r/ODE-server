@@ -19,8 +19,6 @@ QuestInfoManager::~QuestInfoManager()
 }
 
 void QuestInfoManager::clear() {
-    __BEGIN_TRY
-
     QuestInfoHashMap::iterator itr = m_QuestInfos.begin();
     QuestInfoHashMap::iterator endItr = m_QuestInfos.end();
 
@@ -30,8 +28,6 @@ void QuestInfoManager::clear() {
     }
 
     m_QuestInfos.clear();
-
-    __END_CATCH
 }
 
 bool QuestInfoManager::isEventQuest(QuestID_t qID) const {
@@ -45,21 +41,15 @@ bool QuestInfoManager::isEventQuest(QuestID_t qID) const {
 void QuestInfoManager::addQuestInfo(QuestInfo* pQI)
 
 {
-    __BEGIN_TRY
-
     QuestInfoHashMap::iterator itr = m_QuestInfos.find(pQI->getQuestID());
 
     if (itr != m_QuestInfos.end())
         throw Error("QuestInfoManager::addQuestInfo : duplicate QuestID.");
 
     m_QuestInfos[pQI->getQuestID()] = pQI;
-
-    __END_CATCH
 }
 
 QuestMessage QuestInfoManager::canExecuteQuest(QuestID_t qID, PlayerCreature* pPC) const {
-    __BEGIN_TRY
-
     if (!de::gameContext().variables().canApplyQuest())
         return START_FAIL_CANNOT_APPLY_QUEST;
     if (pPC->getQuestManager()->hasQuest(qID))
@@ -77,13 +67,9 @@ QuestMessage QuestInfoManager::canExecuteQuest(QuestID_t qID, PlayerCreature* pP
         return START_FAIL_PC;
 
     return START_SUCCESS;
-
-    __END_CATCH
 }
 
 QuestMessage QuestInfoManager::startQuest(QuestID_t qID, PlayerCreature* pPC) {
-    __BEGIN_TRY
-
     QuestMessage code = canExecuteQuest(qID, pPC);
     if (code != START_SUCCESS)
         return code;
@@ -102,13 +88,9 @@ QuestMessage QuestInfoManager::startQuest(QuestID_t qID, PlayerCreature* pPC) {
     pPC->getQuestManager()->addQuest(pQuestStatus);
 
     return code;
-
-    __END_CATCH
 }
 
 QuestStatus* QuestInfoManager::makeQuestStatus(QuestID_t qID, PlayerCreature* pPC) const {
-    __BEGIN_TRY
-
     QuestInfoHashMap::const_iterator itr = m_QuestInfos.find(qID);
 
     if (itr == m_QuestInfos.end())
@@ -123,6 +105,4 @@ QuestStatus* QuestInfoManager::makeQuestStatus(QuestID_t qID, PlayerCreature* pP
     pQuestStatus->setRewardClass(itr->second->getRewardClass());
 
     return pQuestStatus;
-
-    __END_CATCH
 }

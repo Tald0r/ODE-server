@@ -17,8 +17,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 ShiftBreak::ShiftBreak() {
-    __BEGIN_TRY
-
     TPOINT mask[8];
     mask[0].x = 0;
     mask[0].y = -1;
@@ -47,8 +45,6 @@ ShiftBreak::ShiftBreak() {
             ++l;
         }
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -58,9 +54,6 @@ void ShiftBreak::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSk
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -80,9 +73,6 @@ void ShiftBreak::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSk
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -94,9 +84,6 @@ void ShiftBreak::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ouster
                          CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SIMPLE_SKILL_INPUT param;
 
@@ -172,9 +159,6 @@ void ShiftBreak::execute(Ousters* pOusters, ZoneCoord_t X, ZoneCoord_t Y, Ouster
             pZone->broadcastPacket(tx, ty, &gcDeleteEffectFromTile);
         }
     }
-
-
-    __END_CATCH
 }
 
 ShiftBreak g_ShiftBreak;

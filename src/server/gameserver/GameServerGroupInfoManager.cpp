@@ -37,8 +37,6 @@ GameServerGroupInfoManager::~GameServerGroupInfoManager()
 void GameServerGroupInfoManager::clear()
 
 {
-    __BEGIN_TRY
-
     // Delete only the second of each pair in the hashmap, that is the GameServerGroupInfo
     // objects, and leave the pairs themselves alone. GameServerGroupInfo is heap allocated,
     // so it must be deleted explicitly. GSIM being destructed means the login server is
@@ -54,8 +52,6 @@ void GameServerGroupInfoManager::clear()
     }
 
     SAFE_DELETE_ARRAY(m_GameServerGroupInfos);
-
-    __END_CATCH
 }
 
 
@@ -65,15 +61,11 @@ void GameServerGroupInfoManager::clear()
 void GameServerGroupInfoManager::init()
 
 {
-    __BEGIN_TRY
-
     // just load data from GameServerGroupInfo table
     load();
 
     // Optional startup catalogue diagnostics.
     de::diagnosticTrace([&](std::ostream& output) { output << toString(); });
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -82,8 +74,6 @@ void GameServerGroupInfoManager::init()
 void GameServerGroupInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     clear();
 
     int maxWorldID = 0;
@@ -113,16 +103,12 @@ void GameServerGroupInfoManager::load()
     } catch (Throwable& t) {
         cout << t.toString() << endl;
     }
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
 // add info
 //----------------------------------------------------------------------
 void GameServerGroupInfoManager::addGameServerGroupInfo(GameServerGroupInfo* pGameServerGroupInfo, WorldID_t WorldID) {
-    __BEGIN_TRY
-
     int GroupID = pGameServerGroupInfo->getGroupID();
     HashMapGameServerGroupInfo::iterator itr = m_GameServerGroupInfos[WorldID].find(GroupID);
 
@@ -135,16 +121,12 @@ void GameServerGroupInfoManager::addGameServerGroupInfo(GameServerGroupInfo* pGa
     });
 
     m_GameServerGroupInfos[WorldID][GroupID] = pGameServerGroupInfo;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
 // delete info
 //----------------------------------------------------------------------
 void GameServerGroupInfoManager::deleteGameServerGroupInfo(const ServerGroupID_t GroupID, WorldID_t WorldID) {
-    __BEGIN_TRY
-
     HashMapGameServerGroupInfo::iterator itr = m_GameServerGroupInfos[WorldID].find(GroupID);
 
     if (itr != m_GameServerGroupInfos[WorldID].end()) {
@@ -158,8 +140,6 @@ void GameServerGroupInfoManager::deleteGameServerGroupInfo(const ServerGroupID_t
         // No such game server info object was found.
         throw NoSuchElementException();
     }
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -167,8 +147,6 @@ void GameServerGroupInfoManager::deleteGameServerGroupInfo(const ServerGroupID_t
 //----------------------------------------------------------------------
 GameServerGroupInfo* GameServerGroupInfoManager::getGameServerGroupInfo(const ServerGroupID_t GroupID,
                                                                         WorldID_t WorldID) const {
-    __BEGIN_TRY
-
     if (WorldID >= m_MaxWorldID) {
         // No such game server info object was found.
         throw NoSuchElementException();
@@ -186,8 +164,6 @@ GameServerGroupInfo* GameServerGroupInfoManager::getGameServerGroupInfo(const Se
     }
 
     return pGameServerGroupInfo;
-
-    __END_CATCH
 }
 
 //----------------------------------------------------------------------
@@ -196,8 +172,6 @@ GameServerGroupInfo* GameServerGroupInfoManager::getGameServerGroupInfo(const Se
 string GameServerGroupInfoManager::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "GameServerGroupInfoManager(\n";
@@ -221,6 +195,4 @@ string GameServerGroupInfoManager::toString() const
     msg << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

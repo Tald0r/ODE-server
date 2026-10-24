@@ -16,9 +16,6 @@ void AcidBolt::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pVampire);
     SkillOutput output;
     computeOutput(input, output);
@@ -47,9 +44,6 @@ void AcidBolt::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
     }
 
     g_SimpleMissileSkill.execute(pVampire, TargetObjectID, pVampireSkillSlot, param, result, CEffectID, HitBonus);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -58,9 +52,6 @@ void AcidBolt::execute(Vampire* pVampire, ObjectID_t TargetObjectID, VampireSkil
 void AcidBolt::execute(Monster* pMonster, Creature* pEnemy)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pMonster);
     SkillOutput output;
     computeOutput(input, output);
@@ -80,9 +71,6 @@ void AcidBolt::execute(Monster* pMonster, Creature* pEnemy)
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleMissileSkill.execute(pMonster, pEnemy, param, result);
-
-
-    __END_CATCH
 }
 
 AcidBolt g_AcidBolt;

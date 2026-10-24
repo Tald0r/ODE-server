@@ -43,11 +43,7 @@ void ConditionAnsweredBy::read(PropertyBuffer& propertyBuffer)
 string ConditionAnsweredBy::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionAnsweredBy(" << "ScriptID:" << (int)m_ScriptID << "," << "AnswerID:" << (int)m_AnswerID << ")";
     return msg.toString();
-
-    __END_CATCH
 }

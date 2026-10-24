@@ -16,9 +16,6 @@ const uint LightBloodDrainLevel = 10000;
 void GreatHeal::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_OTHER;
@@ -36,9 +33,6 @@ void GreatHeal::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* p
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleCureSkill.execute(pSlayer, TargetObjectID, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -47,9 +41,6 @@ void GreatHeal::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* p
 void GreatHeal::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pSlayer, pSkillSlot);
     SkillOutput output;
     input.TargetType = SkillInput::TARGET_SELF;
@@ -67,9 +58,6 @@ void GreatHeal::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEff
     SIMPLE_SKILL_OUTPUT result;
 
     g_SimpleCureSkill.execute(pSlayer, pSkillSlot, param, result);
-
-
-    __END_CATCH
 }
 
 GreatHeal g_GreatHeal;

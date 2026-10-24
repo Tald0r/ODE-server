@@ -66,8 +66,6 @@ EventZoneInfo* EventZoneInfoManager::getEventZoneInfo(ZoneID_t zoneID) const {
 }
 
 void EventZoneInfoManager::load() {
-    __BEGIN_TRY
-
     vector<EventZoneRow> rows = defaultZoneInfoRepository().loadEventZones();
 
     for (size_t r = 0; r < rows.size(); r++) {
@@ -90,6 +88,4 @@ void EventZoneInfoManager::load() {
         m_ZoneEventInfos[eventID]->addEventZoneInfo(pEventZoneInfo);
         m_EventZoneInfos[zoneID] = pEventZoneInfo;
     }
-
-    __END_CATCH
 }

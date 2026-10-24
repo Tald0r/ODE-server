@@ -24,8 +24,6 @@ void MagnumSpear::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersS
                           CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     Assert(pOusters != NULL);
     Assert(pOustersSkillSlot != NULL);
 
@@ -186,8 +184,6 @@ void MagnumSpear::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersS
     } catch (Throwable& t) {
         executeSkillFailException(pOusters, getSkillType());
     }
-
-    __END_CATCH
 }
 
 MagnumSpear g_MagnumSpear;

@@ -24,37 +24,24 @@ bool FlagSet::m_bInit = false;
 FlagSet::FlagSet()
 
 {
-    __BEGIN_TRY
-
     // if (!FlagSet::m_bInit) FlagSet::initialize();
 
     memset(m_pData, 0, sizeof(BYTE) * FLAG_SIZE_MAX / 8);
-
-    __END_CATCH
 }
 
 FlagSet::~FlagSet()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 void FlagSet::create(const string& owner)
 
 {
-    __BEGIN_TRY
-
     defaultFlagSetRepository().insert(owner, toString());
-
-    __END_CATCH
 }
 
 void FlagSet::load(const string& owner)
 
 {
-    __BEGIN_TRY
-
     string text;
 
     if (!defaultFlagSetRepository().load(owner, text)) {
@@ -76,49 +63,33 @@ void FlagSet::load(const string& owner)
                 turnOn(i);
         }
     }
-
-    __END_CATCH
 }
 
 void FlagSet::save(const string& owner)
 
 {
-    __BEGIN_TRY
-
     defaultFlagSetRepository().update(owner, toString());
-
-    __END_CATCH
 }
 
 void FlagSet::destroy(const string& owner)
 
 {
-    __BEGIN_TRY
-
     defaultFlagSetRepository().remove(owner);
-
-    __END_CATCH
 }
 
 bool FlagSet::isOn(int index)
 
 {
-    __BEGIN_TRY
-
     if (!isValidIndex(index))
         return false;
     if (m_pData[index / 8] & (1 << (index % 8)))
         return true;
     return false;
-
-    __END_CATCH
 }
 
 bool FlagSet::turnOn(int index)
 
 {
-    __BEGIN_TRY
-
     if (!isValidIndex(index))
         return false;
     if (isOn(index))
@@ -126,15 +97,11 @@ bool FlagSet::turnOn(int index)
 
     m_pData[index >> 3] |= 1 << (index % 8);
     return true;
-
-    __END_CATCH
 }
 
 bool FlagSet::turnOff(int index)
 
 {
-    __BEGIN_TRY
-
     if (!isValidIndex(index))
         return false;
     if (!isOn(index))
@@ -142,27 +109,19 @@ bool FlagSet::turnOff(int index)
 
     m_pData[index >> 3] &= ~(1 << (index % 8));
     return true;
-
-    __END_CATCH
 }
 
 bool FlagSet::isValidIndex(int index)
 
 {
-    __BEGIN_TRY
-
     if (index < 0 || index >= FLAG_SIZE_MAX)
         return false;
     return true;
-
-    __END_CATCH
 }
 
 string FlagSet::toString(void)
 
 {
-    __BEGIN_TRY
-
     string result = "";
 
     for (int i = 0; i < (FLAG_SIZE_MAX / 8); i++) {
@@ -170,15 +129,11 @@ string FlagSet::toString(void)
     }
 
     return result;
-
-    __END_CATCH
 }
 
 FlagSet FlagSet::fromString(const string& text)
 
 {
-    __BEGIN_TRY
-
     FlagSet result;
 
     for (uint i = 0; i < text.size() && i < FLAG_SIZE_MAX; i++) {
@@ -189,15 +144,11 @@ FlagSet FlagSet::fromString(const string& text)
     }
 
     return result;
-
-    __END_CATCH
 }
 
 void FlagSet::initialize(void)
 
 {
-    __BEGIN_TRY
-
     if (m_bInit)
         return;
     Assert(FLAGSET_MAX <= FLAG_SIZE_MAX);
@@ -249,6 +200,4 @@ void FlagSet::initialize(void)
     }
 
     m_bInit = true;
-
-    __END_CATCH
 }

@@ -22,9 +22,6 @@ void ProtectionFromAcid::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Ski
                                  CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -138,9 +135,6 @@ void ProtectionFromAcid::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Ski
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -149,9 +143,6 @@ void ProtectionFromAcid::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, Ski
 void ProtectionFromAcid::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     try {
         Player* pPlayer = pSlayer->getPlayer();
         Zone* pZone = pSlayer->getZone();
@@ -231,9 +222,6 @@ void ProtectionFromAcid::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffect
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ProtectionFromAcid g_ProtectionFromAcid;

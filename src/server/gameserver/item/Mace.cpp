@@ -56,8 +56,6 @@ Mace::Mace(ItemType_t itemType, const list<OptionType_t>& optionType)
 void Mace::create(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y, ItemID_t itemID)
 
 {
-    __BEGIN_TRY
-
     if (itemID == 0) {
         __ENTER_CRITICAL_SECTION(m_Mutex)
 
@@ -75,8 +73,6 @@ void Mace::create(const string& ownerID, Storage storage, StorageID_t storageID,
     defaultItemObjectRepository().insertGear(GEAR_MACE, m_ItemID, m_ObjectID, getItemType(), ownerID, (int)storage,
                                              storageID, (int)x, (int)y, optionField, getDurability(), (int)getGrade(),
                                              (int)m_CreateType);
-
-    __END_CATCH
 }
 
 
@@ -86,11 +82,7 @@ void Mace::create(const string& ownerID, Storage storage, StorageID_t storageID,
 void Mace::tinysave(const char* field) const
 
 {
-    __BEGIN_TRY
-
     defaultItemObjectRepository().tinysaveGear(GEAR_MACE, field, m_ItemID);
-
-    __END_CATCH
 }
 
 //--------------------------------------------------------------------------------
@@ -99,16 +91,12 @@ void Mace::tinysave(const char* field) const
 void Mace::save(const string& ownerID, Storage storage, StorageID_t storageID, BYTE x, BYTE y)
 
 {
-    __BEGIN_TRY
-
     string optionField;
     setOptionTypeToField(getOptionTypeList(), optionField);
 
     defaultItemObjectRepository().updateSilverWeapon(
         GEAR_MACE, m_ObjectID, getItemType(), ownerID, (int)storage, storageID, (int)x, (int)y, optionField,
         getDurability(), (int)getEnchantLevel(), (int)getSilver(), (int)getGrade(), m_ItemID);
-
-    __END_CATCH
 }
 
 
@@ -132,11 +120,7 @@ string Mace::toString() const
 MP_t Mace::getMPBonus() const
 
 {
-    __BEGIN_TRY
-
     return de::gameContext().itemInfos().getItemInfo(Item::ITEM_CLASS_MACE, getItemType())->getMPBonus();
-
-    __END_CATCH
 }
 //--------------------------------------------------------------------------------
 // get debug string
@@ -161,8 +145,6 @@ string MaceInfo::toString() const
 void MaceInfoManager::load()
 
 {
-    __BEGIN_TRY
-
     m_InfoCount = defaultItemObjectRepository().loadMaxGearType(GEAR_MACE);
 
     m_pItemInfos = new ItemInfo*[m_InfoCount + 1];
@@ -200,8 +182,6 @@ void MaceInfoManager::load()
 
         addItemInfo(pMaceInfo);
     }
-
-    __END_CATCH
 }
 
 
@@ -211,8 +191,6 @@ void MaceInfoManager::load()
 void MaceLoader::load(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
 
     vector<SilverWeaponObjectRow> rows =
@@ -318,8 +296,6 @@ void MaceLoader::load(Creature* pCreature)
             filelog("itemLoadError.txt", "[%s] %s", getItemClassName().c_str(), t.toString().c_str());
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -329,8 +305,6 @@ void MaceLoader::load(Creature* pCreature)
 void MaceLoader::load(Zone* pZone)
 
 {
-    __BEGIN_TRY
-
     Assert(pZone != NULL);
 
     vector<SilverWeaponZoneObjectRow> rows =
@@ -372,8 +346,6 @@ void MaceLoader::load(Zone* pZone)
             throw Error("Storage must be STORAGE_ZONE");
         }
     }
-
-    __END_CATCH
 }
 
 
@@ -383,12 +355,8 @@ void MaceLoader::load(Zone* pZone)
 void MaceLoader::load(StorageID_t storageID, Inventory* pInventory)
 
 {
-    __BEGIN_TRY
-
     Statement* pStmt;
 
     BEGIN_DB {}
     END_DB(pStmt)
-
-    __END_CATCH
 }

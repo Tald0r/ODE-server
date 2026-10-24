@@ -79,8 +79,6 @@ void MPlayer::processOutput() {
 }
 
 void MPlayer::processCommand() {
-    __BEGIN_TRY
-
     MPacketManager& mofusPackets = de::gameContext().mofusPackets();
 
     try {
@@ -127,8 +125,6 @@ void MPlayer::processCommand() {
     } catch (const InsufficientDataException&) {
         // Not enough data yet; wait for more.
     }
-
-    __END_CATCH
 }
 
 void MPlayer::sendPacket(MPacket* pPacket) {
@@ -167,8 +163,6 @@ void MPlayer::connect() {
 }
 
 void MPlayer::disconnect(bool bDisconnected) {
-    __BEGIN_TRY
-
     try {
         if (bDisconnected == UNDISCONNECTED) {
             m_pOutputStream->flush();
@@ -180,13 +174,9 @@ void MPlayer::disconnect(bool bDisconnected) {
         cerr << t.toString() << endl;
         m_pSocket->close();
     }
-
-    __END_CATCH
 }
 
 void MPlayer::process() {
-    __BEGIN_TRY
-
     Assert(m_pJob != NULL);
 
     try {
@@ -204,8 +194,6 @@ void MPlayer::process() {
 
             // If connected, process I/O and job state.
             if (m_pSocket != NULL) {
-                __BEGIN_TRY
-
                 if (getSocket()->getSockError()) {
                     filelog(MOFUS_ERROR_FILE, "[MPlayer socket error]");
 
@@ -261,15 +249,11 @@ void MPlayer::process() {
                         return;
                     }
                 }
-
-                __END_CATCH
             }
         }
     } catch (Throwable& t) {
         filelog("MPlayerManager.log", "MPlayerManager::run() %s", t.toString().c_str());
     }
-
-    __END_CATCH
 }
 
 void MPlayer::sendConnectAsk() {

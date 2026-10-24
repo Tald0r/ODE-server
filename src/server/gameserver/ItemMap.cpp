@@ -16,12 +16,8 @@
 ItemMap::ItemMap()
 
 {
-    __BEGIN_TRY
-
     m_Num2x2 = 0;
     m_Num2x2Temp = 0;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -31,11 +27,11 @@ ItemMap::ItemMap()
 ItemMap::~ItemMap()
 
 {
-    __BEGIN_TRY
-
-    clear();
-
-    __END_CATCH_NO_RETHROW
+    try {
+        clear();
+    } catch (Throwable&) {
+        // A Throwable from the try block is dropped here and goes no further.
+    }
 }
 
 ////////////////////////////////////////////////////////////
@@ -44,15 +40,11 @@ ItemMap::~ItemMap()
 void ItemMap::set2x2(int n)
 
 {
-    __BEGIN_TRY
-
     // When there are three 2x2 items they have the
     // highest priority, so the variables are set in
     // units of three.
     m_Num2x2 = n;
     m_Num2x2Temp = (n / 3) * 3;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////
@@ -61,8 +53,6 @@ void ItemMap::set2x2(int n)
 bool ItemMap::addItem(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     ulonglong key = getKey(pItem);
 
     ITEM_MAP::const_iterator itr = find(key);
@@ -74,8 +64,6 @@ bool ItemMap::addItem(Item* pItem)
     }
 
     return false;
-
-    __END_CATCH
 }
 
 
@@ -92,8 +80,6 @@ bool ItemMap::addItem(Item* pItem)
 ulonglong ItemMap::getKey(Item* pItem)
 
 {
-    __BEGIN_TRY
-
     ObjectID_t objectID = pItem->getObjectID();
     int gridWidth = pItem->getVolumeWidth();
     int gridHeight = pItem->getVolumeHeight();
@@ -113,6 +99,4 @@ ulonglong ItemMap::getKey(Item* pItem)
     key = (key << 32) | objectID;
 
     return key;
-
-    __END_CATCH
 }

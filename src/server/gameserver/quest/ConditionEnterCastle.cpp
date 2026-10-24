@@ -77,11 +77,7 @@ void ConditionEnterCastle::read(PropertyBuffer& propertyBuffer)
 string ConditionEnterCastle::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionEnterCastle(" << "TargetZoneID:" << (int)m_TargetZoneID << ")";
     return msg.toString();
-
-    __END_CATCH
 }

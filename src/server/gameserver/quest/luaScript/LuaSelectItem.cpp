@@ -9,8 +9,6 @@ LuaSelectItem::LuaSelectItem(LuaState* pState) : LuaScript(pState) {
 int LuaSelectItem::executeFile(const string& filename)
 
 {
-    __BEGIN_TRY
-
     int result = luaL_dofile(m_pState->getState(), filename.c_str());
 
     lua_getglobal(m_pState->getState(), "ItemClass");
@@ -28,6 +26,4 @@ int LuaSelectItem::executeFile(const string& filename)
     //	<< ", OptionType=" << OptionType << endl;
 
     return result;
-
-    __END_CATCH
 }

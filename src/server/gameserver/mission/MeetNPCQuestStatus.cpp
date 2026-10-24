@@ -49,13 +49,9 @@ NPCID_t MeetNPCQuestStatus::getTargetID() const {
 }
 
 string MeetNPCQuestStatus::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "MeetNPCQuestStatus(" << ") : " << QuestStatus::toString().c_str();
 
     return msg.toString();
-
-    __END_CATCH
 }

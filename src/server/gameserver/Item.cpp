@@ -41,16 +41,12 @@ Item::~Item()
 bool Item::destroy()
 
 {
-    __BEGIN_TRY
-
     // Deleting from the DB; the item may already be gone there.
     if (!defaultItemRepository().deleteItemRow(getObjectTableName(), m_ItemID)) {
         return false;
     }
 
     return true;
-
-    __END_CATCH
 }
 
 // Discard the item. Into the garbage by default, in special cases into Timeover or another unused storage.
@@ -69,8 +65,6 @@ void Item::waste(Storage storage) const
 const list<OptionType_t>& Item::getDefaultOptions(void) const
 
 {
-    __BEGIN_TRY
-
     try {
         return de::gameContext().itemInfos().getItemInfo(getItemClass(), getItemType())->getDefaultOptions();
 
@@ -84,8 +78,6 @@ const list<OptionType_t>& Item::getDefaultOptions(void) const
 
     static list<OptionType_t> optionTypes;
     return optionTypes;
-
-    __END_CATCH
 }
 
 bool Item::isQuestItem() const {

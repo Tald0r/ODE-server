@@ -19,9 +19,6 @@ void Destinies::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSki
                         CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -55,9 +52,6 @@ void Destinies::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSki
 
         pOusters->addEffect(pEffect);
     }
-
-
-    __END_CATCH
 }
 
 Destinies g_Destinies;

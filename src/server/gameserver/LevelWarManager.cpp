@@ -233,55 +233,37 @@ VSDateTime LevelWarManager::getNextLevelWarTime() const {
 void LevelWarManager::fixTimeband(uint timeband)
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
     m_pZone->stopTime();
     m_pZone->setTimeband(timeband);
     m_pZone->resetDarkLightInfo();
-
-    __END_CATCH
 }
 
 void LevelWarManager::resumeTimeband()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
     m_pZone->resumeTime();
     m_pZone->resetDarkLightInfo();
-
-    __END_CATCH
 }
 
 void LevelWarManager::killAllMonsters()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
     m_pZone->killAllMonsters_UNLOCK();
-
-    __END_CATCH
 }
 
 int LevelWarManager::getStartHour() {
-    __BEGIN_TRY
-
     if (m_pLevelWarSchedule == NULL)
         return -1;
 
     return m_pLevelWarSchedule->getScheduledTime().time().hour();
-
-    __END_CATCH
 }
 
 bool LevelWarManager::makeGCWarList()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_MutexWarList)
 
     m_GCWarList.clear();
@@ -333,15 +315,11 @@ bool LevelWarManager::makeGCWarList()
     __LEAVE_CRITICAL_SECTION(m_MutexWarList)
 
     return true;
-
-    __END_CATCH
 }
 
 void LevelWarManager::sendGCWarList(Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_MutexWarList)
 
     if (!m_GCWarList.isEmpty()) {
@@ -349,28 +327,20 @@ void LevelWarManager::sendGCWarList(Player* pPlayer)
     }
 
     __LEAVE_CRITICAL_SECTION(m_MutexWarList)
-
-    __END_CATCH
 }
 void LevelWarManager::broadcastGCWarList()
 
 {
-    __BEGIN_TRY
-
     __ENTER_CRITICAL_SECTION(m_MutexWarList)
 
     m_pZone->broadcastPacket(&m_GCWarList);
 
     __LEAVE_CRITICAL_SECTION(m_MutexWarList)
-
-    __END_CATCH
 }
 
 void LevelWarManager::freeUserTimeCheck()
 
 {
-    __BEGIN_TRY
-
     int hour = VSTime::currentTime().hour();
 
     if (m_bCanEnterFreeUser && hour != LevelWarTime[m_Level - 1][1]) {
@@ -390,6 +360,4 @@ void LevelWarManager::freeUserTimeCheck()
         gcSystemMessage.setMessage(msg);
         de::gameContext().zoneGroups().broadcast(&gcSystemMessage);
     }
-
-    __END_CATCH
 }

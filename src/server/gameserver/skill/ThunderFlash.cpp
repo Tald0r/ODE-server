@@ -20,14 +20,10 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 ThunderFlash::ThunderFlash() {
-    __BEGIN_TRY
-
     m_pThunderFlashMask[0].set(0, -1);
     m_pThunderFlashMask[1].set(0, 1);
     m_pThunderFlashMask[2].set(-1, 0);
     m_pThunderFlashMask[3].set(1, 0);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -36,9 +32,6 @@ ThunderFlash::ThunderFlash() {
 void ThunderFlash::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -58,9 +51,6 @@ void ThunderFlash::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -71,9 +61,6 @@ void ThunderFlash::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot
 void ThunderFlash::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -272,9 +259,6 @@ void ThunderFlash::execute(Slayer* pSlayer, ZoneCoord_t X, ZoneCoord_t Y, SkillS
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 ThunderFlash g_ThunderFlash;

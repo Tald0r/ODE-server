@@ -19,28 +19,20 @@
 EffectLightness::EffectLightness(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     setTarget(pCreature);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectLightness::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectLightness::unaffect()
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Creature* pCreature = dynamic_cast<Creature*>(m_pTarget);
@@ -77,19 +69,14 @@ void EffectLightness::unaffect()
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectLightness::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectLightness(" << "ObjectID:" << getObjectID() << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

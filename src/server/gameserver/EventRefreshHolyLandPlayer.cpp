@@ -26,8 +26,6 @@ EventRefreshHolyLandPlayer::EventRefreshHolyLandPlayer(GamePlayer* pGamePlayer)
 void EventRefreshHolyLandPlayer::activate()
 
 {
-    __BEGIN_TRY
-
     const unordered_map<ZoneGroupID_t, ZoneGroup*>& zoneGroups = de::gameContext().zoneGroups().getZoneGroups();
 
     unordered_map<ZoneGroupID_t, ZoneGroup*>::const_iterator itr = zoneGroups.begin();
@@ -44,8 +42,6 @@ void EventRefreshHolyLandPlayer::activate()
 
     // Recompute the info of the players in Adam's holy land. (blood bible bonus)
     //	g_pHolyLandManager->refreshHolyLandPlayers();
-
-    __END_CATCH
 }
 
 string EventRefreshHolyLandPlayer::toString() const

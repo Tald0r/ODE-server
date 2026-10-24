@@ -17,8 +17,6 @@ void BackStab::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkil
                        CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
     SkillInput input(pOusters, pOustersSkillSlot);
     SkillOutput output;
     computeOutput(input, output);
@@ -83,8 +81,6 @@ void BackStab::execute(Ousters* pOusters, ObjectID_t TargetObjectID, OustersSkil
             }
         }
     }
-
-    __END_CATCH
 }
 
 BackStab g_BackStab;

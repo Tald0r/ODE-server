@@ -17,14 +17,10 @@
 void ActionInitSimpleQuest::read(PropertyBuffer& propertyBuffer)
 
 {
-    __BEGIN_TRY
-
     try {
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 
@@ -34,8 +30,6 @@ void ActionInitSimpleQuest::read(PropertyBuffer& propertyBuffer)
 void ActionInitSimpleQuest::execute(Creature* pCreature1, Creature* pCreature2)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature1 != NULL);
     Assert(pCreature1->isNPC());
 
@@ -49,8 +43,6 @@ void ActionInitSimpleQuest::execute(Creature* pCreature1, Creature* pCreature2)
 
     pRIM->load(pNPC->getName());
     pNPC->setRewardClassInfoManager(pRIM);
-
-    __END_CATCH
 }
 
 
@@ -60,12 +52,8 @@ void ActionInitSimpleQuest::execute(Creature* pCreature1, Creature* pCreature2)
 string ActionInitSimpleQuest::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionInitSimpleQuest(" << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

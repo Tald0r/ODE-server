@@ -19,9 +19,6 @@
 void Rebuke::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
-
-
     Assert(pSlayer != NULL);
     Assert(pSkillSlot != NULL);
 
@@ -172,9 +169,6 @@ void Rebuke::execute(Slayer* pSlayer, SkillSlot* pSkillSlot, CEffectID_t CEffect
     } catch (Throwable& t) {
         executeSkillFailException(pSlayer, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 Rebuke g_Rebuke;

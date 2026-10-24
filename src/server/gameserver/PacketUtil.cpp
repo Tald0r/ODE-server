@@ -111,8 +111,6 @@ static void broadcastGuildUnionChange(PlayerCreature& pc) {
 void sendGCOtherModifyInfoGuildUnionByGuildID(uint gID)
 
 {
-    __BEGIN_TRY
-
     PCFinder& pcFinder = de::gameContext().playerCreatures();
     list<string> names;
 
@@ -125,29 +123,21 @@ void sendGCOtherModifyInfoGuildUnionByGuildID(uint gID)
     for (list<string>::const_iterator itr = names.begin(); itr != names.end(); itr++) {
         de::postToPlayer(*itr, [](PlayerCreature& pc, Player& player) { broadcastGuildUnionChange(pc); });
     }
-
-    __END_CATCH
 }
 // Send GCOtherModifyInfo to every member of the guild the creature belongs to.
 void sendGCOtherModifyInfoGuildUnion(Creature* pTargetCreature)
 
 {
-    __BEGIN_TRY
-
     PlayerCreature* pTargetPlayerCreature = dynamic_cast<PlayerCreature*>(pTargetCreature);
     Assert(pTargetPlayerCreature != NULL);
 
     sendGCOtherModifyInfoGuildUnionByGuildID(pTargetPlayerCreature->getGuildID());
-
-    __END_CATCH
 }
 
 
 void makeGCOtherModifyInfoGuildUnion(GCOtherModifyInfo* pModifyInformation, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pCreature->getPlayer());
     Assert(pGamePlayer != NULL);
 
@@ -191,9 +181,6 @@ void makeGCOtherModifyInfoGuildUnion(GCOtherModifyInfo* pModifyInformation, Crea
             //<< endl;
         }
     }
-
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -206,8 +193,6 @@ void makeGCOtherModifyInfoGuildUnion(GCOtherModifyInfo* pModifyInformation, Crea
 void makeGCModifyInfoGuildUnion(GCModifyInformation* pModifyInformation, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pCreature->getPlayer());
     Assert(pGamePlayer != NULL);
 
@@ -252,9 +237,6 @@ void makeGCModifyInfoGuildUnion(GCModifyInformation* pModifyInformation, Creatur
             //<< endl;
         }
     }
-
-
-    __END_CATCH
 }
 
 
@@ -266,8 +248,6 @@ void makeGCModifyInfoGuildUnion(GCModifyInformation* pModifyInformation, Creatur
 void makeGCUpdateInfo(GCUpdateInfo* pUpdateInfo, Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     ////////////////////////////////////////////////////////////
     // Zone position information.
     ////////////////////////////////////////////////////////////
@@ -540,8 +520,6 @@ void makeGCUpdateInfo(GCUpdateInfo* pUpdateInfo, Creature* pCreature)
 
     // Power point.
     pUpdateInfo->setPowerPoint(pPlayerCreature->getPowerPoint());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -550,15 +528,11 @@ void makeGCUpdateInfo(GCUpdateInfo* pUpdateInfo, Creature* pCreature)
 void makeGCAddSlayer(GCAddSlayer* pAddSlayer, Slayer* pSlayer)
 
 {
-    __BEGIN_TRY
-
     pAddSlayer->setSlayerInfo(pSlayer->getSlayerInfo3());
     pAddSlayer->setEffectInfo(pSlayer->getEffectInfo());
     pAddSlayer->setPetInfo(pSlayer->getPetInfo());
     pAddSlayer->setNicknameInfo(pSlayer->getNickname());
     pAddSlayer->setStoreInfo(&(pSlayer->getStore()->getStoreInfo()));
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -567,8 +541,6 @@ void makeGCAddSlayer(GCAddSlayer* pAddSlayer, Slayer* pSlayer)
 void makeGCAddVampire(GCAddVampire* pAddVampire, Vampire* pVampire)
 
 {
-    __BEGIN_TRY
-
     pAddVampire->setVampireInfo(pVampire->getVampireInfo3());
     pAddVampire->setEffectInfo(pVampire->getEffectInfo());
     pAddVampire->setPetInfo(pVampire->getPetInfo());
@@ -580,8 +552,6 @@ void makeGCAddVampire(GCAddVampire* pAddVampire, Vampire* pVampire)
     // If the move was made through a personal portal...
     if (pVampire->isFlag(Effect::EFFECT_CLASS_VAMPIRE_PORTAL))
         pAddVampire->setFromFlag(1);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -590,15 +560,11 @@ void makeGCAddVampire(GCAddVampire* pAddVampire, Vampire* pVampire)
 void makeGCAddOusters(GCAddOusters* pAddOusters, Ousters* pOusters)
 
 {
-    __BEGIN_TRY
-
     pAddOusters->setOustersInfo(pOusters->getOustersInfo3());
     pAddOusters->setEffectInfo(pOusters->getEffectInfo());
     pAddOusters->setPetInfo(pOusters->getPetInfo());
     pAddOusters->setNicknameInfo(pOusters->getNickname());
     pAddOusters->setStoreInfo(&(pOusters->getStore()->getStoreInfo()));
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -607,8 +573,6 @@ void makeGCAddOusters(GCAddOusters* pAddOusters, Ousters* pOusters)
 void makeGCAddMonster(GCAddMonster* pAddMonster, Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
     pAddMonster->setObjectID(pMonster->getObjectID());
     pAddMonster->setMonsterType(pMonster->getMonsterType());
     pAddMonster->setMonsterName(pMonster->getName());
@@ -622,8 +586,6 @@ void makeGCAddMonster(GCAddMonster* pAddMonster, Monster* pMonster)
     // If the move was made through a personal portal...
     if (pMonster->isFlag(Effect::EFFECT_CLASS_VAMPIRE_PORTAL))
         pAddMonster->setFromFlag(1);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -632,8 +594,6 @@ void makeGCAddMonster(GCAddMonster* pAddMonster, Monster* pMonster)
 void makeGCAddNPC(GCAddNPC* pAddNPC, NPC* pNPC)
 
 {
-    __BEGIN_TRY
-
     pAddNPC->setObjectID(pNPC->getObjectID());
     pAddNPC->setName(pNPC->getName());
     pAddNPC->setNPCID(pNPC->getNPCID());
@@ -643,8 +603,6 @@ void makeGCAddNPC(GCAddNPC* pAddNPC, NPC* pNPC)
     pAddNPC->setX(pNPC->getX());
     pAddNPC->setY(pNPC->getY());
     pAddNPC->setDir(pNPC->getDir());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -653,8 +611,6 @@ void makeGCAddNPC(GCAddNPC* pAddNPC, NPC* pNPC)
 void makeGCAddNewItemToZone(GCAddNewItemToZone* pAddNewItemToZone, Item* pItem, int X, int Y)
 
 {
-    __BEGIN_TRY
-
     Item::ItemClass IClass = pItem->getItemClass();
 
     pAddNewItemToZone->setObjectID(pItem->getObjectID());
@@ -733,8 +689,6 @@ void makeGCAddNewItemToZone(GCAddNewItemToZone* pAddNewItemToZone, Item* pItem, 
 
         pAddNewItemToZone->setListNum(SubItemCount);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -743,8 +697,6 @@ void makeGCAddNewItemToZone(GCAddNewItemToZone* pAddNewItemToZone, Item* pItem, 
 void makeGCDropItemToZone(GCDropItemToZone* pDropItemToZone, Item* pItem, int X, int Y)
 
 {
-    __BEGIN_TRY
-
     Item::ItemClass IClass = pItem->getItemClass();
 
     pDropItemToZone->setObjectID(pItem->getObjectID());
@@ -823,8 +775,6 @@ void makeGCDropItemToZone(GCDropItemToZone* pDropItemToZone, Item* pItem, int X,
 
         pDropItemToZone->setListNum(SubItemCount);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -833,12 +783,8 @@ void makeGCDropItemToZone(GCDropItemToZone* pDropItemToZone, Item* pItem, int X,
 void makeGCAddSlayerCorpse(GCAddSlayerCorpse* pAddSlayerCorpse, SlayerCorpse* pSlayerCorpse)
 
 {
-    __BEGIN_TRY
-
     pAddSlayerCorpse->setSlayerInfo(pSlayerCorpse->getSlayerInfo());
     pAddSlayerCorpse->setTreasureCount(pSlayerCorpse->getTreasureCount());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -847,12 +793,8 @@ void makeGCAddSlayerCorpse(GCAddSlayerCorpse* pAddSlayerCorpse, SlayerCorpse* pS
 void makeGCAddVampireCorpse(GCAddVampireCorpse* pAddVampireCorpse, VampireCorpse* pVampireCorpse)
 
 {
-    __BEGIN_TRY
-
     pAddVampireCorpse->setVampireInfo(pVampireCorpse->getVampireInfo());
     pAddVampireCorpse->setTreasureCount(pVampireCorpse->getTreasureCount());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -861,8 +803,6 @@ void makeGCAddVampireCorpse(GCAddVampireCorpse* pAddVampireCorpse, VampireCorpse
 void makeGCAddMonsterCorpse(GCAddMonsterCorpse* pAddMonsterCorpse, MonsterCorpse* pMonsterCorpse, int X, int Y)
 
 {
-    __BEGIN_TRY
-
     pAddMonsterCorpse->setObjectID(pMonsterCorpse->getObjectID());
     pAddMonsterCorpse->setMonsterType(pMonsterCorpse->getMonsterType());
     pAddMonsterCorpse->setMonsterName(pMonsterCorpse->getMonsterName());
@@ -872,8 +812,6 @@ void makeGCAddMonsterCorpse(GCAddMonsterCorpse* pAddMonsterCorpse, MonsterCorpse
     pAddMonsterCorpse->setTreasureCount(pMonsterCorpse->getTreasureCount());
     pAddMonsterCorpse->sethasHead(pMonsterCorpse->gethasHead());
     pAddMonsterCorpse->setLastKiller(pMonsterCorpse->getLastKiller());
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -882,12 +820,8 @@ void makeGCAddMonsterCorpse(GCAddMonsterCorpse* pAddMonsterCorpse, MonsterCorpse
 void makeGCAddOustersCorpse(GCAddOustersCorpse* pAddOustersCorpse, OustersCorpse* pOustersCorpse)
 
 {
-    __BEGIN_TRY
-
     pAddOustersCorpse->setOustersInfo(pOustersCorpse->getOustersInfo());
     pAddOustersCorpse->setTreasureCount(pOustersCorpse->getTreasureCount());
-
-    __END_CATCH
 }
 //////////////////////////////////////////////////////////////////////////////
 // Build the GCOtherModifyInfo sent when something like another
@@ -964,18 +898,12 @@ void makeGCCreateItem(GCCreateItem* pGCCreateItem, Item* pItem, CoordInven_t x, 
 
 void sendPayInfo(GamePlayer* pGamePlayer)
 
-{
-    __BEGIN_TRY
-
-    __END_CATCH
-}
+{}
 
 // Broadcast the LevelUp effect to the surroundings.
 void sendEffectLevelUp(Creature* pCreature)
 
 {
-    __BEGIN_TRY
-
     Assert(pCreature != NULL);
     // Assert(pCreature->isPC());
 
@@ -995,15 +923,11 @@ void sendEffectLevelUp(Creature* pCreature)
     pCreature->getZone()->broadcastPacket(pCreature->getX(), pCreature->getY(), &gcAddEffect);
 
     // cout << "send LEVEL UP : " << gcAddEffect.toString().c_str() << endl;
-
-    __END_CATCH
 }
 
 void sendSystemMessage(GamePlayer* pGamePlayer, const string& msg)
 
 {
-    __BEGIN_TRY
-
     Assert(pGamePlayer != NULL);
 
     // If the player is in a zone, send it right away.
@@ -1033,25 +957,21 @@ void sendSystemMessage(GamePlayer* pGamePlayer, const string& msg)
 
         // cout << "NOT GPS_NORMAL: EventSystemMessage" << endl;
     }
-
-    __END_CATCH
 }
 
 bool makeGCWarScheduleList(GCWarScheduleList* pGCWarScheduleList, ZoneID_t zoneID)
 
 {
-    __BEGIN_TRY
+    {
+        Zone* pZone = getZoneByZoneID(zoneID);
+        Assert(pZone != NULL);
+        Assert(pZone->isCastle());
 
-    Zone* pZone = getZoneByZoneID(zoneID);
-    Assert(pZone != NULL);
-    Assert(pZone->isCastle());
+        WarScheduler* pWarScheduler = pZone->getWarScheduler();
+        Assert(pWarScheduler != NULL);
 
-    WarScheduler* pWarScheduler = pZone->getWarScheduler();
-    Assert(pWarScheduler != NULL);
-
-    pWarScheduler->makeGCWarScheduleList(pGCWarScheduleList);
-
-    __END_CATCH
+        pWarScheduler->makeGCWarScheduleList(pGCWarScheduleList);
+    }
 
     return true;
 }

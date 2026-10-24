@@ -35,15 +35,11 @@
 void ActionEnterSiege::read(PropertyBuffer& pb)
 
 {
-    __BEGIN_TRY
-
     try {
         m_ZoneID = pb.getPropertyInt("ZoneID");
     } catch (NoSuchElementException& nsee) {
         throw Error(nsee.toString());
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +48,6 @@ void ActionEnterSiege::read(PropertyBuffer& pb)
 void ActionEnterSiege::execute(Creature* pNPC, Creature* pCreature)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
     Assert(pCreature != NULL);
@@ -134,7 +129,6 @@ void ActionEnterSiege::execute(Creature* pNPC, Creature* pCreature)
         pGamePlayer->addEvent(pEvent);
 
     __END_DEBUG
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,11 +137,7 @@ void ActionEnterSiege::execute(Creature* pNPC, Creature* pCreature)
 string ActionEnterSiege::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ActionEnterSiege(" << ")";
     return msg.toString();
-
-    __END_CATCH
 }

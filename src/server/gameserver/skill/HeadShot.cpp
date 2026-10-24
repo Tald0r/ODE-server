@@ -25,7 +25,6 @@
 void HeadShot::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pSkillSlot, CEffectID_t CEffectID)
 
 {
-    __BEGIN_TRY
     __BEGIN_DEBUG
 
 
@@ -363,7 +362,6 @@ void HeadShot::execute(Slayer* pSlayer, ObjectID_t TargetObjectID, SkillSlot* pS
 
 
     __END_DEBUG
-    __END_CATCH
 }
 
 HeadShot g_HeadShot;

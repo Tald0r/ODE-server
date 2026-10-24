@@ -28,8 +28,6 @@ int BombCrashWalkDamageModify[5][5] = {
 EffectBombCrashWalk::EffectBombCrashWalk(Zone* pZone, ZoneCoord_t zoneX, ZoneCoord_t zoneY)
 
 {
-    __BEGIN_TRY
-
     m_pZone = pZone;
     m_X = zoneX;
     m_Y = zoneY;
@@ -39,8 +37,6 @@ EffectBombCrashWalk::EffectBombCrashWalk(Zone* pZone, ZoneCoord_t zoneX, ZoneCoo
     m_Tick = 0;
     m_SkillType = SKILL_MAX;
     m_bLarge = true;
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -48,8 +44,6 @@ EffectBombCrashWalk::EffectBombCrashWalk(Zone* pZone, ZoneCoord_t zoneX, ZoneCoo
 void EffectBombCrashWalk::affect()
 
 {
-    __BEGIN_TRY
-
     Assert(m_pZone != NULL);
 
     // Get the skill user.
@@ -234,46 +228,32 @@ void EffectBombCrashWalk::affect()
         setDeadline(0);
     else
         setNextTime(m_Tick);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBombCrashWalk::affect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBombCrashWalk::unaffect(Creature* pCreature)
 
-{
-    __BEGIN_TRY
-    __END_CATCH
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void EffectBombCrashWalk::unaffect()
 
 {
-    __BEGIN_TRY
-
     Tile& EffectedTile = m_pZone->getTile(m_X, m_Y);
     EffectedTile.deleteEffect(m_ObjectID);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 string EffectBombCrashWalk::toString() const {
-    __BEGIN_TRY
-
     StringStream msg;
 
     msg << "EffectBombCrashWalk(" << "ObjectID:" << (int)getObjectID() << ",Zone:" << (long)m_pZone << ",X:" << (int)m_X
@@ -281,6 +261,4 @@ string EffectBombCrashWalk::toString() const {
         << ",StormTime:" << (int)m_StormTime << ",Tick:" << (int)m_Tick << ",SkillType:" << (int)m_SkillType << ")";
 
     return msg.toString();
-
-    __END_CATCH
 }

@@ -15,8 +15,6 @@
 ConditionAttrComp::ConditionAttrComp()
 
 {
-    __BEGIN_TRY
-
     m_ReqSTR = 0;
     m_ReqDEX = 0;
     m_ReqINT = 0;
@@ -27,18 +25,13 @@ ConditionAttrComp::ConditionAttrComp()
     m_INTOperator = CONDITION_ATTR_COMP_MAX;
     m_SumOperator = CONDITION_ATTR_COMP_MAX;
     m_LevelOperator = CONDITION_ATTR_COMP_MAX;
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ConditionAttrComp::~ConditionAttrComp()
 
-{
-    __BEGIN_TRY
-    __END_CATCH_NO_RETHROW
-}
+{}
 
 ////////////////////////////////////////////////////////////////////////////////
 // is satisfied?
@@ -223,8 +216,6 @@ void ConditionAttrComp::read(PropertyBuffer& propertyBuffer)
 void ConditionAttrComp::parseOperator(string& op, uint& var)
 
 {
-    __BEGIN_TRY
-
     if (op == "LOWER")
         var = CONDITION_ATTR_COMP_LOWER;
     else if (op == "EQUAL")
@@ -235,8 +226,6 @@ void ConditionAttrComp::parseOperator(string& op, uint& var)
         cout << "ConditionAttrComp::parseOperator() : Unknown operator[" << op << "]" << endl;
         throw Error("ConditionAttrComp::parseOperator() : Unknown operator");
     }
-
-    __END_CATCH
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -245,8 +234,6 @@ void ConditionAttrComp::parseOperator(string& op, uint& var)
 bool ConditionAttrComp::satisfy(uint op, uint current, uint restriction) const
 
 {
-    __BEGIN_TRY
-
     switch (op) {
     case CONDITION_ATTR_COMP_LOWER:
         if (current <= restriction)
@@ -265,8 +252,6 @@ bool ConditionAttrComp::satisfy(uint op, uint current, uint restriction) const
     }
 
     return false;
-
-    __END_CATCH
 }
 
 
@@ -276,8 +261,6 @@ bool ConditionAttrComp::satisfy(uint op, uint current, uint restriction) const
 string ConditionAttrComp::toString() const
 
 {
-    __BEGIN_TRY
-
     StringStream msg;
     msg << "ConditionAttrComp(" << "ReqSTR:" << (int)m_ReqSTR << " ,ReqDEX:" << (int)m_ReqDEX
         << " ,ReqINT:" << (int)m_ReqINT << " ,ReqSum:" << (int)m_ReqSum << " ,ReqLevel:" << (int)m_ReqLevel
@@ -287,6 +270,4 @@ string ConditionAttrComp::toString() const
         << " ,SumOperator:" << ConditionAttrCompOperator2String[m_SumOperator]
         << " ,LevelOperator:" << ConditionAttrCompOperator2String[m_LevelOperator] << ")";
     return msg.toString();
-
-    __END_CATCH
 }

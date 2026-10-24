@@ -15,8 +15,6 @@
 // Initializes the mask.
 //////////////////////////////////////////////////////////////////////////////
 PlayingWithFire::PlayingWithFire() {
-    __BEGIN_TRY
-
     // The surrounding 8 tiles
     m_pPlayingWithFireMask[0].set(1, 1);
     m_pPlayingWithFireMask[1].set(-1, -1);
@@ -26,8 +24,6 @@ PlayingWithFire::PlayingWithFire() {
     m_pPlayingWithFireMask[5].set(1, 0);
     m_pPlayingWithFireMask[6].set(-1, 1);
     m_pPlayingWithFireMask[7].set(0, 1);
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,8 +36,6 @@ PlayingWithFire::PlayingWithFire() {
 void PlayingWithFire::execute(Monster* pMonster)
 
 {
-    __BEGIN_TRY
-
     cout << "TID[" << Thread::self() << "]" << getSkillHandlerName() << " Begin" << endl;
 
     Assert(pMonster != NULL);
@@ -105,9 +99,6 @@ void PlayingWithFire::execute(Monster* pMonster)
     } catch (Throwable& t) {
         executeSkillFailException(pMonster, getSkillType());
     }
-
-
-    __END_CATCH
 }
 
 PlayingWithFire g_PlayingWithFire;
