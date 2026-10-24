@@ -103,16 +103,12 @@ TreasureItemType::TreasureItemType()
 TreasureItemType::~TreasureItemType()
 
 {
-    try {
-        for (uint i = 0; i < m_TreasureOptionTypes.size(); i++) {
-            TreasureOptionType* pTOT = m_TreasureOptionTypes[i];
-            SAFE_DELETE(pTOT);
-        }
-
-        m_TreasureOptionTypes.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    for (uint i = 0; i < m_TreasureOptionTypes.size(); i++) {
+        TreasureOptionType* pTOT = m_TreasureOptionTypes[i];
+        SAFE_DELETE(pTOT);
     }
+
+    m_TreasureOptionTypes.clear();
 }
 
 void TreasureItemType::loadFromFile(int itemClass, ifstream& file)
@@ -305,16 +301,12 @@ TreasureItemClass::TreasureItemClass()
 TreasureItemClass::~TreasureItemClass()
 
 {
-    try {
-        for (uint i = 0; i < m_TreasureItemTypes.size(); i++) {
-            TreasureItemType* pTIT = m_TreasureItemTypes[i];
-            SAFE_DELETE(pTIT);
-        }
-
-        m_TreasureItemTypes.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    for (uint i = 0; i < m_TreasureItemTypes.size(); i++) {
+        TreasureItemType* pTIT = m_TreasureItemTypes[i];
+        SAFE_DELETE(pTIT);
     }
+
+    m_TreasureItemTypes.clear();
 }
 
 void TreasureItemClass::loadFromFile(ifstream& file)
@@ -482,16 +474,12 @@ Treasure::Treasure()
 Treasure::~Treasure()
 
 {
-    try {
-        for (uint i = 0; i < m_TreasureItemClasses.size(); i++) {
-            TreasureItemClass* pTIC = m_TreasureItemClasses[i];
-            SAFE_DELETE(pTIC);
-        }
-
-        m_TreasureItemClasses.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    for (uint i = 0; i < m_TreasureItemClasses.size(); i++) {
+        TreasureItemClass* pTIC = m_TreasureItemClasses[i];
+        SAFE_DELETE(pTIC);
     }
+
+    m_TreasureItemClasses.clear();
 }
 
 void Treasure::loadFromFile(ifstream& file)

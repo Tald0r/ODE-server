@@ -291,11 +291,7 @@ OptionInfoSet::OptionInfoSet()
 OptionInfoSet::~OptionInfoSet()
 
 {
-    try {
-        m_OptionTypes.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    m_OptionTypes.clear();
 }
 
 // Put the option type into the map under the given level.
@@ -362,11 +358,7 @@ OptionInfoManager::OptionInfoManager()
 OptionInfoManager::~OptionInfoManager()
 
 {
-    try {
-        release();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    release();
 }
 
 void OptionInfoManager::release()

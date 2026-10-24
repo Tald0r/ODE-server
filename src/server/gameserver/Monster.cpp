@@ -376,11 +376,7 @@ Monster::Monster(MonsterType_t monsterType) : m_MonsterType(monsterType) {
 Monster::~Monster()
 
 {
-    try {
-        SAFE_DELETE(m_pBrain);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    SAFE_DELETE(m_pBrain);
 }
 
 SpriteType_t Monster::getSpriteType() const

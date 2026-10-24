@@ -55,13 +55,9 @@ SkillDomainInfoManager::SkillDomainInfoManager()
 SkillDomainInfoManager::~SkillDomainInfoManager()
 
 {
-    try {
-        for (int i = 0; i < SKILL_DOMAIN_MAX; i++)
-            for (int j = 0; j <= 150; j++)
-                SAFE_DELETE(m_DomainInfoLists[i][j]);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    for (int i = 0; i < SKILL_DOMAIN_MAX; i++)
+        for (int j = 0; j <= 150; j++)
+            SAFE_DELETE(m_DomainInfoLists[i][j]);
 }
 
 //--------------------------------------------------------------------

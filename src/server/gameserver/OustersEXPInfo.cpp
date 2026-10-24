@@ -45,15 +45,11 @@ OustersEXPInfoManager::OustersEXPInfoManager()
 OustersEXPInfoManager::~OustersEXPInfoManager()
 
 {
-    try {
-        if (m_OustersEXPInfoList != NULL) {
-            for (uint i = 0; i < m_OustersEXPCount; i++)
-                SAFE_DELETE(m_OustersEXPInfoList[i]);
+    if (m_OustersEXPInfoList != NULL) {
+        for (uint i = 0; i < m_OustersEXPCount; i++)
+            SAFE_DELETE(m_OustersEXPInfoList[i]);
 
-            SAFE_DELETE_ARRAY(m_OustersEXPInfoList);
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+        SAFE_DELETE_ARRAY(m_OustersEXPInfoList);
     }
 }
 

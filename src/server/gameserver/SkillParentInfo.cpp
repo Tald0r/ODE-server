@@ -127,13 +127,9 @@ SkillParentInfoManager::SkillParentInfoManager()
 SkillParentInfoManager::~SkillParentInfoManager()
 
 {
-    try {
-        // Not everything is freed here.
+    // Not everything is freed here.
 
-        SAFE_DELETE_ARRAY(m_SkillParentInfoList);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    SAFE_DELETE_ARRAY(m_SkillParentInfoList);
 }
 
 //--------------------------------------------------------------------

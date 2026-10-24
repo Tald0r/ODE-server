@@ -22,11 +22,7 @@ Sector::Sector()
 Sector::~Sector()
 
 {
-    try {
-        m_Objects.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    m_Objects.clear();
 }
 
 void Sector::addObject(Object* pObject)

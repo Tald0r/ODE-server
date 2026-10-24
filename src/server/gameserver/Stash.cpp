@@ -25,15 +25,11 @@ Stash::Stash()
 Stash::~Stash()
 
 {
-    try {
-        __BEGIN_DEBUG
+    __BEGIN_DEBUG
 
-        SAFE_DELETE_ARRAY(m_pRack);
+    SAFE_DELETE_ARRAY(m_pRack);
 
-        __END_DEBUG
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    __END_DEBUG
 }
 
 bool Stash::isExist(BYTE rack, BYTE index) const

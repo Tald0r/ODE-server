@@ -39,11 +39,7 @@ ActionPrepareShop::ActionPrepareShop()
 ActionPrepareShop::~ActionPrepareShop()
 
 {
-    try {
-        clearList();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    clearList();
 }
 
 //////////////////////////////////////////////////////////////////////////////

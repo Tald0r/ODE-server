@@ -45,15 +45,11 @@ VampEXPInfoManager::VampEXPInfoManager()
 VampEXPInfoManager::~VampEXPInfoManager()
 
 {
-    try {
-        if (m_VampEXPInfoList != NULL) {
-            for (uint i = 0; i < m_VampEXPCount; i++)
-                SAFE_DELETE(m_VampEXPInfoList[i]);
+    if (m_VampEXPInfoList != NULL) {
+        for (uint i = 0; i < m_VampEXPCount; i++)
+            SAFE_DELETE(m_VampEXPInfoList[i]);
 
-            SAFE_DELETE_ARRAY(m_VampEXPInfoList);
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+        SAFE_DELETE_ARRAY(m_VampEXPInfoList);
     }
 }
 

@@ -173,18 +173,14 @@ MasterLairInfoManager::MasterLairInfoManager()
 MasterLairInfoManager::~MasterLairInfoManager()
 
 {
-    try {
-        unordered_map<ZoneID_t, MasterLairInfo*>::iterator itr = m_MasterLairInfos.begin();
-        for (; itr != m_MasterLairInfos.end(); itr++) {
-            MasterLairInfo* pInfo = itr->second;
-            SAFE_DELETE(pInfo);
-        }
-
-        // Delete every pair in the hashmap.
-        m_MasterLairInfos.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    unordered_map<ZoneID_t, MasterLairInfo*>::iterator itr = m_MasterLairInfos.begin();
+    for (; itr != m_MasterLairInfos.end(); itr++) {
+        MasterLairInfo* pInfo = itr->second;
+        SAFE_DELETE(pInfo);
     }
+
+    // Delete every pair in the hashmap.
+    m_MasterLairInfos.clear();
 }
 
 

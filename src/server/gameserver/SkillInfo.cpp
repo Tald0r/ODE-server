@@ -157,12 +157,8 @@ SkillInfoManager::SkillInfoManager()
 SkillInfoManager::~SkillInfoManager()
 
 {
-    try {
-        // This alone is not enough, but it is never called anyway, so leave it.
-        SAFE_DELETE_ARRAY(m_SkillInfoList);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    // This alone is not enough, but it is never called anyway, so leave it.
+    SAFE_DELETE_ARRAY(m_SkillInfoList);
 }
 
 void SkillInfoManager::init() {

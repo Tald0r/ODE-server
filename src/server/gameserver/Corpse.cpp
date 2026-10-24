@@ -36,14 +36,10 @@ Corpse::Corpse()
 Corpse::~Corpse()
 
 {
-    try {
-        while (!m_Treasures.empty()) {
-            Item* pItem = m_Treasures.front();
-            SAFE_DELETE(pItem);
-            m_Treasures.pop_front();
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    while (!m_Treasures.empty()) {
+        Item* pItem = m_Treasures.front();
+        SAFE_DELETE(pItem);
+        m_Treasures.pop_front();
     }
 }
 

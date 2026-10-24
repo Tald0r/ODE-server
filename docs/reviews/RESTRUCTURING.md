@@ -90,7 +90,7 @@ that changes has to change in both places in the same commit.
 | R16 | Headers under `src/` that nothing includes | 0 | A header no translation unit reaches is not part of any build, so nothing it declares is ever checked against the code it describes. Included means some `#include "..."` text under `src/` or `tests/` equals the header's path or the path ends with `/` plus that text. That approximates resolving each include against the including file's own directory and the CMake `-I` list, and it errs only toward calling a header used, never toward calling a live one dead; comments are not stripped, for the same direction. The include-text list is materialised first, as R13 does, so a broken grep fails loudly instead of reading as zero orphans. 5→0 on 2026-09-17 |
 | R17 | Source lines carrying a non-ASCII byte | 0 | `LC_ALL=C grep -rhE $'[^\x01-\x7f]' src --include='*.h' --include='*.cpp' \| wc -l` - the tree's code language is English, and these are the lines a reader cannot read. The legacy text survived in three states: readable Korean, mojibake (EUC-KR/CP949 bytes, or the Chinese build's GBK bytes, decoded as Latin-1 or CP949 and re-encoded as UTF-8), and U+FFFD runs where the text is gone and only the adjacent code says what it meant. Comments are translated tree by tree, and the last of them -- the gameserver's `skill`, `quest` and `item` trees -- is done, so no comment carries legacy text any more. String literals were a pass of their own, since changing one changes what the server says, not how the source reads; the last of them went on 2026-09-25, and the count holds at zero: a non-ASCII byte in `src` is new debt. A literal that data is matched against and that must keep foreign bytes (the reserved staff titles a character name may not contain, the chief-monster prefix, the GM chat aliases the command ladder still tests) is written as escaped UTF-8 bytes with an English comment beside it, so the file stays ASCII and the reader still knows the word. The byte class is R12's, so the CR of a CRLF working tree stays out of the count. 578→577 with the blood-drain log call that named the draining monster in Korean, deleted with the rest of the log client's call sites; 576→575 on 2026-09-24 with `WarSchedule::save`'s failure log, which repeated `create()`'s Korean text under `create()`'s name; 575→572 on 2026-09-24 with `CastleShrineInfoManager::canPickupCastleSymbol`'s three Korean failure logs, two translated and one gone with the war-type branch the castle-war test made redundant; 572→569 on 2026-09-24 with `RegenZoneManager::reload`'s three Korean failure logs, translated when the per-tower half moved to the tower's zone thread (`reloadOwner`); 569→457 on 2026-09-25 with the log, debug and player-message literals of the remaining top-level gameserver files, its `skill` and `item` trees, `GameTime::toString` and the login and shared servers, translated after the mojibake among them was recovered, while `kInvalidID`'s Korean staff titles stay as escaped UTF-8 bytes because typed names are matched against them; 457→313 on 2026-09-25 with the CG handlers', war, ctf and mission trees' literals, translated once their mojibake -- much of it the Chinese build's GBK read as CP949 or Latin-1 -- was recovered, the donation nicknames shortened to fit the wire's 22 bytes on the way; 313→173 on 2026-09-25 with the GM commands' lost replies written from the code they answer for, the quest actions' place names given the map files' spellings, and the chief-summon prefix kept as escaped bytes because monster names are matched against it; 173→0 on 2026-09-25 with the variable descriptions' units, the GDR lair's lost state logs written from their transitions, the guild quest elements' messages translated and the unread Santa and Rudolf taunts deleted |
 | R18 | Commented-out code lines inside multi-line `/* */` blocks | 0 | A character-level perl scan (see `tests/ratchet/ratchets.sh`) over every `src/**/*.{cpp,h}`: lines inside a multi-line `/* */` comment that read as a statement — ending in `;`, `{` or `}`, a preprocessor directive, opening with a control keyword or type name, or an identifier followed by `(`. Switched-off code names deleted globals and signatures that changed, and reads as if it described the code beside it. The same test over `//` lines called 13 of 50 sampled prose lines code — section banners, end-of-block markers, sentences opening with `delete` — so only `/* */` blocks are counted; `//` commented-out code is removed without being measured. 10639→5281 on 2026-09-17. 5,279→3,301 on 2026-09-18, with `src/Core`, `src/server/database`, the login and shared servers, the files directly under `src/server` and the gameserver's `handler/`, `gm/`, `war/`, `mofus/`, `mission/`, `couple/`, `ctf/`, `packetfill/`, `repository/` and `exchange/` trees. 3,301→5 on 2026-09-22 with the gameserver's top-level files, `src/server/LogClient.cpp`, `src/domain/SkillOutputFormulas.cpp` and three scattered files; the five lines left were all in one of the two block comments in `handler/CGWhisperHandler.cpp`, the one that describes the whisper relay field by field, documentation that only reads as code. 5→0 on 2026-10-23: the field-by-field block went for a one-sentence `//` comment, the code below it setting the same fields; the account line it listed named a field the relay packet does not carry |
-| R19 | `catch (Throwable&)` clauses in the gameserver that drop the exception | 107 | A perl match (see `tests/ratchet/ratchets.sh`) over R5's scope, the gameserver's `.cpp` and `.h` files outside `gm/`, `handler/` and `packetfill/`: a `catch (Throwable&)` clause (`Throwable &`, `const` or a named variable too) whose body holds only blanks, comments and empty statements (`;`). Such a catch ends the exception there: the caller never learns the block failed, and what the block had not done stays undone. That is control flow nobody has judged yet, so each removal is a test-first decision (task 3.8): let the exception reach a caller that handles it, or handle it where it is caught, with a test that pins which. Textual, so a commented-out clause counts too. It cannot see a swallow spelled another way: a body that only logs or calls `addStack()`, a `catch (...)`, a catch of a `Throwable` subclass, or the `__END_CATCH_NO_RETHROW` macro, which R5 keeps out of this scope. 18 on 2026-10-23 before 3.7's slice 5, every one hand-written; 107 after it, with the 89 swallowing try pairs it wrote out as explicit catches |
+| R19 | `catch (Throwable&)` clauses in the gameserver that drop the exception | 39 | A perl match (see `tests/ratchet/ratchets.sh`) over R5's scope, the gameserver's `.cpp` and `.h` files outside `gm/`, `handler/` and `packetfill/`: a `catch (Throwable&)` clause (`Throwable &`, `const` or a named variable too) whose body holds only blanks, comments and empty statements (`;`). Such a catch ends the exception there: the caller never learns the block failed, and what the block had not done stays undone. That is control flow nobody has judged yet, so each removal is a test-first decision (task 3.8): let the exception reach a caller that handles it, or handle it where it is caught, with a test that pins which; a catch whose block cannot throw a `Throwable` is dead and goes without a test, since nothing can drive it. Textual, so a commented-out clause counts too. It cannot see a swallow spelled another way: a body that only logs or calls `addStack()`, a `catch (...)`, a catch of a `Throwable` subclass, or the `__END_CATCH_NO_RETHROW` macro, which R5 keeps out of this scope. 18 on 2026-10-23 before 3.7's slice 5, every one hand-written; 107 after it, with the 89 swallowing try pairs it wrote out as explicit catches; 39 after 3.8's slice 1 removed 68 dead catches from destructors |
 
 God-file baselines (R6):
 
@@ -100,7 +100,7 @@ are enforced so far.
 
 | File | Baseline lines |
 |------|---------------:|
-| `src/server/gameserver/Zone.cpp` | 1,176 (1,265 before the try-rethrow macros went; 1,273 before the compiler-warning cleanup; was 9,350 before the 4.2 extractions; enforced by `ratchets.sh` R6g) |
+| `src/server/gameserver/Zone.cpp` | 1,172 (1,176 before 3.8 removed its destructor's dead catch; 1,265 before the try-rethrow macros went; 1,273 before the compiler-warning cleanup; was 9,350 before the 4.2 extractions; enforced by `ratchets.sh` R6g) |
 | `src/server/gameserver/skill/SkillUtil.cpp` | 678 (684 before the skill range moved to de-core; was 6,626 before the split by concern into `SkillDamage.cpp` / `SkillExperience.cpp` / `SkillGeometry.cpp`, leaving the mana and HP costs, the slot run-time and zone-level gates, the skill-failure packets and the elemental lookups; under the 2,000-line phase exit criterion, so R6a pins it rather than baselining a god file; enforced by `ratchets.sh` R6a) |
 | `src/server/gameserver/InitAllStat.cpp` | 225 (230 before the try-rethrow macros went; was 4,787 before the split by race into `SlayerStat.cpp` / `VampireStat.cpp` / `OustersStat.cpp`, leaving `PlayerCreature::applyBloodBibleSign` and `Monster::initAllStat`; under the 2,000-line phase exit criterion, so R6b pins it rather than baselining a god file; enforced by `ratchets.sh` R6b) |
 | `src/server/gameserver/handler/CGSayHandler.cpp` (moved from `src/Core` in 2.4) | 111 (114 before the compiler-warning cleanup; was 4,720 before the 4.1 command extraction; enforced by `ratchets.sh` R6e) |
@@ -2241,8 +2241,31 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   handles it where it is (logs, cleans up, answers). The 89 all sit in
   destructors, which are `noexcept`, so there a removed catch turns a
   swallowed exception into `std::terminate`: the decision is what the
-  destructor does instead.
-  > **Status:** not started.
+  destructor does instead. A catch whose block cannot throw a `Throwable` is
+  dead: nothing can drive it, so it goes without a test.
+  > **Status:** in progress. Slice 1 removed the 68 dead catches, all in
+  > destructors: R19 107 → 39, and R6g 1,176 → 1,172 with `Zone::~Zone`'s.
+  > In `Inventory::~Inventory` the outer one went: its block is an inner
+  > `try` whose own empty `catch (Throwable&)` already ends every
+  > `Throwable`, and that inner one stays to be judged.
+  > Their blocks only clear standard containers, assign, delete, and call
+  > `filelog` (`noexcept`), `Snapshot::load` and `ZoneGroupThread`'s
+  > `stop` and `join` (which can throw only a `std::system_error`, never a
+  > `Throwable`), or members that do no more (`clear`, `clearList`,
+  > `release`, `getFrontWork`); the `Assert(m_Factories != NULL)` in the
+  > item, action and condition factory managers cannot fail, since each
+  > constructor sets the array with `new` and only the destructor resets
+  > it. A destructor is `noexcept` unless it or a base or member's says
+  > otherwise, so a destructor these delete cannot throw into their block;
+  > in the gameserver only those deriving from `Player`, `PlayerManager` or
+  > `Thread` without a `noexcept` of their own can. Proof: a temporary
+  > `static_assert(noexcept(delete std::declval<decltype(p)>()))` in
+  > `SAFE_DELETE` and `SAFE_DELETE_ARRAY`, compiled over every file R19
+  > listed, failed only at `ClientManager`'s delete of its
+  > `IncomingPlayerManager`, which is not among the 68, and the same
+  > assertion holds for the raw deletes of `ActionFactory` and
+  > `ConditionFactory`. Next: the 22 left in destructors, whose blocks lock,
+  > assert or call code that may throw, then the 17 outside them.
   - Owner: R19 in `tests/ratchet/ratchets.sh`.
 
 **Phase exit criteria:** no hard gate — this phase *is* the ratchets trending
@@ -2322,7 +2345,7 @@ swallowing catches 3.8 judges, is the phase's remaining trend line.
   > the translation unit differs — and the file-scope helpers more than one
   > unit calls (`isPotentialEnemy`, `sendRelicEffect`, `strlwr`) are declared
   > in `ZoneInternal.h`.
-  > `Zone.cpp` 9,350 → 1,176, pinned by `ratchets.sh` R6g: the
+  > `Zone.cpp` 9,350 → 1,172, pinned by `ratchets.sh` R6g: the
   > constructors, the tile/sector/level accessors, the effect managers,
   > `getCreature`, the NPC info registry, `heartbeat`, `toString`, the
   > safe-zone and dark-light resets, the war and pay tails and the load
@@ -2433,7 +2456,7 @@ holds no command body — it tests the leading `*` and hands the message to
 row of those two tables, of `SubcommandTable` and of the relay table
 declares its `Permission` at the registration site, pinned by
 `gm_command_router_tests` and `gm_console_command_tests`. `Zone.cpp` is
-1,176 lines, held there by R6g. 4.3 continues past the exit criteria as
+1,172 lines, held there by R6g. 4.3 continues past the exit criteria as
 shrink-only work.
 
 ---

@@ -128,7 +128,7 @@ check_ratchet R6f "ConsoleCommands.cpp lines" 1574 "$R6f"
 # What is left is the zone's own state: tiles, effects, creature lookup, the
 # NPC registry and the heartbeat. Under the 2,000-line phase exit criterion.
 R6g=$(wc -l < src/server/gameserver/Zone.cpp 2>/dev/null || echo missing)
-check_ratchet R6g "Zone.cpp lines" 1176 "$R6g"
+check_ratchet R6g "Zone.cpp lines" 1172 "$R6g"
 
 # R6h-j: the three race classes. Persistence, gold, item-shape, inventory,
 # free-play, skill-slot-table, exps, initial-rank, silver-damage and
@@ -550,6 +550,8 @@ fi
 # -- most of these were swallowing try macros, written out unchanged -- so
 # each one that goes is a decision made test first: let the exception reach
 # a caller that handles it, or handle it here, with a test that pins which.
+# A catch whose block cannot throw a Throwable is dead and goes without a
+# test, since nothing can drive it.
 #
 # R5's scope: the gameserver's .cpp and .h files outside gm/, handler/ and
 # packetfill/. A perl match over each file's text: `Throwable&`,
@@ -575,7 +577,7 @@ if ! [[ "$r19_files" =~ ^[0-9]+$ ]] || [ "$r19_files" -lt 2000 ]; then
     echo "[FAIL] R19 swallowing catches: only '$r19_files' files scanned (find or perl broken?)"
     fail=1
 else
-    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 107 "$R19"
+    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 39 "$R19"
 fi
 
 # --- Removed dead services must not return --------------------------------

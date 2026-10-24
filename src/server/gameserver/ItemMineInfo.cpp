@@ -35,19 +35,15 @@ string ItemMineInfo::toString() const {
 ItemMineInfoManager::ItemMineInfoManager() {}
 
 ItemMineInfoManager::~ItemMineInfoManager() {
-    try {
-        HashMapItemMineInfoItor itr = m_ItemMineInfos.begin();
-        HashMapItemMineInfoItor endItr = m_ItemMineInfos.end();
+    HashMapItemMineInfoItor itr = m_ItemMineInfos.begin();
+    HashMapItemMineInfoItor endItr = m_ItemMineInfos.end();
 
-        for (; itr != endItr; itr++) {
-            ItemMineInfo* pInfo = itr->second;
-            SAFE_DELETE(pInfo);
-        }
-
-        m_ItemMineInfos.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    for (; itr != endItr; itr++) {
+        ItemMineInfo* pInfo = itr->second;
+        SAFE_DELETE(pInfo);
     }
+
+    m_ItemMineInfos.clear();
 }
 
 void ItemMineInfoManager::load()

@@ -71,17 +71,13 @@ PartyInviteInfoManager::PartyInviteInfoManager()
 PartyInviteInfoManager::~PartyInviteInfoManager()
 
 {
-    try {
-        unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.begin();
-        for (; itr != m_InfoMap.end(); itr++) {
-            PartyInviteInfo* pInfo = itr->second;
-            SAFE_DELETE(pInfo);
-        }
-
-        m_InfoMap.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    unordered_map<string, PartyInviteInfo*>::iterator itr = m_InfoMap.begin();
+    for (; itr != m_InfoMap.end(); itr++) {
+        PartyInviteInfo* pInfo = itr->second;
+        SAFE_DELETE(pInfo);
     }
+
+    m_InfoMap.clear();
 }
 
 bool PartyInviteInfoManager::hasInviteInfo(const string& HostName)

@@ -106,11 +106,7 @@ MonsterManager::MonsterManager(Zone* pZone)
 MonsterManager::~MonsterManager()
 
 {
-    try {
-        SAFE_DELETE(m_pEventMonsterInfo);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    SAFE_DELETE(m_pEventMonsterInfo);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

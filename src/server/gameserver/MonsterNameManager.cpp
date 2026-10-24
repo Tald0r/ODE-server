@@ -30,16 +30,12 @@ MonsterNameManager::MonsterNameManager()
 MonsterNameManager::~MonsterNameManager()
 
 {
-    try {
-        SAFE_DELETE_ARRAY(m_pFirstName);
-        SAFE_DELETE_ARRAY(m_pMiddleName);
-        SAFE_DELETE_ARRAY(m_pLastName);
-        SAFE_DELETE_ARRAY(m_pEventLastName);
+    SAFE_DELETE_ARRAY(m_pFirstName);
+    SAFE_DELETE_ARRAY(m_pMiddleName);
+    SAFE_DELETE_ARRAY(m_pLastName);
+    SAFE_DELETE_ARRAY(m_pEventLastName);
 
-        m_UsedName.clear();
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
-    }
+    m_UsedName.clear();
 }
 
 void MonsterNameManager::init()

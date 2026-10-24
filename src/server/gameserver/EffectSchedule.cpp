@@ -59,13 +59,9 @@ EffectSchedule::EffectSchedule()
 EffectSchedule::~EffectSchedule()
 
 {
-    try {
-        while (!m_WorkList.empty()) {
-            EffectScheduleWork* pWork = getFrontWork();
-            SAFE_DELETE(pWork);
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    while (!m_WorkList.empty()) {
+        EffectScheduleWork* pWork = getFrontWork();
+        SAFE_DELETE(pWork);
     }
 }
 
@@ -103,14 +99,10 @@ EffectScheduleManager::EffectScheduleManager()
 EffectScheduleManager::~EffectScheduleManager()
 
 {
-    try {
-        while (!m_EffectScheduleList.empty()) {
-            EffectSchedule* pSchedule = m_EffectScheduleList.front();
-            m_EffectScheduleList.pop_front();
-            SAFE_DELETE(pSchedule);
-        }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    while (!m_EffectScheduleList.empty()) {
+        EffectSchedule* pSchedule = m_EffectScheduleList.front();
+        m_EffectScheduleList.pop_front();
+        SAFE_DELETE(pSchedule);
     }
 }
 
