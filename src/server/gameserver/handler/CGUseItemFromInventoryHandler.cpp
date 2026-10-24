@@ -886,7 +886,7 @@ void CGUseItemFromInventoryHandler::executeSlayerPortalItem(CGUseItemFromInvento
 void CGUseItemFromInventoryHandler::executeOustersSummonItem(CGUseItemFromInventory* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_DEBUG_EX __BEGIN_TRY
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -999,7 +999,7 @@ void CGUseItemFromInventoryHandler::executeOustersSummonItem(CGUseItemFromInvent
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 

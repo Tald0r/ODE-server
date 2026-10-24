@@ -75,9 +75,10 @@ check_ratchet R4 "packet headers with execute()" 0 "$R4"
 # them, and gm/ the GM command bodies that moved out of
 # handler/CGSayHandler.cpp. Headers count too: a template's body holds pairs
 # as live as a .cpp's (5,114 -> 5,119 on 2026-10-23, the widening: four live
-# header sites and one comment line).
+# header sites and one comment line). 278 -> 276 the same day: the two pairs
+# that crossed a __BEGIN_DEBUG_EX pair in handler/, dropped by hand.
 R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' --include='*.h' | wc -l)
-check_ratchet R5 "__BEGIN_TRY sites in gameserver" 278 "$R5"
+check_ratchet R5 "__BEGIN_TRY sites in gameserver" 276 "$R5"
 
 # --- R6: god-file line counts (task 3.3 files only, so far) -----------------
 # Formula extraction to de-core (src/domain) shrinks these; each delegation
