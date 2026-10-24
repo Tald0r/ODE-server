@@ -30,7 +30,7 @@ every move):
 | R2 | Files with inline SQL in the gameserver root ([repository seams](../architecture/repository-seams.md)) |
 | R3 | Files with inline SQL outside `database/` and any `repository/` |
 | R4 | Packet headers with `execute()` still on the packet ([packet system](../protocol/overview.md)) |
-| R5 | `__BEGIN_TRY` control-flow macro sites in de-core candidates |
+| R5 | `__BEGIN_TRY` control-flow macro sites in the gameserver |
 | R6 | Line count of god files, each tracked separately |
 | R7 | Files using parenthesized `throw(...)` syntax |
 | R8 | Non-comment lines using `__PRETTY_FUNCTION__` |
