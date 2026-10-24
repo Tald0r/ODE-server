@@ -16,8 +16,6 @@
 #endif
 
 void CGExchangeListHandler::execute(CGExchangeList* pPacket, Player* pPlayer) {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     // Validate player
@@ -69,6 +67,4 @@ void CGExchangeListHandler::execute(CGExchangeList* pPacket, Player* pPlayer) {
     pPlayer->sendPacket(&gcPacket);
 
 #endif // __GAME_SERVER__
-
-    __END_CATCH
 }

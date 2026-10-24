@@ -23,7 +23,7 @@
 void CGTradeFinishHandler::execute(CGTradeFinish* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -111,7 +111,7 @@ void CGTradeFinishHandler::execute(CGTradeFinish* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ void CGTradeFinishHandler::execute(CGTradeFinish* pPacket, Player* pPlayer)
 void CGTradeFinishHandler::executeSlayer(CGTradeFinish* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -241,7 +241,7 @@ void CGTradeFinishHandler::executeSlayer(CGTradeFinish* pPacket, Player* pPlayer
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -249,7 +249,7 @@ void CGTradeFinishHandler::executeSlayer(CGTradeFinish* pPacket, Player* pPlayer
 void CGTradeFinishHandler::executeVampire(CGTradeFinish* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -370,7 +370,7 @@ void CGTradeFinishHandler::executeVampire(CGTradeFinish* pPacket, Player* pPlaye
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -378,7 +378,7 @@ void CGTradeFinishHandler::executeVampire(CGTradeFinish* pPacket, Player* pPlaye
 void CGTradeFinishHandler::executeOusters(CGTradeFinish* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -499,7 +499,7 @@ void CGTradeFinishHandler::executeOusters(CGTradeFinish* pPacket, Player* pPlaye
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -507,7 +507,7 @@ void CGTradeFinishHandler::executeOusters(CGTradeFinish* pPacket, Player* pPlaye
 void CGTradeFinishHandler::executeError(CGTradeFinish* pPacket, Player* pPlayer, BYTE ErrorCode)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -518,5 +518,5 @@ void CGTradeFinishHandler::executeError(CGTradeFinish* pPacket, Player* pPlayer,
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

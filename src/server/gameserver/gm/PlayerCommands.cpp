@@ -42,7 +42,7 @@ namespace de::gm {
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opkick(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         size_t j = msg.find_first_of(' ', i + 1);
     string Name = msg.substr(j + 1, msg.size() - j - 1).c_str();
@@ -71,13 +71,13 @@ void opkick(GamePlayer* pGamePlayer, string msg, int i) {
 
     __LEAVE_CRITICAL_SECTION(pcFinder)
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opmute(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         uint time = 0;
     size_t j = msg.find_first_of(' ', i + 1);
@@ -131,13 +131,13 @@ void opmute(GamePlayer* pGamePlayer, string msg, int i) {
 
     __LEAVE_CRITICAL_SECTION(pcFinder)
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opdenychat(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         uint level = 0;
     uint time = 0;
@@ -210,13 +210,13 @@ void opdenychat(GamePlayer* pGamePlayer, string msg, int i) {
 
     __LEAVE_CRITICAL_SECTION(pcFinder)
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opfreezing(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         size_t j = msg.find_first_of(' ', i + 1);
     string Name = msg.substr(j + 1, msg.size() - j - 1).c_str();
@@ -239,13 +239,13 @@ void opfreezing(GamePlayer* pGamePlayer, string msg, int i) {
 
     __LEAVE_CRITICAL_SECTION(pcFinder)
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opdeny(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         size_t j = msg.find_first_of(' ', i + 1);
     string Name = msg.substr(j + 1, msg.size() - j - 1).c_str();
@@ -261,13 +261,13 @@ void opdeny(GamePlayer* pGamePlayer, string msg, int i) {
     } catch (const DatabaseError&) {
         return;
     }
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opinfo(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         if (pGamePlayer == NULL) return;
 
@@ -329,13 +329,13 @@ void opinfo(GamePlayer* pGamePlayer, string msg, int i) {
 
     __LEAVE_CRITICAL_SECTION(pcFinder)
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opfind(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         if (pGamePlayer == NULL) return;
     size_t j = msg.find_first_of(' ', i + 1);
@@ -374,7 +374,7 @@ void opfind(GamePlayer* pGamePlayer, string msg, int i) {
         pGamePlayer->sendPacket(&gcSystemMessage);
     }
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -382,8 +382,6 @@ void opfind(GamePlayer* pGamePlayer, string msg, int i) {
 // GCSystemMessage tops out at 256 characters, so keep it short.
 //////////////////////////////////////////////////////////////////////////////
 void opcredit(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY
-
     if (pGamePlayer == NULL)
         return;
 
@@ -408,14 +406,12 @@ void opcredit(GamePlayer* pGamePlayer, string msg, int i) {
         gcSystemMessage.setMessage(msg.toString());
         pGamePlayer->sendPacket(&gcSystemMessage);
     }
-
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opuser(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         if (pGamePlayer == NULL) return;
 
@@ -435,13 +431,13 @@ void opuser(GamePlayer* pGamePlayer, string msg, int i) {
     gcSystemMessage.setMessage(msg);
     pGamePlayer->sendPacket(&gcSystemMessage);
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void optrace(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         if (pGamePlayer == NULL) return;
 
@@ -493,13 +489,13 @@ void optrace(GamePlayer* pGamePlayer, string msg, int i) {
 
     __LEAVE_CRITICAL_SECTION(pcFinder)
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void oppay(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         if (pGamePlayer == NULL) return;
 
@@ -535,13 +531,13 @@ void oppay(GamePlayer* pGamePlayer, string msg, int i) {
     gcSystemMessage.setMessage(str);
     pGamePlayer->sendPacket(&gcSystemMessage);
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opfun(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         if (pGamePlayer == NULL) return;
 
@@ -609,13 +605,13 @@ void opfun(GamePlayer* pGamePlayer, string msg, int i) {
         pGamePlayer->sendPacket(&gcSystemMessage);
     }
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opgrant(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         if (pGamePlayer == NULL) return;
 
@@ -649,11 +645,11 @@ void opgrant(GamePlayer* pGamePlayer, string msg, int i) {
     }
 
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void opsoulchain(GamePlayer* pPlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         size_t j = msg.find_first_of(' ', i + 1);
 
@@ -666,6 +662,6 @@ void opsoulchain(GamePlayer* pPlayer, string msg, int i) {
     // The GM command feeds a synthetic packet straight to the handler.
     CGSkillToNamedHandler::execute(&packet, pPlayer);
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 } // namespace de::gm

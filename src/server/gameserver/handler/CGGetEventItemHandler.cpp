@@ -26,8 +26,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGGetEventItemHandler::execute(CGGetEventItem* pPacket, Player* pPlayer) {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     Assert(pPacket != NULL);
@@ -42,16 +40,12 @@ void CGGetEventItemHandler::execute(CGGetEventItem* pPacket, Player* pPlayer) {
     }
 
 #endif
-
-    __END_CATCH
 }
 
 
 #ifdef __GAME_SERVER__
 
 void CGGetEventItemHandler::executeCombackItem(CGGetEventItem* pPacket, Player* pPlayer) {
-    __BEGIN_TRY
-
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Assert(pGamePlayer != NULL);
 
@@ -208,14 +202,10 @@ void CGGetEventItemHandler::executeCombackItem(CGGetEventItem* pPacket, Player* 
             return;
         }
     }
-
-    __END_CATCH
 }
 
 
 void CGGetEventItemHandler::executeCombackPremiumItem(CGGetEventItem* pPacket, Player* pPlayer) {
-    __BEGIN_TRY
-
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Assert(pGamePlayer != NULL);
 
@@ -399,14 +389,10 @@ void CGGetEventItemHandler::executeCombackPremiumItem(CGGetEventItem* pPacket, P
             return;
         }
     }
-
-    __END_CATCH
 }
 
 
 void CGGetEventItemHandler::executeCombackRecommendItem(CGGetEventItem* pPacket, Player* pPlayer) {
-    __BEGIN_TRY
-
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Assert(pGamePlayer != NULL);
 
@@ -556,8 +542,6 @@ void CGGetEventItemHandler::executeCombackRecommendItem(CGGetEventItem* pPacket,
             return;
         }
     }
-
-    __END_CATCH
 }
 
 #endif

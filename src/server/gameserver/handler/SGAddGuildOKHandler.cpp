@@ -31,7 +31,7 @@
 void SGAddGuildOKHandler::execute(SGAddGuildOK* pPacket)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         StringPool& strings = de::gameContext().strings();
 
@@ -76,5 +76,5 @@ void SGAddGuildOKHandler::execute(SGAddGuildOK* pPacket)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

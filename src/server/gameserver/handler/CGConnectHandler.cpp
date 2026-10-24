@@ -88,7 +88,7 @@ bool isAdultByBirthdayDate(const string& birthday);
 void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX __BEGIN_DEBUG
+    __BEGIN_DEBUG_EX __BEGIN_DEBUG
 
         GuildManager& guilds = de::gameContext().guilds();
     SharedServerManager& sharedServer = de::gameContext().sharedServer();
@@ -697,7 +697,7 @@ void CGConnectHandler::execute(CGConnect* pPacket, Player* pPlayer)
 #endif
 
     __END_DEBUG
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 #ifdef __GAME_SERVER__

@@ -24,8 +24,6 @@
 void CGAuthKeyHandler::execute(CGAuthKey* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     Assert(pPacket != NULL);
@@ -35,6 +33,4 @@ void CGAuthKeyHandler::execute(CGAuthKey* pPacket, Player* pPlayer)
 
 
 #endif
-
-    __END_CATCH
 }

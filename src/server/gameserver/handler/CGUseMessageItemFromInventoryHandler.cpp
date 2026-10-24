@@ -39,7 +39,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGUseMessageItemFromInventoryHandler::execute(CGUseMessageItemFromInventory* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -123,12 +123,12 @@ void CGUseMessageItemFromInventoryHandler::execute(CGUseMessageItemFromInventory
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
 void CGUseMessageItemFromInventoryHandler::executeEventTree(CGUseMessageItemFromInventory* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -227,12 +227,12 @@ void CGUseMessageItemFromInventoryHandler::executeEventTree(CGUseMessageItemFrom
 
 
 #endif
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void CGUseMessageItemFromInventoryHandler::executeEventFromMessage(CGUseMessageItemFromInventory* pPacket,
                                                                    Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -286,5 +286,5 @@ void CGUseMessageItemFromInventoryHandler::executeEventFromMessage(CGUseMessageI
 
 
 #endif
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

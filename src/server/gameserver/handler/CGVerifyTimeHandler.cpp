@@ -22,7 +22,7 @@
 void CGVerifyTimeHandler::execute(CGVerifyTime* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -38,14 +38,12 @@ void CGVerifyTimeHandler::execute(CGVerifyTime* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGVerifyTimeHandler::saveSpeedHackPlayer(Player* pPlayer) {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
     Creature* pCreature = pGamePlayer->getCreature();
@@ -85,6 +83,4 @@ void CGVerifyTimeHandler::saveSpeedHackPlayer(Player* pPlayer) {
     }
 
 #endif
-
-    __END_CATCH
 }

@@ -71,7 +71,7 @@ bool isMounted(Creature* pCreature) {
 void CGTradePrepareHandler::execute(CGTradePrepare* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -164,7 +164,7 @@ void CGTradePrepareHandler::execute(CGTradePrepare* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -172,7 +172,7 @@ void CGTradePrepareHandler::execute(CGTradePrepare* pPacket, Player* pPlayer)
 void CGTradePrepareHandler::executeError(CGTradePrepare* pPacket, Player* pPlayer, BYTE ErrorCode)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -183,5 +183,5 @@ void CGTradePrepareHandler::executeError(CGTradePrepare* pPacket, Player* pPlaye
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

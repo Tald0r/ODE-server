@@ -34,18 +34,15 @@ namespace de::gm {
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opzone(string msg, int i) {
-    __BEGIN_TRY
-
     //////////////
     // Zone Info
     //////////////
-    __END_CATCH
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opwarp(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -93,13 +90,13 @@ void opwarp(GamePlayer* pGamePlayer, string msg, int i) {
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void oprecall(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         if (pGamePlayer == NULL) return;
 
@@ -218,13 +215,13 @@ void oprecall(GamePlayer* pGamePlayer, string msg, int i) {
         j = i;
     }
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opsummon(GamePlayer* pGamePlayer, string msg, int i) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         if (pGamePlayer == NULL) return;
 
@@ -317,7 +314,7 @@ void opsummon(GamePlayer* pGamePlayer, string msg, int i) {
     }
 
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void opopenpaymap(GamePlayer* pGamePlayer, string msg, int i) {

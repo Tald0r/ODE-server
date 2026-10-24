@@ -23,7 +23,7 @@
 //
 //--------------------------------------------------------------------------------
 void LGIncomingConnectionErrorHandler::execute(LGIncomingConnectionError* pPacket) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
         const string playerID = pPacket->getPlayerID();
@@ -64,5 +64,5 @@ void LGIncomingConnectionErrorHandler::execute(LGIncomingConnectionError* pPacke
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

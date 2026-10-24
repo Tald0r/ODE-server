@@ -77,7 +77,7 @@ void sendEnchantOK(GamePlayer* pGamePlayer, DWORD optionChange, DWORD optionCHan
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGAddItemToItemHandler::execute(CGAddItemToItem* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -460,14 +460,12 @@ void CGAddItemToItemHandler::execute(CGAddItemToItem* pPacket, Player* pPlayer) 
 
 #endif // __GAME_SERVER__
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
 #ifdef __GAME_SERVER__
 void executeUpGrade(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem) {
-    __BEGIN_TRY
-
     Creature* pCreature = pGamePlayer->getCreature();
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
 
@@ -495,13 +493,9 @@ void executeUpGrade(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem) {
         pGamePlayer->sendPacket(&gcAddItemToItemVerify);
         return;
     }
-
-    __END_CATCH
 }
 void executeEnchantRareThreeOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem, CoordInven_t invenX,
                                    CoordInven_t invenY) {
-    __BEGIN_TRY
-
     Creature* pCreature = pGamePlayer->getCreature();
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
 
@@ -675,14 +669,9 @@ EnOK:
     // Send the result packet
     cout << "optionChange : " << optionChange << endl;
     sendEnchantOK(pGamePlayer, optionChange, optionChange2);
-
-
-    __END_CATCH
 }
 void executeEnchantRareOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem, CoordInven_t invenX,
                               CoordInven_t invenY) {
-    __BEGIN_TRY
-
     Creature* pCreature = pGamePlayer->getCreature();
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
 
@@ -894,14 +883,10 @@ void executeEnchantRareOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* p
         // Send the result packet
         sendEnchantOK(pGamePlayer, optionChange);
     }
-
-    __END_CATCH
 }
 
 void executeEnchantOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem, CoordInven_t invenX,
                           CoordInven_t invenY) {
-    __BEGIN_TRY
-
     Creature* pCreature = pGamePlayer->getCreature();
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
     Inventory* pInventory = pPC->getInventory();
@@ -1022,14 +1007,10 @@ void executeEnchantOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem
     } else {
         sendEnchantImpossible(pGamePlayer);
     }
-
-    __END_CATCH
 }
 
 // Add an option to an item that has none.
 void executeAddOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem, OptionType_t addOptionType) {
-    __BEGIN_TRY
-
     Creature* pCreature = pGamePlayer->getCreature();
     PlayerCreature* pPC = dynamic_cast<PlayerCreature*>(pCreature);
 
@@ -1072,13 +1053,9 @@ void executeAddOption(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem, Op
         gcAddItemToItemVerify.setCode(ADD_ITEM_TO_ITEM_VERIFY_ENCHANT_IMPOSSIBLE);
         pGamePlayer->sendPacket(&gcAddItemToItemVerify);
     }
-
-    __END_CATCH
 }
 
 void executeTransKit(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem) {
-    __BEGIN_TRY
-
     GCAddItemToItemVerify gcResult;
     uint optionChange;
 
@@ -1108,8 +1085,6 @@ void executeTransKit(GamePlayer* pGamePlayer, Item* pMouseItem, Item* pItem) {
     pPC->deleteItemFromExtraInventorySlot();
     pMouseItem->destroy();
     SAFE_DELETE(pMouseItem);
-
-    __END_CATCH
 }
 
 OptionInfo* getOptionInfo(OptionType_t optionType) {
@@ -1134,8 +1109,6 @@ OptionInfo* getOptionInfo(OptionType_t optionType) {
 
 
 void processUpgradeOptionType(Item* pItem, OptionType_t currentOptionType, OptionInfo* pOptionInfo) {
-    __BEGIN_TRY
-
     //  option that will be upgraded
     OptionType_t upgradeOptionType = pOptionInfo->getUpgradeType();
 
@@ -1151,13 +1124,9 @@ void processUpgradeOptionType(Item* pItem, OptionType_t currentOptionType, Optio
     char pField[80];
     snprintf(pField, sizeof(pField), "OptionType='%s'", optionField.c_str());
     pItem->tinysave(pField);
-
-    __END_CATCH
 }
 
 void crashItem(Item* pItem, Inventory* pInventory, CoordInven_t invenX, CoordInven_t invenY) {
-    __BEGIN_TRY
-
     // Remove the item from the inventory
     pInventory->deleteItem(invenX, invenY);
 
@@ -1166,13 +1135,9 @@ void crashItem(Item* pItem, Inventory* pInventory, CoordInven_t invenX, CoordInv
 
     // Remove from memory
     SAFE_DELETE(pItem);
-
-    __END_CATCH
 }
 
 void downgradeOptionType(Item* pItem, OptionType_t currentOptionType, OptionInfo* pOptionInfo) {
-    __BEGIN_TRY
-
     // Drop the item's option by one step.
     OptionType_t previousOptionType = pOptionInfo->getPreviousType();
 
@@ -1193,44 +1158,29 @@ void downgradeOptionType(Item* pItem, OptionType_t currentOptionType, OptionInfo
     char pField[80];
     snprintf(pField, sizeof(pField), "OptionType='%s'", optionField.c_str());
     pItem->tinysave(pField);
-
-
-    __END_CATCH
 }
 
 
 void sendEnchantImpossible(GamePlayer* pGamePlayer) {
-    __BEGIN_TRY
-
     GCAddItemToItemVerify gcAddItemToItemVerify;
     gcAddItemToItemVerify.setCode(ADD_ITEM_TO_ITEM_VERIFY_ENCHANT_IMPOSSIBLE);
     pGamePlayer->sendPacket(&gcAddItemToItemVerify);
-
-    __END_CATCH
 }
 
 void sendEnchantOK(GamePlayer* pGamePlayer, DWORD optionChange) {
-    __BEGIN_TRY
-
     GCAddItemToItemVerify gcAddItemToItemVerify;
     gcAddItemToItemVerify.setCode(ADD_ITEM_TO_ITEM_VERIFY_ENCHANT_OK);
     gcAddItemToItemVerify.setParameter(optionChange);
     gcAddItemToItemVerify.setParameter2(0);
     pGamePlayer->sendPacket(&gcAddItemToItemVerify);
-
-    __END_CATCH
 }
 
 void sendEnchantOK(GamePlayer* pGamePlayer, DWORD optionChange, DWORD optionChange2) {
-    __BEGIN_TRY
-
     GCAddItemToItemVerify gcAddItemToItemVerify;
     gcAddItemToItemVerify.setCode(ADD_ITEM_TO_ITEM_VERIFY_THREE_ENCHANT_OK);
     gcAddItemToItemVerify.setParameter(optionChange);
     gcAddItemToItemVerify.setParameter2(optionChange2);
     pGamePlayer->sendPacket(&gcAddItemToItemVerify);
-
-    __END_CATCH
 }
 
 #endif

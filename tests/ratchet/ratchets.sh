@@ -66,19 +66,21 @@ R4=$(grep -rlE 'void execute\(Player' src/Core --include='*.h' | wc -l)
 check_ratchet R4 "packet headers with execute()" 0 "$R4"
 
 # --- R5: __BEGIN_TRY control-flow macro sites in gameserver ----------------
-# None is left outside gm/, handler/ and packetfill/: the rethrowing pairs
-# went, the throw site every Throwable records standing in for the function
-# chain they built, and the swallowing ones are the explicit catches R19
-# counts. Those three folders joined on 2026-10-24 (0 -> 278: gm/ 32,
+# None is left: the rethrowing pairs went, the throw site every Throwable
+# records standing in for the function chain they built, and the swallowing
+# ones are the explicit catches R19 counts. The count holds at zero, so a new
+# __BEGIN_TRY in the gameserver fails here. gm/, handler/ and packetfill/
+# joined on 2026-10-24 (0 -> 278: gm/ 32,
 # handler/ 245, packetfill/ 1), the widening: handler/ and packetfill/ hold
 # sources that moved there from src/Core, where this metric never counted
 # them, and gm/ the GM command bodies that moved out of
 # handler/CGSayHandler.cpp. Headers count too: a template's body holds pairs
 # as live as a .cpp's (5,114 -> 5,119 on 2026-10-23, the widening: four live
 # header sites and one comment line). 278 -> 276 the same day: the two pairs
-# that crossed a __BEGIN_DEBUG_EX pair in handler/, dropped by hand.
+# that crossed a __BEGIN_DEBUG_EX pair in handler/, dropped by hand; 276 -> 0
+# the same day with task 3.9's rewrite.
 R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' --include='*.h' | wc -l)
-check_ratchet R5 "__BEGIN_TRY sites in gameserver" 276 "$R5"
+check_ratchet R5 "__BEGIN_TRY sites in gameserver" 0 "$R5"
 
 # --- R6: god-file line counts (task 3.3 files only, so far) -----------------
 # Formula extraction to de-core (src/domain) shrinks these; each delegation

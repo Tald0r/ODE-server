@@ -30,7 +30,7 @@
 void CGPortCheckHandler::execute(CGPortCheck* pPacket)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -53,5 +53,5 @@ void CGPortCheckHandler::execute(CGPortCheck* pPacket)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

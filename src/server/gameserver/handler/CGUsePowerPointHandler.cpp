@@ -45,7 +45,7 @@ const POWER_POINT_ITEM_TEMPLATE PowerPointItemTemplate[7] = {
 void CGUsePowerPointHandler::execute(CGUsePowerPoint* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
 #ifdef __GAME_SERVER__
 
@@ -172,5 +172,5 @@ void CGUsePowerPointHandler::execute(CGUsePowerPoint* pPacket, Player* pPlayer)
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

@@ -26,8 +26,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGDonationMoneyHandler::execute(CGDonationMoney* pPacket, Player* pPlayer) {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     Assert(pPacket != NULL);
@@ -174,6 +172,4 @@ void CGDonationMoneyHandler::execute(CGDonationMoney* pPacket, Player* pPlayer) 
     pPlayer->sendPacket(&gcNPCResponse);
 
 #endif
-
-    __END_CATCH
 }

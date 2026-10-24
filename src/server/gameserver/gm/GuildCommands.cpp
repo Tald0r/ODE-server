@@ -38,8 +38,6 @@ namespace de::gm {
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void opguild(string msg, int i, Creature* pCreature) {
-    __BEGIN_TRY
-
     i = i + 7;
 
     size_t j = msg.find_first_of(' ', i);
@@ -174,12 +172,10 @@ void opguild(string msg, int i, Creature* pCreature) {
 
         de::gameContext().sharedServer().sendPacket(&gsPacket);
     }
-
-    __END_CATCH
 }
 
 void opmodifyunioninfo(GamePlayer* pGamePlayer, string msg, int i, bool bSameWorldOnly = true) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         size_t j = msg.find_first_of(' ', i + 1);
     uint gID = (uint)atoi(msg.substr(j + 1, msg.size() - j - 1).c_str());
@@ -190,11 +186,11 @@ void opmodifyunioninfo(GamePlayer* pGamePlayer, string msg, int i, bool bSameWor
     sendGCOtherModifyInfoGuildUnionByGuildID(gID);
 
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 void oprefreshguildunion(GamePlayer* pGamePlayer, string msg, int i, bool bSameWorldOnly = true) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         size_t j = msg.find_first_of(' ', i + 1);
     string command = msg.substr(j + 1, msg.size() - j - 1).c_str();
@@ -204,6 +200,6 @@ void oprefreshguildunion(GamePlayer* pGamePlayer, string msg, int i, bool bSameW
     GuildUnionManager::Instance().reload();
 
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 } // namespace de::gm

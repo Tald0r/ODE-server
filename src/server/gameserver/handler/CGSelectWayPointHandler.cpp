@@ -42,7 +42,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 void CGSelectWayPointHandler::execute(CGSelectWayPoint* pPacket, Player* pPlayer) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         StringPool& strings = de::gameContext().strings();
 
@@ -289,7 +289,7 @@ void CGSelectWayPointHandler::execute(CGSelectWayPoint* pPacket, Player* pPlayer
 
 #endif // __GAME_SERVER__
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
 
 
@@ -297,8 +297,6 @@ void CGSelectWayPointHandler::executeEnterQuestZone(CGSelectWayPoint* pPacket, P
                                                     int targetDynamicZoneType)
 
 {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     GamePlayer* pGamePlayer = dynamic_cast<GamePlayer*>(pPlayer);
@@ -326,6 +324,4 @@ void CGSelectWayPointHandler::executeEnterQuestZone(CGSelectWayPoint* pPacket, P
     }
 
 #endif
-
-    __END_CATCH
 }

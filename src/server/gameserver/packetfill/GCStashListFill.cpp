@@ -25,9 +25,6 @@
 void GCStashList::setStashItem(BYTE rack, BYTE index, Item* pItem)
 
 {
-    __BEGIN_TRY
-
-
     Assert(rack < STASH_RACK_MAX && index < STASH_INDEX_MAX);
     Assert(pItem != NULL);
 
@@ -204,6 +201,4 @@ void GCStashList::setStashItem(BYTE rack, BYTE index, Item* pItem)
     }
 
     m_bExist[rack][index] = true;
-
-    __END_CATCH
 }

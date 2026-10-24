@@ -67,7 +67,7 @@
 void CGDissectionCorpseHandler::execute(CGDissectionCorpse* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 
         StringPool& strings = de::gameContext().strings();
 
@@ -642,5 +642,5 @@ void CGDissectionCorpseHandler::execute(CGDissectionCorpse* pPacket, Player* pPl
 
 #endif // __GAME_SERVER__
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }

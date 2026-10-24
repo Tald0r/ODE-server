@@ -20,8 +20,6 @@
 void CGRangerSayHandler::execute(CGRangerSay* pPacket, Player* pPlayer)
 
 {
-    __BEGIN_TRY
-
 #ifdef __GAME_SERVER__
 
     Assert(pPacket != NULL);
@@ -51,6 +49,4 @@ void CGRangerSayHandler::execute(CGRangerSay* pPacket, Player* pPlayer)
     de::gameContext().zoneGroups().pushBroadcastPacket(&gcSystemMessage, &filter);
 
 #endif
-
-    __END_CATCH
 }

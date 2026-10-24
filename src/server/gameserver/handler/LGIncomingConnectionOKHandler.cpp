@@ -30,7 +30,7 @@
 //
 //--------------------------------------------------------------------------------
 void LGIncomingConnectionOKHandler::execute(LGIncomingConnectionOK* pPacket) {
-    __BEGIN_TRY __BEGIN_DEBUG_EX
+    __BEGIN_DEBUG_EX
 #ifdef __GAME_SERVER__
 
         const string loginServerHost = pPacket->getHost();
@@ -85,5 +85,5 @@ void LGIncomingConnectionOKHandler::execute(LGIncomingConnectionOK* pPacket) {
 
 #endif
 
-    __END_DEBUG_EX __END_CATCH
+    __END_DEBUG_EX
 }
