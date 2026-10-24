@@ -228,7 +228,7 @@ each started message; an uncaught failure retains only later entries for retry.
 Queue access is synchronized, and quiescent manager destruction releases pending
 messages. Literal broadcast framing stays unchanged.
 `GameDestructor` destroys a `Guild`, a `GuildManager`, a `Party` and a
-`HolyLandManager` under their own lock, an `InventorySlot`, an
+`HolyLandManager` under their own lock, an `InventorySlot`, an `Inventory`, an
 `EffectScheduleWork` and a `GamePlayer` that break their invariant, and an
 `EffectAddItem` destroyed without a target, pinning what a destructor does where
 it cannot throw.

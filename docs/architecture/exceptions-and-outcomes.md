@@ -31,9 +31,11 @@ the decision is what it does instead: it takes no lock of its own object ([criti
 sections](../threading/critical-sections.md)), and it checks an invariant with `AssertNoThrow`
 (`src/Core/Assert.h`), which appends the entry a failed `Assert` writes to `assertion_failed.log`
 and returns; when its work fails (an effect's `unaffect`, a player's save, the server's stop), it
-logs the `Throwable` to `destructorError.log` with the bounded `diagnosticFilelog` and carries on.
-R19 counts what is left in R5's scope (the gameserver outside `gm/`, `handler/` and `packetfill/`),
-so a new one fails the suite, and R5 holds the try macros there at zero.
+logs the `Throwable` to `destructorError.log` with the bounded `diagnosticFilelog` and carries on
+(`Slayer`'s and `Vampire`'s saves keep their own `slayerDestructor.txt` and
+`vampireDestructor.txt`). R19 counts what is left in R5's scope (the gameserver outside `gm/`,
+`handler/` and `packetfill/`), so a new one fails the suite, and R5 holds the try macros there at
+zero.
 
 A malformed packet body is the one exception class with a contract of its own: a reader refuses it
 only with a `ProtocolException`, and the fuzz targets abort on anything else

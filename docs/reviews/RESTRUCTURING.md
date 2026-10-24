@@ -2256,12 +2256,13 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > object; a destructor checks an invariant with `AssertNoThrow`, which
   > logs as `Assert` does and returns; a destructor whose work fails logs
   > the `Throwable` to `destructorError.log` with the bounded
-  > `diagnosticFilelog` and carries on; outside destructors a dead catch
-  > goes, an exception a caller handles propagates, and the rest are logged
-  > where caught. Slice 1 removed the 68 dead ones, all in destructors (R19
-  > 107 → 39); slice 2 judged the seven whose block only locks or asserts
-  > (39 → 32); slice 3 the 15 whose work can fail, the last in destructors
-  > (32 → 17).
+  > `diagnosticFilelog` (`Slayer`'s and `Vampire`'s saves to their own
+  > `slayerDestructor.txt` and `vampireDestructor.txt`) and carries on;
+  > outside destructors a dead catch goes, an exception a caller handles
+  > propagates, and the rest are logged where caught. Slice 1 removed the
+  > 68 dead ones, all in destructors (R19 107 → 39); slice 2 judged the
+  > seven whose block only locks or asserts (39 → 32); slice 3 the 15
+  > whose work can fail, the last in destructors (32 → 17).
   - Owner: R19 in `tests/ratchet/ratchets.sh`.
 
 **Phase exit criteria:** no hard gate — this phase *is* the ratchets trending

@@ -9,8 +9,8 @@
 //               instead: it takes no lock of its own object, so the
 //               thread deleting it may already hold that lock, and a
 //               broken invariant is logged the way a failed Assert logs
-//               it, work that fails is logged to destructorError.log, and
-//               the destructor carries on.
+//               it, work that fails is logged (by most destructors to
+//               destructorError.log), and the destructor carries on.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -29,6 +29,7 @@
 #include "Guild.h"
 #include "GuildManager.h"
 #include "HolyLandManager.h"
+#include "Inventory.h"
 #include "InventorySlot.h"
 #include "Party.h"
 #include "Socket.h"
@@ -146,6 +147,20 @@ TEST(GameDestructor, AnInventorySlotDestroyedHoldingAnItemLogsTheAssertion) {
         slot.addItem(&money);
     }
     EXPECT_NE(readFile("assertion_failed.log").find("m_pItem == NULL"), std::string::npos);
+}
+
+// A drifted item count is logged and no longer stops the inventory from
+// freeing its slots: no failure reaches the destructor's own catch.
+TEST(GameDestructor, AnInventoryWithADriftedItemCountLogsTheAssertionAndFinishesItsTeardown) {
+    std::remove("assertion_failed.log");
+    std::remove("destructorError.log");
+    Inventory* pInventory = new Inventory(10, 6);
+    pInventory->setItemNum(1);
+
+    delete pInventory;
+
+    EXPECT_NE(readFile("assertion_failed.log").find("m_TotalNum == 0"), std::string::npos);
+    EXPECT_EQ(readFile("destructorError.log").find("~Inventory: "), std::string::npos);
 }
 
 TEST(GameDestructor, AnEffectScheduleWorkDestroyedHoldingDataLogsTheAssertion) {
