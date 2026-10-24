@@ -63,6 +63,7 @@ void Unburrow::execute(Monster* pMonster)
             addUnburrowCreature(pZone, pMonster, x, y, pMonster->getDir());
         }
     } catch (Throwable& t) {
+        diagnosticFilelog("errorLog.txt", "Unburrow::execute(Monster*) : %s", t.toString().c_str());
     }
 }
 

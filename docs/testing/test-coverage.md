@@ -231,7 +231,8 @@ messages. Literal broadcast framing stays unchanged.
 `HolyLandManager` under their own lock, an `InventorySlot`, an `Inventory`, an
 `EffectScheduleWork` and a `GamePlayer` that break their invariant, and an
 `EffectAddItem` destroyed without a target, pinning what a destructor does where
-it cannot throw.
+it cannot throw; `GameCatch` drives a disconnect whose socket cannot send, which
+logs both failed flushes and still ends the session.
 
 # The startup and library tests
 

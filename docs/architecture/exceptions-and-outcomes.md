@@ -23,7 +23,7 @@ Exceptions are for programming and configuration errors.
 
 **A catch that drops a `Throwable` is control flow.** A `catch (Throwable&)` whose body is empty,
 comments and `;` aside, ends the exception there: the caller never learns its block failed. The
-gameserver's swallowing try macros became such catches unchanged, and each is judged test first; a
+gameserver's swallowing try macros became such catches unchanged, and each was judged test first; a
 catch whose block cannot throw a `Throwable` (it only clears standard containers, deletes objects
 whose destructors are `noexcept` and calls code that throws no `Throwable`) is dead and goes without
 a test, since nothing can drive it. A `noexcept` destructor cannot let the exception out, so there
@@ -33,9 +33,10 @@ sections](../threading/critical-sections.md)), and it checks an invariant with `
 and returns; when its work fails (an effect's `unaffect`, a player's save, the server's stop), it
 logs the `Throwable` to `destructorError.log` with the bounded `diagnosticFilelog` and carries on
 (`Slayer`'s and `Vampire`'s saves keep their own `slayerDestructor.txt` and
-`vampireDestructor.txt`). R19 counts what is left in R5's scope (the gameserver outside `gm/`,
-`handler/` and `packetfill/`), so a new one fails the suite, and R5 holds the try macros there at
-zero.
+`vampireDestructor.txt`). Outside a destructor, an exception a caller handles propagates, and one no
+caller handles is logged where it is caught. R19 holds such catches at zero in R5's scope (the
+gameserver outside `gm/`, `handler/` and `packetfill/`), so a new one fails the suite, and R5 holds
+the try macros there at zero.
 
 A malformed packet body is the one exception class with a contract of its own: a reader refuses it
 only with a `ProtocolException`, and the fuzz targets abort on anything else

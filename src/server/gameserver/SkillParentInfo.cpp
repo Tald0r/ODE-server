@@ -52,27 +52,22 @@ void SkillParentInfo::init()
 //
 //----------------------------------------------------------------------
 bool SkillParentInfo::hasParent(SkillType_t SkillType) {
-    try {
-        SkillType_t FirstType = m_Parents.front();
+    SkillType_t FirstType = m_Parents.front();
 
-        if (FirstType == 0)
-            return true;
-
-        list<SkillType_t>::iterator itr;
-        for (itr = m_Parents.begin(); itr != m_Parents.end(); itr++) {
-            if (*itr == SkillType) {
-                break;
-            }
-        }
-
-        if (itr == m_Parents.end())
-            return false;
-
+    if (FirstType == 0)
         return true;
-    } catch (Throwable& t) {
-        // cerr << t.toString() << endl;
+
+    list<SkillType_t>::iterator itr;
+    for (itr = m_Parents.begin(); itr != m_Parents.end(); itr++) {
+        if (*itr == SkillType) {
+            break;
+        }
     }
-    return false;
+
+    if (itr == m_Parents.end())
+        return false;
+
+    return true;
 }
 
 

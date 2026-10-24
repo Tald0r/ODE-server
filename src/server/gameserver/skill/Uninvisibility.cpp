@@ -54,6 +54,7 @@ void Uninvisibility::execute(Monster* pMonster)
             addVisibleCreature(pZone, pMonster, true);
         }
     } catch (Throwable& t) {
+        diagnosticFilelog("errorLog.txt", "Uninvisibility::execute(Monster*) : %s", t.toString().c_str());
     }
 }
 

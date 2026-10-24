@@ -551,7 +551,8 @@ fi
 # each one that goes is a decision made test first: let the exception reach
 # a caller that handles it, or handle it here, with a test that pins which.
 # A catch whose block cannot throw a Throwable is dead and goes without a
-# test, since nothing can drive it.
+# test, since nothing can drive it. The count holds at zero: a new empty
+# catch (Throwable&) in this scope fails the suite.
 #
 # R5's scope: the gameserver's .cpp and .h files outside gm/, handler/ and
 # packetfill/. A perl match over each file's text: `Throwable&`,
@@ -577,7 +578,7 @@ if ! [[ "$r19_files" =~ ^[0-9]+$ ]] || [ "$r19_files" -lt 2000 ]; then
     echo "[FAIL] R19 swallowing catches: only '$r19_files' files scanned (find or perl broken?)"
     fail=1
 else
-    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 17 "$R19"
+    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 0 "$R19"
 fi
 
 # --- Removed dead services must not return --------------------------------

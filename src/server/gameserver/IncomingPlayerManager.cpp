@@ -587,7 +587,8 @@ void IncomingPlayerManager::processExceptions() {
                     try {
                         pTempPlayer->disconnect();
                     } catch (Throwable& t) {
-                        // cerr << t.toString() << endl;
+                        filelog("IncomingPlayerManager.txt", "disconnect after out-of-band data failed: %s",
+                                t.toString().c_str());
                     }
 
                     // by sigi. 2002.12.30

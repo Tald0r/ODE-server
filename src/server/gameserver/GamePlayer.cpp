@@ -538,6 +538,8 @@ void GamePlayer::disconnect(bool bDisconnected) {
                 m_pCreature->save();
             }
         } catch (Throwable& t) {
+            filelog("GamePlayer.txt", "disconnect could not take %s out of its zone and save it: %s",
+                    CreatureName.c_str(), t.toString().c_str());
         }
     }
 
@@ -565,7 +567,8 @@ void GamePlayer::disconnect(bool bDisconnected) {
             // Send whatever is left in the output buffer.
             m_pOutputStream->flush();
         } catch (Throwable& t) {
-            // Ignore
+            diagnosticFilelog("GamePlayer.txt", "disconnect could not send the reconnect packet: %s",
+                              t.toString().c_str());
         }
 
         SAFE_DELETE(m_pReconnectPacket);
@@ -583,8 +586,7 @@ void GamePlayer::disconnect(bool bDisconnected) {
             // Send whatever is left in the output buffer.
             m_pOutputStream->flush();
         } catch (Throwable& t) {
-            // cerr << "GamePlayer::disconnect() : GamePlayer::disconnect Exception Check!!" << endl;
-            // cerr << t.toString() << endl;
+            diagnosticFilelog("GamePlayer.txt", "disconnect could not flush the output: %s", t.toString().c_str());
         }
     }
 

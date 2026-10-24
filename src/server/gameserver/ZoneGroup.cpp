@@ -155,20 +155,16 @@ void ZoneGroup::processPlayers()
         m_pZonePlayerManager->processCommands();
         endProfileEx("ZPM_COMMAND");
 
-    } catch (Error& er) {
-        diagnosticFilelog("errorLog.txt", "%s", er.toString().c_str());
-
-    } catch (Throwable&) {
+    } catch (Throwable& t) {
+        diagnosticFilelog("errorLog.txt", "%s", t.toString().c_str());
     }
 
     try {
         beginProfileEx("ZPM_HEARTBEAT");
         m_pZonePlayerManager->heartbeat(); // Takes the lock internally.
         endProfileEx("ZPM_HEARTBEAT");
-    } catch (Error& er) {
-        diagnosticFilelog("errorLog.txt", "%s", er.toString().c_str());
-
-    } catch (Throwable&) {
+    } catch (Throwable& t) {
+        diagnosticFilelog("errorLog.txt", "%s", t.toString().c_str());
     }
 
 

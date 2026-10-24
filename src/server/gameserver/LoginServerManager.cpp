@@ -213,9 +213,7 @@ void LoginServerManager::sendPacket(const string& host, uint port, DatagramPacke
         // Send the datagram through the datagram socket.
         m_pDatagramSocket->send(&datagram);
     } catch (Throwable& t) {
-        // cerr << "====================================================================" << endl;
-        // cerr << t.toString() << endl;
-        // cerr << "====================================================================" << endl;
+        diagnosticFilelog("LOGINSERVERMANAGER.log", "LoginServerManager::sendPacket : %s", t.toString().c_str());
     }
 
     __END_DEBUG
