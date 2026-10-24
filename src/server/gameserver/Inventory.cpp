@@ -133,7 +133,7 @@ Inventory::~Inventory()
             SAFE_DELETE_ARRAY(m_pInventorySlot);
         }
     } catch (Throwable& t) {
-        // cerr << t.toString() << endl;
+        filelog("destructor.log", "~Inventory: %s", t.toString().c_str());
     }
 }
 

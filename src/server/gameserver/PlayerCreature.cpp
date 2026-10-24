@@ -200,8 +200,8 @@ PlayerCreature::~PlayerCreature()
         SAFE_DELETE(m_pBloodBibleSign);
         SAFE_DELETE(m_pStore);
         SAFE_DELETE(m_pAdvancementClass);
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    } catch (Throwable& t) {
+        filelog("destructor.log", "~PlayerCreature: %s", t.toString().c_str());
     }
 }
 

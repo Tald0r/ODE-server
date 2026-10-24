@@ -577,7 +577,7 @@ if ! [[ "$r19_files" =~ ^[0-9]+$ ]] || [ "$r19_files" -lt 2000 ]; then
     echo "[FAIL] R19 swallowing catches: only '$r19_files' files scanned (find or perl broken?)"
     fail=1
 else
-    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 32 "$R19"
+    check_ratchet R19 "catch (Throwable&) clauses that drop the exception" 17 "$R19"
 fi
 
 # --- Removed dead services must not return --------------------------------

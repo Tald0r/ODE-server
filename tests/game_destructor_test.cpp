@@ -9,25 +9,34 @@
 //               instead: it takes no lock of its own object, so the
 //               thread deleting it may already hold that lock, and a
 //               broken invariant is logged the way a failed Assert logs
-//               it, after which the destructor carries on.
+//               it, and work that fails is logged to destructor.log;
+//               either way the destructor carries on.
 //
 //////////////////////////////////////////////////////////////////////
+
+#include <unistd.h>
 
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 
 #include <gtest/gtest.h>
 
+#include "EffectAddItem.h"
 #include "EffectSchedule.h"
+#include "GCReconnectLogin.h"
+#include "GamePlayer.h"
 #include "Guild.h"
 #include "GuildManager.h"
 #include "HolyLandManager.h"
 #include "InventorySlot.h"
 #include "Party.h"
+#include "Socket.h"
 #include "item/Money.h"
+#include "support/LoopbackListener.h"
 
 namespace {
 
@@ -152,6 +161,52 @@ TEST(GameDestructor, AnEffectScheduleWorkDestroyedHoldingDataLogsTheAssertion) {
         work.setData(&data);
     }
     EXPECT_NE(readFile("assertion_failed.log").find("m_pData == NULL"), std::string::npos);
+}
+
+// GamePlayer frees its reconnect packet at the end of its destructor, so
+// this packet shows whether the teardown got that far.
+class CountingReconnect : public GCReconnectLogin {
+public:
+    explicit CountingReconnect(int& destroyed) : m_Destroyed(destroyed) {}
+    ~CountingReconnect() override {
+        ++m_Destroyed;
+    }
+
+private:
+    int& m_Destroyed;
+};
+
+TEST(GameDestructor, AGamePlayerDestroyedBeforeItsSessionEndedLogsTheAssertionAndFinishesItsTeardown) {
+    std::remove("assertion_failed.log");
+    int destroyed = 0;
+    LoopbackListener listener;
+    auto socket = std::make_unique<Socket>("127.0.0.1", listener.port());
+    socket->connect();
+    const int peer = listener.accept();
+    GamePlayer* pPlayer = new GamePlayer(socket.release());
+    pPlayer->setPlayerStatus(GPS_BEGIN_SESSION);
+    pPlayer->setReconnectPacket(new CountingReconnect(destroyed));
+
+    delete pPlayer;
+    ::close(peer);
+
+    EXPECT_EQ(destroyed, 1);
+    EXPECT_NE(readFile("assertion_failed.log").find("m_PlayerStatus == GPS_END_SESSION"), std::string::npos);
+}
+
+// The effect only stores its zone; with no target, unaffect() fails its
+// first Assert before it would touch the zone.
+char g_zoneStandIn[1];
+
+TEST(GameDestructor, AnEffectAddItemWhoseItemCannotBePlacedLogsTheFailure) {
+    std::remove("destructor.log");
+    Money money;
+    money.setObjectID(1);
+    {
+        EffectAddItem effect(reinterpret_cast<Zone*>(g_zoneStandIn), 0, 0, &money, 0, false);
+        effect.setTarget(NULL);
+    }
+    EXPECT_NE(readFile("destructor.log").find("~EffectAddItem: "), std::string::npos);
 }
 
 } // namespace

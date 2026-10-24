@@ -32,8 +32,8 @@ MotorcycleBox::~MotorcycleBox()
         }
 
         m_pZone = NULL;
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    } catch (Throwable& t) {
+        filelog("destructor.log", "~MotorcycleBox: %s", t.toString().c_str());
     }
 }
 

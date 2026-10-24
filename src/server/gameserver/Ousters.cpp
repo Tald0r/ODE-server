@@ -167,8 +167,8 @@ Ousters::~Ousters()
             OustersSkillSlot* pOustersSkillSlot = itr->second;
             SAFE_DELETE(pOustersSkillSlot);
         }
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    } catch (Throwable& t) {
+        filelog("destructor.log", "~Ousters: %s", t.toString().c_str());
     }
 }
 

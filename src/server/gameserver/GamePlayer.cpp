@@ -118,7 +118,7 @@ GamePlayer::~GamePlayer() noexcept {
 
         // Whatever deletes a player object, its status has to be logged out.
         // So ending a player session means putting it in the logged-out state.
-        Assert(m_PlayerStatus == GPS_END_SESSION);
+        AssertNoThrow(m_PlayerStatus == GPS_END_SESSION);
 
         try {
             // Delete creature
@@ -246,8 +246,8 @@ GamePlayer::~GamePlayer() noexcept {
         SAFE_DELETE(m_pReconnectPacket);
 
         //__LEAVE_CRITICAL_SECTION(m_Mutex)
-    } catch (Throwable&) {
-        // A Throwable from the try block is dropped here and goes no further.
+    } catch (Throwable& t) {
+        filelog("destructor.log", "~GamePlayer: %s", t.toString().c_str());
     }
 }
 //////////////////////////////////////////////////////////////////////
