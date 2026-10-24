@@ -2236,28 +2236,30 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   from the swallowing try macros, all in destructors, and 18 written by
   hand. Each drops a `Throwable` its caller never sees, and whatever its
   block had not done yet stays undone; nobody has decided that this is
-  right. Each is judged on its own, test first: a test drives the block
-  into the throw and pins what should happen, then the catch either goes,
-  so the exception reaches a caller that handles it, or handles it where it
-  is (logs, cleans up, answers). A destructor is `noexcept` unless it, a
-  base's or a member's says otherwise (in the gameserver only classes
-  deriving from `Player`, `PlayerManager` or `Thread` without their own
+  right. Each is judged on its own, test first: a test drives the block into
+  the throw and pins what should happen, then the catch either goes, so the
+  exception reaches a caller that handles it, or handles it where it is
+  (logs, cleans up, answers). A destructor is `noexcept` unless it, a base's
+  or a member's says otherwise (in the gameserver only classes deriving from
+  `Player`, `PlayerManager` or `Thread` that do not declare their destructor
   `noexcept`), so there a removed catch turns a swallowed exception into
-  `std::terminate`: the decision is what the destructor does instead. A catch whose block cannot
-  throw a `Throwable` is dead: nothing can drive it, so it goes without a
-  test.
+  `std::terminate`: the decision is what the destructor does instead. A
+  catch whose block cannot throw a `Throwable` is dead: nothing can drive
+  it, so it goes without a test.
   > **Status:** in progress (15 catches left in destructors whose blocks do
   > work that may throw: six effects' `unaffect`, `MotorcycleBox`, the
   > `Slayer`, `Vampire`, `Ousters`, `PlayerCreature`, `Inventory` and
-  > `GamePlayer` teardown, `~GameServer`'s `stop()` and `ClientManager`'s
-  > delete of its `IncomingPlayerManager`; and 17 outside destructors).
+  > `GamePlayer` teardown (the last two also assert), `~GameServer`'s
+  > `stop()` and `ClientManager`'s delete of its `IncomingPlayerManager`;
+  > and 17 outside destructors).
   > Decided: a destructor takes no lock of its own object; a destructor
   > checks an invariant with `AssertNoThrow`, which logs as `Assert` does
   > and returns; a destructor whose work fails logs the `Throwable` with
   > `filelog` and carries on; outside destructors a dead catch goes, an
   > exception a caller handles propagates, and the rest are logged where
   > caught. Slice 1 removed the 68 dead ones, all in destructors (R19
-  > 107 → 39); slice 2 judged the seven that lock or assert (R19 39 → 32).
+  > 107 → 39); slice 2 judged the seven whose block only locks or asserts
+  > (R19 39 → 32).
   - Owner: R19 in `tests/ratchet/ratchets.sh`.
 
 **Phase exit criteria:** no hard gate — this phase *is* the ratchets trending

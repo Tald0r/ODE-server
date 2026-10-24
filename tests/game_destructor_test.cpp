@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 //
 // Filename    : game_destructor_test.cpp
-// Description : What gameserver destructors do where their cleanup used
-//               to throw into a catch that dropped the exception.
+// Description : What gameserver destructors do where their cleanup
+//               can fail.
 //
 //               A destructor cannot let an exception out, so each case
 //               drives the failure and pins what the destructor does
@@ -26,6 +26,7 @@
 #include "GuildManager.h"
 #include "HolyLandManager.h"
 #include "InventorySlot.h"
+#include "Party.h"
 #include "item/Money.h"
 
 namespace {
@@ -80,6 +81,45 @@ TEST(GameDestructor, AGuildManagerDeletedUnderItsOwnLockFreesItsGuilds) {
     delete pManager;
 
     EXPECT_EQ(destroyed, 1);
+    EXPECT_EQ(cerr.text().find("Mutex::lock"), std::string::npos) << cerr.text();
+}
+
+// Guild and Party keep their mutex protected: a subclass's destructor body
+// locks it, so ~Guild and ~Party run with the lock held, the way they would
+// for a deleting thread that held it.
+class LockedGuild : public Guild {
+public:
+    ~LockedGuild() override {
+        m_Mutex.lock();
+    }
+};
+
+class LockedParty : public Party {
+public:
+    LockedParty() : Party(Creature::CREATURE_CLASS_SLAYER) {}
+    ~LockedParty() {
+        m_Mutex.lock();
+    }
+};
+
+TEST(GameDestructor, AGuildDestroyedUnderItsOwnLockTakesNoLock) {
+    LockedGuild* pGuild = new LockedGuild();
+    GuildMember* pMember = new GuildMember();
+    pMember->setName("Reiot");
+    pGuild->addMember(pMember);
+
+    CerrCapture cerr;
+    delete pGuild;
+
+    EXPECT_EQ(cerr.text().find("Mutex::lock"), std::string::npos) << cerr.text();
+}
+
+TEST(GameDestructor, APartyDestroyedUnderItsOwnLockTakesNoLock) {
+    LockedParty* pParty = new LockedParty();
+
+    CerrCapture cerr;
+    delete pParty;
+
     EXPECT_EQ(cerr.text().find("Mutex::lock"), std::string::npos) << cerr.text();
 }
 

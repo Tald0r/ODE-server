@@ -4,7 +4,7 @@
 
 # Rules
 
-* [Critical sections](critical-sections.md) - An __ENTER/__LEAVE block is owned by a scoped guard, so a hand-written unlock() inside it is a double unlock; the audit script finds one.
+* [Critical sections](critical-sections.md) - An __ENTER/__LEAVE block is owned by a scoped guard, so a hand-written unlock() inside it is a double unlock; the audit script finds one. A gameserver destructor takes no lock of its own object.
 * [The mutation rule](mutation-rule.md) - Zone-group state is touched only while that group's mutex is held, and the Debug ownership check aborts on a violation at the gateways it covers.
 
 # Designs
