@@ -69,16 +69,15 @@ check_ratchet R4 "packet headers with execute()" 0 "$R4"
 # None is left: the rethrowing pairs went, the throw site every Throwable
 # records standing in for the function chain they built, and the swallowing
 # ones are the explicit catches R19 counts. The count holds at zero, so a new
-# __BEGIN_TRY in the gameserver fails here. gm/, handler/ and packetfill/
-# joined on 2026-10-24 (0 -> 278: gm/ 32,
-# handler/ 245, packetfill/ 1), the widening: handler/ and packetfill/ hold
-# sources that moved there from src/Core, where this metric never counted
-# them, and gm/ the GM command bodies that moved out of
-# handler/CGSayHandler.cpp. Headers count too: a template's body holds pairs
-# as live as a .cpp's (5,114 -> 5,119 on 2026-10-23, the widening: four live
-# header sites and one comment line). 278 -> 276 the same day: the two pairs
-# that crossed a __BEGIN_DEBUG_EX pair in handler/, dropped by hand; 276 -> 0
-# the same day with task 3.9's rewrite.
+# __BEGIN_TRY in the gameserver fails here. Headers count too: a template's
+# body holds pairs as live as a .cpp's (5,114 -> 5,119 on 2026-10-23, the
+# widening: four live header sites and one comment line). gm/, handler/ and
+# packetfill/ joined on 2026-10-24 (0 -> 278: gm/ 32, handler/ 245,
+# packetfill/ 1), the widening: handler/ and packetfill/ hold sources that
+# moved there from src/Core, where this metric never counted them, and gm/
+# the GM command bodies that moved out of handler/CGSayHandler.cpp. 278 -> 276
+# on 2026-10-24: the two pairs that crossed a __BEGIN_DEBUG_EX pair in
+# handler/, dropped by hand; 276 -> 0 the same day with task 3.9's rewrite.
 R5=$(grep -rE '__BEGIN_TRY' src/server/gameserver --include='*.cpp' --include='*.h' | wc -l)
 check_ratchet R5 "__BEGIN_TRY sites in gameserver" 0 "$R5"
 
@@ -553,9 +552,10 @@ fi
 # it out.
 #
 # The gameserver's .cpp and .h files outside gm/, handler/ and packetfill/,
-# R5's scope until it took those in. A perl match over each file's text: `Throwable&`,
-# `Throwable &`, `const Throwable&` and a named variable all count, and the
-# body may hold only blanks, comments and empty statements (`;`). Textual,
+# R5's scope until it took those in. A perl match over each file's text:
+# `Throwable&`, `Throwable &`, `const Throwable&` and a named variable all
+# count, and the body may hold only blanks, comments and empty statements
+# (`;`). Textual,
 # so a commented-out clause or one in a string literal counts too. A body
 # that does anything is not counted, so it cannot tell handling from a
 # swallow spelled another way (a body that only calls addStack()), and it
