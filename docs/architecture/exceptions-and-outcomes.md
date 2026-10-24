@@ -23,17 +23,17 @@ Exceptions are for programming and configuration errors.
 
 **A catch that drops a `Throwable` is control flow.** A `catch (Throwable&)` whose body is empty,
 comments and `;` aside, ends the exception there: the caller never learns its block failed. The
-gameserver's swallowing try macros became such catches unchanged and are still to be judged, each
-test first; a catch whose block cannot throw a `Throwable` (it only clears standard containers,
-deletes objects whose destructors are `noexcept` and calls code that throws no `Throwable`) is dead
-and goes without a test, since nothing can drive it. A `noexcept` destructor cannot let the
-exception out, so there the decision is what it does instead: it takes no lock of its own object
-([critical sections](../threading/critical-sections.md)), and it checks an invariant with
-`AssertNoThrow` (`src/Core/Assert.h`), which appends the entry a failed `Assert` writes to
-`assertion_failed.log` and returns; when its work fails (an effect's `unaffect`, a player's save,
-the server's stop), it logs the `Throwable` to `destructor.log` with `filelog` and carries on. R19
-counts what is left in R5's scope (the gameserver outside `gm/`, `handler/` and `packetfill/`), so a
-new one fails the suite, and R5 holds the try macros there at zero.
+gameserver's swallowing try macros became such catches unchanged, and each is judged test first; a
+catch whose block cannot throw a `Throwable` (it only clears standard containers, deletes objects
+whose destructors are `noexcept` and calls code that throws no `Throwable`) is dead and goes without
+a test, since nothing can drive it. A `noexcept` destructor cannot let the exception out, so there
+the decision is what it does instead: it takes no lock of its own object ([critical
+sections](../threading/critical-sections.md)), and it checks an invariant with `AssertNoThrow`
+(`src/Core/Assert.h`), which appends the entry a failed `Assert` writes to `assertion_failed.log`
+and returns; when its work fails (an effect's `unaffect`, a player's save, the server's stop), it
+logs the `Throwable` to `destructorError.log` with the bounded `diagnosticFilelog` and carries on.
+R19 counts what is left in R5's scope (the gameserver outside `gm/`, `handler/` and `packetfill/`),
+so a new one fails the suite, and R5 holds the try macros there at zero.
 
 A malformed packet body is the one exception class with a contract of its own: a reader refuses it
 only with a `ProtocolException`, and the fuzz targets abort on anything else

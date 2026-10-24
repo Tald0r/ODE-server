@@ -33,7 +33,7 @@ MotorcycleBox::~MotorcycleBox()
 
         m_pZone = NULL;
     } catch (Throwable& t) {
-        filelog("destructor.log", "~MotorcycleBox: %s", t.toString().c_str());
+        diagnosticFilelog("destructorError.log", "~MotorcycleBox: %s", t.toString().c_str());
     }
 }
 

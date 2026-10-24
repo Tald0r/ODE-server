@@ -122,7 +122,7 @@ Inventory::~Inventory()
                 filelog("inventoryBug.txt", "TotalNum=%d", m_TotalNum);
             }
 
-            Assert(m_TotalNum == 0);
+            AssertNoThrow(m_TotalNum == 0);
 
             for (k = 0; k < m_Width; k++) {
                 if (m_pInventorySlot[k] != NULL) {
@@ -133,7 +133,7 @@ Inventory::~Inventory()
             SAFE_DELETE_ARRAY(m_pInventorySlot);
         }
     } catch (Throwable& t) {
-        filelog("destructor.log", "~Inventory: %s", t.toString().c_str());
+        diagnosticFilelog("destructorError.log", "~Inventory: %s", t.toString().c_str());
     }
 }
 

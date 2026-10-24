@@ -168,7 +168,7 @@ Ousters::~Ousters()
             SAFE_DELETE(pOustersSkillSlot);
         }
     } catch (Throwable& t) {
-        filelog("destructor.log", "~Ousters: %s", t.toString().c_str());
+        diagnosticFilelog("destructorError.log", "~Ousters: %s", t.toString().c_str());
     }
 }
 

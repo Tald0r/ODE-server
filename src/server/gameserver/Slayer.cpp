@@ -148,86 +148,80 @@ Slayer::~Slayer()
 
 {
     try {
-        try {
-            if (m_pMotorcycle != NULL) {
-                // getOffMotorcycle();
+        if (m_pMotorcycle != NULL) {
+            // getOffMotorcycle();
 
-                // Doing this in IncomingPlayerManager causes problems.
-                // So just get rid of the motorcycle here.
-                if (de::gameContext().parking().hasMotorcycleBox(m_pMotorcycle->getItemID())) {
-                    de::gameContext().parking().deleteMotorcycleBox(m_pMotorcycle->getItemID());
-                }
-
-                m_pMotorcycle = NULL;
+            // Doing this in IncomingPlayerManager causes problems.
+            // So just get rid of the motorcycle here.
+            if (de::gameContext().parking().hasMotorcycleBox(m_pMotorcycle->getItemID())) {
+                de::gameContext().parking().deleteMotorcycleBox(m_pMotorcycle->getItemID());
             }
 
-            // Build the outfit information in advance.
-            DWORD flag;
-            Color_t color[PCSlayerInfo::SLAYER_COLOR_MAX];
-            getShapeInfo(flag, color);
-
-            char pField[128];
-            snprintf(pField, sizeof(pField),
-                     "Shape=%u, HelmetColor=%d, JacketColor=%d, PantsColor=%d, WeaponColor=%d, ShieldColor=%d", flag,
-                     color[PCSlayerInfo::SLAYER_COLOR_HELMET], color[PCSlayerInfo::SLAYER_COLOR_JACKET],
-                     color[PCSlayerInfo::SLAYER_COLOR_PANTS], color[PCSlayerInfo::SLAYER_COLOR_WEAPON],
-                     color[PCSlayerInfo::SLAYER_COLOR_SHIELD]);
-
-            // cout << "SAVE = " << pField << endl;
-
-            tinysave(pField);
-
-
-            // Save the worn items' durability, the experience and the alignment.
-            saveGears();
-            saveExps();
-            saveSkills();
-
-            // Delete the equipped items from memory.
-            destroyGears();
-
-            // When this class is deleted the matching trade information must be deleted,
-            // and the trade partner must be told about it.
-            TradeManager* pTradeManager = m_pZone->getTradeManager();
-            TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
-            if (pInfo != NULL) {
-                // Delete the trade information.
-                pTradeManager->cancelTrade(this);
-            }
-
-            // Remove from the global party.
-            // On a normal logout CGLogoutHandler calls
-            // Zone::deleteCreature(), and even in an abnormal case
-            // GamePlayer::disconnect() calls Zone::deleteCreature(),
-            // so the local party, the party invitations and the trade
-            // information need no attention here.
-            deleteAllPartyInfo(this);
-
-            // Delete the skills.
-            unordered_map<SkillType_t, SkillSlot*>::iterator itr = m_SkillSlot.begin();
-            for (; itr != m_SkillSlot.end(); itr++) {
-                SkillSlot* pSkillSlot = itr->second;
-                SAFE_DELETE(pSkillSlot);
-            }
-
-            m_SkillSlot.clear();
-
-            //		SAFE_DELETE( m_pRank );
-
-        } catch (Throwable& t) {
-            diagnosticFilelog("slayerDestructor.txt", "%s", t.toString().c_str());
-            throw;
-        } catch (exception& e) {
-            diagnosticFilelog("slayerDestructor.txt", "Unknown std::exception");
-            throw;
-        } catch (...) {
-            diagnosticFilelog("slayerDestructor.txt", "Unknown ... exception");
-            throw;
+            m_pMotorcycle = NULL;
         }
+
+        // Build the outfit information in advance.
+        DWORD flag;
+        Color_t color[PCSlayerInfo::SLAYER_COLOR_MAX];
+        getShapeInfo(flag, color);
+
+        char pField[128];
+        snprintf(pField, sizeof(pField),
+                 "Shape=%u, HelmetColor=%d, JacketColor=%d, PantsColor=%d, WeaponColor=%d, ShieldColor=%d", flag,
+                 color[PCSlayerInfo::SLAYER_COLOR_HELMET], color[PCSlayerInfo::SLAYER_COLOR_JACKET],
+                 color[PCSlayerInfo::SLAYER_COLOR_PANTS], color[PCSlayerInfo::SLAYER_COLOR_WEAPON],
+                 color[PCSlayerInfo::SLAYER_COLOR_SHIELD]);
+
+        // cout << "SAVE = " << pField << endl;
+
+        tinysave(pField);
+
+
+        // Save the worn items' durability, the experience and the alignment.
+        saveGears();
+        saveExps();
+        saveSkills();
+
+        // Delete the equipped items from memory.
+        destroyGears();
+
+        // When this class is deleted the matching trade information must be deleted,
+        // and the trade partner must be told about it.
+        TradeManager* pTradeManager = m_pZone->getTradeManager();
+        TradeInfo* pInfo = pTradeManager->getTradeInfo(getName());
+        if (pInfo != NULL) {
+            // Delete the trade information.
+            pTradeManager->cancelTrade(this);
+        }
+
+        // Remove from the global party.
+        // On a normal logout CGLogoutHandler calls
+        // Zone::deleteCreature(), and even in an abnormal case
+        // GamePlayer::disconnect() calls Zone::deleteCreature(),
+        // so the local party, the party invitations and the trade
+        // information need no attention here.
+        deleteAllPartyInfo(this);
+
+        // Delete the skills.
+        unordered_map<SkillType_t, SkillSlot*>::iterator itr = m_SkillSlot.begin();
+        for (; itr != m_SkillSlot.end(); itr++) {
+            SkillSlot* pSkillSlot = itr->second;
+            SAFE_DELETE(pSkillSlot);
+        }
+
+        m_SkillSlot.clear();
+
+        //		SAFE_DELETE( m_pRank );
 
         m_bDeriveDestructed = true;
     } catch (Throwable& t) {
-        filelog("destructor.log", "~Slayer: %s", t.toString().c_str());
+        diagnosticFilelog("slayerDestructor.txt", "%s", t.toString().c_str());
+    } catch (exception& e) {
+        diagnosticFilelog("slayerDestructor.txt", "Unknown std::exception");
+        throw;
+    } catch (...) {
+        diagnosticFilelog("slayerDestructor.txt", "Unknown ... exception");
+        throw;
     }
 }
 

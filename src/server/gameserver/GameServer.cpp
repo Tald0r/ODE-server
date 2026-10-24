@@ -122,7 +122,7 @@ GameServer::~GameServer()
         SAFE_DELETE(m_pGameServerInfoManager);
         SAFE_DELETE(m_pDatabaseManager);
     } catch (Throwable& t) {
-        filelog("destructor.log", "~GameServer: %s", t.toString().c_str());
+        diagnosticFilelog("destructorError.log", "~GameServer: %s", t.toString().c_str());
     }
 }
 

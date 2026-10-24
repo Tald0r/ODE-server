@@ -201,7 +201,7 @@ PlayerCreature::~PlayerCreature()
         SAFE_DELETE(m_pStore);
         SAFE_DELETE(m_pAdvancementClass);
     } catch (Throwable& t) {
-        filelog("destructor.log", "~PlayerCreature: %s", t.toString().c_str());
+        diagnosticFilelog("destructorError.log", "~PlayerCreature: %s", t.toString().c_str());
     }
 }
 

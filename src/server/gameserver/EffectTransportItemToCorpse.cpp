@@ -46,7 +46,7 @@ EffectTransportItemToCorpse::~EffectTransportItemToCorpse()
     try {
         unaffect(m_pZone, m_X, m_Y, m_pTarget);
     } catch (Throwable& t) {
-        filelog("destructor.log", "~EffectTransportItemToCorpse: %s", t.toString().c_str());
+        diagnosticFilelog("destructorError.log", "~EffectTransportItemToCorpse: %s", t.toString().c_str());
     }
 }
 

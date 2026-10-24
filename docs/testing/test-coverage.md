@@ -230,7 +230,7 @@ messages. Literal broadcast framing stays unchanged.
 `GameDestructor` destroys a `Guild`, a `GuildManager`, a `Party` and a
 `HolyLandManager` under their own lock, an `InventorySlot`, an
 `EffectScheduleWork` and a `GamePlayer` that break their invariant, and an
-`EffectAddItem` whose item cannot be placed, pinning what a destructor does where
+`EffectAddItem` destroyed without a target, pinning what a destructor does where
 it cannot throw.
 
 # The startup and library tests

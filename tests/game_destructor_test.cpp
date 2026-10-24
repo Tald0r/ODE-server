@@ -9,17 +9,14 @@
 //               instead: it takes no lock of its own object, so the
 //               thread deleting it may already hold that lock, and a
 //               broken invariant is logged the way a failed Assert logs
-//               it, and work that fails is logged to destructor.log;
-//               either way the destructor carries on.
+//               it, work that fails is logged to destructorError.log, and
+//               the destructor carries on.
 //
 //////////////////////////////////////////////////////////////////////
-
-#include <unistd.h>
 
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <memory>
 #include <sstream>
 #include <string>
 
@@ -36,7 +33,6 @@
 #include "Party.h"
 #include "Socket.h"
 #include "item/Money.h"
-#include "support/LoopbackListener.h"
 
 namespace {
 
@@ -179,16 +175,11 @@ private:
 TEST(GameDestructor, AGamePlayerDestroyedBeforeItsSessionEndedLogsTheAssertionAndFinishesItsTeardown) {
     std::remove("assertion_failed.log");
     int destroyed = 0;
-    LoopbackListener listener;
-    auto socket = std::make_unique<Socket>("127.0.0.1", listener.port());
-    socket->connect();
-    const int peer = listener.accept();
-    GamePlayer* pPlayer = new GamePlayer(socket.release());
+    GamePlayer* pPlayer = new GamePlayer(new Socket());
     pPlayer->setPlayerStatus(GPS_BEGIN_SESSION);
     pPlayer->setReconnectPacket(new CountingReconnect(destroyed));
 
     delete pPlayer;
-    ::close(peer);
 
     EXPECT_EQ(destroyed, 1);
     EXPECT_NE(readFile("assertion_failed.log").find("m_PlayerStatus == GPS_END_SESSION"), std::string::npos);
@@ -198,15 +189,15 @@ TEST(GameDestructor, AGamePlayerDestroyedBeforeItsSessionEndedLogsTheAssertionAn
 // first Assert before it would touch the zone.
 char g_zoneStandIn[1];
 
-TEST(GameDestructor, AnEffectAddItemWhoseItemCannotBePlacedLogsTheFailure) {
-    std::remove("destructor.log");
+TEST(GameDestructor, AnEffectAddItemDestroyedWithoutATargetLogsTheFailure) {
+    std::remove("destructorError.log");
     Money money;
     money.setObjectID(1);
     {
         EffectAddItem effect(reinterpret_cast<Zone*>(g_zoneStandIn), 0, 0, &money, 0, false);
         effect.setTarget(NULL);
     }
-    EXPECT_NE(readFile("destructor.log").find("~EffectAddItem: "), std::string::npos);
+    EXPECT_NE(readFile("destructorError.log").find("~EffectAddItem: "), std::string::npos);
 }
 
 } // namespace

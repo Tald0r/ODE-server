@@ -34,7 +34,7 @@ EffectDecayCorpse::~EffectDecayCorpse()
     try {
         unaffect(m_pZone, m_X, m_Y, m_pTarget);
     } catch (Throwable& t) {
-        filelog("destructor.log", "~EffectDecayCorpse: %s", t.toString().c_str());
+        diagnosticFilelog("destructorError.log", "~EffectDecayCorpse: %s", t.toString().c_str());
     }
 }
 

@@ -247,7 +247,7 @@ GamePlayer::~GamePlayer() noexcept {
 
         //__LEAVE_CRITICAL_SECTION(m_Mutex)
     } catch (Throwable& t) {
-        filelog("destructor.log", "~GamePlayer: %s", t.toString().c_str());
+        diagnosticFilelog("destructorError.log", "~GamePlayer: %s", t.toString().c_str());
     }
 }
 //////////////////////////////////////////////////////////////////////

@@ -61,7 +61,7 @@ ClientManager::~ClientManager()
         // Delete incoming player manager
         SAFE_DELETE(m_pIncomingPlayerManager);
     } catch (Throwable& t) {
-        filelog("destructor.log", "~ClientManager: %s", t.toString().c_str());
+        diagnosticFilelog("destructorError.log", "~ClientManager: %s", t.toString().c_str());
     }
 }
 
