@@ -1919,8 +1919,8 @@ TEST(StoreConstructorTest, theStoreInfoPointerStartsEmptyAndIsRefused) {
     expectTheStorePointerStartsEmpty<GCOtherStoreInfo>("GCOtherStoreInfo");
 }
 
-// An out-of-range index is refused with a Throwable a caller can catch, never
-// read past the rack.
+// An out-of-range index is refused with an InvalidProtocolException a caller
+// can catch, so no accessor reads or writes past its array.
 TEST(ShopBoundsTest, anOutOfRangeIndexIsRefusedWithACatchableException) {
     GCShopList list;
     EXPECT_THROW(list.getShopItem((BYTE)SHOP_RACK_INDEX_MAX), InvalidProtocolException);
