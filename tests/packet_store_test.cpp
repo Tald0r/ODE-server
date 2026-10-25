@@ -225,9 +225,9 @@
 //                 an untouched packet announces a code no branch of the
 //                 client handles.
 //               - GCPetStashList::read overwrites a slot without
-//                 freeing what it held and the destructor frees the
-//                 slot record but not the PetInfo inside it, so both a
-//                 reused packet and a delivered one leak the pet.
+//                 freeing what it held, so a reused packet leaks the
+//                 pet (a read packet owns and frees its pets since
+//                 fix/gc-read-record-ownership; a filled one borrows them).
 //
 //////////////////////////////////////////////////////////////////////
 

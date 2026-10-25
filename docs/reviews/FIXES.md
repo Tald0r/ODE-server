@@ -1322,9 +1322,13 @@ successful attachment writes directly into the slot array without releasing an
 existing entry. Duplicate slots or reuse of a populated packet can therefore
 leak earlier records. Found while auditing outgoing list ownership; the new
 assembler's ownership fix does not change decoding. Decoder failure/reuse tests
-and a prepared replacement policy remain to be added.
+and a prepared replacement policy remain to be added. Since
+fix/gc-read-record-ownership the incoming record is held in a `unique_ptr`
+until its slot takes it, so a failure before attachment frees it; a duplicate
+slot still overwrites the earlier record.
 
-> **Status:** recorded, not fixed (refactor/login-character-list)
+> **Status:** partly fixed (fix/gc-read-record-ownership: the failure before
+> attachment); the duplicate-slot overwrite is recorded, not fixed
 
 ## Login group and population catalogues lack safe scoped ownership (2026-10-02)
 
@@ -2181,7 +2185,8 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   record is held in a `unique_ptr` until `addNPCInfo` takes it, so a
   record whose read throws goes too. The replay ctests run with leak
   detection on, and `fuzz_replay_game_any_id` is the test that keeps the
-  reads leak-free.
+  reads leak-free; it runs under ASan only in the fuzz build
+  (`tools/fuzz/Dockerfile.fuzz`, by hand), since CI has no sanitizer job.
   > **Status:** fixed (fix/gc-read-record-ownership)
 - **Five more GC reads leak the records they allocate.** With leak
   detection on, the game replay over the seed corpus and
@@ -2214,10 +2219,14 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   `m_bOwnsRecords`, `GCPetInfo` `m_bOwnsPetInfo` and `GCPetStashList`
   `m_bOwnsPetInfos`, each set at the top of `read()` and consulted by the
   destructor, so a filler's borrowed records are still left alone. Every
-  `new X; x->read(); install(x)` site under `src/Core` (29, in 25 files,
-  `GCGoodsList` is not one of them) holds the record in a `unique_ptr`
-  until it is installed, so a record whose own read throws is freed with
-  the exception. Checked by the replay ctests with leak detection on.
+  site under `src/Core` that allocates a record, reads into it and only
+  then installs it (33, in 29 files: the `new X; x->read(); push_back`
+  shape, `GuildInfo2` and `SGGuildInfo` with it, and `GCGoodsList` and
+  `GCPartyJoined`, which read the record's fields one by one) holds the
+  record in a `unique_ptr` until it is installed, so a record whose own
+  read throws is freed with the exception. Checked by the replay ctests
+  with leak detection on, which run only in the fuzz build
+  (`tools/fuzz/Dockerfile.fuzz`, by hand; CI has no sanitizer job).
   > **Status:** fixed (fix/gc-read-record-ownership)
 - **`SocketInputStream::readPacket` was not bounded by the frame.** A
   packet's `read()` consumed what its fields said, not the size its

@@ -498,6 +498,8 @@ private:
     BloodBibleSignInfo* m_pBloodBibleSign;
 
     // true once read() allocated the NPC, nickname and sign records
+    // Set by read() alone: a setter installs a borrowed record and is for
+    // a packet being filled, never one that was read.
     bool m_bOwnsRecords = false;
 
     // PowerZzang points

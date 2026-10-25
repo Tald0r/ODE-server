@@ -68,6 +68,6 @@ ASAN_OPTIONS=abort_on_error=1 /out/bin/fuzz_game_stream \
 keeps going past the first crash; with `DE_FUZZ_ANY_ID=1` in the environment the run fuzzes every
 read in the gameserver's table. Leak detection is on: a read owns every record it allocates
 (six GC reads once leaked theirs, recorded in [the fix log](../reviews/FIXES.md)), and the all-ids
-replay is the test that keeps it so. Replay a crash file with `fuzz_replay_game <file>` in either
+replay is the test that keeps it so; it runs under ASan only in this build, which no CI job runs. Replay a crash file with `fuzz_replay_game <file>` in either
 build; in the fuzz build it comes with the sanitizer's report (`ctest -R fuzz` in `/build` runs
 the replay tests).

@@ -119,9 +119,11 @@ private:
     EffectInfo* m_pEffectInfo;     // Effect information
     PetInfo* m_pPetInfo;           // Pet information
     NicknameInfo* m_pNicknameInfo; // Pet information
-    bool m_bOwnsRecords = false;   // true once read() allocated the pet and nickname
-    StoreOutlook m_StoreOutlook;   // Personal store information
-    BYTE m_FromFlag;               // Where from? 0 when normal, 1 when through a portal
+    // Set by read() alone: a setter installs a borrowed record and is for
+    // a packet being filled, never one that was read.
+    bool m_bOwnsRecords = false; // true once read() allocated the pet and nickname
+    StoreOutlook m_StoreOutlook; // Personal store information
+    BYTE m_FromFlag;             // Where from? 0 when normal, 1 when through a portal
 };
 
 

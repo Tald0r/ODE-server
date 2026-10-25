@@ -49,7 +49,9 @@ void GCPetInfo::read(SocketInputStream& iStream)
 {
     __BEGIN_TRY
 
-    // a reader's records are its own; a filler's belong to the creature
+    // A reader's record is its own; a filler's is the pet item's, so one it
+    // installed is dropped, unowned, before the flag is set.
+    m_pPetInfo = NULL;
     m_bOwnsPetInfo = true;
 
     m_pPetInfo = new PetInfo;

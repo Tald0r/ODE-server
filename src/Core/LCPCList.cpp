@@ -66,6 +66,8 @@ void LCPCList::read(SocketInputStream& iStream)
         case 'S': {
             std::unique_ptr<PCSlayerInfo> pPCSlayerInfo(new PCSlayerInfo);
             pPCSlayerInfo->read(iStream);
+            // get() then release(): the right side of `a[i] = p.release()` is
+            // sequenced first, so p->getSlot() would read a null pointer.
             m_pPCInfos[pPCSlayerInfo->getSlot()] = pPCSlayerInfo.get();
             (void)pPCSlayerInfo.release();
         } break;

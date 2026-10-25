@@ -2050,9 +2050,11 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
   > **Status:** done (2026-10-25): all six slices are in on both sides
-  > (server PRs #276 to #280 and the `feat/shared-*` branches below;
-  > client PRs #285 to #287 and the client's task 4.12, whose status
-  > records every client half). What each slice leaves over - the
+  > (server PRs #276 to #280 for slices 1 to 3 and #281 to #284 for
+  > slices 4, 5, 6a and 6b; client PRs #285 to #287 and the client's task
+  > 4.12, whose status records every client half; the "must learn" and
+  > "must list" sentences below were written for the client halves that
+  > are now in). What each slice leaves over - the
   > advancement-class equip check, a separate castle-tax wire field and
   > whether any race may use a pet - stays open on the client's 4.12 for
   > the owner's decisions; none is decided here.
@@ -2629,9 +2631,10 @@ shrink-only work.
   is replayed by ctest from then on.
   > **Status:** in progress (the CI fuzz job; the findings recorded, not
   > fixed, in `docs/reviews/FIXES.md` under "Packet-read fuzzing": enumerators
-  > cast from wire bytes, non-protocol exceptions escaping the receive
-  > loops, and the records six GC reads leak, `GCUpdateInfo`'s among
-  > them, which is why the fuzz runs have leak detection off). The
+  > cast from wire bytes and non-protocol exceptions escaping the receive
+  > loops; the records six GC reads leaked, `GCUpdateInfo`'s among them,
+  > are owned by the read since fix/gc-read-record-ownership, and the
+  > fuzz runs have leak detection on). The
   > targets are in `tests/fuzz/` (game and login),
   > `DARKEDEN_BUILD_FUZZERS` builds them with libFuzzer in
   > `tools/fuzz/Dockerfile.fuzz`, and the replay builds run in the zig
@@ -2641,7 +2644,7 @@ shrink-only work.
   > the validator's has a gtest in `tests/packet_read_bounds_test.cpp`
   > (`wire_tests`). The client links admit only what a client sends
   > (`game_client_link_tests`, `login_client_link_tests`), so the GC, GS
-  > and SG reads, the six leaking ones among them, are behind the
+  > and SG reads, the six once-leaking ones among them, are behind the
   > gameserver's gate: `fuzz_replay_game` and a default libFuzzer run
   > stop them there, and `fuzz_replay_game_any_id` (`DE_FUZZ_ANY_ID=1`)
   > still reads them. Fixed so far:

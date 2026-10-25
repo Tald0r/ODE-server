@@ -47,7 +47,10 @@ void GCAddOusters::read(SocketInputStream& iStream)
 {
     __BEGIN_TRY
 
-    // a reader's records are its own; a filler's belong to the creature
+    // A reader's records are its own; a filler's belong to the creature, so
+    // any it installed are dropped, unowned, before the flag is set.
+    m_pPetInfo = NULL;
+    m_pNicknameInfo = NULL;
     m_bOwnsRecords = true;
 
     m_OustersInfo.read(iStream);

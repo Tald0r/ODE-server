@@ -5,6 +5,8 @@
 
 #include "GCGoodsList.h"
 
+#include <memory>
+
 //////////////////////////////////////////////////////////////////////////////
 // constructor
 //////////////////////////////////////////////////////////////////////////////
@@ -65,7 +67,7 @@ void GCGoodsList::read(SocketInputStream& iStream)
     clearGoodsInfo();
 
     for (int i = 0; i < totalNum; ++i) {
-        GoodsInfo* pGI = new GoodsInfo;
+        std::unique_ptr<GoodsInfo> pGI(new GoodsInfo);
 
         iStream.read(pGI->objectID);
         iStream.read(pGI->itemClass);
@@ -86,7 +88,7 @@ void GCGoodsList::read(SocketInputStream& iStream)
         iStream.read(pGI->num);
         iStream.read(pGI->timeLimit);
 
-        addGoodsInfo(pGI);
+        addGoodsInfo(pGI.release());
     }
 
     __END_CATCH

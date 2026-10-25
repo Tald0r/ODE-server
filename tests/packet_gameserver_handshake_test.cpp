@@ -512,10 +512,11 @@ TEST(GCPetInfoTest, noPetRoundTripsAsAPetNoneRecord) {
 // GCUpdateInfo — the payload of the phase, one golden per race.
 //
 // GCUpdateInfo deletes the PC, inventory, gear, extra, effect and
-// motorcycle records it is handed, so those are allocated with new. It
-// does NOT delete the nickname, the blood bible signs or the NPC
-// records, so those live in the fixture and outlive the packet: members
-// are destroyed in reverse declaration order, so `packet` goes first.
+// motorcycle records it is handed, so those are allocated with new. A
+// filled packet does NOT delete the nickname, the blood bible signs or
+// the NPC records (a read one does), so those live in the fixture and
+// outlive the packet: members are destroyed in reverse declaration
+// order, so `packet` goes first.
 //
 // The blood bible sign record is one of the non-owned ones, so the
 // sending side installs the fixture's and a reading side allocates its

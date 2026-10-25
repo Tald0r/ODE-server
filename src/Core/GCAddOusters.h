@@ -88,6 +88,8 @@ private:
     EffectInfo* m_pEffectInfo;    // Information about the effects in force
     PetInfo* m_pPetInfo;          // Information about the pet
     NicknameInfo* m_pNicknameInfo;
+    // Set by read() alone: a setter installs a borrowed record and is for
+    // a packet being filled, never one that was read.
     bool m_bOwnsRecords = false; // true once read() allocated the pet and nickname
     StoreOutlook m_StoreOutlook;
 };
