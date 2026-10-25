@@ -2229,7 +2229,10 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   handler, so a client reached them the way it reached `GCUpdateInfo`,
   and the narrowed client link refuses them the same way.
   The login replay reports no leak. Only the replay inputs have been
-  checked. A libFuzzer run with leak detection on has not been done.
+  checked. A libFuzzer run with leak detection on (and `-fsanitize=enum`)
+  found nothing on this stack: 240 s of the game target with
+  `DE_FUZZ_ANY_ID=1`, 120 s without, 120 s of the login target
+  (2026-10-25).
   The list is the reads that leak when the read succeeds. A read that
   throws part-way leaks more widely: many list reads allocate a record,
   read it and only then add it to the list (`new X; x->read(); push_back`,
