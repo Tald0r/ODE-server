@@ -46,6 +46,7 @@
 #include "SocketInputStreamTestAccess.h"
 #include "StoreInfo.h"
 #include "TestStreams.h"
+#include "WireString.h"
 
 using wiretest::Loopback;
 
@@ -87,6 +88,21 @@ TEST(WireEnumTest, aCharacterTypePastTheEnumeratorsIsRefused) {
     connect.setPCType(PC_OUSTERS);
     wiretest::roundTrip(connect, dst, kPlainCode);
     EXPECT_EQ(PC_OUSTERS, dst.getPCType());
+}
+
+// A byte no PCType value can hold at all (past the enum's bit range) is
+// refused the same way; no setter admits it, so the body is built by hand.
+TEST(WireEnumTest, aCharacterTypeByteNoEnumValueHoldsIsRefused) {
+    CGConnect connect;
+    EXPECT_THROW(readHandBuiltBody(connect,
+                                   [](SocketOutputStream& out) {
+                                       out.write((DWORD)1);
+                                       out.write((BYTE)200);
+                                       de::wire::writeString(out, "Enum", {1, 20}, "PCName");
+                                       char mac[6] = {0, 0, 0, 0, 0, 0};
+                                       out.write(mac, 6);
+                                   }),
+                 InvalidProtocolException);
 }
 
 TEST(DebugNameTest, aCharacterTypePastTheTablePrintsAsItsNumber) {

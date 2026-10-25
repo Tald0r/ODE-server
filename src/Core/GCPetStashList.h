@@ -53,12 +53,12 @@ public:
 
 private:
     vector<PetStashItemInfo*> m_PetStashItemInfos;
-    // Set by read() alone: a setter installs a borrowed record and is for
-    // a packet being filled, never one that was read.
+    // True once read() allocated the slots' pets. Set by read() alone: a
+    // filler installs borrowed pets into a packet that was never read.
     bool m_bOwnsPetInfos = false;
 
     // Frees every slot record, and its pet when this packet owns the pets.
-    void releaseSlots(); // true once read() allocated the slots' pets
+    void releaseSlots();
 };
 
 

@@ -41,22 +41,23 @@ GCUpdateInfo::GCUpdateInfo()
 GCUpdateInfo::~GCUpdateInfo()
 
 {
+    releaseRecords();
+}
+
+//--------------------------------------------------------------------------------
+// The PC, inventory, gear, extra, effect and motorcycle records are the
+// packet's either way. A filler installs the Zone's NPC records and the
+// creature's nickname and sign (PacketUtil.cpp), which the packet only
+// borrows; read() allocates its own, and those go with the packet, or with
+// the next read.
+//--------------------------------------------------------------------------------
+void GCUpdateInfo::releaseRecords() {
     SAFE_DELETE(m_pPCInfo);
     SAFE_DELETE(m_pInventoryInfo);
     SAFE_DELETE(m_pGearInfo);
     SAFE_DELETE(m_pExtraInfo);
     SAFE_DELETE(m_pEffectInfo);
     SAFE_DELETE(m_pRideMotorcycleInfo);
-
-    releaseRecords();
-}
-
-//--------------------------------------------------------------------------------
-// A filler installs the Zone's NPC records and the creature's nickname and
-// sign (PacketUtil.cpp), which the packet only borrows; read() allocates
-// its own, and those go with the packet, or with the next read.
-//--------------------------------------------------------------------------------
-void GCUpdateInfo::releaseRecords() {
     if (m_bOwnsRecords) {
         for (NPCInfo* pInfo : m_NPCInfos)
             delete pInfo;

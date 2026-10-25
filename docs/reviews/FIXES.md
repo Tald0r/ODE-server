@@ -1327,8 +1327,9 @@ fix/gc-read-record-ownership the incoming record is held in a `unique_ptr`
 until its slot takes it, so a failure before attachment frees it, and a
 duplicate slot is refused as an `InvalidProtocolException` while the
 `unique_ptr` still owns the record (`LCPCListTest.refusesADuplicateSlot`).
-A populated packet read again still overwrites its records; no server
-reads one twice.
+A populated packet read again is refused as a duplicate slot at its first
+record (`LCPCListTest.aPopulatedPacketReadAgainIsRefusedAsADuplicateSlot`);
+no server reads one twice.
 
 > **Status:** fixed (fix/gc-read-record-ownership, fix/wire-enum-ranges)
 

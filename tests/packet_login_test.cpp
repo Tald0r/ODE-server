@@ -1044,9 +1044,6 @@ void expectEqual(const LCPCList& a, const LCPCList& b) {
 }
 LOGIN_PACKET_TESTS(LCPCList)
 
-// The empty-slot tag is its own layout: the three type bytes are
-// always written, and a slot with no character contributes nothing but
-// its '0'.
 // A record's slot byte past the enumerators, or one a record before it
 // already took, is refused on read; the sentinel SLOT_MAX stands in for
 // every value past the table.
@@ -1077,6 +1074,15 @@ TEST(LCPCListTest, refusesASlotPastTheEnumeratorsInEveryRace) {
     }
 }
 
+// A populated packet read again meets its own records' slots.
+TEST(LCPCListTest, aPopulatedPacketReadAgainIsRefusedAsADuplicateSlot) {
+    LCPCList src;
+    fill(src);
+    LCPCList dst;
+    roundTrip(src, dst, kPlainCode);
+    EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
+}
+
 TEST(LCPCListTest, refusesADuplicateSlot) {
     LCPCList src;
     src.setPCInfo(SLOT1, makeSlayerInfo());
@@ -1087,6 +1093,9 @@ TEST(LCPCListTest, refusesADuplicateSlot) {
     EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
 }
 
+// The empty-slot tag is its own layout: the three type bytes are
+// always written, and a slot with no character contributes nothing but
+// its '0'.
 TEST(LCPCListTest, emptySlotsStillOccupyTheTypePrefix) {
     LCPCList packet;
     packet.setPCInfo(SLOT2, makeVampireInfo());

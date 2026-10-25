@@ -624,6 +624,21 @@ TEST(GCAddSlayerTest, bodyBytesMatchGoldenAndSizeMatchesTheBytesWritten) {
     expectSlayerAddPins(f.packet, "GCAddSlayer");
 }
 
+// A packet read twice holds the second body alone; the first read's
+// effect, pet and nickname records are freed (the fuzz tree's leak check
+// sees a leak here; this suite sees the replacement).
+TEST(GCAddSlayerTest, aSecondReadReplacesTheFirst) {
+    SlayerAddFixture full;
+    fillSlayerAdd(full);
+    SlayerAddFixture bare;
+    fillSlayerAddBare(bare);
+    GCAddSlayer dst;
+    roundTrip(full.packet, dst, kPlainCode);
+    roundTrip(bare.packet, dst, kPlainCode);
+    expectSlayerAddEqual(bare.packet, dst);
+    EXPECT_TRUE(dst.getPetInfo() == NULL);
+}
+
 TEST(GCAddSlayerTest, bareRoundTripsThroughLoopback) {
     SlayerAddFixture f;
     fillSlayerAddBare(f);

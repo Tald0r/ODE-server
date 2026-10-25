@@ -1244,6 +1244,20 @@ TEST(GCUpdateInfoTest, refusesAHairStylePastTheEnumerators) {
     EXPECT_THROW(roundTrip(src.packet, dst.packet, kPlainCode), InvalidProtocolException);
 }
 
+// A packet read twice holds the second body alone: the first read's
+// records, its own and the ones it owned, are freed (the fuzz tree's leak
+// check sees a leak here; this suite sees the replacement).
+TEST(GCUpdateInfoTest, aSecondReadReplacesTheFirst) {
+    UpdateInfoFixture first;
+    fillSlayer(first);
+    UpdateInfoFixture second;
+    fillVampire(second);
+    UpdateInfoFixture dst;
+    roundTrip(first.packet, dst.packet, kPlainCode);
+    roundTrip(second.packet, dst.packet, kPlainCode);
+    expectUpdateInfoEqual(second.packet, dst.packet);
+}
+
 UPDATE_INFO_TESTS(Slayer, "GCUpdateInfo.slayer")
 UPDATE_INFO_TESTS(Vampire, "GCUpdateInfo.vampire")
 UPDATE_INFO_TESTS(Ousters, "GCUpdateInfo.ousters")

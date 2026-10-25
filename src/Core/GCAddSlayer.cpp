@@ -29,13 +29,13 @@ GCAddSlayer::~GCAddSlayer() noexcept
     // fresh EffectManager snapshot on the fill side, so the packet owns it.
     // A filler's pet and nickname records belong to the creature
     // (PacketUtil.cpp); read() allocates its own, and those go with the packet.
-    SAFE_DELETE(m_pEffectInfo);
     releaseRecords();
 }
 
-// A filler's pet and nickname records belong to the creature
-// (PacketUtil.cpp); read()'s are the packet's.
+// The effect record is the packet's either way; a filler's pet and nickname
+// records belong to the creature (PacketUtil.cpp), read()'s are the packet's.
 void GCAddSlayer::releaseRecords() {
+    SAFE_DELETE(m_pEffectInfo);
     if (m_bOwnsRecords) {
         SAFE_DELETE(m_pPetInfo);
         SAFE_DELETE(m_pNicknameInfo);
