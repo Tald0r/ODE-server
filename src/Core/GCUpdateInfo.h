@@ -502,6 +502,10 @@ private:
     // a packet being filled, never one that was read.
     bool m_bOwnsRecords = false;
 
+    // Frees the NPC, nickname and sign records when this packet owns them,
+    // then forgets them either way.
+    void releaseRecords();
+
     // PowerZzang points
     int m_PowerPoint;
 };

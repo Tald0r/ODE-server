@@ -88,6 +88,9 @@ private:
     // Set by read() alone: a setter installs a borrowed record and is for
     // a packet being filled, never one that was read.
     bool m_bOwnsRecords = false; // true once read() allocated the pet and nickname
+    // Frees the pet and nickname records when this packet owns them, then
+    // forgets them either way.
+    void releaseRecords();
     StoreOutlook m_StoreOutlook; // Store visual state
 };
 

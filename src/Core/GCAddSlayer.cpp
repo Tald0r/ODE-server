@@ -30,10 +30,19 @@ GCAddSlayer::~GCAddSlayer() noexcept
     // A filler's pet and nickname records belong to the creature
     // (PacketUtil.cpp); read() allocates its own, and those go with the packet.
     SAFE_DELETE(m_pEffectInfo);
+    releaseRecords();
+}
+
+// A filler's pet and nickname records belong to the creature
+// (PacketUtil.cpp); read()'s are the packet's.
+void GCAddSlayer::releaseRecords() {
     if (m_bOwnsRecords) {
         SAFE_DELETE(m_pPetInfo);
         SAFE_DELETE(m_pNicknameInfo);
     }
+    m_pPetInfo = NULL;
+    m_pNicknameInfo = NULL;
+    m_bOwnsRecords = false;
 }
 
 void GCAddSlayer::read(SocketInputStream& iStream)
@@ -41,10 +50,9 @@ void GCAddSlayer::read(SocketInputStream& iStream)
 {
     __BEGIN_TRY
 
-    // A reader's records are its own; a filler's belong to the creature, so
-    // any it installed are dropped, unowned, before the flag is set.
-    m_pPetInfo = NULL;
-    m_pNicknameInfo = NULL;
+    // A reader's records are its own: a filler's are dropped, unowned, and
+    // an earlier read's are freed, before the flag is set.
+    releaseRecords();
     m_bOwnsRecords = true;
 
     m_SlayerInfo.read(iStream);

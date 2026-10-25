@@ -32,14 +32,22 @@ GCPetStashList::~GCPetStashList()
 {
     __BEGIN_TRY
 
-    // a filler's pets are the stash items' (PacketUtil.cpp); read()'s are the packet's
+    releaseSlots();
+
+    __END_CATCH_NO_RETHROW
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// A filler's pets are the stash items' (PacketUtil.cpp); read()'s are the
+// packet's. The slot records are the packet's either way.
+//////////////////////////////////////////////////////////////////////////////
+void GCPetStashList::releaseSlots() {
     for (int i = 0; i < MAX_PET_STASH; ++i) {
         if (m_bOwnsPetInfos && m_PetStashItemInfos[i] != NULL)
             SAFE_DELETE(m_PetStashItemInfos[i]->pPetInfo);
         SAFE_DELETE(m_PetStashItemInfos[i]);
     }
-
-    __END_CATCH_NO_RETHROW
+    m_bOwnsPetInfos = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,7 +58,9 @@ void GCPetStashList::read(SocketInputStream& iStream)
 {
     __BEGIN_TRY
 
-    // a reader's records are its own; a filler's belong to the creature
+    // A reader's pets are its own: a filler's slots are dropped with their
+    // pets unowned, and an earlier read's are freed, before the flag is set.
+    releaseSlots();
     m_bOwnsPetInfos = true;
 
     for (int i = 0; i < MAX_PET_STASH; i++) {
