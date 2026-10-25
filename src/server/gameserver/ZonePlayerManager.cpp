@@ -342,6 +342,9 @@ void ZonePlayerManager::processCommands() {
                         }
                     }
                 } catch (ProtocolException& pe) {
+                    // A refusal names what the read threw, so a read's bug is
+                    // on record once the player is gone.
+                    filelog("ZPMProtocolExcpt.log", "%s", pe.toString().c_str());
                     pTempPlayer->setPenaltyFlag(PENALTY_TYPE_KICKED);
                     pTempPlayer->setItemRatioBonusPoint(11);
 

@@ -434,7 +434,8 @@ TEST(FrameBoundTest, aNestedReadPacketIsRefused) {
 // protocol exception that means something else to a receive loop is
 // turned into InvalidProtocolException: IgnorePacketException makes the
 // loops skip the frame, which readPacket has already consumed. Any other
-// exception is passed on as it is.
+// ProtocolException is passed on as it is; anything else becomes a
+// PacketReadErrorException (below).
 //////////////////////////////////////////////////////////////////////
 
 TEST(FrameBoundTest, anIgnorePacketExceptionFromReadIsAProtocolError) {

@@ -28,6 +28,11 @@ void PCOustersInfo::read(SocketInputStream& iStream) {
     //--------------------------------------------------
     BYTE slot;
     iStream.read(slot);
+    // A value past the enumerators has no name and no table row, and past
+    // the enum's bit range is undefined to hold, so it is refused as a byte
+    // first (CLSelectPC.cpp).
+    if (slot >= (BYTE)SLOT_MAX)
+        throw InvalidProtocolException("slot out of range");
     m_Slot = Slot(slot);
 
     //--------------------------------------------------

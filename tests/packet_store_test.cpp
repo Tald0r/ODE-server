@@ -1798,6 +1798,20 @@ TEST(GCStashListTest, aSecondReadReplacesTheStashItAlreadyHolds) {
 // availability byte, the record and the keep days per slot, which is
 // what the client's own reader takes, and the factory max budgets
 // exactly that.
+// A packet read twice holds the second body's slots alone; the first
+// read's slot records and pets are freed (the fuzz tree's leak check sees
+// a leak here; this suite sees the replacement).
+TEST(GCPetStashListTest, aSecondReadReplacesTheFirst) {
+    GCPetStashList full;
+    fill(full);
+    GCPetStashList none;
+    fillPetStashNone(none);
+    GCPetStashList dst;
+    roundTrip(full, dst, kPlainCode);
+    roundTrip(none, dst, kPlainCode);
+    expectEqual(none, dst);
+}
+
 TEST(GCPetStashListTest, theBodyIsTheSlotsAndTheFactoryMaxBudgetsThem) {
     GCPetStashList packet;
     fill(packet);

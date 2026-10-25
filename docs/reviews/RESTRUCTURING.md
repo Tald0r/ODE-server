@@ -2629,12 +2629,15 @@ shrink-only work.
   `toString()` every read packet is printed with. Every crash the fuzzers
   find is fixed test-first or recorded in `docs/reviews/FIXES.md`, and its input
   is replayed by ctest from then on.
-  > **Status:** in progress (the CI fuzz job; the findings recorded, not
-  > fixed, in `docs/reviews/FIXES.md` under "Packet-read fuzzing": enumerators
-  > cast from wire bytes and non-protocol exceptions escaping the receive
-  > loops; the records six GC reads leaked, `GCUpdateInfo`'s among them,
-  > are owned by the read since fix/gc-read-record-ownership, and the
-  > fuzz runs have leak detection on). The
+  > **Status:** in progress (the CI fuzz job; every finding recorded in
+  > `docs/reviews/FIXES.md` under "Packet-read fuzzing" is fixed: the
+  > records six GC reads leaked are owned by the read
+  > (fix/gc-read-record-ownership, leak detection on in the fuzz runs), a
+  > read that throws anything but a `ProtocolException` is refused by
+  > name (fix/read-errors-are-refusals), and a wire byte past its
+  > enumerators is refused before it becomes an enum
+  > (fix/wire-enum-ranges, `-fsanitize=enum` back on in the fuzz
+  > build)). The
   > targets are in `tests/fuzz/` (game and login),
   > `DARKEDEN_BUILD_FUZZERS` builds them with libFuzzer in
   > `tools/fuzz/Dockerfile.fuzz`, and the replay builds run in the zig

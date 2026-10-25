@@ -41,16 +41,23 @@ GCUpdateInfo::GCUpdateInfo()
 GCUpdateInfo::~GCUpdateInfo()
 
 {
+    releaseRecords();
+}
+
+//--------------------------------------------------------------------------------
+// The PC, inventory, gear, extra, effect and motorcycle records are the
+// packet's either way. A filler installs the Zone's NPC records and the
+// creature's nickname and sign (PacketUtil.cpp), which the packet only
+// borrows; read() allocates its own, and those go with the packet, or with
+// the next read.
+//--------------------------------------------------------------------------------
+void GCUpdateInfo::releaseRecords() {
     SAFE_DELETE(m_pPCInfo);
     SAFE_DELETE(m_pInventoryInfo);
     SAFE_DELETE(m_pGearInfo);
     SAFE_DELETE(m_pExtraInfo);
     SAFE_DELETE(m_pEffectInfo);
     SAFE_DELETE(m_pRideMotorcycleInfo);
-
-    // A filler installs the Zone's NPC records and the creature's nickname
-    // and sign (PacketUtil.cpp), which the packet only borrows; read()
-    // allocates its own, and those go with the packet.
     if (m_bOwnsRecords) {
         for (NPCInfo* pInfo : m_NPCInfos)
             delete pInfo;
@@ -58,6 +65,9 @@ GCUpdateInfo::~GCUpdateInfo()
         SAFE_DELETE(m_pBloodBibleSign);
     }
     m_NPCInfos.clear();
+    m_pNicknameInfo = NULL;
+    m_pBloodBibleSign = NULL;
+    m_bOwnsRecords = false;
 }
 
 //--------------------------------------------------------------------------------
@@ -68,11 +78,9 @@ void GCUpdateInfo::read(SocketInputStream& iStream)
 {
     __BEGIN_TRY
 
-    // A reader's records are its own; a filler's belong to the creature, so
-    // any it installed are dropped, unowned, before the flag is set.
-    m_NPCInfos.clear();
-    m_pNicknameInfo = NULL;
-    m_pBloodBibleSign = NULL;
+    // A reader's records are its own: a filler's are dropped, unowned, and
+    // an earlier read's are freed, before the flag is set.
+    releaseRecords();
     m_bOwnsRecords = true;
 
     //--------------------------------------------------
@@ -130,6 +138,11 @@ void GCUpdateInfo::read(SocketInputStream& iStream)
 
     BYTE weather;
     iStream.read(weather);
+    // A value past the enumerators has no name and no table row, and past
+    // the enum's bit range is undefined to hold, so it is refused as a byte
+    // first (CLSelectPC.cpp).
+    if (weather >= (BYTE)WEATHER_MAX)
+        throw InvalidProtocolException("weather out of range");
     m_Weather = (Weather)weather;
 
     iStream.read(m_WeatherLevel);

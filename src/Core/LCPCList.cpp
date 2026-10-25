@@ -68,6 +68,8 @@ void LCPCList::read(SocketInputStream& iStream)
             pPCSlayerInfo->read(iStream);
             // get() then release(): the right side of `a[i] = p.release()` is
             // sequenced first, so p->getSlot() would read a null pointer.
+            if (m_pPCInfos[pPCSlayerInfo->getSlot()] != NULL)
+                throw InvalidProtocolException("duplicate slot");
             m_pPCInfos[pPCSlayerInfo->getSlot()] = pPCSlayerInfo.get();
             (void)pPCSlayerInfo.release();
         } break;
@@ -75,6 +77,8 @@ void LCPCList::read(SocketInputStream& iStream)
         case 'V': {
             std::unique_ptr<PCVampireInfo> pPCVampireInfo(new PCVampireInfo);
             pPCVampireInfo->read(iStream);
+            if (m_pPCInfos[pPCVampireInfo->getSlot()] != NULL)
+                throw InvalidProtocolException("duplicate slot");
             m_pPCInfos[pPCVampireInfo->getSlot()] = pPCVampireInfo.get();
             (void)pPCVampireInfo.release();
         } break;
@@ -82,6 +86,8 @@ void LCPCList::read(SocketInputStream& iStream)
         case 'O': {
             std::unique_ptr<PCOustersInfo> pPCOustersInfo(new PCOustersInfo);
             pPCOustersInfo->read(iStream);
+            if (m_pPCInfos[pPCOustersInfo->getSlot()] != NULL)
+                throw InvalidProtocolException("duplicate slot");
             m_pPCInfos[pPCOustersInfo->getSlot()] = pPCOustersInfo.get();
             (void)pPCOustersInfo.release();
         } break;

@@ -457,6 +457,15 @@ void expectEqual(const CLRegisterPlayer& a, const CLRegisterPlayer& b) {
 }
 LOGIN_PACKET_TESTS(CLRegisterPlayer)
 
+// A nation byte past the enumerators is refused before it becomes a Nation.
+TEST(CLRegisterPlayerTest, refusesANationPastTheEnumerators) {
+    CLRegisterPlayer src;
+    fill(src);
+    src.setNation(Nation(3));
+    CLRegisterPlayer dst;
+    EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
+}
+
 TEST(CLRegisterPlayerTest, refusesEmptyAndTooShortCredentials) {
     SocketEncryptOutputStream oStream(NULL);
 
@@ -1034,6 +1043,55 @@ void expectEqual(const LCPCList& a, const LCPCList& b) {
                 *dynamic_cast<const PCOustersInfo*>(b.getPCInfo(SLOT3)));
 }
 LOGIN_PACKET_TESTS(LCPCList)
+
+// A record's slot byte past the enumerators is refused on read; the
+// sentinel SLOT_MAX stands in for every value past the table.
+TEST(LCPCListTest, refusesASlotPastTheEnumeratorsInEveryRace) {
+    {
+        LCPCList src;
+        PCSlayerInfo* pSlayer = makeSlayerInfo();
+        pSlayer->setSlot(SLOT_MAX);
+        src.setPCInfo(SLOT1, pSlayer);
+        LCPCList dst;
+        EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
+    }
+    {
+        LCPCList src;
+        PCVampireInfo* pVampire = makeVampireInfo();
+        pVampire->setSlot(SLOT_MAX);
+        src.setPCInfo(SLOT2, pVampire);
+        LCPCList dst;
+        EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
+    }
+    {
+        LCPCList src;
+        PCOustersInfo* pOusters = makeOustersInfo();
+        pOusters->setSlot(SLOT_MAX);
+        src.setPCInfo(SLOT3, pOusters);
+        LCPCList dst;
+        EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
+    }
+}
+
+// A slot a record before it already took is refused on read as well.
+TEST(LCPCListTest, refusesADuplicateSlot) {
+    LCPCList src;
+    src.setPCInfo(SLOT1, makeSlayerInfo());
+    PCVampireInfo* pVampire = makeVampireInfo();
+    pVampire->setSlot(SLOT1);
+    src.setPCInfo(SLOT2, pVampire);
+    LCPCList dst;
+    EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
+}
+
+// A populated packet read again meets its own records' slots.
+TEST(LCPCListTest, aPopulatedPacketReadAgainIsRefusedAsADuplicateSlot) {
+    LCPCList src;
+    fill(src);
+    LCPCList dst;
+    roundTrip(src, dst, kPlainCode);
+    EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
+}
 
 // The empty-slot tag is its own layout: the three type bytes are
 // always written, and a slot with no character contributes nothing but

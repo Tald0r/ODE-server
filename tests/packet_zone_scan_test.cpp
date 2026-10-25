@@ -606,10 +606,37 @@ TEST(GCAddSlayerTest, roundTripsThroughLoopback) {
     expectSlayerAddEqual(f.packet, dst);
 }
 
+// The slayer outlook's three shield bits past the named shields are
+// refused on read; SHIELD_MAX, the sentinel, stands in for 3..7.
+TEST(GCAddSlayerTest, refusesShieldBitsPastTheEnumerators) {
+    SlayerAddFixture f;
+    fillSlayerAdd(f);
+    PCSlayerInfo3 info = f.packet.getSlayerInfo();
+    info.setShieldType(SHIELD_MAX);
+    f.packet.setSlayerInfo(info);
+    GCAddSlayer dst;
+    EXPECT_THROW(roundTrip(f.packet, dst, kPlainCode), InvalidProtocolException);
+}
+
 TEST(GCAddSlayerTest, bodyBytesMatchGoldenAndSizeMatchesTheBytesWritten) {
     SlayerAddFixture f;
     fillSlayerAdd(f);
     expectSlayerAddPins(f.packet, "GCAddSlayer");
+}
+
+// A packet read twice holds the second body alone; the first read's
+// effect, pet and nickname records are freed (the fuzz tree's leak check
+// sees a leak here; this suite sees the replacement).
+TEST(GCAddSlayerTest, aSecondReadReplacesTheFirst) {
+    SlayerAddFixture full;
+    fillSlayerAdd(full);
+    SlayerAddFixture bare;
+    fillSlayerAddBare(bare);
+    GCAddSlayer dst;
+    roundTrip(full.packet, dst, kPlainCode);
+    roundTrip(bare.packet, dst, kPlainCode);
+    expectSlayerAddEqual(bare.packet, dst);
+    EXPECT_TRUE(dst.getPetInfo() == NULL);
 }
 
 TEST(GCAddSlayerTest, bareRoundTripsThroughLoopback) {

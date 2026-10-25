@@ -46,6 +46,7 @@
 #include "SocketInputStreamTestAccess.h"
 #include "StoreInfo.h"
 #include "TestStreams.h"
+#include "WireString.h"
 
 using wiretest::Loopback;
 
@@ -75,6 +76,34 @@ bool contains(const std::string& text, const std::string& part) {
 // value came off the wire: one past the table prints as its number
 // instead of reading a string object that is not there.
 //////////////////////////////////////////////////////////////////////
+
+// A byte past the enumerators is refused before it becomes an enum value.
+TEST(WireEnumTest, aCharacterTypePastTheEnumeratorsIsRefused) {
+    CGConnect connect;
+    connect.setKey(1);
+    connect.setPCName("Enum");
+    connect.setPCType(PCType(3));
+    CGConnect dst;
+    EXPECT_THROW(wiretest::roundTrip(connect, dst, kPlainCode), InvalidProtocolException);
+    connect.setPCType(PC_OUSTERS);
+    wiretest::roundTrip(connect, dst, kPlainCode);
+    EXPECT_EQ(PC_OUSTERS, dst.getPCType());
+}
+
+// A byte no PCType value can hold at all (past the enum's bit range) is
+// refused the same way; no setter admits it, so the body is built by hand.
+TEST(WireEnumTest, aCharacterTypeByteNoEnumValueHoldsIsRefused) {
+    CGConnect connect;
+    EXPECT_THROW(readHandBuiltBody(connect,
+                                   [](SocketOutputStream& out) {
+                                       out.write((DWORD)1);
+                                       out.write((BYTE)200);
+                                       de::wire::writeString(out, "Enum", {1, 20}, "PCName");
+                                       char mac[6] = {0, 0, 0, 0, 0, 0};
+                                       out.write(mac, 6);
+                                   }),
+                 InvalidProtocolException);
+}
 
 TEST(DebugNameTest, aCharacterTypePastTheTablePrintsAsItsNumber) {
     CGConnect connect;
