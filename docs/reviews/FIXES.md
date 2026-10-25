@@ -1324,11 +1324,13 @@ leak earlier records. Found while auditing outgoing list ownership; the new
 assembler's ownership fix does not change decoding. Decoder failure/reuse tests
 and a prepared replacement policy remain to be added. Since
 fix/gc-read-record-ownership the incoming record is held in a `unique_ptr`
-until its slot takes it, so a failure before attachment frees it; a duplicate
-slot still overwrites the earlier record.
+until its slot takes it, so a failure before attachment frees it, and a
+duplicate slot is refused as an `InvalidProtocolException` while the
+`unique_ptr` still owns the record (`LCPCListTest.refusesADuplicateSlot`).
+A populated packet read again still overwrites its records; no server
+reads one twice.
 
-> **Status:** partly fixed (fix/gc-read-record-ownership: the failure before
-> attachment); the duplicate-slot overwrite is recorded, not fixed
+> **Status:** fixed (fix/gc-read-record-ownership, fix/wire-enum-ranges)
 
 ## Login group and population catalogues lack safe scoped ownership (2026-10-02)
 
@@ -2141,21 +2143,30 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   no check and Clang does not assume enum ranges without
   `-fstrict-enums`. It is a wave (the fuzz build turned `-fsanitize=enum`
   off so it did not hide everything else); each field needs its range
-  checked where it is read. The wave: of the 22 byte-to-enum casts in the
-  reads under `src/Core`, 13 were already refused past the enumerators
-  (every `Sex`, `CLSelectPC`'s and `CLCreatePC`'s, `GCChangeWeather`,
-  `GCSystemMessage`); the other nine are now (`CGConnect`'s `PCType`,
-  `CLRegisterPlayer`'s `Nation`, `GCUpdateInfo`'s `Weather`, the `Slot` of
-  `PCSlayerInfo`, `PCVampireInfo` and `PCOustersInfo`, `PCSlayerInfo2`'s
-  `HairStyle`). Of the 17 getters that build an enum from outlook bits,
-  16 mask to a field no wider than the enum's value range, so every value
-  they build is defined; `PCSlayerInfo3::getShieldType` reads three bits
-  for the four `ShieldType` enumerators, so its `read()` refuses an
-  outlook whose shield bits are past them. No handler casts a packet
+  checked where it is read. The wave: the reads under `src/Core` cast a
+  wire byte to an enum at 20 sites, and build one from masked bits at
+  5 more (`PCOustersInfo`'s and `PCOustersInfo3`'s coat, arm and sylph,
+  each masked to the enum's bit range, so defined). Of the 20, 13 were
+  already refused past the enumerators (every `Sex`, `CLSelectPC`'s and
+  `CLCreatePC`'s, `GCChangeWeather`, `GCSystemMessage`, `CLDeletePC`); the
+  other seven are now (`CGConnect`'s `PCType`, `CLRegisterPlayer`'s
+  `Nation`, `GCUpdateInfo`'s `Weather`, the `Slot` of `PCSlayerInfo`,
+  `PCVampireInfo` and `PCOustersInfo`, `PCSlayerInfo2`'s `HairStyle`), a
+  table-safety check for the values the enum can hold without a name and
+  a definedness check for the rest. Of the 13 getters that build an enum
+  from slayer outlook bits, 12 mask to a field no wider than the enum's
+  bit range, so every value they build is defined;
+  `PCSlayerInfo3::getShieldType` reads three bits for `ShieldType`'s
+  three names and sentinel, so its `read()` refuses an outlook whose
+  shield bits are at or past `SHIELD_MAX`. No handler casts a packet
   getter to an enum. The fuzz build has `-fsanitize=enum` back on, so a
-  new unchecked cast in a fuzzed read traps there; `WireEnumTest` in
-  `tests/packet_read_bounds_test.cpp` and `CLRegisterPlayerTest` in
-  `tests/packet_login_test.cpp` pin the two client-reachable refusals.
+  new unchecked cast in a fuzzed read traps there, and every refusal has
+  a round-trip test: `WireEnumTest` (`tests/packet_read_bounds_test.cpp`),
+  `CLRegisterPlayerTest` and `LCPCListTest` (`tests/packet_login_test.cpp`),
+  `GCUpdateInfoTest` (`tests/packet_gameserver_handshake_test.cpp`) and
+  `GCAddSlayerTest` (`tests/packet_zone_scan_test.cpp`). The regression
+  seed `CGConnect-name-table.hex` (pcType 3) is now a refusal, and
+  `DebugNameTest` keeps the name-table path it was recorded for.
   > **Status:** fixed (fix/wire-enum-ranges)
 - **`GCUpdateInfo::read` leaks two records, plus one per NPC record.**
   Every read allocates one `NicknameInfo` (`GCUpdateInfo.cpp:175`), one

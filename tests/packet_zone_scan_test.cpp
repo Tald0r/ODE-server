@@ -606,6 +606,18 @@ TEST(GCAddSlayerTest, roundTripsThroughLoopback) {
     expectSlayerAddEqual(f.packet, dst);
 }
 
+// The slayer outlook's three shield bits past the named shields are
+// refused on read; SHIELD_MAX, the sentinel, stands in for 3..7.
+TEST(GCAddSlayerTest, refusesShieldBitsPastTheEnumerators) {
+    SlayerAddFixture f;
+    fillSlayerAdd(f);
+    PCSlayerInfo3 info = f.packet.getSlayerInfo();
+    info.setShieldType(SHIELD_MAX);
+    f.packet.setSlayerInfo(info);
+    GCAddSlayer dst;
+    EXPECT_THROW(roundTrip(f.packet, dst, kPlainCode), InvalidProtocolException);
+}
+
 TEST(GCAddSlayerTest, bodyBytesMatchGoldenAndSizeMatchesTheBytesWritten) {
     SlayerAddFixture f;
     fillSlayerAdd(f);

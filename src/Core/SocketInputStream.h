@@ -95,8 +95,8 @@ public:
     // for), when a stream operation failed inside read() even if read()
     // caught the failure, when read() throws IgnorePacketException (the
     // receive loops would skip a frame that is already consumed), and
-    // when a readPacket is nested inside another. Whatever read() throws
-    // otherwise is passed on. On every exit the stream stands at the
+    // when a readPacket is nested inside another. Anything else read()
+    // throws is refused as a PacketReadErrorException naming it. On every exit the stream stands at the
     // start of the next frame.
     void readPacket(Packet* p);
 

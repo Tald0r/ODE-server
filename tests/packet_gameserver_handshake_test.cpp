@@ -1225,6 +1225,25 @@ void expectUpdateInfoPins(GCUpdateInfo& packet, const char* goldenName) {
         expectUpdateInfoPins(f.packet, GoldenName);                     \
     }
 
+// A weather or hair-style byte past the enumerators is refused on read;
+// the sentinel and the first value past the table are defined to hold but
+// have no name, so they stand in for every value past the enumerators.
+TEST(GCUpdateInfoTest, refusesAWeatherPastTheEnumerators) {
+    UpdateInfoFixture src;
+    fillSlayer(src);
+    src.packet.setWeather(WEATHER_MAX);
+    UpdateInfoFixture dst;
+    EXPECT_THROW(roundTrip(src.packet, dst.packet, kPlainCode), InvalidProtocolException);
+}
+
+TEST(GCUpdateInfoTest, refusesAHairStylePastTheEnumerators) {
+    UpdateInfoFixture src;
+    fillSlayer(src);
+    static_cast<PCSlayerInfo2*>(src.packet.getPCInfo())->setHairStyle(HairStyle(3));
+    UpdateInfoFixture dst;
+    EXPECT_THROW(roundTrip(src.packet, dst.packet, kPlainCode), InvalidProtocolException);
+}
+
 UPDATE_INFO_TESTS(Slayer, "GCUpdateInfo.slayer")
 UPDATE_INFO_TESTS(Vampire, "GCUpdateInfo.vampire")
 UPDATE_INFO_TESTS(Ousters, "GCUpdateInfo.ousters")
