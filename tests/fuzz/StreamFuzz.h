@@ -41,11 +41,11 @@
 //               byte by byte through GameFrameGate::next itself and
 //               aborts unless that too ends as the whole delivery did.
 //
-//               Any exception that is not a ProtocolException aborts the
-//               target: the player managers catch only ProtocolException,
-//               so anything else a read() throws leaves the receive loop
-//               and, on the gameserver, stops the zone thread and the
-//               server with it.
+//               A PacketReadErrorException aborts the target: it is what
+//               readPacket() makes of anything a read() throws that is not
+//               a ProtocolException, so a receive loop drops the one
+//               connection, but the read had a bug, and the harness names
+//               it. Any other non-protocol exception aborts the target too.
 //
 //               The body oracle aborts too: readPacket() must leave the
 //               stream exactly the 7 + size bytes its header declared
@@ -204,6 +204,9 @@ inline void readPacket(SocketInputStream& stream, Packet& packet, PacketID_t id,
     const uint before = stream.length();
     try {
         stream.readPacket(&packet);
+    } catch (PacketReadErrorException& e) {
+        std::fprintf(stderr, "fuzz harness: packet %u: %s\n", (unsigned)id, e.getMessage().c_str());
+        std::abort();
     } catch (ProtocolException&) {
         expectOneFrameConsumed(before, stream.length(), id, size, "refused the body");
         throw;

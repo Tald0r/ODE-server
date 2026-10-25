@@ -2118,9 +2118,20 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   calls `ServerShutdown::fail()`; on the loginserver `ClientManager::run`,
   which catches nothing, on the main thread. The fuzz targets, and so
   the replay ctests, abort on any other exception, so a recorded input
-  that throws anything else fails them; the loops themselves are
-  unchanged.
-  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+  that throws anything else fails them. Now `SocketInputStream::readPacket`,
+  which every receive loop reads through, turns anything a `read()`
+  throws that is not a `ProtocolException` (a `Throwable`, a
+  `std::exception`, or something else) into a `PacketReadErrorException`,
+  an `InvalidProtocolException` whose message names what was thrown, so
+  the loops drop that one connection as they do for any malformed body;
+  the loops themselves are unchanged. The fuzz harness aborts on that
+  exception by name, so a read that throws anything else is still a
+  recorded crash, not a refusal (`tests/fuzz/StreamFuzz.h`). Checked by
+  `FrameBoundTest` in `tests/packet_frame_test.cpp`. A loginserver
+  handler that throws a non-protocol exception still leaves
+  `LoginPlayer::processCommand` (its dispatch is not wrapped as
+  `GamePlayer`'s is); that is the handlers' route, not the reads'.
+  > **Status:** fixed (fix/read-errors-are-refusals)
 - **Packets cast wire bytes to their enum types.** Reads store a byte
   straight into an enum (`m_PCType = PCType(pcType)`) and getters build
   one from bits (`ShieldType((m_Outlook >> n) & mask)`) without checking

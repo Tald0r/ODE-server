@@ -29,6 +29,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -461,6 +462,49 @@ TEST(FrameBoundTest, anyOtherExceptionFromReadLeavesTheStreamAtTheNextFrame) {
         throw DisconnectException("read() gave up");
     });
     EXPECT_THROW(s.in.readPacket(&packet), DisconnectException);
+    expectNextFrameIntact(s.in);
+}
+
+// The receive loops catch only ProtocolException, so a read() that throws
+// anything else is refused as one, naming what it threw, and the stream
+// is at the next frame as after every other refusal.
+TEST(FrameBoundTest, aNonProtocolThrowableFromReadIsRefusedByName) {
+    Stream s(concat(frame(7, {1, 2}), nextFrame()));
+    ScriptedPacket packet([](SocketInputStream& in) {
+        char one;
+        in.read(&one, 1);
+        throw RuntimeException("count past the table");
+    });
+    try {
+        s.in.readPacket(&packet);
+        FAIL() << "readPacket returned";
+    } catch (PacketReadErrorException& e) {
+        EXPECT_EQ("packet read threw RuntimeException: count past the table", e.getMessage());
+    }
+    expectNextFrameIntact(s.in);
+}
+
+TEST(FrameBoundTest, aStdExceptionFromReadIsRefusedByName) {
+    Stream s(concat(frame(7, {1, 2}), nextFrame()));
+    ScriptedPacket packet([](SocketInputStream& in) {
+        char one;
+        in.read(&one, 1);
+        throw std::length_error("vector");
+    });
+    try {
+        s.in.readPacket(&packet);
+        FAIL() << "readPacket returned";
+    } catch (PacketReadErrorException& e) {
+        EXPECT_EQ("packet read threw vector", e.getMessage());
+    }
+    expectNextFrameIntact(s.in);
+}
+
+// The refusal is a ProtocolException, which is all the loops catch.
+TEST(FrameBoundTest, aReadErrorRefusalIsAProtocolException) {
+    Stream s(concat(frame(7, {}), nextFrame()));
+    ScriptedPacket packet([](SocketInputStream&) { throw 42; });
+    EXPECT_THROW(s.in.readPacket(&packet), ProtocolException);
     expectNextFrameIntact(s.in);
 }
 
