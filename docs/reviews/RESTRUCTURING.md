@@ -1694,7 +1694,7 @@ visibility can't express.
     sweeps. Two additional standalone web-decision cases cover diagnostic input,
     selection and failure containment.
 
-- [ ] **2.68 Extract the remaining login handler flow and password adapter.**
+- [x] **2.68 Extract the remaining login handler flow and password adapter.**
   > **Status:** done (ddadcb2a, 4fab6d80).
   > `CLLoginHandler` delegates to `LoginFlow`, which owns packet inputs and uses
   > explicit repository, configuration, time, password and dispatch actions.
@@ -2037,7 +2037,7 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   > forward-declaration-only headers are for. R1: 325 → 0.
   - Owner: R1 ratchet test.
 
-- [ ] **3.6 Shared rules library.** The rules the client and the server
+- [x] **3.6 Shared rules library.** The rules the client and the server
   both compute are implemented once, in de-core, and the client builds a
   byte-identical, hash-manifested copy of a listed subset
   (`third_party/decore/` there, written by its `tools/decore/sync.pl`)
@@ -2049,10 +2049,13 @@ and sheltered by Phase 1 tests. Ratchets R2/R3/R5 make progress monotonic.
   steal-ratio cast; client: the callers); (4) equip requirements; (5)
   the castle tax; (6) `SkillOutputFormulas` and the small rules (skill
   range, party share, darkness).
-  > **Status:** in progress (the client halves of slices 4, 5, 6a and
-  > 6b) —
-  > slices 1 to 3 are in on both sides
-  > (server PRs #276 to #280, client PRs #285 to #287).
+  > **Status:** done (2026-10-25): all six slices are in on both sides
+  > (server PRs #276 to #280 and the `feat/shared-*` branches below;
+  > client PRs #285 to #287 and the client's task 4.12, whose status
+  > records every client half). What each slice leaves over - the
+  > advancement-class equip check, a separate castle-tax wire field and
+  > whether any race may use a pet - stays open on the client's 4.12 for
+  > the owner's decisions; none is decided here.
   > Slice 1: `ItemPrice` and `ItemDurability`, with `PriceManager`,
   > `computeMaxDurability`, `ConcreteItem::getMaxDurability` and the skull
   > sale as adapters.
