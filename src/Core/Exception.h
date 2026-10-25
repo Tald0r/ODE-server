@@ -532,6 +532,26 @@ public:
 
 //////////////////////////////////////////////////////////////////////
 //
+// Packet Read Error Exception
+//
+// A packet's read() threw something that is not a ProtocolException.
+// SocketInputStream::readPacket turns it into this refusal, so a receive
+// loop drops the one connection instead of the thread; the fuzz harness
+// treats it as the read's bug and aborts.
+//
+//////////////////////////////////////////////////////////////////////
+class PacketReadErrorException : public InvalidProtocolException {
+public:
+    using InvalidProtocolException::InvalidProtocolException;
+    PacketReadErrorException(const std::source_location& where = std::source_location::current())
+        : InvalidProtocolException(where) {}
+    string getName() const {
+        return "PacketReadErrorException";
+    }
+};
+
+//////////////////////////////////////////////////////////////////////
+//
 // Insufficient Data Exception
 //
 // Packet data is too short to continue processing.

@@ -106,12 +106,12 @@ using ExceptionClasses =
     TypeList<Throwable, Exception, IOException, NonBlockingIOException, InterruptedIOException, EOFException,
              FileNotOpenedException, FileAlreadyExistException, FileNotExistException, TimeoutException,
              SocketException, BindException, ConnectException, PeerClosedException, ProtocolException, IdleException,
-             InvalidProtocolException, InsufficientDataException, DisconnectException, IgnorePacketException,
-             ThreadException, MutexException, MutexAttrException, CondVarException, SemaphoreException, SQLException,
-             SQLWarning, SQLConnectException, SQLQueryException, RuntimeException, InvalidArgumentException,
-             OutOfBoundException, InterruptedException, NoSuchElementException, DuplicatedException, GameException,
-             PortalException, EmptyTileNotExistException, InventoryFullException, Error, GameError, AssertionError,
-             UnsupportedError, LogError, UnknownError>;
+             InvalidProtocolException, PacketReadErrorException, InsufficientDataException, DisconnectException,
+             IgnorePacketException, ThreadException, MutexException, MutexAttrException, CondVarException,
+             SemaphoreException, SQLException, SQLWarning, SQLConnectException, SQLQueryException, RuntimeException,
+             InvalidArgumentException, OutOfBoundException, InterruptedException, NoSuchElementException,
+             DuplicatedException, GameException, PortalException, EmptyTileNotExistException, InventoryFullException,
+             Error, GameError, AssertionError, UnsupportedError, LogError, UnknownError>;
 
 template <typename T> class EveryExceptionClass : public ::testing::Test {};
 

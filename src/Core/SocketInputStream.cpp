@@ -202,9 +202,20 @@ void SocketInputStream::readPacket(Packet* pPacket) {
         // consumed already: it would skip the next one instead.
         finishFrame();
         throw InvalidProtocolException("packet read asked for its frame to be ignored");
-    } catch (...) {
+    } catch (ProtocolException&) {
         finishFrame();
         throw;
+    } catch (Throwable& t) {
+        // The receive loops catch only ProtocolException; anything else
+        // would end the thread, and on the gameserver the server with it.
+        finishFrame();
+        throw PacketReadErrorException("packet read threw " + t.getName() + ": " + t.getMessage());
+    } catch (std::exception& e) {
+        finishFrame();
+        throw PacketReadErrorException(string("packet read threw ") + e.what());
+    } catch (...) {
+        finishFrame();
+        throw PacketReadErrorException("packet read threw something that is not an exception");
     }
 
     const uint unread = length();
