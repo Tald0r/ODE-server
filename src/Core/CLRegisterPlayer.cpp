@@ -44,6 +44,10 @@ void CLRegisterPlayer::read(SocketInputStream& iStream)
 
     BYTE nation;
     iStream.read(nation);
+    // A value past the enumerators is undefined to hold in the enum, so it
+    // is refused as a byte first (CLSelectPC.cpp).
+    if (nation > (BYTE)JAPAN)
+        throw InvalidProtocolException("nation out of range");
     m_Nation = (Nation)nation;
 
     // Player's electronic details (Email - Homepage)

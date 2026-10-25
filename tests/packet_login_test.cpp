@@ -457,6 +457,15 @@ void expectEqual(const CLRegisterPlayer& a, const CLRegisterPlayer& b) {
 }
 LOGIN_PACKET_TESTS(CLRegisterPlayer)
 
+// A nation byte past the enumerators is refused before it becomes a Nation.
+TEST(CLRegisterPlayerTest, refusesANationPastTheEnumerators) {
+    CLRegisterPlayer src;
+    fill(src);
+    src.setNation(Nation(3));
+    CLRegisterPlayer dst;
+    EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
+}
+
 TEST(CLRegisterPlayerTest, refusesEmptyAndTooShortCredentials) {
     SocketEncryptOutputStream oStream(NULL);
 

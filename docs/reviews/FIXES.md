@@ -2139,10 +2139,24 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   load; the zig Debug build traps on it, so on a Debug server one such
   byte from a client aborts the process, while the optimized builds carry
   no check and Clang does not assume enum ranges without
-  `-fstrict-enums`. It is a wave (the fuzz build turns `-fsanitize=enum`
-  off so it does not hide everything else); each field needs its range
-  checked where it is read.
-  > **Status:** recorded, not fixed (feat/packet-fuzzing)
+  `-fstrict-enums`. It is a wave (the fuzz build turned `-fsanitize=enum`
+  off so it did not hide everything else); each field needs its range
+  checked where it is read. The wave: of the 22 byte-to-enum casts in the
+  reads under `src/Core`, 13 were already refused past the enumerators
+  (every `Sex`, `CLSelectPC`'s and `CLCreatePC`'s, `GCChangeWeather`,
+  `GCSystemMessage`); the other nine are now (`CGConnect`'s `PCType`,
+  `CLRegisterPlayer`'s `Nation`, `GCUpdateInfo`'s `Weather`, the `Slot` of
+  `PCSlayerInfo`, `PCVampireInfo` and `PCOustersInfo`, `PCSlayerInfo2`'s
+  `HairStyle`). Of the 17 getters that build an enum from outlook bits,
+  16 mask to a field no wider than the enum's value range, so every value
+  they build is defined; `PCSlayerInfo3::getShieldType` reads three bits
+  for the four `ShieldType` enumerators, so its `read()` refuses an
+  outlook whose shield bits are past them. No handler casts a packet
+  getter to an enum. The fuzz build has `-fsanitize=enum` back on, so a
+  new unchecked cast in a fuzzed read traps there; `WireEnumTest` in
+  `tests/packet_read_bounds_test.cpp` and `CLRegisterPlayerTest` in
+  `tests/packet_login_test.cpp` pin the two client-reachable refusals.
+  > **Status:** fixed (fix/wire-enum-ranges)
 - **`GCUpdateInfo::read` leaks two records, plus one per NPC record.**
   Every read allocates one `NicknameInfo` (`GCUpdateInfo.cpp:175`), one
   `BloodBibleSignInfo` (:184) and one `NPCInfo` for each record its

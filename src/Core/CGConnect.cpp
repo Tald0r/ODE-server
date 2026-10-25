@@ -19,6 +19,10 @@ void CGConnect::read(SocketInputStream& iStream)
     // read PC type
     BYTE pcType;
     iStream.read(pcType);
+    // A value past the enumerators is undefined to hold in the enum, so it
+    // is refused as a byte first (CLSelectPC.cpp).
+    if (pcType > (BYTE)PC_OUSTERS)
+        throw InvalidProtocolException("pc type out of range");
     m_PCType = PCType(pcType);
 
     // read PC name

@@ -35,6 +35,10 @@ void PCVampireInfo::read(SocketInputStream& iStream) {
     //--------------------------------------------------
     BYTE slot;
     iStream.read(slot);
+    // A value past the enumerators is undefined to hold in the enum, so it
+    // is refused as a byte first (CLSelectPC.cpp).
+    if (slot >= (BYTE)SLOT_MAX)
+        throw InvalidProtocolException("slot out of range");
     m_Slot = Slot(slot);
 
     //--------------------------------------------------

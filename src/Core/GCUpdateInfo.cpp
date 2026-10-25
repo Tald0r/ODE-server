@@ -130,6 +130,10 @@ void GCUpdateInfo::read(SocketInputStream& iStream)
 
     BYTE weather;
     iStream.read(weather);
+    // A value past the enumerators is undefined to hold in the enum, so it
+    // is refused as a byte first (CLSelectPC.cpp).
+    if (weather >= (BYTE)WEATHER_MAX)
+        throw InvalidProtocolException("weather out of range");
     m_Weather = (Weather)weather;
 
     iStream.read(m_WeatherLevel);

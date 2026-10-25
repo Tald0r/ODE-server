@@ -82,7 +82,6 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t*, std::size_t) { return
     endif()
     add_compile_options(-fsanitize=fuzzer-no-link,address,undefined
                         -fno-sanitize-recover=undefined
-                        -fno-sanitize=enum
                         -fno-omit-frame-pointer
                         -fbracket-depth=1024
                         -D_GLIBCXX_ASSERTIONS)

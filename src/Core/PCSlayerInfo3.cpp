@@ -28,6 +28,10 @@ void PCSlayerInfo3::read(SocketInputStream& iStream) {
     DWORD outlook;
     iStream.read(outlook);
     m_Outlook = bitset<SLAYER_BIT_MAX>(outlook);
+    // The shield field has three bits and ShieldType four enumerators, so
+    // getShieldType() would build an undefined value from the other four.
+    if (((outlook >> SLAYER_BIT_SHIELD1) & 7) >= SHIELD_MAX)
+        throw InvalidProtocolException("shield type out of range");
 
     // read colors
     for (uint i = 0; i < SLAYER_COLOR_MAX; i++)

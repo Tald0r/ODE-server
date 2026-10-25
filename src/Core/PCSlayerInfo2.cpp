@@ -32,6 +32,10 @@ void PCSlayerInfo2::read(SocketInputStream& iStream) {
     // read hair style
     BYTE hairStyle;
     iStream.read(hairStyle);
+    // A value past the enumerators is undefined to hold in the enum, so it
+    // is refused as a byte first (CLSelectPC.cpp).
+    if (hairStyle > (BYTE)HAIR_STYLE3)
+        throw InvalidProtocolException("hair style out of range");
     m_HairStyle = HairStyle(hairStyle);
 
     // read colors

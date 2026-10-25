@@ -76,6 +76,19 @@ bool contains(const std::string& text, const std::string& part) {
 // instead of reading a string object that is not there.
 //////////////////////////////////////////////////////////////////////
 
+// A byte past the enumerators is refused before it becomes an enum value.
+TEST(WireEnumTest, aCharacterTypePastTheEnumeratorsIsRefused) {
+    CGConnect connect;
+    connect.setKey(1);
+    connect.setPCName("Enum");
+    connect.setPCType(PCType(3));
+    CGConnect dst;
+    EXPECT_THROW(wiretest::roundTrip(connect, dst, kPlainCode), InvalidProtocolException);
+    connect.setPCType(PC_OUSTERS);
+    wiretest::roundTrip(connect, dst, kPlainCode);
+    EXPECT_EQ(PC_OUSTERS, dst.getPCType());
+}
+
 TEST(DebugNameTest, aCharacterTypePastTheTablePrintsAsItsNumber) {
     CGConnect connect;
     connect.setPCType(PCType(3));
