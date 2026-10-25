@@ -123,8 +123,7 @@ private:
     // a packet being filled, never one that was read.
     bool m_bOwnsRecords = false; // true once read() allocated the pet and nickname
     // Frees the effect record, and the pet and nickname records when this
-    // packet owns them, then
-    // forgets them either way.
+    // packet owns them; forgets them all either way.
     void releaseRecords();
     StoreOutlook m_StoreOutlook; // Personal store information
     BYTE m_FromFlag;             // Where from? 0 when normal, 1 when through a portal

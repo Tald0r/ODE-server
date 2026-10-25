@@ -28,18 +28,16 @@ GCAddOusters::~GCAddOusters()
 
 {
     try {
-        // The effect record is built for the packet, by read() here and by a
-        // fresh EffectManager snapshot on the fill side, so the packet owns it.
-        // A filler's pet and nickname records belong to the creature
-        // (PacketUtil.cpp); read() allocates its own, and those go with the packet.
         releaseRecords();
     } catch (const std::exception&) {
         // ignore during teardown
     }
 }
 
-// The effect record is the packet's either way; a filler's pet and nickname
-// records belong to the creature (PacketUtil.cpp), read()'s are the packet's.
+// The effect record is built for the packet, by read() here and by a fresh
+// EffectManager snapshot on the fill side, so the packet owns it either way.
+// A filler's pet and nickname records belong to the creature
+// (PacketUtil.cpp); read()'s are the packet's.
 void GCAddOusters::releaseRecords() {
     SAFE_DELETE(m_pEffectInfo);
     if (m_bOwnsRecords) {

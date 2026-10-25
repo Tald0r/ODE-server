@@ -1044,9 +1044,8 @@ void expectEqual(const LCPCList& a, const LCPCList& b) {
 }
 LOGIN_PACKET_TESTS(LCPCList)
 
-// A record's slot byte past the enumerators, or one a record before it
-// already took, is refused on read; the sentinel SLOT_MAX stands in for
-// every value past the table.
+// A record's slot byte past the enumerators is refused on read; the
+// sentinel SLOT_MAX stands in for every value past the table.
 TEST(LCPCListTest, refusesASlotPastTheEnumeratorsInEveryRace) {
     {
         LCPCList src;
@@ -1074,15 +1073,7 @@ TEST(LCPCListTest, refusesASlotPastTheEnumeratorsInEveryRace) {
     }
 }
 
-// A populated packet read again meets its own records' slots.
-TEST(LCPCListTest, aPopulatedPacketReadAgainIsRefusedAsADuplicateSlot) {
-    LCPCList src;
-    fill(src);
-    LCPCList dst;
-    roundTrip(src, dst, kPlainCode);
-    EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
-}
-
+// A slot a record before it already took is refused on read as well.
 TEST(LCPCListTest, refusesADuplicateSlot) {
     LCPCList src;
     src.setPCInfo(SLOT1, makeSlayerInfo());
@@ -1090,6 +1081,15 @@ TEST(LCPCListTest, refusesADuplicateSlot) {
     pVampire->setSlot(SLOT1);
     src.setPCInfo(SLOT2, pVampire);
     LCPCList dst;
+    EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
+}
+
+// A populated packet read again meets its own records' slots.
+TEST(LCPCListTest, aPopulatedPacketReadAgainIsRefusedAsADuplicateSlot) {
+    LCPCList src;
+    fill(src);
+    LCPCList dst;
+    roundTrip(src, dst, kPlainCode);
     EXPECT_THROW(roundTrip(src, dst, kPlainCode), InvalidProtocolException);
 }
 
