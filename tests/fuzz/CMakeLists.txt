@@ -59,14 +59,10 @@ set(DARKEDEN_FUZZ_SCRATCH ${CMAKE_CURRENT_BINARY_DIR}/scratch)
 file(MAKE_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
 
 # The replay tests' environment. In a DARKEDEN_BUILD_FUZZERS tree every
-# target carries ASan, whose leak check would fail the all-ids game replay
-# on the reads that leak (GCUpdateInfo::read and five more, recorded in
-# docs/reviews/FIXES.md; the client link refuses all six); the libFuzzer runs turn
-# it off the same way.
+# target carries ASan, and its leak check stays on: a read owns every record
+# it allocates (docs/reviews/FIXES.md, "GCUpdateInfo::read leaks two records"),
+# and the all-ids game replay is the test that keeps it so.
 set(DARKEDEN_FUZZ_REPLAY_ENV "")
-if(DARKEDEN_BUILD_FUZZERS)
-    list(APPEND DARKEDEN_FUZZ_REPLAY_ENV "ASAN_OPTIONS=detect_leaks=0")
-endif()
 
 foreach(name ${DARKEDEN_FUZZ_TARGETS})
     set(source ${DARKEDEN_FUZZ_${name}_SOURCE})

@@ -7,6 +7,7 @@
 #include "GCTradeAddItem.h"
 
 #include "Assert1.h"
+#include <memory>
 
 ////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -79,9 +80,9 @@ void GCTradeAddItem::read(SocketInputStream& iStream)
         throw InvalidProtocolException("too many sub items");
 
     for (BYTE i = 0; i < listNum; i++) {
-        SubItemInfo* pInfo = new SubItemInfo();
+        std::unique_ptr<SubItemInfo> pInfo(new SubItemInfo);
         pInfo->read(iStream);
-        m_InfoList.push_back(pInfo);
+        m_InfoList.push_back(pInfo.release());
     }
 
     __END_CATCH

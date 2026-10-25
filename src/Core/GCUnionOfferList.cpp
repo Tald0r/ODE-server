@@ -7,6 +7,7 @@
 
 // include files
 #include "GCUnionOfferList.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////
 // destructor
@@ -55,9 +56,9 @@ void GCUnionOfferList::read(SocketInputStream& iStream)
         throw InvalidProtocolException("too many union offers");
 
     for (int i = 0; i < szNum; ++i) {
-        SingleGuildUnionOffer* pInfo = new SingleGuildUnionOffer;
+        std::unique_ptr<SingleGuildUnionOffer> pInfo(new SingleGuildUnionOffer);
         pInfo->read(iStream);
-        m_UnionOfferList.push_back(pInfo);
+        m_UnionOfferList.push_back(pInfo.release());
     }
 
     __END_CATCH

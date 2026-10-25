@@ -15,6 +15,7 @@
 #include "Assert.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////
 // constructor
@@ -49,9 +50,9 @@ void ExtraInfo::read(SocketInputStream& iStream) {
     iStream.read(m_ListNum);
 
     for (int i = 0; i < m_ListNum; i++) {
-        ExtraSlotInfo* pExtraSlotInfo = new ExtraSlotInfo();
+        std::unique_ptr<ExtraSlotInfo> pExtraSlotInfo(new ExtraSlotInfo);
         pExtraSlotInfo->read(iStream);
-        m_ExtraSlotInfoList.push_back(pExtraSlotInfo);
+        m_ExtraSlotInfoList.push_back(pExtraSlotInfo.release());
     }
 
     __END_CATCH

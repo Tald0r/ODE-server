@@ -11,6 +11,7 @@
 #include "Assert1.h"
 #include "PCSlayerInfo2.h"
 #include "PCVampireInfo2.h"
+#include <memory>
 
 // for client.. by sigi
 #ifndef SAFE_DELETE
@@ -72,9 +73,9 @@ void GCNPCInfo::read(SocketInputStream& iStream)
     m_OwnsNPCInfos = true;
 
     for (BYTE nc = 0; nc < NPCInfoCount; nc++) {
-        NPCInfo* pInfo = new NPCInfo;
+        std::unique_ptr<NPCInfo> pInfo(new NPCInfo);
         pInfo->read(iStream);
-        addNPCInfo(pInfo);
+        addNPCInfo(pInfo.release());
     }
 
     __END_CATCH

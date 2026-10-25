@@ -497,6 +497,9 @@ private:
 
     BloodBibleSignInfo* m_pBloodBibleSign;
 
+    // true once read() allocated the NPC, nickname and sign records
+    bool m_bOwnsRecords = false;
+
     // PowerZzang points
     int m_PowerPoint;
 };

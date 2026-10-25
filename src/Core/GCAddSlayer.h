@@ -85,6 +85,7 @@ private:
     EffectInfo* m_pEffectInfo;     // Active effect info
     PetInfo* m_pPetInfo;           // Pet information
     NicknameInfo* m_pNicknameInfo; // Nickname information
+    bool m_bOwnsRecords = false;   // true once read() allocated the pet and nickname
     StoreOutlook m_StoreOutlook;   // Store visual state
 };
 

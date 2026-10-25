@@ -34,6 +34,10 @@ GCPetInfo::~GCPetInfo()
 {
     __BEGIN_TRY
 
+    // a filler's record is the pet item's (CreatureUtil.cpp); read()'s is the packet's
+    if (m_bOwnsPetInfo)
+        SAFE_DELETE(m_pPetInfo);
+
     __END_CATCH_NO_RETHROW
 }
 
@@ -44,6 +48,9 @@ void GCPetInfo::read(SocketInputStream& iStream)
 
 {
     __BEGIN_TRY
+
+    // a reader's records are its own; a filler's belong to the creature
+    m_bOwnsPetInfo = true;
 
     m_pPetInfo = new PetInfo;
     m_pPetInfo->read(iStream);

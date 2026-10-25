@@ -119,6 +119,7 @@ private:
     EffectInfo* m_pEffectInfo;     // Effect information
     PetInfo* m_pPetInfo;           // Pet information
     NicknameInfo* m_pNicknameInfo; // Pet information
+    bool m_bOwnsRecords = false;   // true once read() allocated the pet and nickname
     StoreOutlook m_StoreOutlook;   // Personal store information
     BYTE m_FromFlag;               // Where from? 0 when normal, 1 when through a portal
 };

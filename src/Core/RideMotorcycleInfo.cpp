@@ -8,6 +8,7 @@
 
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -55,9 +56,9 @@ void RideMotorcycleInfo::read(SocketInputStream& iStream) {
     iStream.read(m_ListNum);
 
     for (int i = 0; i < m_ListNum; i++) {
-        RideMotorcycleSlotInfo* pRideMotorcycleSlotInfo = new RideMotorcycleSlotInfo();
+        std::unique_ptr<RideMotorcycleSlotInfo> pRideMotorcycleSlotInfo(new RideMotorcycleSlotInfo);
         pRideMotorcycleSlotInfo->read(iStream);
-        m_RideMotorcycleSlotInfoList.push_back(pRideMotorcycleSlotInfo);
+        m_RideMotorcycleSlotInfoList.push_back(pRideMotorcycleSlotInfo.release());
     }
 
     __END_CATCH

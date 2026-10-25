@@ -14,6 +14,7 @@
 #include "Assert.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////
 // constructor
@@ -76,9 +77,9 @@ void OustersSkillInfo::read(SocketInputStream& iStream) {
         throw InvalidProtocolException("too many ousters skills");
 
     for (int i = 0; i < ListNum; i++) {
-        SubOustersSkillInfo* pSubOustersSkillInfo = new SubOustersSkillInfo();
+        std::unique_ptr<SubOustersSkillInfo> pSubOustersSkillInfo(new SubOustersSkillInfo);
         pSubOustersSkillInfo->read(iStream);
-        m_SubOustersSkillInfoList.push_back(pSubOustersSkillInfo);
+        m_SubOustersSkillInfoList.push_back(pSubOustersSkillInfo.release());
     }
 
     __END_CATCH

@@ -15,6 +15,7 @@
 #include "Assert.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////
 // constructor
@@ -76,9 +77,9 @@ void SlayerSkillInfo::read(SocketInputStream& iStream) {
         throw InvalidProtocolException("too many slayer skills");
 
     for (int i = 0; i < ListNum; i++) {
-        SubSlayerSkillInfo* pSubSlayerSkillInfo = new SubSlayerSkillInfo();
+        std::unique_ptr<SubSlayerSkillInfo> pSubSlayerSkillInfo(new SubSlayerSkillInfo);
         pSubSlayerSkillInfo->read(iStream);
-        m_SubSlayerSkillInfoList.push_back(pSubSlayerSkillInfo);
+        m_SubSlayerSkillInfoList.push_back(pSubSlayerSkillInfo.release());
     }
 
     __END_CATCH

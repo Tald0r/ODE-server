@@ -519,10 +519,10 @@ void expectOustersInfoEqual(const PCOustersInfo3& a, const PCOustersInfo3& b) {
 //////////////////////////////////////////////////////////////////////
 // GCAddSlayer / GCAddVampire / GCAddOusters.
 //
-// All three packets own only the effect record; the pet and nickname
-// records belong to whoever installed them. The fixtures hold those two
-// as members that outlive the packet — members are destroyed in reverse
-// declaration order, so `packet` goes first.
+// A filled packet owns only the effect record; the pet and nickname
+// records belong to whoever installed them (a read packet owns its own).
+// The fixtures hold those two as members that outlive the packet — members
+// are destroyed in reverse declaration order, so `packet` goes first.
 //
 // A NULL nickname pointer is not goldened separately: write() then
 // emits a default NicknameInfo, the same NICK_NONE shape the explicit

@@ -15,6 +15,7 @@
 #include "Assert.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////
 // constructor
@@ -73,9 +74,9 @@ void VampireSkillInfo::read(SocketInputStream& iStream) {
         throw InvalidProtocolException("too many vampire skills");
 
     for (int i = 0; i < ListNum; i++) {
-        SubVampireSkillInfo* pSubVampireSkillInfo = new SubVampireSkillInfo();
+        std::unique_ptr<SubVampireSkillInfo> pSubVampireSkillInfo(new SubVampireSkillInfo);
         pSubVampireSkillInfo->read(iStream);
-        m_SubVampireSkillInfoList.push_back(pSubVampireSkillInfo);
+        m_SubVampireSkillInfoList.push_back(pSubVampireSkillInfo.release());
     }
 
     __END_CATCH

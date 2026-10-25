@@ -59,16 +59,15 @@ cmake --build /build --target fuzz_game_stream fuzz_login_stream \
     fuzz_replay_game fuzz_replay_login fuzz_seed_corpus
 # run from a scratch directory: Assert appends to assertion_failed.log there
 mkdir -p /scratch /corpus && cd /scratch
-ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 /out/bin/fuzz_game_stream \
+ASAN_OPTIONS=abort_on_error=1 /out/bin/fuzz_game_stream \
     -max_total_time=300 -timeout=10 -rss_limit_mb=2048 -max_len=32769 \
     -close_fd_mask=3 /corpus /build/tests/fuzz/corpus/game /src/tests/fuzz/regressions/game
 ```
 
 `-close_fd_mask=3` keeps the packets' debug output off the terminal; `-fork=N -ignore_crashes=1`
 keeps going past the first crash; with `DE_FUZZ_ANY_ID=1` in the environment the run fuzzes every
-read in the gameserver's table. Leak detection is off because six GC reads, `GCUpdateInfo`'s
-among them, leak the records they allocate (recorded in [the fix log](../reviews/FIXES.md)); the
-client link refuses all six, so only an all-ids run reaches them, but the documented runs keep it
-off either way. Replay a crash file with `fuzz_replay_game <file>` in either build; in the fuzz
-build it comes with the sanitizer's report and needs the same `ASAN_OPTIONS=detect_leaks=0`, which
-ctest sets itself there (`ctest -R fuzz` in `/build` runs the replay tests).
+read in the gameserver's table. Leak detection is on: a read owns every record it allocates
+(six GC reads once leaked theirs, recorded in [the fix log](../reviews/FIXES.md)), and the all-ids
+replay is the test that keeps it so. Replay a crash file with `fuzz_replay_game <file>` in either
+build; in the fuzz build it comes with the sanitizer's report (`ctest -R fuzz` in `/build` runs
+the replay tests).

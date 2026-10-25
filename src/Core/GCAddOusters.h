@@ -88,6 +88,7 @@ private:
     EffectInfo* m_pEffectInfo;    // Information about the effects in force
     PetInfo* m_pPetInfo;          // Information about the pet
     NicknameInfo* m_pNicknameInfo;
+    bool m_bOwnsRecords = false;   // true once read() allocated the pet and nickname
     StoreOutlook m_StoreOutlook;
 };
 

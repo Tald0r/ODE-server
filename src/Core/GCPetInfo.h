@@ -57,6 +57,7 @@ private:
     ObjectID_t m_ObjectID;
     PetInfo* m_pPetInfo;
     BYTE m_IsSummonInfo;
+    bool m_bOwnsPetInfo = false; // true once read() allocated the record
 };
 
 class GCPetInfoFactory : public PacketFactory {

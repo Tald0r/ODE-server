@@ -8,6 +8,7 @@
 
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -42,9 +43,9 @@ void InventoryInfo::read(SocketInputStream& iStream) {
     iStream.read(m_ListNum);
 
     for (int i = 0; i < m_ListNum; i++) {
-        InventorySlotInfo* pInventorySlotInfo = new InventorySlotInfo();
+        std::unique_ptr<InventorySlotInfo> pInventorySlotInfo(new InventorySlotInfo);
         pInventorySlotInfo->read(iStream);
-        m_InventorySlotInfoList.push_back(pInventorySlotInfo);
+        m_InventorySlotInfoList.push_back(pInventorySlotInfo.release());
     }
 
     __END_CATCH

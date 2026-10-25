@@ -29,12 +29,14 @@ GCAddOusters::~GCAddOusters()
 {
     try {
         // The effect record is built for the packet, by read() here and by a
-        // fresh EffectManager snapshot on the fill side, so the packet owns
-        // it. The pet and nickname records belong to the creature that
-        // installed them; only a reader's own copies are heap-owned, and they
-        // are left to the process the way GCUpdateInfo leaves its NPC
-        // records.
+        // fresh EffectManager snapshot on the fill side, so the packet owns it.
+        // A filler's pet and nickname records belong to the creature
+        // (PacketUtil.cpp); read() allocates its own, and those go with the packet.
         SAFE_DELETE(m_pEffectInfo);
+        if (m_bOwnsRecords) {
+            SAFE_DELETE(m_pPetInfo);
+            SAFE_DELETE(m_pNicknameInfo);
+        }
     } catch (const std::exception&) {
         // ignore during teardown
     }
@@ -44,6 +46,9 @@ void GCAddOusters::read(SocketInputStream& iStream)
 
 {
     __BEGIN_TRY
+
+    // a reader's records are its own; a filler's belong to the creature
+    m_bOwnsRecords = true;
 
     m_OustersInfo.read(iStream);
     m_pEffectInfo = new EffectInfo();

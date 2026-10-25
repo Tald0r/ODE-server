@@ -53,6 +53,7 @@ public:
 
 private:
     vector<PetStashItemInfo*> m_PetStashItemInfos;
+    bool m_bOwnsPetInfos = false; // true once read() allocated the slots' pets
 };
 
 

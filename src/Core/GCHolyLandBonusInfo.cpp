@@ -7,6 +7,7 @@
 
 // include files
 #include "GCHolyLandBonusInfo.h"
+#include <memory>
 
 
 //////////////////////////////////////////////////////////////////////
@@ -49,9 +50,9 @@ void GCHolyLandBonusInfo::read(SocketInputStream& iStream)
         throw InvalidProtocolException("too many holy land bonuses");
 
     for (int i = 0; i < ListNum; i++) {
-        BloodBibleBonusInfo* pBloodBibleBonusInfo = new BloodBibleBonusInfo();
+        std::unique_ptr<BloodBibleBonusInfo> pBloodBibleBonusInfo(new BloodBibleBonusInfo);
         pBloodBibleBonusInfo->read(iStream);
-        m_BloodBibleBonusInfoList.push_back(pBloodBibleBonusInfo);
+        m_BloodBibleBonusInfoList.push_back(pBloodBibleBonusInfo.release());
     }
 
     __END_CATCH
