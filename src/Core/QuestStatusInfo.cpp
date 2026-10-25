@@ -1,5 +1,7 @@
 #include "QuestStatusInfo.h"
 
+#include <memory>
+
 #include "Exception.h"
 
 QuestStatusInfo::~QuestStatusInfo() {
@@ -27,9 +29,9 @@ void QuestStatusInfo::read(SocketInputStream& iStream) {
         throw InvalidProtocolException("too many quest missions");
 
     for (int i = 0; i < size; ++i) {
-        MissionInfo* temp = new MissionInfo;
+        std::unique_ptr<MissionInfo> temp(new MissionInfo);
         temp->read(iStream);
-        m_Missions.push_back(temp);
+        m_Missions.push_back(temp.release());
     }
 }
 

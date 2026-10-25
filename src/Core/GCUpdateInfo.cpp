@@ -8,6 +8,8 @@
 // include files
 #include "GCUpdateInfo.h"
 
+#include <memory>
+
 #include "Assert1.h"
 #include "PCOustersInfo2.h"
 #include "PCSlayerInfo2.h"
@@ -46,17 +48,16 @@ GCUpdateInfo::~GCUpdateInfo()
     SAFE_DELETE(m_pEffectInfo);
     SAFE_DELETE(m_pRideMotorcycleInfo);
 
-    // On the server the Zone owns a (currently immutable) list of NPCInfo
-    // objects. Creating them with new, putting them into GCUpdateInfo and
-    // deleting them again for every packet would cost real speed, so the
-    // NPCInfoList here just carries pointers into the Zone's NPCInfoList;
-    // the server must never delete them. (The client's copy of this packet
-    // does delete them.)
+    // A filler installs the Zone's NPC records and the creature's nickname
+    // and sign (PacketUtil.cpp), which the packet only borrows; read()
+    // allocates its own, and those go with the packet.
+    if (m_bOwnsRecords) {
+        for (NPCInfo* pInfo : m_NPCInfos)
+            delete pInfo;
+        SAFE_DELETE(m_pNicknameInfo);
+        SAFE_DELETE(m_pBloodBibleSign);
+    }
     m_NPCInfos.clear();
-
-    // The nickname and the blood bible sign record belong to the creature
-    // that installed them; only a reader's own copies are heap-owned, and
-    // they are left to the process the same way the NPC records are.
 }
 
 //--------------------------------------------------------------------------------
@@ -66,6 +67,13 @@ void GCUpdateInfo::read(SocketInputStream& iStream)
 
 {
     __BEGIN_TRY
+
+    // A reader's records are its own; a filler's belong to the creature, so
+    // any it installed are dropped, unowned, before the flag is set.
+    m_NPCInfos.clear();
+    m_pNicknameInfo = NULL;
+    m_pBloodBibleSign = NULL;
+    m_bOwnsRecords = true;
 
     //--------------------------------------------------
     // read pc type/info
@@ -159,9 +167,9 @@ void GCUpdateInfo::read(SocketInputStream& iStream)
     BYTE NPCInfoCount = 0;
     iStream.read(NPCInfoCount);
     for (BYTE nc = 0; nc < NPCInfoCount; nc++) {
-        NPCInfo* pInfo = new NPCInfo;
+        std::unique_ptr<NPCInfo> pInfo(new NPCInfo);
         pInfo->read(iStream);
-        addNPCInfo(pInfo);
+        addNPCInfo(pInfo.release());
     }
 
     // Server status

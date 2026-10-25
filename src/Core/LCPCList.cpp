@@ -9,6 +9,8 @@
 // include files
 #include "LCPCList.h"
 
+#include <memory>
+
 #include "PCOustersInfo.h"
 #include "PCSlayerInfo.h"
 #include "PCVampireInfo.h"
@@ -62,21 +64,26 @@ void LCPCList::read(SocketInputStream& iStream)
     for (uint j = 0; j < SLOT_MAX; j++) {
         switch (pcTypes[j]) {
         case 'S': {
-            PCSlayerInfo* pPCSlayerInfo = new PCSlayerInfo();
+            std::unique_ptr<PCSlayerInfo> pPCSlayerInfo(new PCSlayerInfo);
             pPCSlayerInfo->read(iStream);
-            m_pPCInfos[pPCSlayerInfo->getSlot()] = pPCSlayerInfo;
+            // get() then release(): the right side of `a[i] = p.release()` is
+            // sequenced first, so p->getSlot() would read a null pointer.
+            m_pPCInfos[pPCSlayerInfo->getSlot()] = pPCSlayerInfo.get();
+            (void)pPCSlayerInfo.release();
         } break;
 
         case 'V': {
-            PCVampireInfo* pPCVampireInfo = new PCVampireInfo();
+            std::unique_ptr<PCVampireInfo> pPCVampireInfo(new PCVampireInfo);
             pPCVampireInfo->read(iStream);
-            m_pPCInfos[pPCVampireInfo->getSlot()] = pPCVampireInfo;
+            m_pPCInfos[pPCVampireInfo->getSlot()] = pPCVampireInfo.get();
+            (void)pPCVampireInfo.release();
         } break;
 
         case 'O': {
-            PCOustersInfo* pPCOustersInfo = new PCOustersInfo();
+            std::unique_ptr<PCOustersInfo> pPCOustersInfo(new PCOustersInfo);
             pPCOustersInfo->read(iStream);
-            m_pPCInfos[pPCOustersInfo->getSlot()] = pPCOustersInfo;
+            m_pPCInfos[pPCOustersInfo->getSlot()] = pPCOustersInfo.get();
+            (void)pPCOustersInfo.release();
         } break;
 
         case '0':

@@ -9,6 +9,8 @@
 // include files
 #include "LCWorldList.h"
 
+#include <memory>
+
 #include "PCSlayerInfo.h"
 #include "PCVampireInfo.h"
 
@@ -47,9 +49,9 @@ void LCWorldList::read(SocketInputStream& iStream)
     // State the actual size when optimizing.
     iStream.read(ListNum);
     for (int i = 0; i < ListNum; i++) {
-        WorldInfo* pWorldInfo = new WorldInfo();
+        std::unique_ptr<WorldInfo> pWorldInfo(new WorldInfo);
         pWorldInfo->read(iStream);
-        m_WorldInfoList.push_back(pWorldInfo);
+        m_WorldInfoList.push_back(pWorldInfo.release());
     }
 
     __END_CATCH

@@ -9,6 +9,8 @@
 // include files
 #include "SGGuildInfo.h"
 
+#include <memory>
+
 
 //////////////////////////////////////////////////////////////////////
 // constructor
@@ -37,9 +39,9 @@ void SGGuildInfo::read(SocketInputStream& iStream) {
         throw InvalidProtocolException("too many guild infos");
 
     for (int i = 0; i < szGuildInfo; i++) {
-        GuildInfo2* pGuildInfo = new GuildInfo2();
+        std::unique_ptr<GuildInfo2> pGuildInfo(new GuildInfo2);
         pGuildInfo->read(iStream);
-        m_GuildInfoList.push_back(pGuildInfo);
+        m_GuildInfoList.push_back(pGuildInfo.release());
     }
 
     __END_CATCH

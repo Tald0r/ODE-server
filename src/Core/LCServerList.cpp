@@ -9,6 +9,8 @@
 // include files
 #include "LCServerList.h"
 
+#include <memory>
+
 #include "PCSlayerInfo.h"
 #include "PCVampireInfo.h"
 
@@ -47,9 +49,9 @@ void LCServerList::read(SocketInputStream& iStream)
     // State the actual size when optimizing.
     iStream.read(ListNum);
     for (int i = 0; i < ListNum; i++) {
-        ServerGroupInfo* pServerGroupInfo = new ServerGroupInfo();
+        std::unique_ptr<ServerGroupInfo> pServerGroupInfo(new ServerGroupInfo);
         pServerGroupInfo->read(iStream);
-        m_ServerGroupInfoList.push_back(pServerGroupInfo);
+        m_ServerGroupInfoList.push_back(pServerGroupInfo.release());
     }
 
     __END_CATCH

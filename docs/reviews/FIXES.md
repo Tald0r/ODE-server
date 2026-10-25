@@ -1322,9 +1322,13 @@ successful attachment writes directly into the slot array without releasing an
 existing entry. Duplicate slots or reuse of a populated packet can therefore
 leak earlier records. Found while auditing outgoing list ownership; the new
 assembler's ownership fix does not change decoding. Decoder failure/reuse tests
-and a prepared replacement policy remain to be added.
+and a prepared replacement policy remain to be added. Since
+fix/gc-read-record-ownership the incoming record is held in a `unique_ptr`
+until its slot takes it, so a failure before attachment frees it; a duplicate
+slot still overwrites the earlier record.
 
-> **Status:** recorded, not fixed (refactor/login-character-list)
+> **Status:** partly fixed (fix/gc-read-record-ownership: the failure before
+> attachment); the duplicate-slot overwrite is recorded, not fixed
 
 ## Login group and population catalogues lack safe scoped ownership (2026-10-02)
 
@@ -2168,16 +2172,22 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   and had to reconnect to send the next.
   ASan's leak check reports it in the fuzz build when the gate is open
   (`DE_FUZZ_ANY_ID=1`). The documented fuzz runs and the replay ctests
-  in a `DARKEDEN_BUILD_FUZZERS` tree turn leak detection off
+  in a `DARKEDEN_BUILD_FUZZERS` tree used to turn leak detection off
   (`ASAN_OPTIONS=detect_leaks=0`) for it and for the reads in the next
   entry. The fix is one ownership rule for the whole
   set: a written packet borrows its records and a read one owns them.
   `GCNPCInfo` (`m_OwnsNPCInfos`), `GCModifyNickname`
   (`m_bOwnsNicknameInfo`) and `GCBloodBibleSignInfo` (`m_bOwnsInfo`,
   with `clearSignInfo()`, the closest to the leaking sign record)
-  already carry an owner flag each.
-  > **Status:** recorded, not fixed (feat/packet-fuzzing) — unreachable
-  > from a client since fix/client-link-packet-ids.
+  already carried an owner flag each. Now `GCUpdateInfo` does too
+  (`m_bOwnsRecords`, set at the top of `read()`): its destructor deletes
+  the NPC, nickname and sign records when the flag is set, and an NPC
+  record is held in a `unique_ptr` until `addNPCInfo` takes it, so a
+  record whose read throws goes too. The replay ctests run with leak
+  detection on, and `fuzz_replay_game_any_id` is the test that keeps the
+  reads leak-free; it runs under ASan only in the fuzz build
+  (`tools/fuzz/Dockerfile.fuzz`, by hand), since CI has no sanitizer job.
+  > **Status:** fixed (fix/gc-read-record-ownership)
 - **Five more GC reads leak the records they allocate.** With leak
   detection on, the game replay over the seed corpus and
   `tests/fuzz/regressions/game/` with the gate open (as
@@ -2204,10 +2214,20 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   throws is lost. An ownership rule for the six reads above does not
   cover that shape. Refusing on the gameserver the packet ids a client
   never sends closes both for client input, and the gameserver now does
-  (all of these are GC packets no client sends); the reads themselves
-  are unchanged.
-  > **Status:** recorded, not fixed (feat/packet-fuzzing) — unreachable
-  > from a client since fix/client-link-packet-ids.
+  (all of these are GC packets no client sends). The reads now own what
+  they allocate: `GCAddSlayer`, `GCAddVampire` and `GCAddOusters` carry
+  `m_bOwnsRecords`, `GCPetInfo` `m_bOwnsPetInfo` and `GCPetStashList`
+  `m_bOwnsPetInfos`, each set at the top of `read()` and consulted by the
+  destructor, so a filler's borrowed records are still left alone. Every
+  site under `src/Core` that allocates a record, reads into it and only
+  then installs it (33, in 29 files: the `new X; x->read(); push_back`
+  shape, `GuildInfo2` and `SGGuildInfo` with it, and `GCGoodsList` and
+  `GCPartyJoined`, which read the record's fields one by one) holds the
+  record in a `unique_ptr` until it is installed, so a record whose own
+  read throws is freed with the exception. Checked by the replay ctests
+  with leak detection on, which run only in the fuzz build
+  (`tools/fuzz/Dockerfile.fuzz`, by hand; CI has no sanitizer job).
+  > **Status:** fixed (fix/gc-read-record-ownership)
 - **`SocketInputStream::readPacket` was not bounded by the frame.** A
   packet's `read()` consumed what its fields said, not the size its
   header declared, and nothing checked that the two agree. A body

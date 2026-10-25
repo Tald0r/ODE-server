@@ -58,15 +58,10 @@ endfunction()
 set(DARKEDEN_FUZZ_SCRATCH ${CMAKE_CURRENT_BINARY_DIR}/scratch)
 file(MAKE_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
 
-# The replay tests' environment. In a DARKEDEN_BUILD_FUZZERS tree every
-# target carries ASan, whose leak check would fail the all-ids game replay
-# on the reads that leak (GCUpdateInfo::read and five more, recorded in
-# docs/reviews/FIXES.md; the client link refuses all six); the libFuzzer runs turn
-# it off the same way.
-set(DARKEDEN_FUZZ_REPLAY_ENV "")
-if(DARKEDEN_BUILD_FUZZERS)
-    list(APPEND DARKEDEN_FUZZ_REPLAY_ENV "ASAN_OPTIONS=detect_leaks=0")
-endif()
+# In a DARKEDEN_BUILD_FUZZERS tree every target carries ASan, and its leak
+# check stays on: a read owns every record it allocates (docs/reviews/FIXES.md,
+# "GCUpdateInfo::read leaks two records"), and the all-ids game replay is the
+# test that keeps it so.
 
 foreach(name ${DARKEDEN_FUZZ_TARGETS})
     set(source ${DARKEDEN_FUZZ_${name}_SOURCE})
@@ -107,9 +102,6 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
     set_tests_properties(fuzz_replay_${name} PROPERTIES
         FIXTURES_REQUIRED fuzz_corpus_${name}
         TIMEOUT 120)
-    if(DARKEDEN_FUZZ_REPLAY_ENV)
-        set_tests_properties(fuzz_replay_${name} PROPERTIES ENVIRONMENT "${DARKEDEN_FUZZ_REPLAY_ENV}")
-    endif()
 
     if(TARGET wire_tests)
         # devbuild's test path builds wire_tests and then runs all of
@@ -146,7 +138,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game)
         COMMAND fuzz_replay_game ${CMAKE_CURRENT_BINARY_DIR}/corpus/game
             ${CMAKE_CURRENT_SOURCE_DIR}/regressions/game
         WORKING_DIRECTORY ${DARKEDEN_FUZZ_SCRATCH})
-    set(any_id_env DE_FUZZ_ANY_ID=1 DE_FUZZ_NO_STORE_SKIP=1 ${DARKEDEN_FUZZ_REPLAY_ENV})
+    set(any_id_env DE_FUZZ_ANY_ID=1 DE_FUZZ_NO_STORE_SKIP=1)
     set_tests_properties(fuzz_replay_game_any_id PROPERTIES
         FIXTURES_REQUIRED fuzz_corpus_game
         ENVIRONMENT "${any_id_env}"

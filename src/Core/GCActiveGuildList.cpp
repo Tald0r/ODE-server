@@ -10,6 +10,7 @@
 
 #include <exception>
 #include <list>
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////
 // constructor
@@ -46,9 +47,9 @@ void GCActiveGuildList::read(SocketInputStream& iStream) {
         throw InvalidProtocolException("too many guild infos");
 
     for (int i = 0; i < ListNum; i++) {
-        GuildInfo* pGuildInfo = new GuildInfo();
+        std::unique_ptr<GuildInfo> pGuildInfo(new GuildInfo);
         pGuildInfo->read(iStream);
-        m_GuildInfoList.push_back(pGuildInfo);
+        m_GuildInfoList.push_back(pGuildInfo.release());
     }
 
     __END_CATCH

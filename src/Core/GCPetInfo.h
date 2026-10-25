@@ -57,6 +57,9 @@ private:
     ObjectID_t m_ObjectID;
     PetInfo* m_pPetInfo;
     BYTE m_IsSummonInfo;
+    // Set by read() alone: a setter installs a borrowed record and is for
+    // a packet being filled, never one that was read.
+    bool m_bOwnsPetInfo = false; // true once read() allocated the record
 };
 
 class GCPetInfoFactory : public PacketFactory {

@@ -8,6 +8,8 @@
 // include files
 #include "GCSweeperBonusInfo.h"
 
+#include <memory>
+
 
 //////////////////////////////////////////////////////////////////////
 // constructor
@@ -49,9 +51,9 @@ void GCSweeperBonusInfo::read(SocketInputStream& iStream)
         throw InvalidProtocolException("too many sweeper bonuses");
 
     for (int i = 0; i < ListNum; i++) {
-        SweeperBonusInfo* pSweeperBonusInfo = new SweeperBonusInfo();
+        std::unique_ptr<SweeperBonusInfo> pSweeperBonusInfo(new SweeperBonusInfo);
         pSweeperBonusInfo->read(iStream);
-        m_SweeperBonusInfoList.push_back(pSweeperBonusInfo);
+        m_SweeperBonusInfoList.push_back(pSweeperBonusInfo.release());
     }
 
     __END_CATCH

@@ -8,6 +8,8 @@
 // include files
 #include "GCSkillInfo.h"
 
+#include <memory>
+
 #include "Assert1.h"
 #include "OustersSkillInfo.h"
 #include "SlayerSkillInfo.h"
@@ -73,25 +75,25 @@ void GCSkillInfo::read(SocketInputStream& iStream)
     switch (m_PCType) {
     case PC_SLAYER:
         for (int i = 0; i < m_ListNum; i++) {
-            SlayerSkillInfo* pSlayerSkillInfo = new SlayerSkillInfo();
+            std::unique_ptr<SlayerSkillInfo> pSlayerSkillInfo(new SlayerSkillInfo);
             pSlayerSkillInfo->read(iStream);
-            m_pPCSkillInfoList.push_back(pSlayerSkillInfo);
+            m_pPCSkillInfoList.push_back(pSlayerSkillInfo.release());
         }
         break;
 
     case PC_VAMPIRE:
         for (int i = 0; i < m_ListNum; i++) {
-            VampireSkillInfo* pVampireSkillInfo = new VampireSkillInfo();
+            std::unique_ptr<VampireSkillInfo> pVampireSkillInfo(new VampireSkillInfo);
             pVampireSkillInfo->read(iStream);
-            m_pPCSkillInfoList.push_back(pVampireSkillInfo);
+            m_pPCSkillInfoList.push_back(pVampireSkillInfo.release());
         }
         break;
 
     case PC_OUSTERS:
         for (int i = 0; i < m_ListNum; i++) {
-            OustersSkillInfo* pOustersSkillInfo = new OustersSkillInfo();
+            std::unique_ptr<OustersSkillInfo> pOustersSkillInfo(new OustersSkillInfo);
             pOustersSkillInfo->read(iStream);
-            m_pPCSkillInfoList.push_back(pOustersSkillInfo);
+            m_pPCSkillInfoList.push_back(pOustersSkillInfo.release());
         }
         break;
 

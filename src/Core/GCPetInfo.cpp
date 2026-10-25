@@ -34,6 +34,10 @@ GCPetInfo::~GCPetInfo()
 {
     __BEGIN_TRY
 
+    // a filler's record is the pet item's (CreatureUtil.cpp); read()'s is the packet's
+    if (m_bOwnsPetInfo)
+        SAFE_DELETE(m_pPetInfo);
+
     __END_CATCH_NO_RETHROW
 }
 
@@ -44,6 +48,11 @@ void GCPetInfo::read(SocketInputStream& iStream)
 
 {
     __BEGIN_TRY
+
+    // A reader's record is its own; a filler's is the pet item's, so one it
+    // installed is dropped, unowned, before the flag is set.
+    m_pPetInfo = NULL;
+    m_bOwnsPetInfo = true;
 
     m_pPetInfo = new PetInfo;
     m_pPetInfo->read(iStream);

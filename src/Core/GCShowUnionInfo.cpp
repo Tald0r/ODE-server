@@ -8,6 +8,8 @@
 // include files
 #include "GCShowUnionInfo.h"
 
+#include <memory>
+
 //////////////////////////////////////////////////////////////////////
 // destructor
 //////////////////////////////////////////////////////////////////////
@@ -53,9 +55,9 @@ void GCShowUnionInfo::read(SocketInputStream& iStream)
     BYTE szNum;
     iStream.read(szNum);
     for (int i = 0; i < szNum; ++i) {
-        SingleGuildInfo* pInfo = new SingleGuildInfo;
+        std::unique_ptr<SingleGuildInfo> pInfo(new SingleGuildInfo);
         pInfo->read(iStream);
-        m_GuildList.push_back(pInfo);
+        m_GuildList.push_back(pInfo.release());
     }
 
     __END_CATCH

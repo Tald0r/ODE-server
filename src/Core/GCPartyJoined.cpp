@@ -5,6 +5,8 @@
 
 #include "GCPartyJoined.h"
 
+#include <memory>
+
 #include "Assert1.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -112,15 +114,13 @@ void GCPartyJoined::read(SocketInputStream& iStream)
         throw InvalidProtocolException("too many party members");
 
     for (uint i = 0; i < m_MemberCount; i++) {
-        PARTY_MEMBER_INFO* pInfo = new PARTY_MEMBER_INFO;
+        std::unique_ptr<PARTY_MEMBER_INFO> pInfo(new PARTY_MEMBER_INFO);
 
         BYTE name_length = 0;
         iStream.read(name_length);
 
-        if (name_length > PARTY_MEMBER_NAME_MAX_LENGTH) {
-            SAFE_DELETE(pInfo);
+        if (name_length > PARTY_MEMBER_NAME_MAX_LENGTH)
             throw InvalidProtocolException("too long party member name");
-        }
 
         if (name_length > 0) {
             iStream.read(pInfo->name, name_length);
@@ -130,7 +130,7 @@ void GCPartyJoined::read(SocketInputStream& iStream)
         iStream.read(pInfo->hair_style);
         iStream.read(pInfo->ip);
 
-        m_MemberInfoList.push_back(pInfo);
+        m_MemberInfoList.push_back(pInfo.release());
     }
 
     __END_CATCH

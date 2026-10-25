@@ -12,6 +12,8 @@
 //////////////////////////////////////////////////////////////////////
 #include "GearInfo.h"
 
+#include <memory>
+
 #include "Assert.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
@@ -49,9 +51,9 @@ void GearInfo::read(SocketInputStream& iStream) {
     iStream.read(m_ListNum);
 
     for (int i = 0; i < m_ListNum; i++) {
-        GearSlotInfo* pGearSlotInfo = new GearSlotInfo();
+        std::unique_ptr<GearSlotInfo> pGearSlotInfo(new GearSlotInfo);
         pGearSlotInfo->read(iStream);
-        m_GearSlotInfoList.push_back(pGearSlotInfo);
+        m_GearSlotInfoList.push_back(pGearSlotInfo.release());
     }
 
     __END_CATCH

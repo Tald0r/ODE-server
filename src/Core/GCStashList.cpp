@@ -5,6 +5,8 @@
 
 #include "GCStashList.h"
 
+#include <memory>
+
 #include "Assert1.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -105,9 +107,9 @@ void GCStashList::read(SocketInputStream& iStream)
             throw InvalidProtocolException("too many sub items");
 
         for (int s = 0; s < subItemCount; s++) {
-            SubItemInfo* pSubItemInfo = new SubItemInfo();
+            std::unique_ptr<SubItemInfo> pSubItemInfo(new SubItemInfo);
             pSubItemInfo->read(iStream);
-            m_pSubItems[rack][index].push_back(pSubItemInfo);
+            m_pSubItems[rack][index].push_back(pSubItemInfo.release());
         }
 
         m_bExist[rack][index] = true;

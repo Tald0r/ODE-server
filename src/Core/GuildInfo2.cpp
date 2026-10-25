@@ -11,6 +11,8 @@
 //////////////////////////////////////////////////////////////////////
 #include "GuildInfo2.h"
 
+#include <memory>
+
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
 #include "WireString.h"
@@ -72,9 +74,9 @@ void GuildInfo2::read(SocketInputStream& iStream) {
     WORD szGuildMemberInfo;
     iStream.read(szGuildMemberInfo);
     for (int i = 0; i < szGuildMemberInfo; i++) {
-        GuildMemberInfo2* pGuildMemberInfo = new GuildMemberInfo2();
+        std::unique_ptr<GuildMemberInfo2> pGuildMemberInfo(new GuildMemberInfo2);
         pGuildMemberInfo->read(iStream);
-        m_GuildMemberInfoList.push_back(pGuildMemberInfo);
+        m_GuildMemberInfoList.push_back(pGuildMemberInfo.release());
     }
 
 

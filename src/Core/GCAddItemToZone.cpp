@@ -10,6 +10,7 @@
 #include "GCAddItemToZone.h"
 
 #include <exception>
+#include <memory>
 
 #include "Assert1.h"
 #include "SocketEncryptInputStream.h"
@@ -86,9 +87,9 @@ void GCAddItemToZone::read(SocketInputStream& iStream)
     // Read the sub item information.
     iStream.read(m_ListNum);
     for (int i = 0; i < m_ListNum; i++) {
-        SubItemInfo* pSubItemInfo = new SubItemInfo();
+        std::unique_ptr<SubItemInfo> pSubItemInfo(new SubItemInfo);
         pSubItemInfo->read(iStream);
-        m_SubItemInfoList.push_back(pSubItemInfo);
+        m_SubItemInfoList.push_back(pSubItemInfo.release());
     }
 
 

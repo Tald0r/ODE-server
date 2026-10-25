@@ -6,6 +6,8 @@
 
 #include "PCItemInfo.h"
 
+#include <memory>
+
 #include "Assert.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
@@ -73,9 +75,9 @@ void PCItemInfo::read(SocketInputStream& iStream) {
     iStream.read(m_ListNum);
 
     for (int i = 0; i < m_ListNum; i++) {
-        SubItemInfo* pSubItemInfo = new SubItemInfo();
+        std::unique_ptr<SubItemInfo> pSubItemInfo(new SubItemInfo);
         pSubItemInfo->read(iStream);
-        m_SubItemInfoList.push_back(pSubItemInfo);
+        m_SubItemInfoList.push_back(pSubItemInfo.release());
     }
 
     __END_CATCH
