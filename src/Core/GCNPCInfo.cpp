@@ -8,10 +8,11 @@
 // include files
 #include "GCNPCInfo.h"
 
+#include <memory>
+
 #include "Assert1.h"
 #include "PCSlayerInfo2.h"
 #include "PCVampireInfo2.h"
-#include <memory>
 
 // for client.. by sigi
 #ifndef SAFE_DELETE

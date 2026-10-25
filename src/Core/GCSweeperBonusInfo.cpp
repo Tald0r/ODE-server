@@ -7,6 +7,7 @@
 
 // include files
 #include "GCSweeperBonusInfo.h"
+
 #include <memory>
 
 

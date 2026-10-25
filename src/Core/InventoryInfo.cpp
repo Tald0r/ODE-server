@@ -6,9 +6,10 @@
 
 #include "InventoryInfo.h"
 
+#include <memory>
+
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
-#include <memory>
 
 //////////////////////////////////////////////////////////////////////////////
 // constructor

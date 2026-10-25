@@ -6,11 +6,12 @@
 
 #include "PCItemInfo.h"
 
+#include <memory>
+
 #include "Assert.h"
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
 #include "StringStream.h"
-#include <memory>
 
 //////////////////////////////////////////////////////////////////////////////
 // constructor

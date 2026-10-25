@@ -9,10 +9,11 @@
 // include files
 #include "LCPCList.h"
 
+#include <memory>
+
 #include "PCOustersInfo.h"
 #include "PCSlayerInfo.h"
 #include "PCVampireInfo.h"
-#include <memory>
 
 //----------------------------------------------------------------------
 // constructor

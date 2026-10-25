@@ -6,8 +6,9 @@
 // include files
 #include "GCTradeAddItem.h"
 
-#include "Assert1.h"
 #include <memory>
+
+#include "Assert1.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // constructor

@@ -8,11 +8,12 @@
 // include files
 #include "GCSkillInfo.h"
 
+#include <memory>
+
 #include "Assert1.h"
 #include "OustersSkillInfo.h"
 #include "SlayerSkillInfo.h"
 #include "VampireSkillInfo.h"
-#include <memory>
 
 //--------------------------------------------------------------------------------
 // constructor

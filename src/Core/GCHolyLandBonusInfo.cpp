@@ -7,6 +7,7 @@
 
 // include files
 #include "GCHolyLandBonusInfo.h"
+
 #include <memory>
 
 

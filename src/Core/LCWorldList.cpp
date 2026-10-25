@@ -9,9 +9,10 @@
 // include files
 #include "LCWorldList.h"
 
+#include <memory>
+
 #include "PCSlayerInfo.h"
 #include "PCVampireInfo.h"
-#include <memory>
 
 //----------------------------------------------------------------------
 // constructor

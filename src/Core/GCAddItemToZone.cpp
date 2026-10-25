@@ -10,11 +10,11 @@
 #include "GCAddItemToZone.h"
 
 #include <exception>
+#include <memory>
 
 #include "Assert1.h"
 #include "SocketEncryptInputStream.h"
 #include "SocketEncryptOutputStream.h"
-#include <memory>
 
 //--------------------------------------------------------------------
 // Constructor

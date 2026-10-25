@@ -1,7 +1,8 @@
 #include "QuestStatusInfo.h"
 
-#include "Exception.h"
 #include <memory>
+
+#include "Exception.h"
 
 QuestStatusInfo::~QuestStatusInfo() {
     clearMissions();

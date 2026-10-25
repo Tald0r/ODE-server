@@ -5,8 +5,9 @@
 
 #include "GCStashList.h"
 
-#include "Assert1.h"
 #include <memory>
+
+#include "Assert1.h"
 
 //////////////////////////////////////////////////////////////////////////////
 // constructor
