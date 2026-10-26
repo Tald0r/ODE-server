@@ -100,7 +100,9 @@ the packet's metadata and throws `DisconnectException`. On the loginserver any o
 
 **How:** not a plain catch-all. Login handlers throw on purpose: `CLLogoutHandler` throws
 `DisconnectException` on every logout, `CLChangeServerHandler` too, and a send can throw
-`ConnectException`; `LoginPlayerManager::processCommands` X`DISCONNECTED` and, from `processCommand`, a `ProtocolException` as `UNDISCONNECTED` (the output path retires it as `DISCONNECTED`), each with `std::current_exception()`
+`ConnectException`; `LoginPlayerManager::processCommands` retires a `ConnectException` as
+`DISCONNECTED` and, from `processCommand`, a `ProtocolException` as `UNDISCONNECTED` (the
+output path retires it as `DISCONNECTED`), each with `std::current_exception()`
 kept (`tests/login_player_retirement_test.cpp` pins that). So: rethrow `ProtocolException&` and
 `ConnectException&` first, and convert only the rest, with `de::logPacketMetadata`
 (`src/server/PacketDiagnostics.h`) to `errorLogin.txt`, then `throw DisconnectException(...)`.
