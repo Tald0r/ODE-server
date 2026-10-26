@@ -1,5 +1,11 @@
 # Knowledge Bundle Update Log
 
+## 2026-10-26
+
+* **Creation**: [next work plan](reviews/NEXT.md), the ranked tasks left in the server after the
+  2026-10-25 merges, drawn from the fix log's `recorded` entries and task 5.5's next reader, each
+  self-contained enough for an agent without this history to take it; `CLAUDE.md`'s records link it.
+
 ## 2026-10-23
 
 * **Update**: `CLAUDE.md`'s "Rules and the tests that own them" table has one home, the area
