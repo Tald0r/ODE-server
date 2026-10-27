@@ -344,6 +344,20 @@ TEST(ListCountTest, aWorldListPastItsBudgetIsRefused) {
                  InvalidProtocolException);
 }
 
+TEST(ListCountTest, aWorldListThatFillsItsBudgetIsRead) {
+    auto packet = std::make_unique<LCWorldList>();
+    readHandBuiltBody(*packet, [](SocketOutputStream& out) {
+        out.write((WorldID_t)1);
+        out.write((BYTE)WorldInfo::kMaxCount);
+        for (uint i = 0; i < WorldInfo::kMaxCount; i++) {
+            out.write((WorldID_t)(i + 1));
+            de::wire::writeString(out, "world", {1, maxNameLength}, "Name");
+            out.write((BYTE)0);
+        }
+    });
+    EXPECT_EQ(packet->getListNum(), WorldInfo::kMaxCount);
+}
+
 TEST(ListCountTest, aServerListPastItsBudgetIsRefused) {
     auto packet = std::make_unique<LCServerList>();
     EXPECT_THROW(readHandBuiltBody(*packet,

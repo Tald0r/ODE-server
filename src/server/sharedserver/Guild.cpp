@@ -657,8 +657,10 @@ void Guild::makeInfo(GuildInfo2* pGuildInfo) noexcept(false) {
     pGuildInfo->setDate(m_Date);
     pGuildInfo->setIntro(m_Intro);
 
+    // The reply carries at most the roster GuildInfo2::read admits, so an
+    // over-budget roster in the table cannot get the gameserver's link refused.
     HashMapGuildMemberConstItor itr = m_Members.begin();
-    for (; itr != m_Members.end(); itr++) {
+    for (; itr != m_Members.end() && pGuildInfo->getGuildMemberInfoListNum() < GuildInfo2::kMaxMemberCount; itr++) {
         auto pGuildMemberInfo = std::make_unique<GuildMemberInfo2>();
         pGuildMemberInfo->setGuildID(itr->second->getGuildID());
         pGuildMemberInfo->setName(itr->second->getName());

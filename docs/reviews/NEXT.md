@@ -180,6 +180,8 @@ PRs #386-#391 were closed unmerged: their commits reached master as the stack PR
   `fix/tile-delete-by-mode`): nothing called it, so the overload is declared deleted.
 - **6. Count gates the login and guild reads still lack** (`next-plan/batch-2`): `LCWorldList`,
   `LCServerList` and `GuildInfo2` refuse a count past their factory budget before the first row,
-  and every list read appends a row before releasing its owner; `ListCountTest` in
-  `tests/packet_read_bounds_test.cpp` pins each refusal. No fuzz regression input was added:
-  nothing crashed a target, and a replay could not show it reaches the gate.
+  the four reads append a row before releasing its owner, and the sharedserver's
+  `Guild::makeInfo` sends no more members than the read admits; `ListCountTest` in
+  `tests/packet_read_bounds_test.cpp` pins the refusals and a full world list. No fuzz regression
+  input was added: none fails on master, where the old out-of-bytes refusal and the new gate are
+  both protocol errors the target treats as clean.

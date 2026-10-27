@@ -20,6 +20,25 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## A guild record's adder and writer take any roster count (2026-10-27)
+
+- **`GuildInfo2::addGuildMemberInfo` and `GuildInfo2::write` take a roster of
+  any size,** while `GuildInfo2::read` refuses one past `kMaxMemberCount`.
+  The one sender, the sharedserver's `Guild::makeInfo`, stops at that count,
+  so no reply exceeds it; a new sender would have to as well.
+  > **Status:** recorded, not fixed (next-plan/batch-2)
+
+## `GCShowUnionInfo::read` takes any guild count (2026-10-27)
+
+- **`GCShowUnionInfo::read` reads up to 255 guilds,** where its factory max
+  budgets the master guild and three others
+  (`SingleGuildInfo::getMaxSize() * 4`), and its adder neither caps the list
+  nor takes ownership on a failed append. Only the client and the game fuzz
+  target's any-id replay read it; its siblings (`GCActiveGuildList`,
+  `GCWaitGuildList`, `GCGuildMemberList`, `GCUnionOfferList`) gate their
+  counts.
+  > **Status:** recorded, not fixed (next-plan/batch-2)
+
 ## A level war's schedule pointer outlives the schedule it names (2026-10-27)
 
 - **`LevelWarManager::m_pLevelWarSchedule` names the queued level war, but
@@ -577,14 +596,18 @@ still need owned partial records; the shared reply-construction fix covers
 outgoing assembly. `GuildInfo2::getMaxSize` budgets 220 members, but its adder,
 reader and writer do not enforce that roster count. These are source findings
 from the reply audit, requiring decoder failure and roster-boundary tests.
-PR #381 put every decoded guild and member in a `std::unique_ptr` and gave
-`SGGuildInfo::read` its 500-guild gate. The roster's budget is now
-`GuildInfo2::kMaxMemberCount`, which `GuildInfo2::read` refuses past before
-the first member, and both reads append a record before releasing its owner;
-`ListCountTest` pins the roster refusal. The adder and the writer still take
-any roster count.
+`SGGuildInfo::read` has refused past 500 guilds since `1d2e8a68`, and PR #381
+put every decoded guild and member in a `std::unique_ptr`. The roster's
+budget is now `GuildInfo2::kMaxMemberCount`, which `GuildInfo2::read` refuses
+past before the first member, and both reads append a record before releasing
+its owner; `ListCountTest` pins the roster refusal. The gameserver asks for
+`SGGuildInfo` on every sharedserver connect and drops the link on a refused
+read, so the sharedserver's `Guild::makeInfo` sends at most that many
+members (`SharedGuildReplies.ReplyRosterStopsAtTheMembersAReadAdmits`): a
+roster past it, which play cannot make (100 active and 15 waiting), would
+otherwise have the link reconnect without end.
 
-> **Status:** fixed for decoding (next-plan/batch-2)
+> **Status:** fixed (next-plan/batch-2)
 
 ## Login world-list assembly leaves partial reply rows unowned (2026-10-02)
 
