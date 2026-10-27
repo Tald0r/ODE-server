@@ -70,6 +70,18 @@ repo and the client's. Entries below are newest first; the oldest is the
   possibly after LOGON was written.
   > **Status:** recorded, not fixed (fix/login-dispatch-wrap)
 
+## A mysterious item's fallback is checked against the last failed draw (2026-10-27)
+
+- **When none of `getRandomMysteriousItem`'s ten random draws fits the
+  buyer, the fallback type is checked with what the tenth draw left
+  behind:** the option roll compares the buyer against that draw's
+  requirements (`ReqSTR2`..`ReqSum2`, `ReqLevel2`), which already exceeded
+  the buyer's when the draws failed on level or stats, so a fallback item
+  almost never carries an option; and the vampire and ousters branches
+  never reset `pItemInfo`, so the uniqueness check reads the tenth draw's
+  item, not the fallback's.
+  > **Status:** recorded, not fixed (fix/mysterious-item-class)
+
 ## A long GM console error report is never sent (2026-10-23)
 
 The `*command clearInventory` body (`gm/ConsoleCommands.cpp`) answers a
@@ -2984,10 +2996,20 @@ do.
   `CoordInven_t` (unsigned char, 255 when the pet item is missing) was not
   `-1`, so the missing case reaches `makeGCCreateItem` with X = 255.
   > **Status:** recorded, not fixed (fix/compiler-warnings)
-- **`getRandomMysteriousItem` tests `Item::ITEM_CLASS_VAMPIRE_COAT && sex ==
-  FEMALE`**, a constant that is always true, so female vampires get item type
-  1 for every item class; `itemClass ==` was evidently meant. Kept.
-  > **Status:** recorded, not fixed (fix/compiler-warnings)
+- **`getRandomMysteriousItem` tested `Item::ITEM_CLASS_VAMPIRE_COAT && sex ==
+  FEMALE`**, a constant that is always true (this cleanup reduced it to
+  `sex == FEMALE`), so a female vampire whose ten random draws all missed got
+  item type 1 of whatever class she bought; `itemClass ==` was evidently
+  meant, and the 2015 tree and the recovered source have the same test with
+  no operator's edit around it. Only the vampire coat comes in a women's
+  type; for the other classes on a vampire's mysterious rack, type 1 is the
+  next tier (a Thumb Grab for a Knuckle Part, a Silver Ring for an Iron
+  Ring), often one she could not yet wear. The fallback is now
+  `vampireMysteriousFallbackItemType`, type 1 only for a woman's vampire
+  coat, a balance change in her favour of wearable items;
+  `tests/game_mysterious_item_test.cpp` pins it (not the call, which needs
+  the item tables and a vampire).
+  > **Status:** fixed (fix/mysterious-item-class)
 - **`Tile::deleteCreature(MoveMode)` calls the `ObjectID_t` overload of
   `deleteObject`** (the sum `OBJECT_PRIORITY_WALKING_CREATURE + mode` is an
   `int`), which looks for an object with ID 1..3 and asserts when none
