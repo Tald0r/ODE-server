@@ -48,10 +48,14 @@ void LCServerList::read(SocketInputStream& iStream)
 
     // State the actual size when optimizing.
     iStream.read(ListNum);
+    if (ListNum > ServerGroupInfo::kMaxCount)
+        throw InvalidProtocolException("too many server groups");
+
     for (int i = 0; i < ListNum; i++) {
         std::unique_ptr<ServerGroupInfo> pServerGroupInfo(new ServerGroupInfo);
         pServerGroupInfo->read(iStream);
-        m_ServerGroupInfoList.push_back(pServerGroupInfo.release());
+        m_ServerGroupInfoList.push_back(pServerGroupInfo.get());
+        pServerGroupInfo.release();
     }
 
     __END_CATCH

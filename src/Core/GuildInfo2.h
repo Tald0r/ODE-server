@@ -48,11 +48,13 @@ public:
     // The list packet SGGuildInfo budgets this many guilds in its factory
     // max; it refuses one more.
     static constexpr uint kMaxCount = 500;
+    // The members one guild's record budgets; read() refuses one more.
+    static constexpr uint kMaxMemberCount = 220;
 
     static constexpr uint getMaxSize() {
         return (szGuildID + szBYTE + 30 + szGuildType + szGuildRace + szGuildState + szServerGroupID + szZoneID +
                 szBYTE + 20 + szBYTE + 11 + szBYTE + 256) +
-               szWORD + GuildMemberInfo2::getMaxSize() * 220;
+               szWORD + GuildMemberInfo2::getMaxSize() * kMaxMemberCount;
     }
 
     // get packet's debug string

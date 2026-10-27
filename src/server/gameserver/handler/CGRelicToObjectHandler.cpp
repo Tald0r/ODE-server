@@ -163,7 +163,10 @@ void CGRelicToObjectHandler::execute(CGRelicToObject* pPacket, Player* pPlayer)
     } else if (pItem->getItemClass() == Item::ITEM_CLASS_SWEEPER) {
         executeSweeper(pPacket, pPlayer);
     } else {
-        throw DisconnectException("RelicToObject sent while holding something that is not a relic");
+        // A dragon eye goes on no object; it is refused like any other item.
+        GCCannotAdd _GCCannotAdd;
+        _GCCannotAdd.setObjectID(pPacket->getObjectID());
+        pPlayer->sendPacket(&_GCCannotAdd);
     }
 
 #endif

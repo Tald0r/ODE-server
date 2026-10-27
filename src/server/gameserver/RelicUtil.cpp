@@ -238,6 +238,7 @@ bool deleteRelicEffect(Corpse* pCorpse, Item* pItem)
 
     case Item::ITEM_CLASS_WAR_ITEM:
         EClass = Effect::EFFECT_CLASS_DRAGON_EYE;
+        break;
 
     default:
         return false;

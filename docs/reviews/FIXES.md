@@ -20,6 +20,34 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## A flag or sweeper offered outside its war gets no answer (2026-10-27)
+
+- **`CGRelicToObjectHandler::executeFlag` returns when no flag war runs,
+  and `executeSweeper` when the zone's level war is not on, without
+  sending anything,** where every other refusal in the handler sends
+  `GCCannotAdd`; a client waiting on the answer keeps the item on the
+  mouse with nothing to say the drop failed.
+  > **Status:** recorded, not fixed (next-plan/batch-2)
+
+## A guild record's adder and writer take any roster count (2026-10-27)
+
+- **`GuildInfo2::addGuildMemberInfo` and `GuildInfo2::write` take a roster of
+  any size,** while `GuildInfo2::read` refuses one past `kMaxMemberCount`.
+  The one sender, the sharedserver's `Guild::makeInfo`, stops at that count,
+  so no reply exceeds it; a new sender would have to as well.
+  > **Status:** recorded, not fixed (next-plan/batch-2)
+
+## `GCShowUnionInfo::read` takes any guild count (2026-10-27)
+
+- **`GCShowUnionInfo::read` reads up to 255 guilds,** where its factory max
+  budgets the master guild and three others
+  (`SingleGuildInfo::getMaxSize() * 4`), and its adder neither caps the list
+  nor takes ownership on a failed append. Only the client and the game fuzz
+  target's any-id replay read it; its siblings (`GCActiveGuildList`,
+  `GCWaitGuildList`, `GCGuildMemberList`, `GCUnionOfferList`) gate their
+  counts.
+  > **Status:** recorded, not fixed (next-plan/batch-2)
+
 ## A level war's schedule pointer outlives the schedule it names (2026-10-27)
 
 - **`LevelWarManager::m_pLevelWarSchedule` names the queued level war, but
@@ -577,8 +605,18 @@ still need owned partial records; the shared reply-construction fix covers
 outgoing assembly. `GuildInfo2::getMaxSize` budgets 220 members, but its adder,
 reader and writer do not enforce that roster count. These are source findings
 from the reply audit, requiring decoder failure and roster-boundary tests.
+`SGGuildInfo::read` has refused past 500 guilds since `1d2e8a68`, and PR #381
+put every decoded guild and member in a `std::unique_ptr`. The roster's
+budget is now `GuildInfo2::kMaxMemberCount`, which `GuildInfo2::read` refuses
+past before the first member, and both reads append a record before releasing
+its owner; `ListCountTest` pins the roster refusal. The gameserver asks for
+`SGGuildInfo` on every sharedserver connect and drops the link on a refused
+read, so the sharedserver's `Guild::makeInfo` sends at most that many
+members (`SharedGuildReplies.ReplyRosterStopsAtTheMembersAReadAdmits`): a
+roster past it, which play cannot make (100 active and 15 waiting), would
+otherwise have the link reconnect without end.
 
-> **Status:** recorded, not fixed (refactor/shared-guild-replies)
+> **Status:** fixed (next-plan/batch-2)
 
 ## Login world-list assembly leaves partial reply rows unowned (2026-10-02)
 
@@ -651,9 +689,11 @@ clear/pop/count refusal. Handler status/error policy and wire layout stay intact
 `LCServerList::read` separately allocates raw rows before parsing/insertion and
 does not enforce its 37-group factory budget. The outgoing ownership fix does
 not cover decoding; failure/reuse/count behavior needs separate tests, as for
-`LCWorldList`.
+`LCWorldList`. PR #381 put each decoded row in a `std::unique_ptr`; the read
+now refuses a count past `ServerGroupInfo::kMaxCount` before the first row and
+appends a row before releasing its owner, pinned by `ListCountTest`.
 
-> **Status:** recorded, not fixed (refactor/login-server-list-replies)
+> **Status:** fixed (next-plan/batch-2)
 
 ## Login routing catalogue loads append partial raw rows into live maps (2026-10-02)
 
@@ -1434,8 +1474,13 @@ publishes independently.
 insertion can throw, and accepts an encoded count above the 37-world factory
 budget. The outgoing assembler and adder enforce ownership and the count limit;
 decoder failure, reuse and count validation need separate packet tests.
+PR #381 put each decoded row in a `std::unique_ptr`; the read now refuses a
+count past `WorldInfo::kMaxCount` with an `InvalidProtocolException` before
+the first row, and appends a row before releasing its owner, so a failed
+append frees it. `ListCountTest` in `tests/packet_read_bounds_test.cpp` pins
+the refusal.
 
-> **Status:** recorded, not fixed (refactor/login-world-list-replies)
+> **Status:** fixed (next-plan/batch-2)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 
@@ -3270,8 +3315,11 @@ do.
   `deleteRelicEffect(Corpse*, Item*)` falls from its `WAR_ITEM` case into
   `default: return false` for want of a `break`. No path puts a dragon eye
   in a corpse, so the second is unreachable; the first costs only the
-  sender's own session, which drops the eye home as it ends.
-  > **Status:** recorded, not fixed (fix/flag-relic-returns)
+  sender's own session, which drops the eye home as it ends. The handler
+  now refuses a relic it has no branch for with `GCCannotAdd`, as it refuses
+  any item that is not a relic, and the `WAR_ITEM` case has its `break`;
+  `tests/game_dragon_eye_test.cpp` pins the second.
+  > **Status:** fixed (next-plan/batch-2)
 
 ## `*CTF` edits the flag war's schedule from a zone thread (2026-09-25)
 

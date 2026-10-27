@@ -284,6 +284,27 @@ TEST(SharedGuildReplies, RefusedBatchTransferRetainsBothOwnersAndCanRetryAfterFr
     EXPECT_EQ(row2.get(), first);
 }
 
+TEST(SharedGuildReplies, ReplyRosterStopsAtTheMembersAReadAdmits) {
+    GuildManager manager;
+    auto guild = sourceGuild(100);
+    for (uint i = 0; i < GuildInfo2::kMaxMemberCount; i++) {
+        auto member = std::make_unique<GuildMember>();
+        member->setGuildID(100);
+        member->setName("Extra" + std::to_string(i));
+        member->setRank(GuildMember::GUILDMEMBER_RANK_NORMAL);
+        guild->addMember(member.get());
+        member.release();
+    }
+    manager.addGuild(guild.get());
+    guild.release();
+    SGGuildInfo reply;
+    manager.makeSGGuildInfo(reply);
+    std::unique_ptr<GuildInfo2> row(reply.popFrontGuildInfoList());
+    ASSERT_NE(row, nullptr);
+    EXPECT_EQ(row->getGuildMemberInfoListNum(), GuildInfo2::kMaxMemberCount);
+    EXPECT_EQ(manager.getGuild(100)->getMembers().size(), GuildInfo2::kMaxMemberCount + 3);
+}
+
 TEST(SharedGuildReplies, ReplyIntroTruncationLeavesTheSourceGuildUnchanged) {
     GuildManager manager;
     auto guild = sourceGuild(100);
