@@ -2,6 +2,12 @@
 
 ## 2026-10-27
 
+* **Update**: [packet-read fuzzing](protocol/fuzzing.md) describes the third target, the
+  loginserver's datagram loop, its first replay's finding, and the stream targets' fourth
+  delivery across the ring buffer's end, and the first libFuzzer runs of the datagram and login
+  stream targets; [frame gate](protocol/frame-gate.md) has a row for the datagram read bound and
+  its owners, and [testing overview](testing/overview.md) names the new replay. [Guilds](shared/guilds.md)' startup row says each race's zone counter
+  starts past its highest stored zone id.
 * **Update**: [closed violations](threading/closed-violations.md) lists the GM's `*command
   LevelWar`, which posts the level war's start to the zone's group instead of editing its schedule
   queue from the GM's thread, and [test coverage](testing/test-coverage.md) the runtime test that

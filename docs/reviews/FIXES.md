@@ -20,22 +20,69 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## Any sender can grow `datagram.txt` one line per datagram (2026-10-27)
+
+- **`Datagram::read` (`src/Core/DatagramFactoryRead.cpp`) appends a line to
+  `datagram.txt` for every datagram that names a registered packet id
+  outside the datagram set,** through `filelog`, which is never rotated and
+  not held behind `DARKEDEN_TRACE`. Nothing authenticates a datagram and
+  the loginserver's and gameserver's sockets bind every address, so any
+  sender that matches a registered id (any CL packet on the loginserver)
+  and its length grows the file without bound: the first five-minute
+  libFuzzer run of `fuzz_login_datagram` wrote 79,271 lines. The same
+  class as the assertion log below; the line is an operator's record of a
+  misdirected datagram, so whether to rate-limit it, move it behind the
+  diagnostics switch or drop it is the owner's call.
+  > **Status:** recorded, not fixed (next-plan/batch-4)
+
+## A short datagram body asserted instead of being refused (2026-10-27)
+
+- **`Datagram::read(char*, uint)` and `Datagram::read(string&, uint)`
+  checked their bounds with `Assert`,** so a packet whose `read()` wanted
+  more bytes than its datagram holds threw `AssertionError` and appended to
+  `assertion_failed.log`, where a stream read past its frame is refused
+  with a `ProtocolException`. The loginserver's datagram loop
+  (`GameServerManager::run`) and the gameserver's
+  (`LoginServerManager::run`) catch every `Throwable`, so neither stopped,
+  but anyone who can reach either UDP port (nothing authenticates a
+  datagram) could grow the log by one assertion per datagram. The first
+  replay of `fuzz_replay_login_datagram` found it on its `GLKickVerify`
+  seed with an empty body. Both reads now refuse a read past the datagram
+  with `InsufficientDataException` and leave the read position where it
+  was, so a body that runs past its datagram is a `ProtocolException` like
+  any malformed one, in both loops
+  (`DatagramFrameRoundTrip.AReadPastTheDatagramIsAProtocolRefusal` in
+  `tests/datagram_frame_test.cpp`, and
+  `tests/fuzz/regressions/login_datagram/GLKickVerify-empty-body.hex`).
+  The bound is the datagram's length, which counts the zero byte behind
+  the body, so a read one byte past its body still reads that byte.
+  > **Status:** fixed (next-plan/batch-4)
+
 ## The first guild founded after a restart reuses a guild zone id (2026-10-27)
 
-- **`GuildManager::init` starts each race's guild zone counter at the
+- **`GuildManager::init` started each race's guild zone counter at the
   highest `GuildZoneID` already stored for that race (`prepareZoneMaximum`,
-  the larger of it and the previous race's counter plus one), and
+  the larger of it and the race's previous counter plus one), and
   `GSAddGuildHandler` gives a new guild the counter itself before moving it
-  on,** so the first guild of a race founded after every restart takes the
-  zone id of that race's newest guild. A guild's zone id is its hideout: an
-  active guild's portal sends members to it (`Portal.cpp`), so the two
-  guilds share one. `GuildInfo` has no unique key on `GuildZoneID`, and the
-  recovered source starts the counter the same way.
-  `SharedGuildStartup.NonemptyTablesUseStoredMaximaAndPreviousZoneMinimumsWithoutConfigKeys`
-  pins the start. The counters also share one word with no partition, so
-  the slayers' (from the base plus one) run into the vampires' range long
-  before the 65535 the founding now refuses at.
-  > **Status:** recorded, not fixed (next-plan/batch-3)
+  on,** so the first guild of a race founded after every restart took the
+  zone id of that race's highest-numbered guild. A guild's zone id is its
+  hideout: an active guild's portal sends members to it (`Portal.cpp`), so
+  the two guilds shared one. `GuildInfo` has no unique key on
+  `GuildZoneID`, and the recovered source starts the counter the same way.
+  Since next-plan/batch-4 the counter starts one past the stored maximum
+  (the larger of that and the race's previous counter plus one), and a
+  stored 65535 leaves it at 65535, where founding refuses, so a restart
+  hands out no zone id a guild holds. `SharedGuildStartup`'s
+  `NonemptyTablesStartZoneCountersPastTheirStoredMaximaWithoutConfigKeys`
+  pins it, and its `RepresentableStoredBoundariesRemainValid` the stored
+  65535.
+  > **Status:** fixed (next-plan/batch-4)
+- **The three races' guild zone counters share one word with no
+  partition.** An empty race starts one past `Guild.cpp`'s 10000, 20000 or
+  30000, so the slayers' ids run into the vampires' range after 10000
+  slayer guilds, and the vampires' into the ousters', long before the 65535
+  founding refuses at.
+  > **Status:** recorded, not fixed (next-plan/batch-4)
 
 ## A flag or sweeper offered outside its war gets no answer (2026-10-27)
 

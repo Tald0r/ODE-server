@@ -1,7 +1,7 @@
 ---
 type: Record
 title: "Next work plan"
-description: "The ranked, self-contained tasks left in the server after the 2026-10-25 merges, each written so an agent with no other context can take it: the recorded-not-fixed entries of the fix log, the fuzzers' two unread paths, and what stays blocked or with the owner."
+description: "The ranked, self-contained tasks left in the server after the 2026-10-25 merges, each written so an agent with no other context can take it: the recorded-not-fixed entries of the fix log, the persistence design the login flows need, and what stays blocked or with the owner."
 tags: [review, plan]
 ---
 
@@ -9,9 +9,10 @@ tags: [review, plan]
 
 Written 2026-10-26, after the merges of PRs #374-#383. The [restructuring plan](RESTRUCTURING.md)
 has two unticked tasks (5.5 in progress, 6.2 blocked); ratchets R1-R5 and R7-R19 are at 0 and
-R6a-j at their baselines (line counts that can still shrink); the [fix log](FIXES.md) holds 430
-`fixed` Status lines and 33 `recorded` ones (counted 2026-10-27). The `recorded` entries are the backlog: each was
-found while restructuring and left as it was, by the rule that a move does not change behaviour.
+R6a-j at their baselines (line counts that can still shrink); the [fix log](FIXES.md) holds 432
+`fixed` Status lines and 34 `recorded` ones (counted 2026-10-27). The `recorded` entries are
+the backlog: each was found while restructuring and left as it was, by the rule that a move
+does not change behaviour.
 What is left is below, ranked by the harm it closes, with a cheap fix ahead of a dearer one of
 the same harm. Each task names the code, the test it wants and the rule it must keep, so it can
 be taken cold. One task per PR.
@@ -48,29 +49,6 @@ be taken cold. One task per PR.
 
 ## Tasks
 
-### 7. Fuzz the loginserver's GM datagrams and the stream's wrap-around
-
-**What:** task 5.5's *Next reader*: a UDP target for the loginserver's GM datagrams is not
-written, and `tests/fuzz/StreamFuzz.h` says the ring buffer's wrap-around branches in `read()`,
-`peek()`, `skip()` and `fill()`'s growth never run, because every input is delivered from the
-start of a buffer sized to hold it.
-
-**How:** (a) a third target, `tests/fuzz/fuzz_login_datagram.cpp`, that feeds the input to
-`Datagram::read` through `src/Core/DatagramFactoryRead.cpp` as `GameServerManager::run`
-(`src/server/loginserver/GameServerManager.cpp`) does after `receive()`, with the client repo's
-`tests/fuzz/fuzz_client_datagram.cpp` as the model. `DARKEDEN_FUZZ_TARGETS` in
-`tests/fuzz/CMakeLists.txt` lists the targets and its `foreach` makes one `fuzz_replay_<name>`
-ctest per target, assuming `StreamFuzz.h`'s input format; a datagram has no stream, so give it
-its own replay main or a format switch. (b) a fourth delivery in the two stream targets: place
-the input across the buffer's end with `SocketInputStreamTestAccess::PreloadAt`, the helper
-`FrameBoundTest.aWrappedFrame*` in `tests/packet_frame_test.cpp` already uses, and assert the
-same packets as the whole delivery. A difference is a stream finding, fixed test-first in
-`tests/packet_frame_test.cpp`.
-
-**Keep:** 5.5 stays `in progress` for its CI fuzz job, which is blocked like 6.2 (the libFuzzer
-runs are manual, [CI](../build/ci.md)); remove only the *Next reader* sentence and record the
-first run on the [fuzzing](../protocol/fuzzing.md) page.
-
 ### 8. Three login flows that cannot be resumed after a partial write
 
 **What:** `recorded` entries of 2026-10-02: *Character creation can leave partial rows after a
@@ -96,11 +74,12 @@ Each is one PR, with a fix-log entry naming the branch that found it:
 - *A dragon eye sent home across groups can outrun its return's three attempts*: the return
   captures the row when it is posted (`war/WarZoneWork.cpp`). Fix: have the retry read the row
   when it runs, or have the delayed add carry the row's save.
-- *The first guild founded after a restart reuses a guild zone id*: `prepareZoneMaximum`
-  (`src/server/sharedserver/GuildManager.cpp`) starts each race's counter at its highest stored
-  `GuildZoneID`, which `GSAddGuildHandler` hands out before moving the counter, so two guilds
-  share a hideout. Start the counter one past the stored maximum and re-pin
-  `SharedGuildStartup`'s stored-maxima case in `tests/shared_guild_startup_test.cpp`.
+- *Any sender can grow `datagram.txt` one line per datagram*: `Datagram::read`
+  (`src/Core/DatagramFactoryRead.cpp`) appends an unrotated line for every datagram naming a
+  registered id outside the datagram set. Rate-limiting the line, moving it behind
+  `DARKEDEN_TRACE` or dropping it is the owner's call; ask before changing what operators see.
+- *The three races' guild zone counters share one word with no partition*: a race reaches the
+  next one's range after 10000 guilds. Lowest, with the relic rows below.
 - *A war relic's row outlives the run that made it*: a boot sweep of this server's relic rows
   (ids are partitioned per server); nothing reads them, so lowest.
 - Not tasks: the *CGPortCheck* registration (`recorded, left as it is`; the entry says the
@@ -182,3 +161,15 @@ PRs #386-#391 were closed unmerged: their commits reached master as the stack PR
   The character list sends `(CurrentHP, HP)` and `(CurrentMP, MP)` again, as the original's
   right-to-left argument evaluation most likely did; the client reads current then max and shows
   the maximum (`LoginCharacterList` in `tests/login_character_list_test.cpp`).
+- **7. Fuzz the loginserver's GM datagrams and the stream's wrap-around** (`next-plan/batch-4`):
+  `tests/fuzz/fuzz_login_datagram.cpp` reads one datagram through `Datagram::read` as
+  `GameServerManager::run` does, seeded by `golden2corpus.pl --datagram` and replayed by
+  `fuzz_replay_login_datagram`; its first replay found `Datagram`'s raw reads asserting past the
+  datagram, which now throw `InsufficientDataException`. The stream targets' fourth delivery
+  starts the input short of the ring buffer's end, and their replay found nothing; nor did the
+  first five-minute libFuzzer runs of the datagram and login stream targets
+  ([fuzzing](../protocol/fuzzing.md)). Task 5.5 stays `in progress` for its CI fuzz job; the
+  libFuzzer runs stay manual.
+- **9, one item: the first guild founded after a restart reuses a guild zone id**
+  (`next-plan/batch-4`): `prepareZoneMaximum` starts each race's counter one past its stored
+  maximum (`SharedGuildStartup` in `tests/shared_guild_startup_test.cpp`).

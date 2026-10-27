@@ -32,7 +32,7 @@ Windows host `make dev-test` is the one to use ([container builds](../build/cont
 | Startup libraries | `server_*_tests`, `listener_startup_tests`, `socket_*_tests`, `managed_thread_tests` and the rest | the entry-point composition, each library alone ([startup](../startup/index.md)) |
 | Decisions | `login_decision_tests`, `character_*_tests`, `*_decision_tests`, `formula_tests` | `Outcome` values and pure formulas against fakes, no database ([exceptions and outcomes](../architecture/exceptions-and-outcomes.md)) |
 | Links | `game_client_link_tests`, `login_client_link_tests`, `game_frame_gate_tests` | what a client connection admits and how a frame is consumed |
-| Fuzz replays | `fuzz_replay_game`, `fuzz_replay_login`, `fuzz_replay_game_any_id` | every golden seed and every recorded crash through the mirrored receive loops ([fuzzing](../protocol/fuzzing.md)) |
+| Fuzz replays | `fuzz_replay_game`, `fuzz_replay_login`, `fuzz_replay_login_datagram`, `fuzz_replay_game_any_id` | every golden seed and every recorded crash through the mirrored receive loops ([fuzzing](../protocol/fuzzing.md)) |
 | Audits | `ratchets`, `arch_includes`, `critical_section_audit`, `knowledge_bundle`, `r5_retire_try_selftest` | the shrink-only counts, the include graph, hand-written unlocks, this bundle, the try-macro retirement tool (`tools/r5_retire_try.pl`) |
 | Integration | `make integration-test` (`tests/integration/`) | every `MySQL*Repository` implementation against a real MySQL with the `initdb/` schema |
 

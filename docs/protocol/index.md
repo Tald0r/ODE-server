@@ -4,7 +4,7 @@
 
 # Guides
 
-* [Packet-read fuzzing](fuzzing.md) - Two libFuzzer targets mirror the game and login receive loops up to read(), deliver every input three ways, and replay their corpus and regressions in ctest.
+* [Packet-read fuzzing](fuzzing.md) - Three libFuzzer targets mirror the game and login receive loops and the loginserver's datagram loop up to read(), deliver every stream input four ways, and replay their corpus and regressions in ctest.
 
 # Rules
 

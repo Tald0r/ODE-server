@@ -2639,12 +2639,14 @@ shrink-only work.
   > enumerators is refused before it becomes an enum
   > (fix/wire-enum-ranges, `-fsanitize=enum` back on in the fuzz
   > build)). The
-  > targets are in `tests/fuzz/` (game and login),
+  > targets are in `tests/fuzz/` (game and login streams, and the
+  > loginserver's datagrams),
   > `DARKEDEN_BUILD_FUZZERS` builds them with libFuzzer in
   > `tools/fuzz/Dockerfile.fuzz`, and the replay builds run in the zig
   > suite over the golden seed corpus and
   > `tests/fuzz/regressions/` (ctests `fuzz_replay_game`,
-  > `fuzz_replay_login`, `fuzz_replay_game_any_id`); each fix but
+  > `fuzz_replay_login`, `fuzz_replay_login_datagram`,
+  > `fuzz_replay_game_any_id`); each fix but
   > the validator's has a gtest in `tests/packet_read_bounds_test.cpp`
   > (`wire_tests`). The client links admit only what a client sends
   > (`game_client_link_tests`, `login_client_link_tests`), so the GC, GS
@@ -2661,15 +2663,15 @@ shrink-only work.
   > `tests/packet_frame_test.cpp`), and the targets abort unless it
   > moves the stream exactly one frame on, and the gameserver's
   > sequence count, which moves only when a frame is consumed
-  > (`GameFrameGate`, `game_frame_gate_tests`): the targets deliver
-  > each input whole, byte by byte and in hashed chunks and abort
-  > unless the three agree, and the game target delivers each input
-  > byte by byte through `GameFrameGate::next` itself as well, holding
-  > the production gate to its mirror's result. Next reader: a UDP target
-  > for the loginserver's GM datagrams (`DatagramFactoryRead.cpp`) is
-  > not written, and the targets deliver each input from the start of
-  > the stream's buffer, so its wrap-around path is not fuzzed
-  > (`StreamFuzz.h`).
+  > (`GameFrameGate`, `game_frame_gate_tests`): the stream targets
+  > deliver each input whole, byte by byte, in hashed chunks and across
+  > the ring buffer's end and abort unless the four agree, and the game
+  > target delivers each input byte by byte through
+  > `GameFrameGate::next` itself as well, holding the production gate
+  > to its mirror's result. The datagram target reads one datagram
+  > through `Datagram::read` as the loginserver's loop does; its first
+  > replay found the datagram's raw reads asserting past the datagram
+  > (fixed, next-plan/batch-4).
   - Owner: the replay ctests (every recorded input replays clean, and a
     read may refuse a body only with a ProtocolException), the gtests
     in `tests/packet_read_bounds_test.cpp` (each fix's refusal or value)
