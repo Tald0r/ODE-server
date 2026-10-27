@@ -59,7 +59,8 @@ public:
 public:
     bool addCreature(Creature* pCreature, bool bCheckEffect = true, bool bCheckPortal = true);
     void deleteCreature(ObjectID_t creatureID);
-    void deleteCreature(Creature::MoveMode mode);
+    // A creature leaves a tile by its id; a move mode would convert to an id.
+    void deleteCreature(Creature::MoveMode mode) = delete;
     Creature* getCreature(ObjectID_t creatureID);
     Creature* getCreature(Creature::MoveMode mode);
 

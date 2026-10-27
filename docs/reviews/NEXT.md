@@ -48,15 +48,13 @@ be taken cold. One task per PR.
 
 ## Tasks
 
-### 4. Four gameplay defects kept by the compiler-warning cleanup
+### 4. Three gameplay defects kept by the compiler-warning cleanup
 
 **What:** the *Compiler-warning cleanup (2026-09-27)* entry's `recorded, not fixed` bullets are
 live defects, kept because the cleanup removed only tautologies:
 
 - `CGLearnSkillHandler`'s range check can never fire (`>= SKILL_MAX && < SKILL_DOUBLE_IMPACT`);
   `CGAddItemToItemHandler` reaches `makeGCCreateItem` with X = 255 when the pet item is missing;
-- `Tile::deleteCreature(MoveMode)` calls the `ObjectID_t` overload of `deleteObject` and
-  asserts; `getCreature(MoveMode)` shows the intended `ObjectPriority` wrap;
 - the overrides that do not override (`processCommand()` without the base's `bool`);
 - the smaller findings bullet: `MotorcycleLoader::load` and `~PlayerCreature` leak, and
   `EffectSatelliteBombAim` uses a skill slot with no null check.
@@ -187,7 +185,7 @@ Each is one PR, with a fix-log entry naming the branch that found it:
   `LoginPlayer::processCommand` passes a handler's `ProtocolException` and `ConnectException` on
   and turns anything else into a logged `DisconnectException`; `tests/login_handler_failure_test.cpp`
   throws each kind from a handler over a loopback connection.
-- **4. Wolf form rejects every skill** (PR #388, `fix/wolf-form-skills`): the four
+- **4, one bullet: wolf form rejects every skill** (PR #388, `fix/wolf-form-skills`): the four
   `isAbleToUse*Skill` guards have their `&&` allow-lists again, and the object, tile and inventory
   skill handlers pass the skill being used, so a wolf howls and attacks and casts nothing else;
   `tests/game_wolf_form_skill_test.cpp` pins each guard per skill.
@@ -199,3 +197,5 @@ Each is one PR, with a fix-log entry naming the branch that found it:
   (PR #390, `fix/mysterious-item-class`): the vampire fallback is
   `vampireMysteriousFallbackItemType`, type 1 only for a woman's vampire coat;
   `tests/game_mysterious_item_test.cpp` pins it.
+- **4, one bullet: `Tile::deleteCreature(MoveMode)` picks the wrong `deleteObject`** (PR #391,
+  `fix/tile-delete-by-mode`): nothing called it, so the overload is declared deleted.

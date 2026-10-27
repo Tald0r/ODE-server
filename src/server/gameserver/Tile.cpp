@@ -205,35 +205,6 @@ void Tile::deleteCreature(ObjectID_t creatureID) {
 }
 
 //////////////////////////////////////////////////////////////
-// Delete the creature of the given layer (move mode) from the list.
-//////////////////////////////////////////////////////////////
-void Tile::deleteCreature(Creature::MoveMode mode) {
-    // The current creature must be blocking that layer.
-    Assert(isBlocked(mode));
-
-    // The current creature must exist.
-    Assert(hasCreature(mode));
-
-    if (hasEffect()) {
-        EffectTryingPosition* pTP;
-        Creature* pCreature = getCreature(mode);
-        if (pCreature != NULL && pCreature->isPC() &&
-            (pTP = dynamic_cast<EffectTryingPosition*>(getEffect(Effect::EFFECT_CLASS_TRYING_POSITION)))) {
-            pTP->unaffect(pCreature);
-        }
-    }
-
-    // Delete the object.
-    deleteObject(OBJECT_PRIORITY_WALKING_CREATURE + static_cast<int>(mode));
-
-    // Turn off the matching creature flag.
-    FLAG_CLEAR(m_wFlags, TILE_WALKING_CREATURE + static_cast<int>(mode));
-
-    // Turn off the matching blocking flag.
-    FLAG_CLEAR(m_wFlags, TILE_GROUND_BLOCKED + static_cast<int>(mode));
-}
-
-//////////////////////////////////////////////////////////////
 // Return the creature with the given ID.
 //////////////////////////////////////////////////////////////
 Creature* Tile::getCreature(ObjectID_t creatureID) {

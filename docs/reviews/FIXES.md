@@ -3010,12 +3010,15 @@ do.
   `tests/game_mysterious_item_test.cpp` pins it (not the call, which needs
   the item tables and a vampire).
   > **Status:** fixed (fix/mysterious-item-class)
-- **`Tile::deleteCreature(MoveMode)` calls the `ObjectID_t` overload of
+- **`Tile::deleteCreature(MoveMode)` called the `ObjectID_t` overload of
   `deleteObject`** (the sum `OBJECT_PRIORITY_WALKING_CREATURE + mode` is an
-  `int`), which looks for an object with ID 1..3 and asserts when none
+  `int`), which looks for an object with ID 0..2 and asserts when none
   matches; `getCreature(MoveMode)` wraps the same sum in `ObjectPriority`,
-  which was evidently meant.
-  > **Status:** recorded, not fixed (fix/compiler-warnings)
+  which was evidently meant. Nothing called it: every `Tile::deleteCreature`
+  call, in `ZoneSpawn.cpp` and `ZoneMove.cpp`, passes the creature's object
+  id. The overload is now declared deleted, so a call by move mode, which
+  would otherwise convert to an id and remove nothing, fails to compile.
+  > **Status:** fixed (fix/tile-delete-by-mode)
 - **Overrides that do not override.** `DummyQuestStatus::isSuccess()` lacks the
   base's `const` (the class is never instantiated). `SharedServerClient`,
   `GameServerPlayer` and mofus `MPlayer` declare `processCommand()` without the
