@@ -24,6 +24,7 @@
 
 FlagManager::FlagManager(de::GameContext& context) : m_Context(context) {
     m_Mutex.setName("FlagManager");
+    m_ScheduleMutex.setName("FlagManagerSchedule");
     m_FlagCount.clear();
 
     m_StatusPacket.setTimeRemain(0);
@@ -95,25 +96,61 @@ void FlagManager::addPoleField(Zone* pZone, ZoneCoord_t left, ZoneCoord_t top, u
     m_PoleFields.push_back(PoleFieldInfo(pZone->getZoneID(), left, top, width * 2, height * 2));
 }
 
-void FlagManager::manualStart() {
-    if (!isEmpty()) {
-        cout << "Pulling the schedule forward.." << endl;
-        addSchedule(new Schedule(popRecentWork(), VSDateTime::currentDateTime()));
-    } else {
-        cout << "Creating a schedule.." << endl;
-        addSchedule(new Schedule(new FlagWar(*this, m_Context), VSDateTime::currentDateTime()));
+Work* FlagManager::heartbeat() {
+    Schedule* pDue = NULL;
+
+    __ENTER_CRITICAL_SECTION(m_ScheduleMutex)
+
+    pDue = popDueSchedule();
+
+    __LEAVE_CRITICAL_SECTION(m_ScheduleMutex)
+
+    if (pDue == NULL)
+        return NULL;
+
+    try {
+        pDue->run();
+    } catch (...) {
+        addSchedule(pDue);
+        throw;
     }
+
+    Work* pWork = pDue->popWork();
+    SAFE_DELETE(pDue);
+
+    return pWork;
 }
 
-bool FlagManager::startFlagWar() {
+void FlagManager::addSchedule(Schedule* pSchedule) {
+    __ENTER_CRITICAL_SECTION(m_ScheduleMutex)
+
+    Scheduler::addSchedule(pSchedule);
+
+    __LEAVE_CRITICAL_SECTION(m_ScheduleMutex)
+}
+
+void FlagManager::manualStart() {
+    bool pulled = false;
+
+    __ENTER_CRITICAL_SECTION(m_ScheduleMutex)
+
+    pulled = !isEmpty();
+    if (pulled)
+        Scheduler::addSchedule(new Schedule(popRecentWork(), VSDateTime::currentDateTime()));
+    else
+        Scheduler::addSchedule(new Schedule(new FlagWar(*this, m_Context), VSDateTime::currentDateTime()));
+
+    __LEAVE_CRITICAL_SECTION(m_ScheduleMutex)
+
+    cout << (pulled ? "Pulled the schedule forward.." : "Created a schedule..") << endl;
+}
+
+bool FlagManager::startFlagWar(int warSecs) {
     if (m_bHasFlagWar)
         return false;
     m_bHasFlagWar = true;
 
-    Work* pWork = m_RecentSchedules.top()->getWork();
-    FlagWar* pFlagWar = dynamic_cast<FlagWar*>(pWork);
-
-    VSDateTime endTime = VSDateTime::currentDateTime().addSecs((pFlagWar != NULL) ? pFlagWar->getWarTime() : 3600);
+    VSDateTime endTime = VSDateTime::currentDateTime().addSecs(warSecs);
 
     resetFlagCounts();
     for (ZoneID_t zoneID : de::ctf::poleZonesOf(getPoleFields()))

@@ -126,7 +126,7 @@ void FlagWar::executeStart() {
 
     // Let it run for 2 hours
     m_FlagManager.addSchedule(new Schedule(this, VSDateTime::currentDateTime().addSecs(getWarTime())));
-    m_FlagManager.startFlagWar();
+    m_FlagManager.startFlagWar(getWarTime());
 }
 
 void FlagWar::executeFinish() {

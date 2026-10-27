@@ -41,6 +41,22 @@ repo and the client's. Entries below are newest first; the oldest is the
   only delays, but it is a data race TSan would report.
   > **Status:** recorded, not fixed (fix/level-war-command-post)
 
+## A flag war step that throws after queuing its next step is queued twice (2026-10-27)
+
+- **`FlagManager::heartbeat` puts a schedule whose run throws back in the
+  queue, but a flag war step queues its own next schedule before the
+  work that can throw:** `FlagWar::executeStart` adds `Schedule(this, ...)`
+  and then calls `startFlagWar`, whose `deleteFlagWarStats` reads the
+  database, and `executeFinish` adds its next step before `endFlagWar`,
+  whose roll-up the required `sql_mode` refuses
+  ([database setup](../database/overview.md)). A throw there leaves two
+  schedules holding one `FlagWar`: each later step would run twice, and
+  `Scheduler::clear` at teardown deletes the work twice. Master did the
+  same by leaving the running schedule queued. Today the throw is a
+  `DatabaseError`, which no `catch (Throwable&)` stops, so it ends the
+  main loop first.
+  > **Status:** recorded, not fixed (fix/flag-schedule-lock)
+
 ## A long GM console error report is never sent (2026-10-23)
 
 The `*command clearInventory` body (`gm/ConsoleCommands.cpp`) answers a
@@ -3197,7 +3213,11 @@ do.
   corrupt the heap. `WarScheduler` has the shape that closes it: a mutex
   over the queue, the due schedule popped under it and run after it is
   released, and every `addSchedule` from the war taken under it.
-  > **Status:** recorded, not fixed (fix/flag-relic-returns)
+  `FlagManager` now has that shape, its own schedule mutex a leaf, and
+  `startFlagWar` is handed the war's length instead of reading the queue;
+  `tests/game_flag_schedule_test.cpp` heartbeats and pulls the schedule
+  forward on two threads and keeps the queue's count.
+  > **Status:** fixed (fix/flag-schedule-lock)
 
 ## A newbie flag war's end rewarded the race that planted last (2026-09-25)
 
