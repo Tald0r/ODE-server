@@ -20,6 +20,15 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## A flag or sweeper offered outside its war gets no answer (2026-10-27)
+
+- **`CGRelicToObjectHandler::executeFlag` returns when no flag war runs,
+  and `executeSweeper` when the zone's level war is not on, without
+  sending anything,** where every other refusal in the handler sends
+  `GCCannotAdd`; a client waiting on the answer keeps the item on the
+  mouse with nothing to say the drop failed.
+  > **Status:** recorded, not fixed (next-plan/batch-2)
+
 ## A guild record's adder and writer take any roster count (2026-10-27)
 
 - **`GuildInfo2::addGuildMemberInfo` and `GuildInfo2::write` take a roster of
