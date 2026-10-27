@@ -6,6 +6,8 @@
 
 #include "GuildDecision.h"
 
+#include <limits>
+
 namespace {
 
 typedef Outcome<SharedGuildEvents, SharedGuildRejection> EventsResult;
@@ -82,6 +84,9 @@ Outcome<AddGuildAllocation, SharedGuildRejection> decideAddGuild(const AddGuildR
     default:
         return Result::Rejected(SharedGuildRejection(SharedGuildReason::UnknownRace));
     }
+
+    if (allocation.zoneID == std::numeric_limits<ZoneID_t>::max())
+        return Result::Rejected(SharedGuildRejection(SharedGuildReason::ZoneIDsExhausted));
 
     return Result::Ok(allocation);
 }
