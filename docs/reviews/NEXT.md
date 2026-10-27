@@ -167,7 +167,7 @@ PRs #386-#391 were closed unmerged: their commits reached master as the stack PR
   `CGRelicToObjectHandler` refuses a relic it has no branch for with `GCCannotAdd` instead of
   disconnecting the sender, and `deleteRelicEffect`'s `WAR_ITEM` case has its `break`;
   `tests/game_dragon_eye_test.cpp` pins the second.
-- **4, the last three bullets** (`next-plan/batch-3`): the never-firing checks are not defects
+- **4, the last three bullets** (PR #394, `next-plan/batch-3`): the never-firing checks are not defects
   (the learn-skill handler's implemented-skill list refuses an out-of-range type first, the pet
   item is the one just taken from the inventory, and `opset item_prob_ratio`'s check was turned
   off by an operator in the recovered source). The sharedserver's `GameServerPlayer`, the gameserver's `SharedServerClient` and
@@ -175,7 +175,7 @@ PRs #386-#391 were closed unmerged: their commits reached master as the stack PR
   deleted. `MotorcycleLoader::load(Creature*)` drops the motorcycle it parses, and
   `~PlayerCreature` deletes the summoned pet; no test owns the two leaks (no leak checker, and
   neither can be built without a database). The satellite bomb's skill slot cannot be null.
-- **9, two items** (`next-plan/batch-3`): a full guild id counter founds nothing,
+- **9, two items** (PR #394, `next-plan/batch-3`): a full guild id counter founds nothing,
   `decideAddGuild` refuses a race whose next zone id is the last, and only an accepted founding
   claims a guild id (`SharedAddGuild` in `tests/shared_add_guild_test.cpp`, `DecideAddGuild` in
   `tests/shared_guild_decision_test.cpp`).
