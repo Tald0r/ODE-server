@@ -594,8 +594,6 @@ void Slayer::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
         pItem->tinysave(pField);
     }
 
-    GCTakeOff _GCTakeOff;
-
     switch (IClass) {
     case Item::ITEM_CLASS_MACE:
     case Item::ITEM_CLASS_CROSS:
@@ -605,48 +603,35 @@ void Slayer::takeOffItem(WearPart Part, bool bAddOnMouse, bool bSendModifyInfo)
     case Item::ITEM_CLASS_SMG:
     case Item::ITEM_CLASS_SG:
         m_SlayerInfo.setWeaponType(WEAPON_NONE);
-        _GCTakeOff.setObjectID(getObjectID());
-        _GCTakeOff.setSlotID((SlotID_t)ADDON_RIGHTHAND);
-        m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, this);
         break;
     case Item::ITEM_CLASS_HELM:
         m_SlayerInfo.setHelmetType(HELMET_NONE);
-        _GCTakeOff.setObjectID(getObjectID());
-        _GCTakeOff.setSlotID((SlotID_t)ADDON_HELM);
-        m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, this);
         break;
     case Item::ITEM_CLASS_SHIELD:
         m_SlayerInfo.setShieldType(SHIELD_NONE);
-        _GCTakeOff.setObjectID(getObjectID());
-        _GCTakeOff.setSlotID((SlotID_t)ADDON_LEFTHAND);
-        m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, this);
         break;
     case Item::ITEM_CLASS_SWORD:
         m_SlayerInfo.setWeaponType(WEAPON_NONE);
-        _GCTakeOff.setObjectID(getObjectID());
-        _GCTakeOff.setSlotID((SlotID_t)ADDON_RIGHTHAND);
-        m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, this);
         break;
     case Item::ITEM_CLASS_COAT:
         m_SlayerInfo.setJacketType(JACKET_BASIC);
-        _GCTakeOff.setObjectID(getObjectID());
-        _GCTakeOff.setSlotID((SlotID_t)ADDON_COAT);
-        m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, this);
         break;
     case Item::ITEM_CLASS_TROUSER:
         m_SlayerInfo.setPantsType(PANTS_BASIC);
-        _GCTakeOff.setObjectID(getObjectID());
-        _GCTakeOff.setSlotID((SlotID_t)ADDON_TROUSER);
-        m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, this);
         break;
     case Item::ITEM_CLASS_SHOULDER_ARMOR:
         m_SlayerInfo.setShoulderType(0);
-        _GCTakeOff.setObjectID(getObjectID());
-        _GCTakeOff.setSlotID((SlotID_t)ADDON_SHOULDER);
-        m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, this);
         break;
     default:
         break;
+    }
+
+    SlotID_t slot;
+    if (slayerTakeOffSlot(IClass, slot)) {
+        GCTakeOff _GCTakeOff;
+        _GCTakeOff.setObjectID(getObjectID());
+        _GCTakeOff.setSlotID(slot);
+        m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, this);
     }
 
     if (m_pZone != NULL) {

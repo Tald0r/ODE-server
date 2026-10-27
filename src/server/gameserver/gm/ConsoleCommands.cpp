@@ -935,7 +935,7 @@ void opFirecraker(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage
     if (pCreature != NULL) {
         Zone* pZone = pCreature->getZone();
 
-        if (!isAbleToUseTileSkill(pCreature) ||
+        if (!isAbleToUseTileSkill(pCreature, SKILL_ATTACK_MELEE) ||
             (pZone->getZoneLevel(pCreature->getX(), pCreature->getY()) & COMPLETE_SAFE_ZONE) ||
             atoi(value1.c_str()) < 0 || atoi(value1.c_str()) > 13) {
             // firecracker

@@ -807,4 +807,8 @@ private:
     //	WORD m_RankExpSaveCount;
 };
 
+// The addon slot a GCTakeOff names when a slayer's worn item of this class
+// comes off or leaves its shape; false for a class with no shape of its own.
+bool slayerTakeOffSlot(Item::ItemClass itemClass, SlotID_t& slot);
+
 #endif // __SLAYER_H__

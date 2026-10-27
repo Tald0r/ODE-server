@@ -180,7 +180,8 @@ void CGUseMessageItemFromInventoryHandler::executeEventTree(CGUseMessageItemFrom
     // It cannot be used in a safe zone.
     // Check that the item type can be used. Only ItemType 12 can be used.
     // It cannot be used when another tree stands nearby (within 5x5 tiles around the player).
-    if (!isAbleToUseTileSkill(pCreature) || pZone->isMasterLair() || ItemObjectID != pPacket->getObjectID() ||
+    if (!isAbleToUseTileSkill(pCreature, SKILL_ATTACK_MELEE) || pZone->isMasterLair() ||
+        ItemObjectID != pPacket->getObjectID() ||
         checkCorpse(pZone, MType, pPC->getX() - 2, pPC->getY() - 2, pPC->getX() + 2, pPC->getY() + 2)) {
         GCCannotUse _GCCannotUse;
         _GCCannotUse.setObjectID(pPacket->getObjectID());

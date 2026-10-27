@@ -401,6 +401,38 @@ bool Slayer::addShape(Item::ItemClass IClass, ItemType_t IType, Color_t color) {
     return bisChange;
 }
 
+bool slayerTakeOffSlot(Item::ItemClass itemClass, SlotID_t& slot) {
+    switch (itemClass) {
+    case Item::ITEM_CLASS_MACE:
+    case Item::ITEM_CLASS_CROSS:
+    case Item::ITEM_CLASS_BLADE:
+    case Item::ITEM_CLASS_AR:
+    case Item::ITEM_CLASS_SR:
+    case Item::ITEM_CLASS_SMG:
+    case Item::ITEM_CLASS_SG:
+    case Item::ITEM_CLASS_SWORD:
+        slot = ADDON_RIGHTHAND;
+        return true;
+    case Item::ITEM_CLASS_HELM:
+        slot = ADDON_HELM;
+        return true;
+    case Item::ITEM_CLASS_SHIELD:
+        slot = ADDON_LEFTHAND;
+        return true;
+    case Item::ITEM_CLASS_COAT:
+        slot = ADDON_COAT;
+        return true;
+    case Item::ITEM_CLASS_TROUSER:
+        slot = ADDON_TROUSER;
+        return true;
+    case Item::ITEM_CLASS_SHOULDER_ARMOR:
+        slot = ADDON_SHOULDER;
+        return true;
+    default:
+        return false;
+    }
+}
+
 bool Slayer::removeShape(Item::ItemClass IClass, bool bSendPacket) {
     bool bisWeapon = false;
 
@@ -419,91 +451,43 @@ bool Slayer::removeShape(Item::ItemClass IClass, bool bSendPacket) {
     case Item::ITEM_CLASS_SG: {
         bisWeapon = true;
         m_SlayerInfo.setWeaponType(WEAPON_NONE);
-
-        if (bSendPacket) // by sigi. 2002.11.6
-        {
-            GCTakeOff _GCTakeOff;
-            _GCTakeOff.setObjectID(getObjectID());
-            _GCTakeOff.setSlotID((SlotID_t)ADDON_RIGHTHAND);
-            m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, pOwner);
-        }
     } break;
 
     case Item::ITEM_CLASS_HELM: {
         m_SlayerInfo.setHelmetType(HELMET_NONE);
-
-        if (bSendPacket) // by sigi. 2002.11.6
-        {
-            GCTakeOff _GCTakeOff;
-            _GCTakeOff.setObjectID(getObjectID());
-            _GCTakeOff.setSlotID((SlotID_t)ADDON_HELM);
-            m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, pOwner);
-        }
     } break;
 
     case Item::ITEM_CLASS_SHIELD: {
         m_SlayerInfo.setShieldType(SHIELD_NONE);
-
-        if (bSendPacket) // by sigi. 2002.11.6
-        {
-            GCTakeOff _GCTakeOff;
-            _GCTakeOff.setObjectID(getObjectID());
-            _GCTakeOff.setSlotID((SlotID_t)ADDON_LEFTHAND);
-            m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, pOwner);
-        }
     } break;
 
     case Item::ITEM_CLASS_SWORD: {
         bisWeapon = true;
         m_SlayerInfo.setWeaponType(WEAPON_NONE);
-
-        if (bSendPacket) // by sigi. 2002.11.6
-        {
-            GCTakeOff _GCTakeOff;
-            _GCTakeOff.setObjectID(getObjectID());
-            _GCTakeOff.setSlotID((SlotID_t)ADDON_RIGHTHAND);
-            m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, pOwner);
-        }
     } break;
 
     case Item::ITEM_CLASS_COAT: {
         m_SlayerInfo.setJacketType(JACKET_BASIC);
-
-        if (bSendPacket) // by sigi. 2002.11.6
-        {
-            GCTakeOff _GCTakeOff;
-            _GCTakeOff.setObjectID(getObjectID());
-            _GCTakeOff.setSlotID((SlotID_t)ADDON_COAT);
-            m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, pOwner);
-        }
     } break;
 
     case Item::ITEM_CLASS_TROUSER: {
         m_SlayerInfo.setPantsType(PANTS_BASIC);
-
-        if (bSendPacket) // by sigi. 2002.11.6
-        {
-            GCTakeOff _GCTakeOff;
-            _GCTakeOff.setObjectID(getObjectID());
-            _GCTakeOff.setSlotID((SlotID_t)ADDON_TROUSER);
-            m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, pOwner);
-        }
     } break;
 
     case Item::ITEM_CLASS_SHOULDER_ARMOR: {
         m_SlayerInfo.setShoulderType(0);
-
-        if (bSendPacket) // by sigi. 2002.11.6
-        {
-            GCTakeOff _GCTakeOff;
-            _GCTakeOff.setObjectID(getObjectID());
-            _GCTakeOff.setSlotID((SlotID_t)ADDON_TROUSER);
-            m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, pOwner);
-        }
     } break;
 
     default:
         break;
+    }
+
+    SlotID_t slot;
+    if (bSendPacket && slayerTakeOffSlot(IClass, slot)) {
+        GCTakeOff _GCTakeOff;
+        _GCTakeOff.setObjectID(getObjectID());
+        _GCTakeOff.setSlotID(slot);
+        m_pZone->broadcastPacket(getX(), getY(), &_GCTakeOff, pOwner);
     }
 
     return bisWeapon;

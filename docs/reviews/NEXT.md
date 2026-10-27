@@ -1,7 +1,7 @@
 ---
 type: Record
 title: "Next work plan"
-description: "The ranked, self-contained tasks left in the server after the 2026-10-25 merges, each written so an agent with no other context can take it: the recorded-not-fixed entries of the fix log, the loginserver's unwrapped dispatch, the fuzzers' two unread paths, and what stays blocked or with the owner."
+description: "The ranked, self-contained tasks left in the server after the 2026-10-25 merges, each written so an agent with no other context can take it: the recorded-not-fixed entries of the fix log, the fuzzers' two unread paths, and what stays blocked or with the owner."
 tags: [review, plan]
 ---
 
@@ -48,86 +48,22 @@ be taken cold. One task per PR.
 
 ## Tasks
 
-### 2. `*CTF` races the main thread's flag-war heartbeat
-
-**What:** fix-log entry of 2026-09-25, `recorded, not fixed`: *`*CTF` edits the flag war's
-schedule from a zone thread*. `opCTF` calls `FlagManager::manualStart`, which pops and pushes
-the manager's priority queue, while the main thread's `ClientManager` loop runs
-`FlagManager::heartbeat` over the same queue with no lock, and `startFlagWar` reads its top from
-the main thread. Not a zone-group object, so not the mutation rule, but a data race that can
-corrupt the heap.
-
-**How:** give `FlagManager` the shape `WarScheduler` has (a per-castle-zone scheduler, so not a
-home for the flag war itself): a mutex over the queue, the due schedule popped under it and run
-after it is released, every `addSchedule` taken under it.
-
-**Test:** in `game_server_runtime_tests`, beside `tests/game_level_war_command_test.cpp`, which
-builds a zone and its group in memory: two threads, one calling `manualStart`
-while the other heartbeats, under TSan or with a counted queue, asserting the schedule count.
-
-### 3. The loginserver's handler dispatch is not wrapped
-
-**What:** the fix-log entry *Non-protocol exceptions from a read escape the receive loops*
-closed the reads (`SocketInputStream::readPacket` turns anything a `read()` throws that is not
-a `ProtocolException` into a `PacketReadErrorException`) and says: "a loginserver handler that
-throws a non-protocol exception still leaves `LoginPlayer::processCommand` (its dispatch is not
-wrapped as `GamePlayer`'s is)". `LoginPlayer::processCommand` (`src/server/loginserver/LoginPlayer.cpp`)
-calls `PacketDispatcher::dispatch` inside a `try` that catches only `IgnorePacketException`;
-the outer catches take `InsufficientDataException`, `InvalidProtocolException` and
-`DisconnectException`. `GamePlayer::processCommand` wraps the same call in `catch (...)`, logs
-the packet's metadata and throws `DisconnectException`. On the loginserver any other
-`Throwable` from a handler reaches `LoginPlayerManager::processCommands` and then
-`ClientManager::run`, which catches nothing, on the main thread.
-
-**How:** not a plain catch-all. Login handlers throw on purpose: `CLLogoutHandler` throws
-`DisconnectException` on every logout, `CLChangeServerHandler` too, and a send can throw
-`ConnectException`; `LoginPlayerManager::processCommands` retires a `ConnectException` as
-`DISCONNECTED` and, from `processCommand`, a `ProtocolException` as `UNDISCONNECTED` (the
-output path retires it as `DISCONNECTED`), each with `std::current_exception()`
-kept (`tests/login_player_retirement_test.cpp` pins that). So: rethrow `ProtocolException&` and
-`ConnectException&` first, and convert only the rest, with `de::logPacketMetadata`
-(`src/server/PacketDiagnostics.h`) to `errorLogin.txt`, then `throw DisconnectException(...)`.
-No wire change.
-
-**Test:** a login runtime test (the `tests/login_*_test.cpp` family; `PacketDispatcher::registerHandler`
-injects a handler) that registers a handler throwing a `RuntimeException`, asserts the session
-is retired and the manager loop keeps running, and that a logout still retires as before. Add a
-row to the table in [account ownership and kicks](../login/account-ownership-and-kicks.md),
-which holds the retirement rows ([login lifecycle](../login/overview.md) is prose), and change
-the fix-log entry's last sentence.
-
-### 4. Six gameplay defects kept by the compiler-warning cleanup
+### 4. Three gameplay defects kept by the compiler-warning cleanup
 
 **What:** the *Compiler-warning cleanup (2026-09-27)* entry's `recorded, not fixed` bullets are
 live defects, kept because the cleanup removed only tautologies:
 
-- wolf form rejects every skill: the four `isAbleToUse*Skill` guards in `CreatureUtil.cpp` test
-  `SkillType != A || SkillType != B`, true for any skill; the removed `&&` versions allowed Howl,
-  Eat Corpse, Un-transform and melee;
 - `CGLearnSkillHandler`'s range check can never fire (`>= SKILL_MAX && < SKILL_DOUBLE_IMPACT`);
   `CGAddItemToItemHandler` reaches `makeGCCreateItem` with X = 255 when the pet item is missing;
-- `getRandomMysteriousItem` tests a constant that is always true, so female vampires get item
-  type 1 for every class (`itemClass ==` was meant);
-- `Tile::deleteCreature(MoveMode)` calls the `ObjectID_t` overload of `deleteObject` and
-  asserts; `getCreature(MoveMode)` shows the intended `ObjectPriority` wrap;
 - the overrides that do not override (`processCommand()` without the base's `bool`);
 - the smaller findings bullet: `MotorcycleLoader::load` and `~PlayerCreature` leak, and
   `EffectSatelliteBombAim` uses a skill slot with no null check.
 
-**How:** one PR per bullet, each a one-line fix with a test that pins the intended behaviour
-(the wolf-form guards first: a test per skill the `&&` version allowed). The 999999 durations
-and the `ExpireDate` in the same bullet are balance and data questions; leave them recorded.
-
-### 5. A slayer's shoulder armour leaving its shape is broadcast as the trousers
-
-**What:** fix-log entry of 2026-10-23, `recorded, not fixed`. `Slayer::removeShape`
-(`src/server/gameserver/SlayerShape.cpp`) sends the zone a `GCTakeOff` with `ADDON_TROUSER` for
-`ITEM_CLASS_SHOULDER_ARMOR`, where `Slayer::takeOffItem` sends `ADDON_SHOULDER` for the same
-class. Every client in range draws the trousers off and the shoulder still on.
-
-**How:** one constant, test-first: pin the slot `removeShape` sends for each item class (a table
-test over the classes `takeOffItem` handles, with a stub zone capturing the packet if the runtime
-harness does not reach `removeShape`). The packet layout does not change, so no golden moves.
+**How:** one PR per bullet, each a one-line fix with a test that pins the intended behaviour.
+Read the line's history first (`git log -p`, and the recovered source `3fccc6c6`, whose GBK
+comments mark operator edits): the wolf-form `||` looked like a typo and was a 2006 hotfix. The
+999999 durations and the `ExpireDate` in the same bullet are balance and data questions; leave
+them recorded.
 
 ### 6. Count gates the login and guild reads still lack
 
@@ -241,3 +177,25 @@ Each is one PR, with a fix-log entry naming the branch that found it:
   group through `de::war::postToZone`; `tests/game_level_war_command_test.cpp` runs the command
   from another thread and sees the queued war pulled forward only when the group drains its
   mailbox.
+- **2. `*CTF` races the main thread's flag-war heartbeat** (PR #386, `fix/flag-schedule-lock`):
+  `FlagManager` pops the due schedule under a leaf schedule mutex and runs it after releasing it,
+  every add and `manualStart` takes the mutex, and `startFlagWar` is handed the war's length;
+  `tests/game_flag_schedule_test.cpp` heartbeats and pulls forward on two threads.
+- **3. The loginserver's handler dispatch is not wrapped** (PR #387, `fix/login-dispatch-wrap`):
+  `LoginPlayer::processCommand` passes a handler's `ProtocolException` and `ConnectException` on
+  and turns anything else into a logged `DisconnectException`; `tests/login_handler_failure_test.cpp`
+  throws each kind from a handler over a loopback connection.
+- **4, one bullet: wolf form rejects every skill** (PR #388, `fix/wolf-form-skills`): the four
+  `isAbleToUse*Skill` guards have their `&&` allow-lists again, and the object, tile and inventory
+  skill handlers pass the skill being used, so a wolf howls and attacks and casts nothing else;
+  `tests/game_wolf_form_skill_test.cpp` pins each guard per skill.
+- **5. A slayer's shoulder armour leaving its shape is broadcast as the trousers** (PR #389,
+  `fix/shoulder-takeoff-slot`): `Slayer::takeOffItem` and `Slayer::removeShape` take the
+  `GCTakeOff` slot from one lookup, `slayerTakeOffSlot`, which names `ADDON_SHOULDER` for the
+  shoulder armour; `tests/game_slayer_take_off_test.cpp` pins its slot per item class.
+- **4, one bullet: `getRandomMysteriousItem` gives female vampires item type 1 for every class**
+  (PR #390, `fix/mysterious-item-class`): the vampire fallback is
+  `vampireMysteriousFallbackItemType`, type 1 only for a woman's vampire coat;
+  `tests/game_mysterious_item_test.cpp` pins it.
+- **4, one bullet: `Tile::deleteCreature(MoveMode)` picks the wrong `deleteObject`** (PR #391,
+  `fix/tile-delete-by-mode`): nothing called it, so the overload is declared deleted.

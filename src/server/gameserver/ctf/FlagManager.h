@@ -2,7 +2,9 @@
 // FlagManager.h
 //
 // Only one may run globally. Its schedule runs on the main thread
-// (ClientManager), and the flag war it runs changes zones only through
+// (ClientManager), while a GM's *command CTF pulls it forward from a zone
+// thread or the login link's, so every pop and add those threads make takes
+// m_ScheduleMutex. The flag war it runs changes zones only through
 // commands posted to the zones' groups (war/WarZoneWork.h): the flags it
 // drops and takes back, the pole sweeps and the status broadcasts. The
 // counts, the put times and the status packet are also written by the zone
@@ -67,6 +69,15 @@ public:
 
     void setNextSchedule();
 
+    // Runs the earliest schedule once it is due. It is taken out of the queue
+    // under m_ScheduleMutex and run after the mutex is released, so a war's
+    // step adds its next schedule, and a GM's manualStart pulls one forward,
+    // without meeting the schedule that is running. A run that throws puts
+    // the schedule back for the next heartbeat.
+    virtual Work* heartbeat();
+    // Takes m_ScheduleMutex; it hides Scheduler's unlocked add.
+    void addSchedule(Schedule* pSchedule);
+
     void manualStart();
 
 public:
@@ -79,7 +90,8 @@ public:
     Race_t getWinnerRace(uint& count) const;
     uint getFlagCount(Race_t race) const;
 
-    bool startFlagWar();
+    // warSecs is how long the war starting now runs.
+    bool startFlagWar(int warSecs);
     bool endFlagWar();
 
     bool isFlagPole(MonsterCorpse* pFlagPole) {
@@ -153,6 +165,8 @@ private:
     RACEINDEX winnerRace_LOCKED() const;
 
     mutable Mutex m_Mutex;
+    // The schedule queue's lock, a leaf: nothing else is taken under it.
+    mutable Mutex m_ScheduleMutex;
 
     // No more races will be added, surely?
     map<MonsterCorpse*, Race_t> m_FlagPoles;

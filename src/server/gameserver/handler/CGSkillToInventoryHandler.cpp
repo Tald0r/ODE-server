@@ -67,7 +67,7 @@ void CGSkillToInventoryHandler::execute(CGSkillToInventory* pPacket, Player* pPl
                 bSuccess = true;
                 TY = 0;
             } else {
-                if (!isAbleToUseInventorySkill(pSlayer, X, Y, TX, TY))
+                if (!isAbleToUseInventorySkill(pSlayer, X, Y, TX, TY, SkillType))
                     bSuccess = false;
             }
 
@@ -87,7 +87,7 @@ void CGSkillToInventoryHandler::execute(CGSkillToInventory* pPacket, Player* pPl
 
             if (pVampireSkillSlot == NULL)
                 bSuccess = false;
-            if (!isAbleToUseInventorySkill(pVampire, X, Y, TX, TY))
+            if (!isAbleToUseInventorySkill(pVampire, X, Y, TX, TY, SkillType))
                 bSuccess = false;
 
 
@@ -107,7 +107,7 @@ void CGSkillToInventoryHandler::execute(CGSkillToInventory* pPacket, Player* pPl
 
             if (pOustersSkillSlot == NULL)
                 bSuccess = false;
-            if (!isAbleToUseInventorySkill(pOusters, X, Y, TX, TY))
+            if (!isAbleToUseInventorySkill(pOusters, X, Y, TX, TY, SkillType))
                 bSuccess = false;
 
             if (bSuccess) {

@@ -17,7 +17,11 @@ mutex. Everything below says which thread that is for each kind of state.
 - **Main thread** runs `GameServer::init()` (single-threaded startup: config, DB, zone loading),
   then `GameServer::start()`, which spawns the threads below and finally becomes
   `ClientManager::run()`, an infinite loop accepting client TCP connections and driving the
-  pre-zone login/handshake phase before a player is handed to a zone group.
+  pre-zone login/handshake phase before a player is handed to a zone group. Its loop runs the
+  flag war's schedule (`FlagManager::heartbeat`), which a GM's `*command CTF` pulls forward from
+  a zone thread or the login link's, so the queue has a leaf mutex of its own: the due schedule
+  is taken out under it and run after it is released, as a castle's `WarScheduler` does, and
+  every add and pull takes it (`tests/game_flag_schedule_test.cpp`).
 - **`ZoneGroupThread`**, one per `ZoneGroup` (via `ThreadManager`/`ThreadPool`), owns all
   zone-group state. Its loop is: lock the group's mutex, `ZoneGroup::processPlayers()` (socket
   `select`, read, parse, `PacketDispatcher::dispatch` of **CG** packets) and

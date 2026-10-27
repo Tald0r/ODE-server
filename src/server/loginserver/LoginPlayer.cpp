@@ -9,6 +9,7 @@
 #include "LoginPlayer.h"
 
 #include <memory>
+#include <string>
 
 #include "Assert.h"
 #include "DatabaseError.h"
@@ -22,6 +23,7 @@
 #include "LoginKickDispatch.h"
 #include "LoginKickPreparation.h"
 #include "Packet.h"
+#include "PacketDiagnostics.h"
 #include "PacketDispatcher.h"
 #include "PacketFactoryManager.h"
 #include "PacketProfile.h"
@@ -40,6 +42,31 @@ static int maxIdleSec = 60 * 15; // disconnect automatically after 15 idle minut
 
 // Time check that works around the 'already connected' problem.
 static uint maxWaitForKickCharacter = 3; // seconds to wait for the GameServer's answer.
+
+namespace {
+
+// Logs the handler failure being handled by its type and the packet's id and
+// size, never by its message, which can carry SQL or account data.
+void logHandlerFailure(const Packet& packet) noexcept {
+    try {
+        std::string event = "handler failed: ";
+        try {
+            throw;
+        } catch (const Throwable& t) {
+            event += t.getName();
+        } catch (const DatabaseError&) {
+            event += "DatabaseError";
+        } catch (const std::exception&) {
+            event += "std::exception";
+        } catch (...) {
+            event += "unknown";
+        }
+        de::logPacketMetadata("LoginPlayerError.txt", event.c_str(), packet, diagnosticFilelog);
+    } catch (...) {
+    }
+}
+
+} // namespace
 
 
 //////////////////////////////////////////////////////////////////////
@@ -209,7 +236,22 @@ void LoginPlayer::processCommand(bool Option) {
 
                 // Now the packet handler can be run with this packet structure.
                 // A wrong packet id is handled by the packet handler manager.
-                PacketDispatcher::dispatch(pPacket.get(), this);
+                // A handler's ProtocolException (a logout's DisconnectException
+                // among them) and a send's ConnectException pass on to the catches
+                // below and to LoginPlayerManager as they are; anything else a
+                // handler throws is logged and becomes a DisconnectException, so
+                // the manager retires the player as for a logout instead of the
+                // throw reaching the main loop.
+                try {
+                    PacketDispatcher::dispatch(pPacket.get(), this);
+                } catch (ProtocolException&) {
+                    throw;
+                } catch (ConnectException&) {
+                    throw;
+                } catch (...) {
+                    logHandlerFailure(*pPacket);
+                    throw DisconnectException("login handler failed");
+                }
 
                 getCurrentTime(end);
                 g_PacketProfileManager.addAccuTime(pPacket->getPacketName(), start, end);

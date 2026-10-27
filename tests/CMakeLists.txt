@@ -120,7 +120,8 @@ target_sources(game_server_runtime_tests PRIVATE
     game_connection_test.cpp incoming_game_connection_test.cpp game_connection_admission_test.cpp
     game_player_handoff_test.cpp game_player_transfer_test.cpp game_broadcast_queue_test.cpp
     game_broadcast_delivery_test.cpp game_destructor_test.cpp game_catch_test.cpp
-    game_level_war_command_test.cpp support/AllocationProbe.cpp)
+    game_level_war_command_test.cpp game_flag_schedule_test.cpp game_wolf_form_skill_test.cpp
+    game_slayer_take_off_test.cpp game_mysterious_item_test.cpp support/AllocationProbe.cpp)
 add_server_runtime_test(login_server_runtime_tests login_server_runtime_test.cpp LoginServerRuntime)
 target_sources(login_server_runtime_tests PRIVATE
     login_connection_test.cpp login_world_list_test.cpp login_catalogue_test.cpp login_world_topology_test.cpp
@@ -137,6 +138,7 @@ target_sources(login_server_runtime_tests PRIVATE
     login_completion_test.cpp
     login_account_session_test.cpp
     login_player_retirement_test.cpp
+    login_handler_failure_test.cpp
     login_incoming_reply_test.cpp
     login_incoming_request_test.cpp
     login_character_selection_test.cpp

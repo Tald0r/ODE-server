@@ -41,6 +41,47 @@ repo and the client's. Entries below are newest first; the oldest is the
   only delays, but it is a data race TSan would report.
   > **Status:** recorded, not fixed (fix/level-war-command-post)
 
+## A flag war step that throws after queuing its next step is queued twice (2026-10-27)
+
+- **`FlagManager::heartbeat` puts a schedule whose run throws back in the
+  queue, but a flag war step queues its own next schedule before the
+  work that can throw:** `FlagWar::executeStart` adds `Schedule(this, ...)`
+  and then calls `startFlagWar`, whose `deleteFlagWarStats` reads the
+  database, and `executeFinish` adds its next step before `endFlagWar`,
+  whose roll-up the required `sql_mode` refuses
+  ([database setup](../database/overview.md)). A throw there leaves two
+  schedules holding one `FlagWar`: each later step would run twice, and
+  `Scheduler::clear` at teardown deletes the work twice. Master did the
+  same by leaving the running schedule queued. Today the throw is a
+  `DatabaseError`, which no `catch (Throwable&)` stops, so it ends the
+  main loop first.
+  > **Status:** recorded, not fixed (fix/flag-schedule-lock)
+
+## A database failure while a login waits on a kick escapes to the main loop (2026-10-27)
+
+- **`LoginPlayer::processCommand`'s kick-wait branch runs before the
+  dispatch and outside its wrap:** once the kick retries run out,
+  `sendLCLoginOK` calls `completeLoginKick`, whose `setLoggedOn`,
+  `setLoginIP` and login record throw a `DatabaseError` on a failed query,
+  which is no `Throwable`, or an `SQLConnectException` it rethrows, which
+  is no `ConnectException`. `LoginPlayerManager::processCommands` catches
+  neither, so a database failure on that path reaches
+  `ClientManager::run`, which catches nothing, and ends the loginserver,
+  possibly after LOGON was written.
+  > **Status:** recorded, not fixed (fix/login-dispatch-wrap)
+
+## A mysterious item's fallback is checked against the last failed draw (2026-10-27)
+
+- **When none of `getRandomMysteriousItem`'s ten random draws fits the
+  buyer, the fallback type is checked with what the tenth draw left
+  behind:** the option roll compares the buyer against that draw's
+  requirements (`ReqSTR2`..`ReqSum2`, `ReqLevel2`), which already exceeded
+  the buyer's when the draws failed on level or stats, so a fallback item
+  almost never carries an option; and the vampire and ousters branches
+  never reset `pItemInfo`, so the uniqueness check reads the tenth draw's
+  item, not the fallback's.
+  > **Status:** recorded, not fixed (fix/mysterious-item-class)
+
 ## A long GM console error report is never sent (2026-10-23)
 
 The `*command clearInventory` body (`gm/ConsoleCommands.cpp`) answers a
@@ -68,9 +109,17 @@ a dead slayer drops a worn item, a unique or a random one (`PCManager.cpp`),
 so whenever it sends the packet the zone is told the trousers came off rather
 than the shoulder armor. Found while moving the body out of `Slayer.cpp`; the
 move kept it as it was. A fix changes what the zone is sent, so it wants a
-test that pins the slot `removeShape` sends for each item class.
+test that pins the slot `removeShape` sends for each item class. Both
+senders now take the slot from one lookup, `slayerTakeOffSlot`, which names
+`ADDON_SHOULDER` for the shoulder armor, and
+`tests/game_slayer_take_off_test.cpp` pins its slot for every class with a
+shape (the senders' use of it is held by reading: `Zone::broadcastPacket` is
+not virtual, so no test captures the packet). The packet's layout is
+unchanged. The client's addon slots end before 7 (`ADDON_MAX`), so it
+ignores `ADDON_SHOULDER` as it always did from `takeOffItem`: the visible
+change is that the trousers stay drawn, while the shoulder stays drawn too.
 
-> **Status:** recorded, not fixed (refactor/slayer-split-r18)
+> **Status:** fixed (fix/shoulder-takeoff-slot)
 
 ## Diagnostic files grow without retention and failures escape gameplay (2026-10-04)
 
@@ -2151,11 +2200,14 @@ in `tests/packet_read_bounds_test.cpp` (`wire_tests`).
   the loops themselves are unchanged. The fuzz harness aborts on that
   exception by name, so a read that throws anything else is still a
   recorded crash, not a refusal (`tests/fuzz/StreamFuzz.h`). Checked by
-  `FrameBoundTest` in `tests/packet_frame_test.cpp`. A loginserver
-  handler that throws a non-protocol exception still leaves
-  `LoginPlayer::processCommand` (its dispatch is not wrapped as
-  `GamePlayer`'s is); that is the handlers' route, not the reads'.
-  > **Status:** fixed (fix/read-errors-are-refusals)
+  `FrameBoundTest` in `tests/packet_frame_test.cpp`. The handlers' route,
+  not the reads', stayed open on the loginserver, whose dispatch was not
+  wrapped as `GamePlayer`'s is: `LoginPlayer::processCommand` now passes
+  a handler's `ProtocolException` and `ConnectException` on as before and
+  turns anything else into a `DisconnectException`, logged by type to
+  `LoginPlayerError.txt`, checked by `LoginHandlerFailure` in
+  `tests/login_handler_failure_test.cpp`.
+  > **Status:** fixed (fix/read-errors-are-refusals, fix/login-dispatch-wrap)
 - **Packets cast wire bytes to their enum types.** Reads store a byte
   straight into an enum (`m_PCType = PCType(pcType)`) and getters build
   one from bits (`ShieldType((m_Outlook >> n) & mask)`) without checking
@@ -2907,12 +2959,35 @@ do.
   game server's 50-byte message buffers were not sized to their data and
   cut three seed messages short; see *Review follow-ups*.
   > **Status:** fixed (fix/compiler-warnings)
-- **Wolf form rejects every skill.** The four `isAbleToUse*Skill` guards test
-  `SkillType != A || SkillType != B ...`, true for any skill, so the early
-  return is now unconditional. The commented-out `&&` versions, removed with
-  the dead test, allowed Howl, Eat Corpse and Un-transform (self), Howl, Eat
-  Corpse and melee attack (object), and Howl and Eat Corpse (tile, inventory).
-  > **Status:** recorded, not fixed (fix/compiler-warnings)
+- **Wolf form rejects every skill.** The four `isAbleToUse*Skill` guards
+  tested `SkillType != A || SkillType != B ...`, true for any skill, so this
+  cleanup made the early return unconditional. The `||` was an operator's
+  hotfix over the original `&&` lists (`edit by coffee 2006-12-29`, "fix the
+  super-wolf disconnect problem", in GBK in the recovered source `3fccc6c6`):
+  Howl, Eat Corpse and Un-transform (self), Howl, Eat Corpse and the melee
+  attack (object), and Howl and Eat Corpse (tile, inventory). The object,
+  tile and inventory skill handlers asked their guards without the skill
+  type, and the default, 0, is the melee attack: under the `&&` lists a wolf
+  could cast any object skill it had learned, and a werwolf, whose lists
+  hold the melee attack, any inventory skill, Transform To Wolf among them.
+  The same author's same-day edit to `TransformToWolf.cpp` ("fix the
+  becoming-super-small-wolf bug") refuses a werwolf, so the "super wolf" was
+  most likely a vampire in both forms. The guards have the `&&` lists again,
+  the nine handler calls pass the skill being used, and the guards' skill
+  type has no default, so the compiler holds every caller to naming one; the
+  item-use checks (`CGUseItemFromInventoryHandler`,
+  `CGUseMessageItemFromInventoryHandler`, the GM's firecracker) name the
+  melee attack, which gives them master's answers. A wolf now howls
+  (`CGSkillToSelf`) and attacks (`CGAttackHandler` passes the melee attack)
+  and casts nothing else; Untransform is dispatched before the self guard
+  and Eat Corpse before the tile guard, as they always were. A werwolf's
+  inventory skills are held to its four, as the recovered source's inventory
+  handler held them with a switch the current one lacks: it can no longer
+  open a Bloody Tunnel, place a Bloody Marker or turn into a bat from the
+  inventory, the last of which stacked bat form on werwolf form.
+  `tests/game_wolf_form_skill_test.cpp` asks each guard about five skills in
+  wolf form and the inventory guard about a werwolf's.
+  > **Status:** fixed (fix/wolf-form-skills)
 - **Checks that could never fire were removed with their tautologies**, each
   of which evidently meant something else: `CGLearnSkillHandler` rejected a
   skill type `>= SKILL_MAX && < SKILL_DOUBLE_IMPACT` (never true; `||` would
@@ -2921,16 +2996,29 @@ do.
   `CoordInven_t` (unsigned char, 255 when the pet item is missing) was not
   `-1`, so the missing case reaches `makeGCCreateItem` with X = 255.
   > **Status:** recorded, not fixed (fix/compiler-warnings)
-- **`getRandomMysteriousItem` tests `Item::ITEM_CLASS_VAMPIRE_COAT && sex ==
-  FEMALE`**, a constant that is always true, so female vampires get item type
-  1 for every item class; `itemClass ==` was evidently meant. Kept.
-  > **Status:** recorded, not fixed (fix/compiler-warnings)
-- **`Tile::deleteCreature(MoveMode)` calls the `ObjectID_t` overload of
+- **`getRandomMysteriousItem` tested `Item::ITEM_CLASS_VAMPIRE_COAT && sex ==
+  FEMALE`**, a constant that is always true (this cleanup reduced it to
+  `sex == FEMALE`), so a female vampire whose ten random draws all missed got
+  item type 1 of whatever class she bought; `itemClass ==` was evidently
+  meant, and the 2015 tree and the recovered source have the same test with
+  no operator's edit around it. Only the vampire coat comes in a women's
+  type; for the other classes on a vampire's mysterious rack, type 1 is the
+  next tier (a Thumb Grab for a Knuckle Part, a Silver Ring for an Iron
+  Ring), often one she could not yet wear. The fallback is now
+  `vampireMysteriousFallbackItemType`, type 1 only for a woman's vampire
+  coat, a balance change in her favour of wearable items;
+  `tests/game_mysterious_item_test.cpp` pins it (not the call, which needs
+  the item tables and a vampire).
+  > **Status:** fixed (fix/mysterious-item-class)
+- **`Tile::deleteCreature(MoveMode)` called the `ObjectID_t` overload of
   `deleteObject`** (the sum `OBJECT_PRIORITY_WALKING_CREATURE + mode` is an
-  `int`), which looks for an object with ID 1..3 and asserts when none
+  `int`), which looks for an object with ID 0..2 and asserts when none
   matches; `getCreature(MoveMode)` wraps the same sum in `ObjectPriority`,
-  which was evidently meant.
-  > **Status:** recorded, not fixed (fix/compiler-warnings)
+  which was evidently meant. Nothing called it: every `Tile::deleteCreature`
+  call, in `ZoneSpawn.cpp` and `ZoneMove.cpp`, passes the creature's object
+  id. The overload is now declared deleted, so a call by move mode, which
+  would otherwise convert to an id and remove nothing, fails to compile.
+  > **Status:** fixed (fix/tile-delete-by-mode)
 - **Overrides that do not override.** `DummyQuestStatus::isSuccess()` lacks the
   base's `const` (the class is never instantiated). `SharedServerClient`,
   `GameServerPlayer` and mofus `MPlayer` declare `processCommand()` without the
@@ -3197,7 +3285,11 @@ do.
   corrupt the heap. `WarScheduler` has the shape that closes it: a mutex
   over the queue, the due schedule popped under it and run after it is
   released, and every `addSchedule` from the war taken under it.
-  > **Status:** recorded, not fixed (fix/flag-relic-returns)
+  `FlagManager` now has that shape, its own schedule mutex a leaf, and
+  `startFlagWar` is handed the war's length instead of reading the queue;
+  `tests/game_flag_schedule_test.cpp` heartbeats and pulls the schedule
+  forward on two threads and keeps the queue's count.
+  > **Status:** fixed (fix/flag-schedule-lock)
 
 ## A newbie flag war's end rewarded the race that planted last (2026-09-25)
 

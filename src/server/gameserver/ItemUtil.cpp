@@ -1053,6 +1053,10 @@ bool isPossibleNextOption(ITEM_TEMPLATE* pTemplate) {
 //////////////////////////////////////////////////////////////////////////////
 // Gamble item creation
 //////////////////////////////////////////////////////////////////////////////
+ItemType_t vampireMysteriousFallbackItemType(Item::ItemClass itemClass, Sex sex) {
+    return (itemClass == Item::ITEM_CLASS_VAMPIRE_COAT && sex == FEMALE) ? 1 : 0;
+}
+
 Item* getRandomMysteriousItem(Creature* pCreature, Item::ItemClass itemClass, int maxLevel)
 
 {
@@ -1254,14 +1258,8 @@ Item* getRandomMysteriousItem(Creature* pCreature, Item::ItemClass itemClass, in
 
         } while (--i);
 
-        if (i == 0) {
-            // For females the default item type differs.
-            if (pVampire->getSex() == FEMALE) {
-                itemType = 1;
-            } else {
-                itemType = 0;
-            }
-        }
+        if (i == 0)
+            itemType = vampireMysteriousFallbackItemType(itemClass, pVampire->getSex());
 
         // If the item carries options,
         // raise the attribute limit according to the kinds of option.

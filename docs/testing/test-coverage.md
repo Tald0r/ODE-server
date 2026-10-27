@@ -236,6 +236,9 @@ logs both failed flushes and still ends the session.
 `GameLevelWarCommand` builds a level war zone and its group in memory and runs
 `*command LevelWar` from a thread that does not hold the group: the queued war
 is pulled forward only when the group drains its mailbox.
+`GameFlagSchedule` runs `FlagManager`'s heartbeat on one thread while another
+pulls the schedule forward, as `*command CTF` does, and checks the queue keeps
+its count.
 
 # The startup and library tests
 

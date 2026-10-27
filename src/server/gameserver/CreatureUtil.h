@@ -64,11 +64,13 @@ bool isAbleToMove(Creature* pCreature);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function that checks whether a given creature can currently use a skill
+// SkillType is the skill being used, with no default: a transformed vampire's
+// allowed skills are read from it.
 ////////////////////////////////////////////////////////////////////////////////
-bool isAbleToUseSelfSkill(Creature* pCreature, SkillType_t SkillType = 0);
-bool isAbleToUseObjectSkill(Creature* pCreature, SkillType_t SkillType = 0);
-bool isAbleToUseTileSkill(Creature* pCreature, SkillType_t SkillType = 0);
-bool isAbleToUseInventorySkill(Creature* pCreature, BYTE X, BYTE Y, BYTE TX, BYTE TY, SkillType_t SkillType = 0);
+bool isAbleToUseSelfSkill(Creature* pCreature, SkillType_t SkillType);
+bool isAbleToUseObjectSkill(Creature* pCreature, SkillType_t SkillType);
+bool isAbleToUseTileSkill(Creature* pCreature, SkillType_t SkillType);
+bool isAbleToUseInventorySkill(Creature* pCreature, BYTE X, BYTE Y, BYTE TX, BYTE TY, SkillType_t SkillType);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function that checks whether a given creature can currently pick up an item
