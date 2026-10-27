@@ -1,7 +1,7 @@
 ---
 type: Record
 title: "Closed violations"
-description: "The known violations of the mutation rule, each closed, and the rules they left behind: guild retirement, tile gateways, snapshot zone maps, GDRLair locking, posted war work and the CGReady drain."
+description: "The known violations of the mutation rule, each closed, and the rules they left behind: guild retirement, tile gateways, snapshot zone maps, GDRLair locking, posted war work, the level war command and the CGReady drain."
 tags: [threading, history]
 generated: { by: claude-code/claude-fable-5-1, at: 2026-10-21T13:00:00Z }
 ---
@@ -67,6 +67,12 @@ left behind is stated here because the code alone does not say why it is shaped 
   `LevelWarZoneInfoManager::broadcast`) go this way from any thread;
   `ZoneGroupManager::broadcast` stays direct, walking each group's players under its
   `ZonePlayerManager` mutex and only sending.
+- **A GM's `*command LevelWar` posts the start to the level war zone's group.** `opLevelWar` runs
+  on the GM's zone thread, or the login link's for a relayed line, while the level war zone's own
+  thread runs `LevelWarManager::heartbeat` over the manager's schedule queue, which has no lock of
+  its own. The command posts `manualStart` through `de::war::postToZone`, so the queue changes only
+  under that group's mutex; `tests/game_level_war_command_test.cpp` runs the command from another
+  thread and sees the queued war pulled forward only when the group drains its mailbox.
 - **Packets pipelined behind `CGReady` are drained by the zone thread.** `GamePlayer::processCommand`
   stops the main-thread (`IncomingPlayerManager`) drain once the status flips to `GPS_NORMAL`, so
   nothing reaches a gateway without the group mutex.

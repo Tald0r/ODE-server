@@ -13,4 +13,4 @@
 
 # Records
 
-* [Closed violations](closed-violations.md) - The known violations of the mutation rule, each closed, and the rules they left behind: guild retirement, tile gateways, snapshot zone maps, GDRLair locking, posted war work and the CGReady drain.
+* [Closed violations](closed-violations.md) - The known violations of the mutation rule, each closed, and the rules they left behind: guild retirement, tile gateways, snapshot zone maps, GDRLair locking, posted war work, the level war command and the CGReady drain.
