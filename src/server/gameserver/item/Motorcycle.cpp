@@ -6,6 +6,8 @@
 
 #include "Motorcycle.h"
 
+#include <memory>
+
 #include "Belt.h"
 #include "DB.h"
 #include "GameContext.h"
@@ -224,7 +226,8 @@ void MotorcycleLoader::load(Creature* pCreature)
 
     for (size_t r = 0; r < rows.size(); r++) {
         try {
-            Motorcycle* pMotorcycle = new Motorcycle();
+            // Nothing attaches the motorcycle to the creature, so it is dropped after its row is parsed.
+            auto pMotorcycle = std::make_unique<Motorcycle>();
 
             pMotorcycle->setItemID(rows[r].itemID);
             pMotorcycle->setObjectID(rows[r].objectID);

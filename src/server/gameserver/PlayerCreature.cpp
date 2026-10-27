@@ -194,6 +194,8 @@ PlayerCreature::~PlayerCreature()
             SAFE_DELETE(m_PetStash[i]);
         }
 
+        SAFE_DELETE(m_pPet);
+
         SAFE_DELETE(m_pSMSAddressBook);
         SAFE_DELETE(m_pNicknameBook);
         SAFE_DELETE(m_pGQuestManager);
