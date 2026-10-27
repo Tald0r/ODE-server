@@ -5,7 +5,6 @@
 set(MISSION_SOURCES
     AnotherQuestRewardClass.cpp
     AnotherQuestRewardInfo.cpp
-    DummyQuestStatus.cpp
     EventQuestAdvance.cpp
     EventQuestInfoManager.cpp
     EventQuestLootingManager.cpp

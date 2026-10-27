@@ -78,7 +78,7 @@ void MPlayer::processOutput() {
     }
 }
 
-void MPlayer::processCommand() {
+void MPlayer::processCommand(bool) {
     MPacketManager& mofusPackets = de::gameContext().mofusPackets();
 
     try {
