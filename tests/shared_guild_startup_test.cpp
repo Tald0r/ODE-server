@@ -38,7 +38,7 @@ struct GuildIDs {
 };
 
 constexpr GuildIDs previousIDs{77, {10000, 20000, 30000}};
-constexpr GuildIDs loadedIDs{999, {10001, 22000, 30001}};
+constexpr GuildIDs loadedIDs{999, {10001, 22001, 30001}};
 
 // Each test restores the process-wide allocation counters, including on an
 // assertion failure. Production initialization runs before the worker starts.
@@ -117,7 +117,7 @@ public:
     int guildCount = 3;
     int maximumID = 999;
     std::array<int, 3> raceCounts{1, 1, 1};
-    std::array<int, 3> maximumZones{9500, 22000, 30001};
+    std::array<int, 3> maximumZones{9500, 22000, 30000};
     std::array<unsigned, StageCount> calls{};
     Stage failAt = StageCount;
     std::exception_ptr failure;
@@ -161,7 +161,7 @@ void expectOriginal(const GuildManager& manager, const Guild* guild, const Guild
     EXPECT_EQ(guild->getName(), "First guild");
 }
 
-TEST_F(SharedGuildStartup, NonemptyTablesUseStoredMaximaAndPreviousZoneMinimumsWithoutConfigKeys) {
+TEST_F(SharedGuildStartup, NonemptyTablesStartZoneCountersPastTheirStoredMaximaWithoutConfigKeys) {
     StartupRepository repository;
     Properties config;
     GuildManager guilds;
