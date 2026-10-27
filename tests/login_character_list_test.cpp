@@ -182,7 +182,7 @@ TEST(LoginCharacterList, CompleteRepliesUseExplicitInputsAndRaceSpecificRows) {
     EXPECT_LE(reply->getPacketSize(), LCPCListFactory::kMaxSize);
 }
 
-TEST(LoginCharacterList, SlayerFieldsKeepTheirExistingMappingAndStoredShapePrecedence) {
+TEST(LoginCharacterList, SlayerFieldsMapTheirColumnsAndStoredShapePrecedence) {
     ListCharacters characters;
     const auto reply = build(characters);
     const auto* info = dynamic_cast<const PCSlayerInfo*>(reply->getPCInfo(SLOT1));
@@ -197,11 +197,11 @@ TEST(LoginCharacterList, SlayerFieldsKeepTheirExistingMappingAndStoredShapePrece
     EXPECT_EQ(info->getRank(), 19);
     EXPECT_EQ(info->getFame(), 4321u);
     EXPECT_EQ(info->getAlignment(), 6000);
-    // Keep the existing database-column argument order for these pairs.
-    EXPECT_EQ(info->getHP(ATTR_CURRENT), 144);
-    EXPECT_EQ(info->getHP(ATTR_MAX), 71);
-    EXPECT_EQ(info->getMP(ATTR_CURRENT), 188);
-    EXPECT_EQ(info->getMP(ATTR_MAX), 59);
+    // The CurrentHP and CurrentMP columns are the current values, HP and MP the maximums.
+    EXPECT_EQ(info->getHP(ATTR_CURRENT), 71);
+    EXPECT_EQ(info->getHP(ATTR_MAX), 144);
+    EXPECT_EQ(info->getMP(ATTR_CURRENT), 59);
+    EXPECT_EQ(info->getMP(ATTR_MAX), 188);
     for (int domain = 0; domain < SKILL_DOMAIN_VAMPIRE; ++domain)
         EXPECT_EQ(info->getSkillDomainLevel(static_cast<SkillDomain>(domain)), 21 + domain);
     EXPECT_EQ(info->getSex(), FEMALE);
@@ -224,8 +224,8 @@ TEST(LoginCharacterList, VampireFieldsUseTheSecondaryRowAndGoalExperience) {
     EXPECT_EQ(info->getSTR(), 41);
     EXPECT_EQ(info->getDEX(), 42);
     EXPECT_EQ(info->getINT(), 43);
-    EXPECT_EQ(info->getHP(ATTR_CURRENT), 244);
-    EXPECT_EQ(info->getHP(ATTR_MAX), 171);
+    EXPECT_EQ(info->getHP(ATTR_CURRENT), 171);
+    EXPECT_EQ(info->getHP(ATTR_MAX), 244);
     EXPECT_EQ(info->getSex(), FEMALE);
     EXPECT_EQ(info->getBatColor(), 101);
     EXPECT_EQ(info->getSkinColor(), 102);
@@ -248,8 +248,8 @@ TEST(LoginCharacterList, OustersFieldsKeepTheirSecondaryRowAndZeroDefaultMana) {
     EXPECT_EQ(info->getSTR(), 51);
     EXPECT_EQ(info->getDEX(), 52);
     EXPECT_EQ(info->getINT(), 53);
-    EXPECT_EQ(info->getHP(ATTR_CURRENT), 344);
-    EXPECT_EQ(info->getHP(ATTR_MAX), 271);
+    EXPECT_EQ(info->getHP(ATTR_CURRENT), 271);
+    EXPECT_EQ(info->getHP(ATTR_MAX), 344);
     EXPECT_EQ(info->getMP(ATTR_CURRENT), 0);
     EXPECT_EQ(info->getMP(ATTR_MAX), 0);
     EXPECT_EQ(info->getSex(), MALE);
