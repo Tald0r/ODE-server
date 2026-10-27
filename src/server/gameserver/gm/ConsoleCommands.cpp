@@ -79,6 +79,7 @@
 #include "repository/NicknameRepository.h"
 #include "war/WarScheduler.h"
 #include "war/WarSystem.h"
+#include "war/WarZoneWork.h"
 
 namespace de::gm {
 static const Effect::EffectClass FirecrackerEffects[] = {
@@ -563,11 +564,10 @@ void opLevelWar(GamePlayer* pGamePlayer, const string& value1, GCSystemMessage& 
 
         Assert(pZone != NULL);
 
-        LevelWarManager* pLevelWarManager = pZone->getLevelWarManager();
-
-        if (pLevelWarManager != NULL) {
+        if (pZone->getLevelWarManager() != NULL) {
             gcSystemMessage.setMessage("LevelWar advanced.");
-            pLevelWarManager->manualStart();
+            // The schedule queue belongs to the zone's group thread, which runs its heartbeat.
+            de::war::postToZone(zoneID, [](Zone& zone) { zone.getLevelWarManager()->manualStart(); });
         }
     }
 }

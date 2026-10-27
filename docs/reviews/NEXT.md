@@ -48,26 +48,6 @@ be taken cold. One task per PR.
 
 ## Tasks
 
-### 1. `*command LevelWar` edits a zone's schedule from another thread
-
-**What:** fix-log entry of 2026-09-25, `recorded, not fixed`: *`*command LevelWar` pushes a
-schedule into a level war zone's queue from another thread*. `opLevelWar`
-(`src/server/gameserver/gm/ConsoleCommands.cpp`) runs on the GM's zone thread, or the login
-link's when relayed (`Relay::Allowed`), and calls `LevelWarManager::manualStart` on the zone it
-names, which pops and pushes a `Scheduler` with no lock while that zone group's thread runs the
-manager's heartbeat (`Zone.cpp`). A breach of the [mutation rule](../threading/mutation-rule.md),
-and the one known live one.
-
-**How:** post the start to the zone's group with `de::war::postToZone`, as the war's other zone
-work is; the entry says so.
-
-**Test:** `tests/gm_console_command_test.cpp` links only `de-kernel` and stubs every command
-body, so it can only keep the table row; `tests/scheduler_test.cpp` links only
-`war/Schedule.cpp` and `war/Scheduler.cpp`. Add a runtime target that links
-`LevelWarManager` and the posting seam, runs the command from a thread that is not the zone's
-and asserts the schedule lands through the post. Add a bullet to
-[closed violations](../threading/closed-violations.md) (a list, not a table).
-
 ### 2. `*CTF` races the main thread's flag-war heartbeat
 
 **What:** fix-log entry of 2026-09-25, `recorded, not fixed`: *`*CTF` edits the flag war's
@@ -81,7 +61,8 @@ corrupt the heap.
 home for the flag war itself): a mutex over the queue, the due schedule popped under it and run
 after it is released, every `addSchedule` taken under it.
 
-**Test:** the same runtime target as task 1, or its own: two threads, one calling `manualStart`
+**Test:** in `game_server_runtime_tests`, beside `tests/game_level_war_command_test.cpp`, which
+builds a zone and its group in memory: two threads, one calling `manualStart`
 while the other heartbeats, under TSan or with a counted queue, asserting the schedule count.
 
 ### 3. The loginserver's handler dispatch is not wrapped
@@ -255,4 +236,8 @@ Each is one PR, with a fix-log entry naming the branch that found it:
 
 ## Done
 
-Nothing yet; tasks move here with their PR number.
+- **1. `*command LevelWar` edits a zone's schedule from another thread** (PR #385,
+  `fix/level-war-command-post`): `opLevelWar` posts `LevelWarManager::manualStart` to the zone's
+  group through `de::war::postToZone`; `tests/game_level_war_command_test.cpp` runs the command
+  from another thread and sees the queued war pulled forward only when the group drains its
+  mailbox.
