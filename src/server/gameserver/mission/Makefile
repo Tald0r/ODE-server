@@ -67,7 +67,6 @@ OBJS = \
 	QuestStatus.o \
 	MonsterKillQuestStatus.o \
 	GatherItemQuestStatus.o \
-	DummyQuestStatus.o \
 	MeetNPCQuestStatus.o \
 	MiniGameQuestStatus.o \
 	EventQuestAdvance.o \

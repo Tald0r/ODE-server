@@ -34,19 +34,16 @@ public:
     // virtual void processInput() ;
 
     // parse packet and execute handler for the packet
-    virtual void processCommand();
-    virtual void processCommand(bool Option) {
-        Player::processCommand(Option);
-    }
+    void processCommand(bool Option = true) override;
 
     // flush output buffer to socket's send buffer
-    virtual void processOutput();
+    void processOutput() override;
 
     // send packet to player's output buffer
-    virtual void sendPacket(Packet* packet);
+    void sendPacket(Packet* packet) override;
 
     // get debug string
-    virtual string toString() const;
+    string toString() const override;
 
 
 private:

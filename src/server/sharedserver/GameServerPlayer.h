@@ -29,32 +29,29 @@ public:
     // destructor
     virtual ~GameServerPlayer() noexcept;
 
-    virtual void processInput() noexcept(false);
+    void processInput() noexcept(false) override;
 
-    virtual void processOutput() noexcept(false);
+    void processOutput() noexcept(false) override;
 
     // parse packet and execute handler for the packet
-    virtual void processCommand() noexcept(false);
-    virtual void processCommand(bool Option) {
-        Player::processCommand(Option);
-    }
+    void processCommand(bool Option = true) noexcept(false) override;
 
     // send packet to player's output buffer
-    virtual void sendPacket(Packet* pPacket) noexcept(false);
+    void sendPacket(Packet* pPacket) noexcept(false) override;
 
     // disconnect
     // When closing a player's connection: if it ended abnormally without a
     // logout, the peer socket is already closed, so disconnect(DISCONNECTED) must be used to close
     // it. For a proper logout disconnect(UNDISCONNECTED) must be used
     // instead.
-    virtual void disconnect(bool bDisconnected = DISCONNECTED) noexcept(false);
+    void disconnect(bool bDisconnected = DISCONNECTED) noexcept(false) override;
 
     // get/set player ID
     // string getID () const  { return m_ID; }
     // void setID (const string & id)  { m_ID = id; }
 
     // get debug string
-    virtual string toString() const noexcept(false);
+    string toString() const noexcept(false) override;
 
 protected:
 };

@@ -12,6 +12,8 @@
 
 #ifdef __SHARED_SERVER__
 
+#include <limits>
+
 #include "GameServerManager.h"
 #include "Guild.h"
 #include "GuildDecision.h"
@@ -44,10 +46,12 @@ void GSAddGuildHandler::execute(GSAddGuild* pPacket, Player* pPlayer)
     AddGuildRequest request;
     request.guildRace = pPacket->getGuildRace();
 
-    // The id is claimed before the race is looked at, so a request naming an
-    // unknown race consumes one.
+    // A full counter founds nothing: the next id would wrap to zero.
+    if (Guild::getMaxGuildID() == std::numeric_limits<GuildID_t>::max())
+        return;
+
+    // The id is claimed only once the founding is accepted.
     request.guildID = Guild::getMaxGuildID() + 1;
-    Guild::setMaxGuildID(request.guildID);
 
     request.maxSlayerZoneID = Guild::getMaxSlayerZoneID();
     request.maxVampireZoneID = Guild::getMaxVampireZoneID();
@@ -58,6 +62,8 @@ void GSAddGuildHandler::execute(GSAddGuild* pPacket, Player* pPlayer)
         return;
 
     const AddGuildAllocation& allocation = outcome.events();
+
+    Guild::setMaxGuildID(allocation.guildID);
 
     if (request.guildRace == Guild::GUILD_RACE_SLAYER)
         Guild::setMaxSlayerZoneID(allocation.zoneID + 1);

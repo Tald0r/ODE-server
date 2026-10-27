@@ -23,14 +23,11 @@ public:
 
 public:
     // network read / write
-    void processInput();
-    void processOutput();
+    void processInput() override;
+    void processOutput() override;
 
     // parse packet and execute handler for the packet
-    void processCommand();
-    void processCommand(bool Option) {
-        Player::processCommand(Option);
-    }
+    void processCommand(bool Option = true) override;
 
     // send packet to player's output buffer
     using Player::sendPacket;
@@ -40,7 +37,7 @@ public:
     void connect();
 
     // disconnect
-    void disconnect(bool bDisconnected = DISCONNECTED);
+    void disconnect(bool bDisconnected = DISCONNECTED) override;
 
 public:
     // process

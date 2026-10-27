@@ -51,7 +51,7 @@ SharedServerClient::~SharedServerClient() noexcept
 // parse packet and execute handler for the packet
 //
 //////////////////////////////////////////////////////////////////////
-void SharedServerClient::processCommand() {
+void SharedServerClient::processCommand(bool) {
     // Buffer that temporarily holds the packet header.
     char header[szPacketHeader];
     PacketID_t packetID;

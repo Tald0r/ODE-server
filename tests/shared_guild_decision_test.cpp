@@ -9,6 +9,7 @@
 // the handlers themselves are not exercised here because they need the
 // GuildManager, a socket and the StringPool.
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -251,6 +252,17 @@ TEST(DecideAddGuild, EachRaceTakesTheNextZoneIDOfItsOwn) {
     Outcome<AddGuildAllocation, SharedGuildRejection> ousters = decideAddGuild(addGuildRequest(kGuildRaceOusters));
     ASSERT_TRUE(ousters.isOk());
     EXPECT_EQ(ousters.events().zoneID, 300);
+}
+
+TEST(DecideAddGuild, ARaceWhoseLastZoneIDIsNextGetsNoGuild) {
+    AddGuildRequest request = addGuildRequest(kGuildRaceVampire);
+    request.maxVampireZoneID = std::numeric_limits<ZoneID_t>::max();
+    Outcome<AddGuildAllocation, SharedGuildRejection> outcome = decideAddGuild(request);
+    ASSERT_TRUE(outcome.isRejected());
+    EXPECT_EQ(outcome.rejection().reason, SharedGuildReason::ZoneIDsExhausted);
+
+    request.maxVampireZoneID = std::numeric_limits<ZoneID_t>::max() - 1;
+    ASSERT_TRUE(decideAddGuild(request).isOk());
 }
 
 TEST(DecideAddGuild, AnUnknownRaceGetsNoGuild) {

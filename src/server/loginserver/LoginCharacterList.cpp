@@ -40,8 +40,8 @@ std::unique_ptr<LCPCList> makeLoginCharacterList(WorldID_t WorldID, const std::s
                 pPCSlayerInfo->setDEXExp(s.dexExp);
                 pPCSlayerInfo->setINT(s.inte);
                 pPCSlayerInfo->setINTExp(s.intExp);
-                pPCSlayerInfo->setHP(s.hp, s.currentHP);
-                pPCSlayerInfo->setMP(s.mp, s.currentMP);
+                pPCSlayerInfo->setHP(s.currentHP, s.hp);
+                pPCSlayerInfo->setMP(s.currentMP, s.mp);
                 pPCSlayerInfo->setFame(s.fame);
 
                 for (int j = 0; j < SKILL_DOMAIN_VAMPIRE; j++) {
@@ -83,7 +83,7 @@ std::unique_ptr<LCPCList> makeLoginCharacterList(WorldID_t WorldID, const std::s
                 pPCVampireInfo->setSTR(v.str);
                 pPCVampireInfo->setDEX(v.dex);
                 pPCVampireInfo->setINT(v.inte);
-                pPCVampireInfo->setHP(v.hp, v.currentHP);
+                pPCVampireInfo->setHP(v.currentHP, v.hp);
                 pPCVampireInfo->setRank(v.rank);
                 pPCVampireInfo->setExp(v.goalExp);
                 pPCVampireInfo->setLevel(v.level);
@@ -114,7 +114,7 @@ std::unique_ptr<LCPCList> makeLoginCharacterList(WorldID_t WorldID, const std::s
                 pPCOustersInfo->setSTR(o.str);
                 pPCOustersInfo->setDEX(o.dex);
                 pPCOustersInfo->setINT(o.inte);
-                pPCOustersInfo->setHP(o.hp, o.currentHP);
+                pPCOustersInfo->setHP(o.currentHP, o.hp);
                 pPCOustersInfo->setRank(o.rank);
                 pPCOustersInfo->setExp(o.exp);
                 pPCOustersInfo->setLevel(o.level);

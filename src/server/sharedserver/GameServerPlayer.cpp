@@ -96,7 +96,7 @@ void GameServerPlayer::processOutput() noexcept(false) {
 // parse packet and execute handler for the packet
 //
 //////////////////////////////////////////////////////////////////////
-void GameServerPlayer::processCommand() noexcept(false) {
+void GameServerPlayer::processCommand(bool) noexcept(false) {
     __BEGIN_TRY
 
     try {

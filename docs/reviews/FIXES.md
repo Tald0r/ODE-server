@@ -20,6 +20,23 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## The first guild founded after a restart reuses a guild zone id (2026-10-27)
+
+- **`GuildManager::init` starts each race's guild zone counter at the
+  highest `GuildZoneID` already stored for that race (`prepareZoneMaximum`,
+  the larger of it and the previous race's counter plus one), and
+  `GSAddGuildHandler` gives a new guild the counter itself before moving it
+  on,** so the first guild of a race founded after every restart takes the
+  zone id of that race's newest guild. A guild's zone id is its hideout: an
+  active guild's portal sends members to it (`Portal.cpp`), so the two
+  guilds share one. `GuildInfo` has no unique key on `GuildZoneID`, and the
+  recovered source starts the counter the same way.
+  `SharedGuildStartup.NonemptyTablesUseStoredMaximaAndPreviousZoneMinimumsWithoutConfigKeys`
+  pins the start. The counters also share one word with no partition, so
+  the slayers' (from the base plus one) run into the vampires' range long
+  before the 65535 the founding now refuses at.
+  > **Status:** recorded, not fixed (next-plan/batch-3)
+
 ## A flag or sweeper offered outside its war gets no answer (2026-10-27)
 
 - **`CGRelicToObjectHandler::executeFlag` returns when no flag war runs,
@@ -575,7 +592,19 @@ not add a live allocation-exhaustion policy. This is a source finding from the
 startup-counter audit; the handler/decision boundary needs its own refusal and
 counter-preservation tests.
 
-> **Status:** recorded, not fixed (refactor/shared-guild-startup-ids)
+Since next-plan/batch-3 a full guild id counter founds nothing: the handler
+returns before reading the next id and the counter stays at 65535.
+`decideAddGuild` refuses a race whose next zone id is 65535 with
+`ZoneIDsExhausted`, since its counter cannot move past it. The handler now
+claims the guild id only for a founding the decision accepts, so neither
+refusal, nor an unknown race, which used to consume an id, moves a counter.
+Each refusal is answered with nothing, as an unknown race always was; the
+gameserver charges the fee only on `SGAddGuildMemberOK`, so the player loses
+nothing. `SharedAddGuild` in `tests/shared_add_guild_test.cpp` runs the
+handler on each refused path and checks every counter, and `DecideAddGuild`
+in `tests/shared_guild_decision_test.cpp` pins the zone boundary.
+
+> **Status:** fixed (next-plan/batch-3)
 
 ## Shared guild reply assembly leaves partial records unowned (2026-10-02)
 
@@ -1422,7 +1451,24 @@ Distinct-value assembly tests reproduce this mapping. The ownership extraction
 preserves it; correcting the displayed current/maximum values needs a separate
 behavior change with the repository and client field expectations checked.
 
-> **Status:** recorded, not fixed (refactor/login-character-list)
+The reversal dates from the move of this SQL into `LoginCharacterRepository`
+(2026-09-07). Before it, each pair was `setHP(getInt(++i), getInt(++i))`:
+two unsequenced `++i`, undefined behaviour before C++17, so the compiler
+decided which column each argument read. Evaluated right to left, as GCC
+commonly evaluates arguments, they read `HP` into the maximum and
+`CurrentHP` into the current value; the move fixed the order left to right. The gameserver
+loads `HP` as the maximum and `CurrentHP` as the current value. The client's
+`PCSlayerInfo`, `PCVampireInfo` and `PCOustersInfo` read the current value,
+then the maximum, and its character-select slots show the maximum for both
+the bar and its cap (`MakeCharacterSlot` and `UI_SetCharacter` in
+`Client/GameUI.cpp`), so the list showed a character's current HP and MP as
+its maximum. Since next-plan/batch-3 the assembler passes `(CurrentHP, HP)`
+and `(CurrentMP, MP)`, and `LoginCharacterList` in
+`tests/login_character_list_test.cpp` pins the current value in
+`ATTR_CURRENT` and the maximum in `ATTR_MAX` for each race. The wire layout
+is unchanged.
+
+> **Status:** fixed (next-plan/batch-3)
 
 ## Character-list decoding does not own partial or replaced records (2026-10-02)
 
@@ -3039,8 +3085,18 @@ do.
   reject out-of-range types before `getSkillInfo`); `opset item_prob_ratio`
   returned on `value < value`; `CGAddItemToItemHandler` asserted a
   `CoordInven_t` (unsigned char, 255 when the pet item is missing) was not
-  `-1`, so the missing case reaches `makeGCCreateItem` with X = 255.
-  > **Status:** recorded, not fixed (fix/compiler-warnings)
+  `-1`, so the missing case reaches `makeGCCreateItem` with X = 255. None of
+  the three is a defect (next-plan/batch-3). `CGLearnSkillHandler::execute`
+  refuses every skill type outside its list of implemented skills before it
+  hands the packet to a race's path, so an out-of-range type never reaches
+  `getSkillInfo`. The pet item `CGAddItemToItemHandler` looks for is the one
+  it took from the inventory at the packet's coordinates, which `findItemOID`
+  always finds. `opset item_prob_ratio` is reached, by a GM with any value:
+  the recovered source's operator copy (`src/Core/Cpackets/GS/CGSayHandler.cpp`)
+  has the same `value < value` right below `exp_ratio`'s `value < 100`, the
+  bound it was evidently copied with and then turned off, and the ratio is
+  only added to a drop chance or divided by 100, never a divisor.
+  > **Status:** not a defect (next-plan/batch-3)
 - **`getRandomMysteriousItem` tested `Item::ITEM_CLASS_VAMPIRE_COAT && sex ==
   FEMALE`**, a constant that is always true (this cleanup reduced it to
   `sex == FEMALE`), so a female vampire whose ten random draws all missed got
@@ -3069,8 +3125,13 @@ do.
   `GameServerPlayer` and mofus `MPlayer` declare `processCommand()` without the
   base's `bool`; every call goes through the derived type, and each now also
   forwards `processCommand(bool)` to `Player`'s, which is what a call through
-  `Player*` ran before.
-  > **Status:** recorded, not fixed (fix/compiler-warnings)
+  `Player*` ran before. Since next-plan/batch-3 each of the three declares one
+  `processCommand(bool Option = true) override`, so a call through `Player*`
+  runs its own, and every existing call, all through the derived type, runs
+  what it ran. `DummyQuestStatus` is deleted: nothing made one, and its
+  `isSuccess` would have asserted on a second call, since `setSuccess`
+  expects a quest still started.
+  > **Status:** fixed (next-plan/batch-3)
 - **Smaller findings, kept as they are:** `Resource::write` stores the file
   name's length in a `BYTE`, so a name of 256 characters or more puts the
   wrong length on the wire; seven senders put a duration of 999999, meant
@@ -3079,12 +3140,29 @@ do.
   `gm/ConsoleCommands.cpp`, `EffectGrandMasterSlayer`,
   `EffectGrandMasterVampire`, `EffectGrandMasterOusters` and
   `EffectDonation200501`, and the tile portals of `DynamicZoneAlterOfBlood`
-  and `DynamicZoneGateOfAlter`); `MotorcycleLoader::load` allocates a
-  `Motorcycle` per row and never attaches or frees it; `~PlayerCreature` never
-  deletes `m_pPet`; `EffectSatelliteBombAim` uses the skill slot from
-  `hasSkill` without a null check; `Guild`'s `ExpireDate` is built from
+  and `DynamicZoneGateOfAlter`); `Guild`'s `ExpireDate` is built from
   `tm_year`/`tm_mon` and is not a real date.
   > **Status:** recorded, not fixed (fix/compiler-warnings)
+- **Two leaks from the same list.** `MotorcycleLoader::load(Creature*)`,
+  run for every slayer's login, allocated a `Motorcycle` per row of the
+  slayer's motorcycles and never attached or freed it; nothing attaches it
+  still, and since next-plan/batch-3 a `std::unique_ptr` drops it once its
+  row is parsed, so the query, the option parsing and the load error log run
+  as before. `~PlayerCreature` never deleted `m_pPet`, the summoned pet
+  `setPetInfo` makes, which only the player holds; it does now. No test owns
+  either: the suite runs no leak checker, the loader reads the MySQL
+  item-object repository, which a test cannot supply, and a race's
+  destructor saves the player to the database.
+  > **Status:** fixed (next-plan/batch-3)
+- **`EffectSatelliteBombAim` uses the skill slot from `hasSkill` without a
+  null check.** It cannot be null (next-plan/batch-3). A slayer's effect is
+  made only by `SatelliteBomb::execute`'s tile overload, which the object
+  overload reaches after asserting the slot and `CGSkillToTileHandler` only
+  with a slot it found; the monster overload's caster is no slayer. The
+  effect lives on the caster, and a slayer loses only castle skills
+  (`Slayer::removeCastleSkill`), never a learned one.
+  `EffectGunShotGuidanceAim` and `GunShotGuidance` are the same.
+  > **Status:** not a defect (next-plan/batch-3)
 
 ## Native macOS build (2026-09-27)
 
