@@ -9,6 +9,9 @@
 * **Update**: [threads and what they own](threading/overview.md) says how the main thread's flag
   war schedule is shared with a GM's `*command CTF`, and [test coverage](testing/test-coverage.md)
   the runtime test that runs both at once.
+* **Update**: [account ownership and kicks](login/account-ownership-and-kicks.md) has a row for
+  what a login handler's throw does: a protocol or connect exception is retired as before, and
+  anything else is logged by type and retired like a logout instead of reaching the main loop.
 
 ## 2026-10-26
 

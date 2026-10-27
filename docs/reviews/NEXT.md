@@ -1,7 +1,7 @@
 ---
 type: Record
 title: "Next work plan"
-description: "The ranked, self-contained tasks left in the server after the 2026-10-25 merges, each written so an agent with no other context can take it: the recorded-not-fixed entries of the fix log, the loginserver's unwrapped dispatch, the fuzzers' two unread paths, and what stays blocked or with the owner."
+description: "The ranked, self-contained tasks left in the server after the 2026-10-25 merges, each written so an agent with no other context can take it: the recorded-not-fixed entries of the fix log, the fuzzers' two unread paths, and what stays blocked or with the owner."
 tags: [review, plan]
 ---
 
@@ -47,37 +47,6 @@ be taken cold. One task per PR.
    calls.
 
 ## Tasks
-
-### 3. The loginserver's handler dispatch is not wrapped
-
-**What:** the fix-log entry *Non-protocol exceptions from a read escape the receive loops*
-closed the reads (`SocketInputStream::readPacket` turns anything a `read()` throws that is not
-a `ProtocolException` into a `PacketReadErrorException`) and says: "a loginserver handler that
-throws a non-protocol exception still leaves `LoginPlayer::processCommand` (its dispatch is not
-wrapped as `GamePlayer`'s is)". `LoginPlayer::processCommand` (`src/server/loginserver/LoginPlayer.cpp`)
-calls `PacketDispatcher::dispatch` inside a `try` that catches only `IgnorePacketException`;
-the outer catches take `InsufficientDataException`, `InvalidProtocolException` and
-`DisconnectException`. `GamePlayer::processCommand` wraps the same call in `catch (...)`, logs
-the packet's metadata and throws `DisconnectException`. On the loginserver any other
-`Throwable` from a handler reaches `LoginPlayerManager::processCommands` and then
-`ClientManager::run`, which catches nothing, on the main thread.
-
-**How:** not a plain catch-all. Login handlers throw on purpose: `CLLogoutHandler` throws
-`DisconnectException` on every logout, `CLChangeServerHandler` too, and a send can throw
-`ConnectException`; `LoginPlayerManager::processCommands` retires a `ConnectException` as
-`DISCONNECTED` and, from `processCommand`, a `ProtocolException` as `UNDISCONNECTED` (the
-output path retires it as `DISCONNECTED`), each with `std::current_exception()`
-kept (`tests/login_player_retirement_test.cpp` pins that). So: rethrow `ProtocolException&` and
-`ConnectException&` first, and convert only the rest, with `de::logPacketMetadata`
-(`src/server/PacketDiagnostics.h`) to `errorLogin.txt`, then `throw DisconnectException(...)`.
-No wire change.
-
-**Test:** a login runtime test (the `tests/login_*_test.cpp` family; `PacketDispatcher::registerHandler`
-injects a handler) that registers a handler throwing a `RuntimeException`, asserts the session
-is retired and the manager loop keeps running, and that a logout still retires as before. Add a
-row to the table in [account ownership and kicks](../login/account-ownership-and-kicks.md),
-which holds the retirement rows ([login lifecycle](../login/overview.md) is prose), and change
-the fix-log entry's last sentence.
 
 ### 4. Six gameplay defects kept by the compiler-warning cleanup
 
@@ -228,3 +197,7 @@ Each is one PR, with a fix-log entry naming the branch that found it:
   `FlagManager` pops the due schedule under a leaf schedule mutex and runs it after releasing it,
   every add and `manualStart` takes the mutex, and `startFlagWar` is handed the war's length;
   `tests/game_flag_schedule_test.cpp` heartbeats and pulls forward on two threads.
+- **3. The loginserver's handler dispatch is not wrapped** (PR #387, `fix/login-dispatch-wrap`):
+  `LoginPlayer::processCommand` passes a handler's `ProtocolException` and `ConnectException` on
+  and turns anything else into a logged `DisconnectException`; `tests/login_handler_failure_test.cpp`
+  throws each kind from a handler over a loopback connection.

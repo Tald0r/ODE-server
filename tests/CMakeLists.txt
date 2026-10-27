@@ -137,6 +137,7 @@ target_sources(login_server_runtime_tests PRIVATE
     login_completion_test.cpp
     login_account_session_test.cpp
     login_player_retirement_test.cpp
+    login_handler_failure_test.cpp
     login_incoming_reply_test.cpp
     login_incoming_request_test.cpp
     login_character_selection_test.cpp
