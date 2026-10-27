@@ -3110,8 +3110,11 @@ do.
   adds a new `Schedule`, and replaces `m_pLevelWarSchedule`, on a
   `Scheduler` that has no lock of its own, so the two threads can both
   change the queue at once. Closing it means posting the start to the zone's
-  group (`de::war::postToZone`), as the war's other zone work is.
-  > **Status:** recorded, not fixed (fix/war-broadcasts)
+  group (`de::war::postToZone`), as the war's other zone work is. The
+  command now posts it so, and `tests/game_level_war_command_test.cpp`
+  runs it from another thread and sees the schedule land only when the
+  group drains its mailbox.
+  > **Status:** fixed (fix/level-war-command-post)
 
 ## A war relic's row outlives the run that made it (2026-09-25)
 
