@@ -93,7 +93,7 @@ enum ZoneAccessMode {
 
 class Zone {
     // The runtime tests give a zone the managers its load() would make from
-    // the database (tests/game_level_war_command_test.cpp).
+    // the database (tests/support/ZoneTestAccess.h).
     friend class ZoneTestAccess;
 
 public: // constructor & destructor

@@ -72,7 +72,7 @@ left behind is stated here because the code alone does not say why it is shaped 
   thread runs `LevelWarManager::heartbeat` over the manager's schedule queue, which has no lock of
   its own. The command posts `manualStart` through `de::war::postToZone`, so the queue changes only
   under that group's mutex; `tests/game_level_war_command_test.cpp` runs the command from another
-  thread and sees the schedule land only when the group drains its mailbox.
+  thread and sees the queued war pulled forward only when the group drains its mailbox.
 - **Packets pipelined behind `CGReady` are drained by the zone thread.** `GamePlayer::processCommand`
   stops the main-thread (`IncomingPlayerManager`) drain once the status flips to `GPS_NORMAL`, so
   nothing reaches a gateway without the group mutex.

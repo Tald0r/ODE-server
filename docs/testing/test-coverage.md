@@ -234,8 +234,8 @@ messages. Literal broadcast framing stays unchanged.
 it cannot throw; `GameCatch` drives a disconnect whose socket cannot send, which
 logs both failed flushes and still ends the session.
 `GameLevelWarCommand` builds a level war zone and its group in memory and runs
-`*command LevelWar` from a thread that does not hold the group: the schedule
-lands only when the group drains its mailbox.
+`*command LevelWar` from a thread that does not hold the group: the queued war
+is pulled forward only when the group drains its mailbox.
 
 # The startup and library tests
 

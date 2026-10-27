@@ -20,6 +20,27 @@ themselves are in the `restructuring/exchange-reconcile` branches of this
 repo and the client's. Entries below are newest first; the oldest is the
 1.4 max-size reconcile that followed it.
 
+## A level war's schedule pointer outlives the schedule it names (2026-10-27)
+
+- **`LevelWarManager::m_pLevelWarSchedule` names the queued level war, but
+  the queue deletes that schedule whenever it is taken out:** a run's
+  `Scheduler::heartbeat` and `manualStart`'s pull both go through
+  `popRecentWork`, which deletes the schedule, and nothing points
+  `m_pLevelWarSchedule` elsewhere until `endWar` makes the next one.
+  `heartbeat` reads it only while no war runs, and each path that leaves it
+  dangling starts the war before the next read (a pull leaves the schedule
+  due, and the same tick's heartbeat runs it), so no read reaches freed
+  memory today. `~LevelWarManager` deletes it as well as the queue's copy,
+  a double delete no run reaches because `Zone` never deletes its manager.
+  > **Status:** recorded, not fixed (fix/level-war-command-post)
+- **Other zones' threads read a level war manager's flags:**
+  `SweeperBonusManager::isAble` and `Zone::addPC`'s level war notice
+  (`ZoneSpawn.cpp`) ask a level war zone's manager `hasWar()` and
+  `hasToDayWar()`, plain `bool`s that zone's group heartbeat writes, with no
+  lock. Each read is a single flag a stale value
+  only delays, but it is a data race TSan would report.
+  > **Status:** recorded, not fixed (fix/level-war-command-post)
+
 ## A long GM console error report is never sent (2026-10-23)
 
 The `*command clearInventory` body (`gm/ConsoleCommands.cpp`) answers a
@@ -3112,8 +3133,8 @@ do.
   change the queue at once. Closing it means posting the start to the zone's
   group (`de::war::postToZone`), as the war's other zone work is. The
   command now posts it so, and `tests/game_level_war_command_test.cpp`
-  runs it from another thread and sees the schedule land only when the
-  group drains its mailbox.
+  runs it from another thread and sees the queued war pulled forward only
+  when the group drains its mailbox.
   > **Status:** fixed (fix/level-war-command-post)
 
 ## A war relic's row outlives the run that made it (2026-09-25)

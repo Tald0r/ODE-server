@@ -239,4 +239,5 @@ Each is one PR, with a fix-log entry naming the branch that found it:
 - **1. `*command LevelWar` edits a zone's schedule from another thread** (PR #PRNUM,
   `fix/level-war-command-post`): `opLevelWar` posts `LevelWarManager::manualStart` to the zone's
   group through `de::war::postToZone`; `tests/game_level_war_command_test.cpp` runs the command
-  from another thread and sees the schedule land only when the group drains its mailbox.
+  from another thread and sees the queued war pulled forward only when the group drains its
+  mailbox.

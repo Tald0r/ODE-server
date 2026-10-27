@@ -19,7 +19,9 @@
 #include "CastleInfoManager.h"
 #include "GCSystemMessage.h"
 #include "GameContext.h"
+#include "LevelWar.h"
 #include "LevelWarManager.h"
+#include "VSDateTime.h"
 #include "VariableManager.h"
 #include "Zone.h"
 #include "ZoneGroup.h"
@@ -27,17 +29,13 @@
 #include "ZoneInfo.h"
 #include "ZoneInfoManager.h"
 #include "gm/ConsoleSubcommands.h"
-
-class ZoneTestAccess {
-public:
-    static void setLevelWarManager(Zone& zone, LevelWarManager* pManager) {
-        zone.m_pLevelWarManager = pManager;
-    }
-};
+#include "support/ZoneTestAccess.h"
+#include "war/Schedule.h"
 
 namespace {
 
 void checkLevelWarStartIsPostedToTheZoneGroup() {
+    // setVariable's save finds no database here; it logs that and keeps the value.
     VariableManager variables;
     variables.setVariable(WAR_ACTIVE, 1);
     variables.setVariable(ACTIVE_LEVEL_WAR, 1);
@@ -60,6 +58,8 @@ void checkLevelWarStartIsPostedToTheZoneGroup() {
     pGroup->addZone(pZone);
     LevelWarManager* pManager = new LevelWarManager(1, pZone);
     ZoneTestAccess::setLevelWarManager(*pZone, pManager);
+    // The war a load schedules, a day off; the command pulls it forward to now.
+    pManager->addSchedule(new Schedule(new LevelWar(pManager), VSDateTime::currentDateTime().addDays(1)));
 
     // This thread stands in for the zone's: it holds the group as a tick does.
     pGroup->armOwnershipAssert();
@@ -70,10 +70,10 @@ void checkLevelWarStartIsPostedToTheZoneGroup() {
         de::gm::opLevelWar(NULL, "1131", message, send);
     });
     gm.join();
-    if (pManager->getSize() != 0)
+    if (pManager->getSize() != 1 || pManager->getRecentSchedule()->isDue())
         std::_Exit(1);
 
-    if (pGroup->drainMailbox() != 1 || pManager->getSize() != 1)
+    if (pGroup->drainMailbox() != 1 || pManager->getSize() != 1 || !pManager->getRecentSchedule()->isDue())
         std::_Exit(2);
     pGroup->unlock();
     std::_Exit(0);
