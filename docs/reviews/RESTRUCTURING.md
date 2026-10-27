@@ -1319,8 +1319,9 @@ visibility can't express.
   > partial race record stays owned until `LCPCList::setPCInfo` accepts it.
   > All four handlers retain the reply through sending; `LoginPlayer::makePCList`
   > is removed. Query order, race fallback, field mappings, truncation and
-  > database/missing-row error policy are retained. Normalized session worlds,
-  > HP/MP column ordering and decoder ownership remain recorded follow-ups.
+  > database/missing-row error policy are retained. Normalized session worlds
+  > and decoder ownership remain recorded follow-ups; the HP/MP column order
+  > is fixed (next-plan/batch-3).
   - Owner: 21 `LoginCharacterList` runtime cases using real packet records and
     supplied rows. Four regressions reproduced leaked invalid/duplicate records
     and allocation failures before the ownership fix. Coverage includes all

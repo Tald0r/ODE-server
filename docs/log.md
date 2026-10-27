@@ -9,6 +9,10 @@
 * **Update**: [threads and what they own](threading/overview.md) says how the main thread's flag
   war schedule is shared with a GM's `*command CTF`, and [test coverage](testing/test-coverage.md)
   the runtime test that runs both at once.
+* **Update**: [guilds](shared/guilds.md) has a row for founding a guild, which refuses a full
+  guild id counter and a race's last zone id instead of wrapping either and claims an id only
+  for a guild it founds, and [test coverage](testing/test-coverage.md) the runtime test that
+  runs each refused founding.
 * **Update**: [account ownership and kicks](login/account-ownership-and-kicks.md) has a row for
   what a login handler's throw does: a protocol or connect exception is retired as before, and
   anything else is logged by type and retired like a logout instead of reaching the main loop.

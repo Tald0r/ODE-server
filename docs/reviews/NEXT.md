@@ -9,8 +9,8 @@ tags: [review, plan]
 
 Written 2026-10-26, after the merges of PRs #374-#383. The [restructuring plan](RESTRUCTURING.md)
 has two unticked tasks (5.5 in progress, 6.2 blocked); ratchets R1-R5 and R7-R19 are at 0 and
-R6a-j at their baselines (line counts that can still shrink); the [fix log](FIXES.md) holds 416
-`fixed` Status lines and 38 `recorded` ones. The `recorded` entries are the backlog: each was
+R6a-j at their baselines (line counts that can still shrink); the [fix log](FIXES.md) holds 430
+`fixed` Status lines and 33 `recorded` ones (counted 2026-10-27). The `recorded` entries are the backlog: each was
 found while restructuring and left as it was, by the rule that a move does not change behaviour.
 What is left is below, ranked by the harm it closes, with a cheap fix ahead of a dearer one of
 the same harm. Each task names the code, the test it wants and the rule it must keep, so it can
@@ -47,23 +47,6 @@ be taken cold. One task per PR.
    calls.
 
 ## Tasks
-
-### 4. Three gameplay defects kept by the compiler-warning cleanup
-
-**What:** the *Compiler-warning cleanup (2026-09-27)* entry's `recorded, not fixed` bullets are
-live defects, kept because the cleanup removed only tautologies:
-
-- `CGLearnSkillHandler`'s range check can never fire (`>= SKILL_MAX && < SKILL_DOUBLE_IMPACT`);
-  `CGAddItemToItemHandler` reaches `makeGCCreateItem` with X = 255 when the pet item is missing;
-- the overrides that do not override (`processCommand()` without the base's `bool`);
-- the smaller findings bullet: `MotorcycleLoader::load` and `~PlayerCreature` leak, and
-  `EffectSatelliteBombAim` uses a skill slot with no null check.
-
-**How:** one PR per bullet, each a one-line fix with a test that pins the intended behaviour.
-Read the line's history first (`git log -p`, and the recovered source `3fccc6c6`, whose GBK
-comments mark operator edits): the wolf-form `||` looked like a typo and was a 2006 hotfix. The
-999999 durations and the `ExpireDate` in the same bullet are balance and data questions; leave
-them recorded.
 
 ### 7. Fuzz the loginserver's GM datagrams and the stream's wrap-around
 
@@ -110,16 +93,14 @@ proven. Keep the phase rules those pages state: a reply is sent before session s
 
 Each is one PR, with a fix-log entry naming the branch that found it:
 
-- *Live guild creation advances word-sized counters without checking exhaustion*:
-  `GSAddGuildHandler` (sharedserver) assigns `getMaxGuildID() + 1` to a word, so 65535 wraps to
-  0; refuse at the maximum, with a handler test (`tests/shared_guild_loading_test.cpp` covers
-  only startup loading).
-- *Character-list HP/MP fields use reversed database-column arguments*: the assembler passes
-  `(HP, CurrentHP)` to `setHP(cur, max)`. Fixing it changes what the client's character list
-  shows; check the client's `LCPCList` reader expects current then max before swapping.
 - *A dragon eye sent home across groups can outrun its return's three attempts*: the return
   captures the row when it is posted (`war/WarZoneWork.cpp`). Fix: have the retry read the row
   when it runs, or have the delayed add carry the row's save.
+- *The first guild founded after a restart reuses a guild zone id*: `prepareZoneMaximum`
+  (`src/server/sharedserver/GuildManager.cpp`) starts each race's counter at its highest stored
+  `GuildZoneID`, which `GSAddGuildHandler` hands out before moving the counter, so two guilds
+  share a hideout. Start the counter one past the stored maximum and re-pin
+  `SharedGuildStartup`'s stored-maxima case in `tests/shared_guild_startup_test.cpp`.
 - *A war relic's row outlives the run that made it*: a boot sweep of this server's relic rows
   (ids are partitioned per server); nothing reads them, so lowest.
 - Not tasks: the *CGPortCheck* registration (`recorded, left as it is`; the entry says the
@@ -175,14 +156,29 @@ PRs #386-#391 were closed unmerged: their commits reached master as the stack PR
   `tests/game_mysterious_item_test.cpp` pins it.
 - **4, one bullet: `Tile::deleteCreature(MoveMode)` picks the wrong `deleteObject`** (PR #391,
   `fix/tile-delete-by-mode`): nothing called it, so the overload is declared deleted.
-- **6. Count gates the login and guild reads still lack** (`next-plan/batch-2`): `LCWorldList`,
+- **6. Count gates the login and guild reads still lack** (PR #393, `next-plan/batch-2`): `LCWorldList`,
   `LCServerList` and `GuildInfo2` refuse a count past their factory budget before the first row,
   the four reads append a row before releasing its owner, and the sharedserver's
   `Guild::makeInfo` sends no more members than the read admits; `ListCountTest` in
   `tests/packet_read_bounds_test.cpp` pins the refusals and a full world list. No fuzz regression
   input was added: none fails on master, where the old out-of-bytes refusal and the new gate are
   both protocol errors the target treats as clean.
-- **9, one item: a dragon eye has no place in the relic handlers** (`next-plan/batch-2`):
+- **9, one item: a dragon eye has no place in the relic handlers** (PR #393, `next-plan/batch-2`):
   `CGRelicToObjectHandler` refuses a relic it has no branch for with `GCCannotAdd` instead of
   disconnecting the sender, and `deleteRelicEffect`'s `WAR_ITEM` case has its `break`;
   `tests/game_dragon_eye_test.cpp` pins the second.
+- **4, the last three bullets** (`next-plan/batch-3`): the never-firing checks are not defects
+  (the learn-skill handler's implemented-skill list refuses an out-of-range type first, the pet
+  item is the one just taken from the inventory, and `opset item_prob_ratio`'s check was turned
+  off by an operator in the recovered source). The sharedserver's `GameServerPlayer`, the gameserver's `SharedServerClient` and
+  mofus `MPlayer` declare `processCommand(bool) override`, and the unused `DummyQuestStatus` is
+  deleted. `MotorcycleLoader::load(Creature*)` drops the motorcycle it parses, and
+  `~PlayerCreature` deletes the summoned pet; no test owns the two leaks (no leak checker, and
+  neither can be built without a database). The satellite bomb's skill slot cannot be null.
+- **9, two items** (`next-plan/batch-3`): a full guild id counter founds nothing,
+  `decideAddGuild` refuses a race whose next zone id is the last, and only an accepted founding
+  claims a guild id (`SharedAddGuild` in `tests/shared_add_guild_test.cpp`, `DecideAddGuild` in
+  `tests/shared_guild_decision_test.cpp`).
+  The character list sends `(CurrentHP, HP)` and `(CurrentMP, MP)` again, as the original's
+  right-to-left argument evaluation most likely did; the client reads current then max and shows
+  the maximum (`LoginCharacterList` in `tests/login_character_list_test.cpp`).
