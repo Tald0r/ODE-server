@@ -161,7 +161,7 @@ PRs #386-#391 were closed unmerged: their commits reached master as the stack PR
   The character list sends `(CurrentHP, HP)` and `(CurrentMP, MP)` again, as the original's
   right-to-left argument evaluation most likely did; the client reads current then max and shows
   the maximum (`LoginCharacterList` in `tests/login_character_list_test.cpp`).
-- **7. Fuzz the loginserver's GM datagrams and the stream's wrap-around** (`next-plan/batch-4`):
+- **7. Fuzz the loginserver's GM datagrams and the stream's wrap-around** (PR #395, `next-plan/batch-4`):
   `tests/fuzz/fuzz_login_datagram.cpp` reads one datagram through `Datagram::read` as
   `GameServerManager::run` does, seeded by `golden2corpus.pl --datagram` and replayed by
   `fuzz_replay_login_datagram`; its first replay found `Datagram`'s raw reads asserting past the
@@ -171,5 +171,5 @@ PRs #386-#391 were closed unmerged: their commits reached master as the stack PR
   ([fuzzing](../protocol/fuzzing.md)). Task 5.5 stays `in progress` for its CI fuzz job; the
   libFuzzer runs stay manual.
 - **9, one item: the first guild founded after a restart reuses a guild zone id**
-  (`next-plan/batch-4`): `prepareZoneMaximum` starts each race's counter one past its stored
+  (PR #395, `next-plan/batch-4`): `prepareZoneMaximum` starts each race's counter one past its stored
   maximum (`SharedGuildStartup` in `tests/shared_guild_startup_test.cpp`).
