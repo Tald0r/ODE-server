@@ -172,6 +172,9 @@ struct SharedGuildEvents {
 enum class SharedGuildReason {
     // The request names no guild race, so there is no zone id to hand out.
     UnknownRace,
+    // The race's next guild zone id is the last one, and its counter cannot
+    // move past it.
+    ZoneIDsExhausted,
     // The id names no loaded guild.
     GuildMissing,
     // The name has no row in that guild's roster.
@@ -222,13 +225,12 @@ struct SharedGuildRosterEntry {
 // Founding a guild
 //////////////////////////////////////////////////////////////////////////////
 
-// What GSAddGuild asks, once the caller has claimed the guild id. The id is
-// claimed before the race is looked at, so a request naming an unknown race
-// consumes one.
+// What GSAddGuild asks. The guild id is the one after the highest claimed;
+// the caller claims it only for an accepted founding.
 struct AddGuildRequest {
     GuildRace_t guildRace = 0;
     GuildID_t guildID = 0;
-    // The highest guild zone id each race has handed out.
+    // Each race's guild zone counter, which the new guild takes as its zone id.
     ZoneID_t maxSlayerZoneID = 0;
     ZoneID_t maxVampireZoneID = 0;
     ZoneID_t maxOustersZoneID = 0;
@@ -242,8 +244,8 @@ struct AddGuildAllocation {
 
 // What does the new guild get?
 //
-// Refused when the race is none of the three, which is the only way this
-// request is answered with nothing.
+// Refused when the race is none of the three, or when the race's next zone id
+// is the last one; either way the request is answered with nothing.
 [[nodiscard]] Outcome<AddGuildAllocation, SharedGuildRejection> decideAddGuild(const AddGuildRequest& request);
 
 //////////////////////////////////////////////////////////////////////////////
