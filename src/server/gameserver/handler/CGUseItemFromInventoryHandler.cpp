@@ -1315,7 +1315,7 @@ void CGUseItemFromInventoryHandler::executeFirecraker(CGUseItemFromInventory* pP
     } else {
         // Take it for a skill used on a tile and check whether it can be used.
         // It cannot be used in a safe zone.
-        if (!isAbleToUseTileSkill(pCreature) ||
+        if (!isAbleToUseTileSkill(pCreature, SKILL_ATTACK_MELEE) ||
             (pZone->getZoneLevel(pCreature->getX(), pCreature->getY()) & COMPLETE_SAFE_ZONE) ||
             ItemObjectID != pPacket->getObjectID()) {
             GCCannotUse _GCCannotUse;

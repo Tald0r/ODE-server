@@ -48,14 +48,11 @@ be taken cold. One task per PR.
 
 ## Tasks
 
-### 4. Six gameplay defects kept by the compiler-warning cleanup
+### 4. Five gameplay defects kept by the compiler-warning cleanup
 
 **What:** the *Compiler-warning cleanup (2026-09-27)* entry's `recorded, not fixed` bullets are
 live defects, kept because the cleanup removed only tautologies:
 
-- wolf form rejects every skill: the four `isAbleToUse*Skill` guards in `CreatureUtil.cpp` test
-  `SkillType != A || SkillType != B`, true for any skill; the removed `&&` versions allowed Howl,
-  Eat Corpse, Un-transform and melee;
 - `CGLearnSkillHandler`'s range check can never fire (`>= SKILL_MAX && < SKILL_DOUBLE_IMPACT`);
   `CGAddItemToItemHandler` reaches `makeGCCreateItem` with X = 255 when the pet item is missing;
 - `getRandomMysteriousItem` tests a constant that is always true, so female vampires get item
@@ -66,9 +63,11 @@ live defects, kept because the cleanup removed only tautologies:
 - the smaller findings bullet: `MotorcycleLoader::load` and `~PlayerCreature` leak, and
   `EffectSatelliteBombAim` uses a skill slot with no null check.
 
-**How:** one PR per bullet, each a one-line fix with a test that pins the intended behaviour
-(the wolf-form guards first: a test per skill the `&&` version allowed). The 999999 durations
-and the `ExpireDate` in the same bullet are balance and data questions; leave them recorded.
+**How:** one PR per bullet, each a one-line fix with a test that pins the intended behaviour.
+Read the line's history first (`git log -p`, and the recovered source `3fccc6c6`, whose GBK
+comments mark operator edits): the wolf-form `||` looked like a typo and was a 2006 hotfix. The
+999999 durations and the `ExpireDate` in the same bullet are balance and data questions; leave
+them recorded.
 
 ### 5. A slayer's shoulder armour leaving its shape is broadcast as the trousers
 
@@ -201,3 +200,7 @@ Each is one PR, with a fix-log entry naming the branch that found it:
   `LoginPlayer::processCommand` passes a handler's `ProtocolException` and `ConnectException` on
   and turns anything else into a logged `DisconnectException`; `tests/login_handler_failure_test.cpp`
   throws each kind from a handler over a loopback connection.
+- **4. Wolf form rejects every skill** (PR #388, `fix/wolf-form-skills`): the four
+  `isAbleToUse*Skill` guards have their `&&` allow-lists again, and the object, tile and inventory
+  skill handlers pass the skill being used, so a wolf howls and attacks and casts nothing else;
+  `tests/game_wolf_form_skill_test.cpp` pins each guard per skill.

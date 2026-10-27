@@ -112,7 +112,7 @@ void CGSkillToObjectHandler::execute(CGSkillToObject* pPacket, Player* pPlayer)
 
             if (pSkillSlot == NULL)
                 bSuccess = false;
-            if (!isAbleToUseObjectSkill(pSlayer))
+            if (!isAbleToUseObjectSkill(pSlayer, SkillType))
                 bSuccess = false;
 
             // A relic table of one's own race does not accept the skill.
@@ -140,7 +140,7 @@ void CGSkillToObjectHandler::execute(CGSkillToObject* pPacket, Player* pPlayer)
             // The BITE OF DEATH werewolf check happens inside isAbleToUseObjectSkill.
             if (pVampireSkillSlot == NULL && SkillType != SKILL_BITE_OF_DEATH)
                 bSuccess = false;
-            if (!isAbleToUseObjectSkill(pVampire))
+            if (!isAbleToUseObjectSkill(pVampire, SkillType))
                 bSuccess = false;
 
 
@@ -180,7 +180,7 @@ void CGSkillToObjectHandler::execute(CGSkillToObject* pPacket, Player* pPlayer)
 
             if (pOustersSkillSlot == NULL)
                 bSuccess = false;
-            if (!isAbleToUseObjectSkill(pOusters))
+            if (!isAbleToUseObjectSkill(pOusters, SkillType))
                 bSuccess = false;
 
             if (bSuccess) {

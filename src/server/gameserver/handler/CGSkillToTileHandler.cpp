@@ -109,7 +109,7 @@ void CGSkillToTileHandler::execute(CGSkillToTile* pPacket, Player* pPlayer)
 
                 if (pSkillSlot == NULL)
                     bSuccess = false;
-                if (!isAbleToUseTileSkill(pSlayer))
+                if (!isAbleToUseTileSkill(pSlayer, SkillType))
                     bSuccess = false;
 
 
@@ -146,7 +146,7 @@ void CGSkillToTileHandler::execute(CGSkillToTile* pPacket, Player* pPlayer)
 
                 if (pVampireSkillSlot == NULL)
                     bSuccess = false;
-                if (!isAbleToUseTileSkill(pVampire))
+                if (!isAbleToUseTileSkill(pVampire, SkillType))
                     bSuccess = false;
 
                 if (bSuccess) {
@@ -174,7 +174,7 @@ void CGSkillToTileHandler::execute(CGSkillToTile* pPacket, Player* pPlayer)
 
                 if (pOustersSkillSlot == NULL)
                     bSuccess = false;
-                if (!isAbleToUseTileSkill(pOusters))
+                if (!isAbleToUseTileSkill(pOusters, SkillType))
                     bSuccess = false;
                 if (SkillType == SKILL_DESTRUCTION_SPEAR &&
                     pOusters->hasSkill(SKILL_DESTRUCTION_SPEAR_MASTERY) == NULL) {
