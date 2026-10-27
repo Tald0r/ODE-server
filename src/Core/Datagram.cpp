@@ -76,8 +76,9 @@ bool Datagram::isDatagram(PacketID_t packetID) {
 void Datagram::read(char* buf, uint len) {
     __BEGIN_TRY
 
-    // boundary check
-    Assert(m_InputOffset + len <= m_Length);
+    // A read past the datagram is a malformed body, refused as a stream refuses one.
+    if (len > m_Length - m_InputOffset)
+        throw InsufficientDataException(len - (m_Length - m_InputOffset));
 
     memcpy(buf, &m_Data[m_InputOffset], len);
 
@@ -93,8 +94,8 @@ void Datagram::read(char* buf, uint len) {
 void Datagram::read(string& str, uint len) {
     __BEGIN_TRY
 
-    // boundary check
-    Assert(m_InputOffset + len <= m_Length);
+    if (len > m_Length - m_InputOffset)
+        throw InsufficientDataException(len - (m_Length - m_InputOffset));
 
     str.reserve(len);
     str.assign(&m_Data[m_InputOffset], len);
