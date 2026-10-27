@@ -117,9 +117,6 @@ Each is one PR, with a fix-log entry naming the branch that found it:
 - *Character-list HP/MP fields use reversed database-column arguments*: the assembler passes
   `(HP, CurrentHP)` to `setHP(cur, max)`. Fixing it changes what the client's character list
   shows; check the client's `LCPCList` reader expects current then max before swapping.
-- *A dragon eye has no place in the relic handlers*: `CGRelicToObjectHandler` has no
-  `ITEM_CLASS_WAR_ITEM` branch, so offering a dragon eye disconnects the sender; add the refusal
-  (`GCCannotAdd`) and the missing `break` in `deleteRelicEffect`.
 - *A dragon eye sent home across groups can outrun its return's three attempts*: the return
   captures the row when it is posted (`war/WarZoneWork.cpp`). Fix: have the retry read the row
   when it runs, or have the delayed add carry the row's save.
@@ -185,3 +182,7 @@ PRs #386-#391 were closed unmerged: their commits reached master as the stack PR
   `tests/packet_read_bounds_test.cpp` pins the refusals and a full world list. No fuzz regression
   input was added: none fails on master, where the old out-of-bytes refusal and the new gate are
   both protocol errors the target treats as clean.
+- **9, one item: a dragon eye has no place in the relic handlers** (`next-plan/batch-2`):
+  `CGRelicToObjectHandler` refuses a relic it has no branch for with `GCCannotAdd` instead of
+  disconnecting the sender, and `deleteRelicEffect`'s `WAR_ITEM` case has its `break`;
+  `tests/game_dragon_eye_test.cpp` pins the second.

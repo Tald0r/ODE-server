@@ -3306,8 +3306,11 @@ do.
   `deleteRelicEffect(Corpse*, Item*)` falls from its `WAR_ITEM` case into
   `default: return false` for want of a `break`. No path puts a dragon eye
   in a corpse, so the second is unreachable; the first costs only the
-  sender's own session, which drops the eye home as it ends.
-  > **Status:** recorded, not fixed (fix/flag-relic-returns)
+  sender's own session, which drops the eye home as it ends. The handler
+  now refuses a relic it has no branch for with `GCCannotAdd`, as it refuses
+  any item that is not a relic, and the `WAR_ITEM` case has its `break`;
+  `tests/game_dragon_eye_test.cpp` pins the second.
+  > **Status:** fixed (next-plan/batch-2)
 
 ## `*CTF` edits the flag war's schedule from a zone thread (2026-09-25)
 
