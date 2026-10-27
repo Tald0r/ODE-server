@@ -41,7 +41,8 @@ void SGGuildInfo::read(SocketInputStream& iStream) {
     for (int i = 0; i < szGuildInfo; i++) {
         std::unique_ptr<GuildInfo2> pGuildInfo(new GuildInfo2);
         pGuildInfo->read(iStream);
-        m_GuildInfoList.push_back(pGuildInfo.release());
+        m_GuildInfoList.push_back(pGuildInfo.get());
+        pGuildInfo.release();
     }
 
     __END_CATCH

@@ -48,10 +48,14 @@ void LCWorldList::read(SocketInputStream& iStream)
 
     // State the actual size when optimizing.
     iStream.read(ListNum);
+    if (ListNum > WorldInfo::kMaxCount)
+        throw InvalidProtocolException("too many worlds");
+
     for (int i = 0; i < ListNum; i++) {
         std::unique_ptr<WorldInfo> pWorldInfo(new WorldInfo);
         pWorldInfo->read(iStream);
-        m_WorldInfoList.push_back(pWorldInfo.release());
+        m_WorldInfoList.push_back(pWorldInfo.get());
+        pWorldInfo.release();
     }
 
     __END_CATCH

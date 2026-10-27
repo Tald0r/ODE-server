@@ -73,10 +73,14 @@ void GuildInfo2::read(SocketInputStream& iStream) {
 
     WORD szGuildMemberInfo;
     iStream.read(szGuildMemberInfo);
+    if (szGuildMemberInfo > kMaxMemberCount)
+        throw InvalidProtocolException("too many guild members");
+
     for (int i = 0; i < szGuildMemberInfo; i++) {
         std::unique_ptr<GuildMemberInfo2> pGuildMemberInfo(new GuildMemberInfo2);
         pGuildMemberInfo->read(iStream);
-        m_GuildMemberInfoList.push_back(pGuildMemberInfo.release());
+        m_GuildMemberInfoList.push_back(pGuildMemberInfo.get());
+        pGuildMemberInfo.release();
     }
 
 

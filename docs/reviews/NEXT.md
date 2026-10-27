@@ -65,29 +65,6 @@ comments mark operator edits): the wolf-form `||` looked like a typo and was a 2
 999999 durations and the `ExpireDate` in the same bullet are balance and data questions; leave
 them recorded.
 
-### 6. Count gates the login and guild reads still lack
-
-**What:** three `recorded` entries of 2026-10-02 (*World-list decoding leaves refused records
-unowned*, *Login server-list decoding still needs owned records and a count gate*, *Guild-info
-decoding and roster budgets need separate ownership and bounds checks*) are half stale: PR #381
-(`cb96dc5f`, `058cec4a`) put every row of `LCWorldList::read`, `LCServerList::read`,
-`SGGuildInfo::read` and `GuildInfo2::read` in a `std::unique_ptr`, and `SGGuildInfo::read`
-refuses a count above `GuildInfo2::kMaxCount`. Left: `LCWorldList::read` and `LCServerList::read`
-accept a count past the 37 of `WorldInfo.h` and `ServerGroupInfo.h`, `GuildInfo2::read` past
-the 220 members of `GuildInfo2.h`, and each `push_back(p.release())` leaks if `push_back`
-throws. No server receive path reads the two LC packets (the loginserver sends them; the login
-fuzz target admits only CL ids) and only `fuzz_replay_game_any_id` reads `SGGuildInfo`, which is
-why this ranks low.
-
-**How:** refuse the count with an `InvalidProtocolException` before the first row is read;
-`push_back` the owning pointer before releasing it. Rewrite the three entries' Status lines to
-say what #381 did and what this PR does.
-
-**Test:** one case per packet in `tests/packet_read_bounds_test.cpp` (`wire_tests`); a
-regression input under `tests/fuzz/regressions/` for `SGGuildInfo` where the game target's
-any-id replay reaches it. Leak detection runs only in the hand-built `DARKEDEN_BUILD_FUZZERS`
-ASan tree, so a leak claim is checked there.
-
 ### 7. Fuzz the loginserver's GM datagrams and the stream's wrap-around
 
 **What:** task 5.5's *Next reader*: a UDP target for the loginserver's GM datagrams is not
@@ -172,6 +149,8 @@ Each is one PR, with a fix-log entry naming the branch that found it:
 
 ## Done
 
+PRs #386-#391 were closed unmerged: their commits reached master as the stack PR #392.
+
 - **1. `*command LevelWar` edits a zone's schedule from another thread** (PR #385,
   `fix/level-war-command-post`): `opLevelWar` posts `LevelWarManager::manualStart` to the zone's
   group through `de::war::postToZone`; `tests/game_level_war_command_test.cpp` runs the command
@@ -199,3 +178,8 @@ Each is one PR, with a fix-log entry naming the branch that found it:
   `tests/game_mysterious_item_test.cpp` pins it.
 - **4, one bullet: `Tile::deleteCreature(MoveMode)` picks the wrong `deleteObject`** (PR #391,
   `fix/tile-delete-by-mode`): nothing called it, so the overload is declared deleted.
+- **6. Count gates the login and guild reads still lack** (`next-plan/batch-2`): `LCWorldList`,
+  `LCServerList` and `GuildInfo2` refuse a count past their factory budget before the first row,
+  and every list read appends a row before releasing its owner; `ListCountTest` in
+  `tests/packet_read_bounds_test.cpp` pins each refusal. No fuzz regression input was added:
+  nothing crashed a target, and a replay could not show it reaches the gate.

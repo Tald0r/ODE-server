@@ -577,8 +577,14 @@ still need owned partial records; the shared reply-construction fix covers
 outgoing assembly. `GuildInfo2::getMaxSize` budgets 220 members, but its adder,
 reader and writer do not enforce that roster count. These are source findings
 from the reply audit, requiring decoder failure and roster-boundary tests.
+PR #381 put every decoded guild and member in a `std::unique_ptr` and gave
+`SGGuildInfo::read` its 500-guild gate. The roster's budget is now
+`GuildInfo2::kMaxMemberCount`, which `GuildInfo2::read` refuses past before
+the first member, and both reads append a record before releasing its owner;
+`ListCountTest` pins the roster refusal. The adder and the writer still take
+any roster count.
 
-> **Status:** recorded, not fixed (refactor/shared-guild-replies)
+> **Status:** fixed for decoding (next-plan/batch-2)
 
 ## Login world-list assembly leaves partial reply rows unowned (2026-10-02)
 
@@ -651,9 +657,11 @@ clear/pop/count refusal. Handler status/error policy and wire layout stay intact
 `LCServerList::read` separately allocates raw rows before parsing/insertion and
 does not enforce its 37-group factory budget. The outgoing ownership fix does
 not cover decoding; failure/reuse/count behavior needs separate tests, as for
-`LCWorldList`.
+`LCWorldList`. PR #381 put each decoded row in a `std::unique_ptr`; the read
+now refuses a count past `ServerGroupInfo::kMaxCount` before the first row and
+appends a row before releasing its owner, pinned by `ListCountTest`.
 
-> **Status:** recorded, not fixed (refactor/login-server-list-replies)
+> **Status:** fixed (next-plan/batch-2)
 
 ## Login routing catalogue loads append partial raw rows into live maps (2026-10-02)
 
@@ -1434,8 +1442,13 @@ publishes independently.
 insertion can throw, and accepts an encoded count above the 37-world factory
 budget. The outgoing assembler and adder enforce ownership and the count limit;
 decoder failure, reuse and count validation need separate packet tests.
+PR #381 put each decoded row in a `std::unique_ptr`; the read now refuses a
+count past `WorldInfo::kMaxCount` with an `InvalidProtocolException` before
+the first row, and appends a row before releasing its owner, so a failed
+append frees it. `ListCountTest` in `tests/packet_read_bounds_test.cpp` pins
+the refusal.
 
-> **Status:** recorded, not fixed (refactor/login-world-list-replies)
+> **Status:** fixed (next-plan/batch-2)
 
 ## Mutex and condition wrappers misreport native success and failure (2026-10-02)
 

@@ -39,7 +39,12 @@
 #include "GCShopList.h"
 #include "GCShopListMysterious.h"
 #include "GCStashList.h"
+#include "GuildInfo2.h"
+#include "LCServerList.h"
+#include "LCWorldList.h"
 #include "PCVampireInfo.h"
+#include "SGGuildInfo.h"
+#include "ServerGroupInfo.h"
 #include "Socket.h"
 #include "SocketImpl.h"
 #include "SocketInputStream.h"
@@ -47,6 +52,7 @@
 #include "StoreInfo.h"
 #include "TestStreams.h"
 #include "WireString.h"
+#include "WorldInfo.h"
 
 using wiretest::Loopback;
 
@@ -321,4 +327,49 @@ TEST(StoreInfoTest, anItemCountThatFillsEverySlotIsRead) {
     auto store = std::make_unique<MyStore>();
     readFromMemory(store->packet, storeBody(MAX_ITEM_NUM));
     EXPECT_EQ((size_t)MAX_ITEM_NUM, store->info.getItems().size());
+}
+
+//////////////////////////////////////////////////////////////////////
+// A list's count is refused before its first row is read when it is
+// past the rows the packet's factory max budgets.
+//////////////////////////////////////////////////////////////////////
+
+TEST(ListCountTest, aWorldListPastItsBudgetIsRefused) {
+    auto packet = std::make_unique<LCWorldList>();
+    EXPECT_THROW(readHandBuiltBody(*packet,
+                                   [](SocketOutputStream& out) {
+                                       out.write((WorldID_t)1);
+                                       out.write((BYTE)(WorldInfo::kMaxCount + 1));
+                                   }),
+                 InvalidProtocolException);
+}
+
+TEST(ListCountTest, aServerListPastItsBudgetIsRefused) {
+    auto packet = std::make_unique<LCServerList>();
+    EXPECT_THROW(readHandBuiltBody(*packet,
+                                   [](SocketOutputStream& out) {
+                                       out.write((ServerGroupID_t)1);
+                                       out.write((BYTE)(ServerGroupInfo::kMaxCount + 1));
+                                   }),
+                 InvalidProtocolException);
+}
+
+TEST(ListCountTest, aGuildRosterPastItsBudgetIsRefused) {
+    auto packet = std::make_unique<SGGuildInfo>();
+    EXPECT_THROW(readHandBuiltBody(*packet,
+                                   [](SocketOutputStream& out) {
+                                       out.write((WORD)1); // one guild
+                                       out.write((GuildID_t)1);
+                                       de::wire::writeString(out, "guild", {1, 30}, "Name");
+                                       out.write((GuildType_t)0);
+                                       out.write((GuildRace_t)0);
+                                       out.write((GuildState_t)0);
+                                       out.write((ServerGroupID_t)1);
+                                       out.write((ZoneID_t)1);
+                                       de::wire::writeString(out, "master", {1, 20}, "Master");
+                                       de::wire::writeString(out, "", {0, 11}, "Date");
+                                       de::wire::writeString(out, "", {0, de::wire::kMaxByteStringLength}, "Intro");
+                                       out.write((WORD)(GuildInfo2::kMaxMemberCount + 1));
+                                   }),
+                 InvalidProtocolException);
 }
