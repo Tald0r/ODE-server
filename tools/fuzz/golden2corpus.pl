@@ -23,6 +23,14 @@
 #                             zero-filled body of min(max size, 64) bytes,
 #                             under code 0, once per status given.
 #
+# With --datagram first and no status list, every seed is instead one
+# datagram as the datagram target (tests/fuzz/fuzz_login_datagram.cpp)
+# reads it,
+#
+#   [id u16][size u32][body][zero byte]
+#
+# with the same golden-<file> and id-<Name>-<len> seeds, once each.
+#
 # The out-dir is emptied of earlier seeds first, so a golden that was
 # removed does not linger. Prints the number of seeds written.
 
@@ -30,12 +38,19 @@ use strict;
 use warnings;
 use File::Path qw(make_path);
 
+my $datagram = @ARGV && $ARGV[0] eq '--datagram' ? shift @ARGV : undef;
 die "usage: $0 <golden-dir> <wire-layout.txt> <factory_registrations.txt> <server> <status,...> <out-dir>\n"
-    unless @ARGV == 6;
-my ($golden_dir, $layout, $registrations, $server, $status_list, $out) = @ARGV;
+    . "       $0 --datagram <golden-dir> <wire-layout.txt> <factory_registrations.txt> <server> <out-dir>\n"
+    unless @ARGV == ($datagram ? 5 : 6);
+my ($golden_dir, $layout, $registrations, $server) = @ARGV;
+my $out = $ARGV[-1];
 
-my @statuses = split /,/, $status_list;
-die "bad status list '$status_list'\n" if !@statuses || grep { !/^\d+$/ || $_ > 255 } @statuses;
+my @statuses;
+unless ($datagram) {
+    my $status_list = $ARGV[4];
+    @statuses = split /,/, $status_list;
+    die "bad status list '$status_list'\n" if !@statuses || grep { !/^\d+$/ || $_ > 255 } @statuses;
+}
 
 my (%id, %max);
 open my $L, '<', $layout or die "$layout: $!\n";
@@ -73,7 +88,15 @@ closedir $D;
 
 my $n = 0;
 sub seed {
-    my ($file, $code, $frame) = @_;
+    my ($file, $code, $id, $body) = @_;
+    if ($datagram) {
+        open my $O, '>:raw', "$out/$file" or die "$out/$file: $!\n";
+        print $O pack('vV', $id, length $body) . $body . "\0";
+        close $O;
+        $n++;
+        return;
+    }
+    my $frame = pack('vVC', $id, length $body, 0) . $body;
     for my $status (@statuses) {
         open my $O, '>:raw', "$out/$file-s$status" or die "$out/$file-s$status: $!\n";
         print $O chr($code) . chr($status) . $frame;
@@ -94,14 +117,14 @@ for my $f (sort grep { /\.hex$/ } readdir $G) {
     (my $hex = <$H>) =~ s/\s+//g;
     close $H;
     my $body = pack 'H*', $hex;
-    seed("golden-$base", $code, pack('vVC', $id{$name}, length $body, 0) . $body);
+    seed("golden-$base", $code, $id{$name}, $body);
 }
 closedir $G;
 
 for my $name (sort keys %registered) {
     my $filled = $max{$name} < 64 ? $max{$name} : 64;
     for my $len ($filled ? (0, $filled) : (0)) {
-        seed("id-$name-$len", 0, pack('vVC', $id{$name}, $len, 0) . ("\0" x $len));
+        seed("id-$name-$len", 0, $id{$name}, "\0" x $len);
     }
 }
 

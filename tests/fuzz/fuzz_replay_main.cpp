@@ -13,8 +13,8 @@
 //               (whitespace ignored); any other file is the raw input.
 //               The driver exits 0 once every input has run, 1 when an
 //               argument names nothing, no input was found at all, or an
-//               input is one the target would not run (StreamFuzz.h's
-//               runsInput), and an input that trips the target aborts
+//               input is one the target would not run (its
+//               fuzzRunsInput), and an input that trips the target aborts
 //               it, which the test reports as a failure.
 //
 //////////////////////////////////////////////////////////////////////
@@ -30,10 +30,11 @@
 #include <string>
 #include <vector>
 
-#include "StreamFuzz.h"
-
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv);
 extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size);
+
+// Whether the target runs an input of this many bytes; each target defines it.
+bool fuzzRunsInput(std::size_t size);
 
 namespace {
 
@@ -114,7 +115,7 @@ int main(int argc, char** argv) {
             std::fprintf(stderr, "fuzz replay: cannot read %s\n", path.string().c_str());
             return 1;
         }
-        if (!de::fuzz::runsInput(bytes.size())) {
+        if (!fuzzRunsInput(bytes.size())) {
             std::fprintf(stderr, "fuzz replay: %s holds %zu bytes, which the target does not run\n",
                          path.string().c_str(), bytes.size());
             return 1;
