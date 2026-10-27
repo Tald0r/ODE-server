@@ -97,9 +97,17 @@ a dead slayer drops a worn item, a unique or a random one (`PCManager.cpp`),
 so whenever it sends the packet the zone is told the trousers came off rather
 than the shoulder armor. Found while moving the body out of `Slayer.cpp`; the
 move kept it as it was. A fix changes what the zone is sent, so it wants a
-test that pins the slot `removeShape` sends for each item class.
+test that pins the slot `removeShape` sends for each item class. Both
+senders now take the slot from one lookup, `slayerTakeOffSlot`, which names
+`ADDON_SHOULDER` for the shoulder armor, and
+`tests/game_slayer_take_off_test.cpp` pins its slot for every class with a
+shape (the senders' use of it is held by reading: `Zone::broadcastPacket` is
+not virtual, so no test captures the packet). The packet's layout is
+unchanged. The client's addon slots end before 7 (`ADDON_MAX`), so it
+ignores `ADDON_SHOULDER` as it always did from `takeOffItem`: the visible
+change is that the trousers stay drawn, while the shoulder stays drawn too.
 
-> **Status:** recorded, not fixed (refactor/slayer-split-r18)
+> **Status:** fixed (fix/shoulder-takeoff-slot)
 
 ## Diagnostic files grow without retention and failures escape gameplay (2026-10-04)
 

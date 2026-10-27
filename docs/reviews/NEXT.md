@@ -69,17 +69,6 @@ comments mark operator edits): the wolf-form `||` looked like a typo and was a 2
 999999 durations and the `ExpireDate` in the same bullet are balance and data questions; leave
 them recorded.
 
-### 5. A slayer's shoulder armour leaving its shape is broadcast as the trousers
-
-**What:** fix-log entry of 2026-10-23, `recorded, not fixed`. `Slayer::removeShape`
-(`src/server/gameserver/SlayerShape.cpp`) sends the zone a `GCTakeOff` with `ADDON_TROUSER` for
-`ITEM_CLASS_SHOULDER_ARMOR`, where `Slayer::takeOffItem` sends `ADDON_SHOULDER` for the same
-class. Every client in range draws the trousers off and the shoulder still on.
-
-**How:** one constant, test-first: pin the slot `removeShape` sends for each item class (a table
-test over the classes `takeOffItem` handles, with a stub zone capturing the packet if the runtime
-harness does not reach `removeShape`). The packet layout does not change, so no golden moves.
-
 ### 6. Count gates the login and guild reads still lack
 
 **What:** three `recorded` entries of 2026-10-02 (*World-list decoding leaves refused records
@@ -204,3 +193,7 @@ Each is one PR, with a fix-log entry naming the branch that found it:
   `isAbleToUse*Skill` guards have their `&&` allow-lists again, and the object, tile and inventory
   skill handlers pass the skill being used, so a wolf howls and attacks and casts nothing else;
   `tests/game_wolf_form_skill_test.cpp` pins each guard per skill.
+- **5. A slayer's shoulder armour leaving its shape is broadcast as the trousers** (PR #389,
+  `fix/shoulder-takeoff-slot`): `Slayer::takeOffItem` and `Slayer::removeShape` take the
+  `GCTakeOff` slot from one lookup, `slayerTakeOffSlot`, which names `ADDON_SHOULDER` for the
+  shoulder armour; `tests/game_slayer_take_off_test.cpp` pins its slot per item class.
