@@ -20,7 +20,7 @@
 //               DE_FUZZ_ANY_ID=1 admits every id in GPS_NORMAL instead,
 //               so the reads behind the gate are fuzzed as well.
 //
-//               The input format, the three deliveries and the switches
+//               The input format, the four deliveries and the switches
 //               are described in StreamFuzz.h. The loop runs the zone
 //               thread's call (Option == true), so the main-thread stop
 //               after CGReady and the event heartbeat do not apply.
@@ -230,6 +230,10 @@ void receiveThroughGate(SocketInputStream& in, PlayerStatus status, de::GameFram
 
 } // namespace
 
+bool fuzzRunsInput(std::size_t size) {
+    return de::fuzz::runsInput(size);
+}
+
 extern "C" int LLVMFuzzerInitialize(int*, char***) {
     de::fuzz::initialise();
     return 0;
@@ -241,15 +245,15 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
         return 0;
 
     de::fuzz::run([&] {
-        const de::fuzz::Trace whole =
-            de::fuzz::deliverEveryWay(input, data, size, [&](const de::fuzz::Schedule& cuts, de::fuzz::Trace& trace) {
+        const de::fuzz::Trace whole = de::fuzz::deliverEveryWay(
+            input, data, size, [&](const de::fuzz::Schedule& schedule, de::fuzz::Trace& trace) {
                 // GamePlayer reads through a SocketEncryptInputStream whose
                 // code comes from the zone the player enters.
                 Socket socket(new SocketImpl());
                 SocketEncryptInputStream in(&socket, (uint)de::fuzz::streamCapacity(input));
                 in.setEncryptCode(input.code);
                 Session session;
-                de::fuzz::deliver(in, input, cuts, trace,
+                de::fuzz::deliver(in, input, schedule, trace,
                                   [&](de::fuzz::Trace& t) { receive(in, input.status, session, t); });
             });
 

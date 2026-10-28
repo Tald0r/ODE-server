@@ -2,19 +2,23 @@
 # Packet-read fuzz targets: the bytes a client sends, through the gates
 # the receive loops apply (GameFrameGate::next, which
 # GamePlayer::processCommand runs, and LoginPlayer::processCommand), into
-# the packets' read(). StreamFuzz.h describes the input format and the
-# environment switches.
+# the packets' read(); and one datagram at the loginserver's UDP socket,
+# through Datagram::read as GameServerManager::run calls it. StreamFuzz.h
+# describes the stream input format and the environment switches,
+# fuzz_login_datagram.cpp the datagram's.
 #
-# Two builds of the same two targets:
+# Two builds of the same three targets:
 #
-#   fuzz_replay_game / fuzz_replay_login - the targets with a plain main()
-#     (fuzz_replay_main.cpp) that replays saved inputs. Built by every
-#     DARKEDEN_BUILD_TESTS tree, with the ordinary toolchain, and run by
-#     ctest over the seed corpus and tests/fuzz/regressions/.
+#   fuzz_replay_game / fuzz_replay_login / fuzz_replay_login_datagram -
+#     the targets with a plain main() (fuzz_replay_main.cpp) that replays
+#     saved inputs. Built by every DARKEDEN_BUILD_TESTS tree, with the
+#     ordinary toolchain, and run by ctest over the seed corpus and
+#     tests/fuzz/regressions/.
 #
-#   fuzz_game_stream / fuzz_login_stream - the same targets linked with
-#     libFuzzer, under DARKEDEN_BUILD_FUZZERS (Clang only; the top-level
-#     CMakeLists.txt instruments every target for it).
+#   fuzz_game_stream / fuzz_login_stream / fuzz_login_datagram - the same
+#     targets linked with libFuzzer, under DARKEDEN_BUILD_FUZZERS (Clang
+#     only; the top-level CMakeLists.txt instruments every target for it),
+#     each named after its source.
 #
 # Each target is compiled as its server (the PlayerStatus values and the
 # factory table differ per server) and links that server's packet
@@ -23,7 +27,7 @@
 # binary links exactly one of them.
 # =====================================================================
 
-set(DARKEDEN_FUZZ_TARGETS game login)
+set(DARKEDEN_FUZZ_TARGETS game login login_datagram)
 set(DARKEDEN_FUZZ_game_SOURCE fuzz_game_stream.cpp)
 set(DARKEDEN_FUZZ_game_PACKETS GameServerPackets)
 set(DARKEDEN_FUZZ_game_DEFINES __GAME_SERVER__ __COMBAT__)
@@ -42,6 +46,15 @@ set(DARKEDEN_FUZZ_login_SERVER loginserver)
 # LPS_BEGIN_SESSION and LPS_PC_MANAGEMENT, which between them admit every
 # CL packet a client sends; the target static_asserts the values.
 set(DARKEDEN_FUZZ_login_STATUSES 1,4)
+# A datagram carries no encrypt code or status, so its seeds are raw
+# datagrams (golden2corpus.pl --datagram) and it has no statuses.
+set(DARKEDEN_FUZZ_login_datagram_SOURCE fuzz_login_datagram.cpp)
+set(DARKEDEN_FUZZ_login_datagram_PACKETS LoginServerPackets)
+# Datagram::read(DatagramPacket*&) is Core's, as the loginserver links it.
+set(DARKEDEN_FUZZ_login_datagram_EXTRA_LIBS Core)
+set(DARKEDEN_FUZZ_login_datagram_DEFINES __LOGIN_SERVER__)
+set(DARKEDEN_FUZZ_login_datagram_SERVER loginserver)
+set(DARKEDEN_FUZZ_login_datagram_MODE --datagram)
 
 function(darkeden_fuzz_configure target)
     target_include_directories(${target} PRIVATE
@@ -69,19 +82,20 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
     set(defines ${DARKEDEN_FUZZ_${name}_DEFINES})
     set(extra_sources ${DARKEDEN_FUZZ_${name}_EXTRA_SOURCES})
     set(extra_includes ${DARKEDEN_FUZZ_${name}_EXTRA_INCLUDES})
+    set(extra_libs ${DARKEDEN_FUZZ_${name}_EXTRA_LIBS})
     set(corpus ${CMAKE_CURRENT_BINARY_DIR}/corpus/${name})
 
     add_executable(fuzz_replay_${name} EXCLUDE_FROM_ALL ${source} ${extra_sources} fuzz_replay_main.cpp)
     darkeden_fuzz_configure(fuzz_replay_${name})
     target_include_directories(fuzz_replay_${name} PRIVATE ${extra_includes})
     target_compile_definitions(fuzz_replay_${name} PRIVATE ${defines})
-    target_link_libraries(fuzz_replay_${name} PRIVATE ${packets} Threads::Threads)
+    target_link_libraries(fuzz_replay_${name} PRIVATE ${packets} ${extra_libs} Threads::Threads)
 
     # The seed corpus is written into the build tree from the goldens by a
     # setup test, so a new golden is a new seed with nothing to regenerate
     # by hand.
     add_test(NAME fuzz_seed_corpus_${name}
-        COMMAND perl ${CMAKE_SOURCE_DIR}/tools/fuzz/golden2corpus.pl
+        COMMAND perl ${CMAKE_SOURCE_DIR}/tools/fuzz/golden2corpus.pl ${DARKEDEN_FUZZ_${name}_MODE}
             ${CMAKE_SOURCE_DIR}/tests/golden
             ${CMAKE_SOURCE_DIR}/tests/wire-layout.txt
             ${CMAKE_SOURCE_DIR}/tests/ratchet/factory_registrations.txt
@@ -89,9 +103,11 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
     set_tests_properties(fuzz_seed_corpus_${name} PROPERTIES FIXTURES_SETUP fuzz_corpus_${name})
 
     # Every seed and every recorded crash input runs clean: a read may
-    # refuse a body only with a ProtocolException, the one kind the receive
+    # refuse a body only with a ProtocolException, the one kind the stream
     # loops turn into a dropped connection (the targets abort on anything
-    # else). The scratch working directory catches assertion_failed.log.
+    # else; the datagram target lets the datagram loop's own refusals
+    # before the packet exists pass). The scratch working directory catches
+    # assertion_failed.log and datagram.txt.
     set(inputs ${corpus})
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/regressions/${name})
         list(APPEND inputs ${CMAKE_CURRENT_SOURCE_DIR}/regressions/${name})
@@ -110,12 +126,13 @@ foreach(name ${DARKEDEN_FUZZ_TARGETS})
     endif()
 
     if(DARKEDEN_BUILD_FUZZERS)
-        add_executable(fuzz_${name}_stream ${source} ${extra_sources})
-        darkeden_fuzz_configure(fuzz_${name}_stream)
-        target_include_directories(fuzz_${name}_stream PRIVATE ${extra_includes})
-        target_compile_definitions(fuzz_${name}_stream PRIVATE ${defines})
-        target_link_libraries(fuzz_${name}_stream PRIVATE ${packets} Threads::Threads)
-        target_link_options(fuzz_${name}_stream PRIVATE -fsanitize=fuzzer)
+        get_filename_component(fuzzer ${source} NAME_WE)
+        add_executable(${fuzzer} ${source} ${extra_sources})
+        darkeden_fuzz_configure(${fuzzer})
+        target_include_directories(${fuzzer} PRIVATE ${extra_includes})
+        target_compile_definitions(${fuzzer} PRIVATE ${defines})
+        target_link_libraries(${fuzzer} PRIVATE ${packets} ${extra_libs} Threads::Threads)
+        target_link_options(${fuzzer} PRIVATE -fsanitize=fuzzer)
     endif()
 endforeach()
 
@@ -156,4 +173,8 @@ add_custom_target(fuzz_seed_corpus
         ${CMAKE_SOURCE_DIR}/tests/golden ${CMAKE_SOURCE_DIR}/tests/wire-layout.txt
         ${CMAKE_SOURCE_DIR}/tests/ratchet/factory_registrations.txt
         loginserver ${DARKEDEN_FUZZ_login_STATUSES} ${CMAKE_CURRENT_BINARY_DIR}/corpus/login
+    COMMAND perl ${CMAKE_SOURCE_DIR}/tools/fuzz/golden2corpus.pl --datagram
+        ${CMAKE_SOURCE_DIR}/tests/golden ${CMAKE_SOURCE_DIR}/tests/wire-layout.txt
+        ${CMAKE_SOURCE_DIR}/tests/ratchet/factory_registrations.txt
+        loginserver ${CMAKE_CURRENT_BINARY_DIR}/corpus/login_datagram
     VERBATIM)

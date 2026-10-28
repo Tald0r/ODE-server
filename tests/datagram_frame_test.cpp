@@ -334,3 +334,22 @@ TEST(DatagramFrameRoundTrip, ALengthThatDisagreesWithTheSizeFieldIsRejected) {
         EXPECT_TRUE(pReceived == NULL) << "length drift " << lengthDrift;
     }
 }
+
+// A read that wants more than the datagram still holds refuses it with a
+// ProtocolException, as a stream read past its frame does, and leaves the
+// read position where it was: a body that runs past its datagram is
+// turned away like any malformed body.
+TEST(DatagramFrameRoundTrip, AReadPastTheDatagramIsAProtocolRefusal) {
+    char bytes[3] = {1, 2, 3};
+    Datagram datagram;
+    datagram.setData(bytes, sizeof(bytes));
+
+    char out[4] = {};
+    EXPECT_THROW(datagram.read(out, 4), InsufficientDataException);
+    std::string text;
+    EXPECT_THROW(datagram.read(text, 4), InsufficientDataException);
+
+    datagram.read(out, 3);
+    EXPECT_EQ(0, memcmp(out, bytes, 3));
+    EXPECT_THROW(datagram.read(out, 1), InsufficientDataException);
+}

@@ -1,13 +1,15 @@
 //////////////////////////////////////////////////////////////////////
 //
 // Filename    : StreamFuzz.h
-// Description : What the two packet-read fuzz targets share: the input
+// Description : What the two stream fuzz targets share: the input
 //               format, the environment switches, the packet tables,
 //               the in-memory stream, the body oracle and the exception
 //               policy. Each target (fuzz_game_stream.cpp,
 //               fuzz_login_stream.cpp) adds the loop that mirrors its
 //               server's receive gate; the game target also runs the
-//               production gate, GameFrameGate, against that mirror.
+//               production gate, GameFrameGate, against that mirror. The
+//               datagram target (fuzz_login_datagram.cpp) takes only the
+//               packet tables, DE_FUZZ_ALLOW_EXCEPTIONS and run().
 //
 //               An input is
 //
@@ -24,18 +26,21 @@
 //               than kMaxInput is not run; the replay driver refuses one
 //               instead of passing it.
 //
-//               Each input is delivered three times, to a fresh session
+//               Each input is delivered four times, to a fresh session
 //               each time, the way TCP may hand the same bytes over: whole,
 //               in one receive; one byte per receive, so every frame is
-//               seen cut at every point; and in chunks of 1 to 48 bytes
-//               whose lengths come from a hash of the input, so a receive
-//               can end one frame, hold several whole ones and start the
-//               next. The receive loop runs after every receive. All three
-//               must read the same packets in the same order and end the
-//               same way (the same refusal, or waiting on the same bytes),
-//               or the target aborts, naming the schedule and the first
-//               difference: a receive loop must not depend on where the
-//               network cut its bytes. The game target, unless
+//               seen cut at every point; in chunks of 1 to 48 bytes whose
+//               lengths come from a hash of the input, so a receive can end
+//               one frame, hold several whole ones and start the next; and
+//               whole again into a session whose ring buffer starts the
+//               bytes short of its end, so they continue from its front
+//               after as many bytes as the hash picks, and a read or peek
+//               that spans that point takes its wrap-around branch. The receive loop runs after every receive. All
+//               four must read the same packets in the same order and end
+//               the same way (the same refusal, or waiting on the same
+//               bytes), or the target aborts, naming the schedule and the
+//               first difference: a receive loop must not depend on where
+//               the network cut its bytes or where they land in the buffer. The game target, unless
 //               DE_FUZZ_ANY_ID or DE_FUZZ_NO_STORE_SKIP is on (the
 //               production gate has neither), also delivers the input
 //               byte by byte through GameFrameGate::next itself and
@@ -72,11 +77,8 @@
 //                                         refuses them first unless
 //                                         DE_FUZZ_ANY_ID is on too.
 //
-//               Not covered: the input is delivered from the start of the
-//               stream's buffer, which is sized to hold all of it, so the
-//               ring buffer's wrap-around branches in read(), peek() and
-//               skip() and fill()'s growth never run, although a client
-//               decides where its bytes land in the buffer.
+//               Not covered: fill()'s growth, since the stream's buffer is
+//               sized to hold the whole input.
 //
 //               Assert appends to assertion_failed.log in the working
 //               directory, so run the targets from a scratch directory.
@@ -238,37 +240,57 @@ struct Trace {
 };
 
 // Where each receive of a delivery ends, as offsets into the input's
-// stream bytes: ascending, the last one the stream's length.
-typedef std::vector<std::size_t> Schedule;
+// stream bytes (ascending, the last one the stream's length), and how many
+// of the bytes land before the ring buffer's end. With none, the first
+// byte lands at the front of the buffer and the bytes never wrap.
+struct Schedule {
+    std::vector<std::size_t> cuts;
+    std::size_t beforeEnd = 0;
+};
 
 inline Schedule wholeSchedule(const Input& input) {
-    return Schedule{input.length};
+    return Schedule{{input.length}};
 }
 
 inline Schedule byteSchedule(const Input& input) {
-    Schedule cuts;
+    Schedule schedule;
     for (std::size_t at = 1; at <= input.length; at++)
-        cuts.push_back(at);
-    return cuts;
+        schedule.cuts.push_back(at);
+    return schedule;
 }
 
-// Chunks of 1 to 48 bytes, their lengths drawn from a generator seeded
-// with a hash of the whole input, so the fuzzer varies the cuts by
-// varying the bytes, and a replay cuts a saved input where the run did.
-inline Schedule chunkSchedule(const Input& input, const std::uint8_t* data, std::size_t size) {
+// A hash of the whole input, so the fuzzer varies a schedule by varying
+// the bytes, and a replay delivers a saved input as the run did.
+inline std::uint64_t inputHash(const std::uint8_t* data, std::size_t size) {
     std::uint64_t state = 1469598103934665603ULL;
     for (std::size_t i = 0; i < size; i++)
         state = (state ^ data[i]) * 1099511628211ULL;
-    Schedule cuts;
+    return state;
+}
+
+// Chunks of 1 to 48 bytes, their lengths drawn from a generator seeded
+// with the input's hash.
+inline Schedule chunkSchedule(const Input& input, const std::uint8_t* data, std::size_t size) {
+    std::uint64_t state = inputHash(data, size);
+    Schedule schedule;
     std::size_t at = 0;
     while (at < input.length) {
         state = state * 6364136223846793005ULL + 1442695040888963407ULL;
         at += 1 + (std::size_t)((state >> 33) % 48);
         if (at > input.length)
             at = input.length;
-        cuts.push_back(at);
+        schedule.cuts.push_back(at);
     }
-    return cuts;
+    return schedule;
+}
+
+// One receive, with 1 to all of the bytes before the buffer's end, as many
+// as the input's hash picks.
+inline Schedule wrappedSchedule(const Input& input, const std::uint8_t* data, std::size_t size) {
+    Schedule schedule = wholeSchedule(input);
+    if (input.length > 0)
+        schedule.beforeEnd = 1 + (std::size_t)(inputHash(data, size) % input.length);
+    return schedule;
 }
 
 // Hands the input's stream bytes to `stream` one receive per cut, as
@@ -277,10 +299,16 @@ inline Schedule chunkSchedule(const Input& input, const std::uint8_t* data, std:
 // trace; anything else is passed on to run(). `receive` is the target's
 // loop over what is buffered; it keeps its own session state between
 // calls and returns when it waits for more bytes or ends the trace.
-inline void deliver(SocketInputStream& stream, const Input& input, const Schedule& cuts, Trace& trace,
+inline void deliver(SocketInputStream& stream, const Input& input, const Schedule& schedule, Trace& trace,
                     const std::function<void(Trace&)>& receive) {
+    if (schedule.beforeEnd != 0 &&
+        !SocketInputStreamTestAccess::PreloadAt(stream, stream.capacity() - schedule.beforeEnd, nullptr, 0)) {
+        std::fprintf(stderr, "fuzz harness: the stream refused to start %zu bytes before its end\n",
+                     schedule.beforeEnd);
+        std::abort();
+    }
     std::size_t at = 0;
-    for (std::size_t cut : cuts) {
+    for (std::size_t cut : schedule.cuts) {
         if (!SocketInputStreamTestAccess::Append(stream, input.bytes + at, cut - at)) {
             std::fprintf(stderr, "fuzz harness: the stream refused %zu bytes at offset %zu\n", cut - at, at);
             std::abort();
@@ -327,8 +355,9 @@ inline void expectSameTrace(const Trace& whole, const Trace& other, const char* 
     }
 }
 
-// Delivers the input whole, byte by byte and in hashed chunks, each to a
-// fresh session from `session`, and aborts unless the three agree.
+// Delivers the input whole, byte by byte, in hashed chunks and whole across
+// the buffer's end, each to a fresh session from `session`, and aborts
+// unless the four agree.
 // `session` builds a stream and a receive loop over it and delivers the
 // input to them by the schedule it is given. Returns the whole delivery's
 // trace, for a target that checks another loop against it.
@@ -342,6 +371,9 @@ inline Trace deliverEveryWay(const Input& input, const std::uint8_t* data, std::
     Trace chunks;
     session(chunkSchedule(input, data, size), chunks);
     expectSameTrace(whole, chunks, "in hashed chunks");
+    Trace wrapped;
+    session(wrappedSchedule(input, data, size), wrapped);
+    expectSameTrace(whole, wrapped, "across the buffer's end");
     return whole;
 }
 

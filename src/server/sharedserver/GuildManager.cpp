@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <charconv>
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -66,7 +67,10 @@ ZoneID_t prepareZoneMaximum(SharedGuildRepository& repo, int race, ZoneID_t prev
     if (count == 0)
         return next; // MAX over an empty table would yield NULL.
     const auto stored = checkedStartupID<ZoneID_t>(repo.loadMaxGuildZoneIDOfRace(race));
-    return std::max(stored, next);
+    // The counter is the zone id the next founding takes, so it starts past
+    // the newest guild's; a stored last id leaves it there, where founding refuses.
+    const auto pastStored = stored == std::numeric_limits<ZoneID_t>::max() ? stored : static_cast<ZoneID_t>(stored + 1);
+    return std::max(pastStored, next);
 }
 
 } // namespace
